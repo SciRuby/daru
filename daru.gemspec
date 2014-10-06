@@ -25,5 +25,7 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'rspec', '~> 3.0'
-  spec.add_development_dependency 'nmatrix', '~> 0.1.0.rc5'
+  if RUBY_ENGINE != 'jruby'
+    spec.add_development_dependency 'nmatrix', '~> 0.1.0.rc5'
+  end
 end

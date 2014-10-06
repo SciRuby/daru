@@ -57,7 +57,7 @@ describe Daru::Vector do
     end
   end
 
-  context "tests for methods" do
+  context "tests for methods" do # TODO: Name this better
     before do
       @anakin = Daru::Vector.new NMatrix.new([5], [1,2,3,4,5]), :anakin
       @luke   = Daru::Vector.new NMatrix.new([3], [3,4,5,6])  , :luke
@@ -86,4 +86,4 @@ describe Daru::Vector do
       expect(@anakin.size).to eq(@anakin.to_a.size)
     end
   end
-end
+end if RUBY_ENGINE == 'ruby'
