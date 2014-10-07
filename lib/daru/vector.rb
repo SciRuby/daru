@@ -1,3 +1,21 @@
+class Array
+  def daru_vector
+    Daru::Vector.new self
+  end
+end
+
+class Range
+  def daru_vector
+    Daru::Vector.new self
+  end
+end
+
+class Hash
+  def daru_vector
+    Daru::Vector.new self.values[0], self.keys[0]
+  end
+end
+
 module Daru
   class Vector
     include Enumerable
@@ -33,6 +51,18 @@ module Daru
       @vector[index]
     end
 
+    def []=(index, value)
+      @vector[index] = value
+    end
+
+    def ==(other)
+      other.vector == @vector and other.name == @name
+    end
+
+    def vector
+      @vector
+    end
+
     def to_json
       @vector.to_a.to_json
     end
@@ -51,6 +81,10 @@ module Daru
       end
 
       html += '</table>'
+    end
+
+    def dup
+      Daru::Vector.new @vector.dup, @name.dup
     end
   end
 end

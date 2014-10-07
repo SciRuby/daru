@@ -85,5 +85,20 @@ describe Daru::Vector do
     it "delegates to the internal array storage" do
       expect(@anakin.size).to eq(@anakin.to_a.size)
     end
+
+    it "assigns on index" do
+      @anakin[0] = 666
+      expect(@anakin[0]).to eq(666)
+    end
+
+    it "returns only the vector object" do
+      expect(@anakin.vector == NMatrix.new([5], [1,2,3,4,5])).to be(true)
+    end
+
+    it "tests for equality" do
+      clone = Daru::Vector.new NMatrix.new([5], [1,2,3,4,5]), :clone
+
+      expect(@anakin == clone).to be(false)
+    end
   end
 end if RUBY_ENGINE == 'ruby'

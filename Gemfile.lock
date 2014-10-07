@@ -7,6 +7,11 @@ GEM
   remote: https://rubygems.org/
   specs:
     diff-lcs (1.2.5)
+    json (1.8.1)
+    nmatrix (0.1.0.rc5)
+      rdoc (~> 4.0, >= 4.0.1)
+    rdoc (4.1.2)
+      json (~> 1.4)
     rspec (3.1.0)
       rspec-core (~> 3.1.0)
       rspec-expectations (~> 3.1.0)
@@ -27,4 +32,5 @@ PLATFORMS
 DEPENDENCIES
   bundler
   daru!
+  nmatrix (~> 0.1.0.rc5)
   rspec (~> 3.0)

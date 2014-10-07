@@ -30,4 +30,5 @@ Then switch to MRI, do a normal `bundle install` followed by `rspec` for testing
 ## Roadmap
 
 * Automate testing for both MRI and JRuby.
-...more coming soon
+* Enable creation of DataFrame by only specifying an NMatrix/MDArray in initialize. Vector naming happens automatically (alphabetic) or is specified in an Array.
+* Add support for missing values in vectors.
