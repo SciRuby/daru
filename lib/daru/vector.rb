@@ -2,18 +2,24 @@ class Array
   def daru_vector
     Daru::Vector.new self
   end
+
+  alias_method :dv, :daru_vector
 end
 
 class Range
   def daru_vector
     Daru::Vector.new self
   end
+
+  alias_method :dv, :daru_vector
 end
 
 class Hash
   def daru_vector
     Daru::Vector.new self.values[0], self.keys[0]
   end
+
+  alias_method :dv, :daru_vector
 end
 
 module Daru
@@ -28,8 +34,9 @@ module Daru
 
     attr_reader :size
 
-    def initialize source, name=nil
+    attr_reader :vector
 
+    def initialize source=[], name=nil
       if source.is_a?(Hash)
         initialize source.values[0], source.keys[0]
       else
@@ -59,12 +66,8 @@ module Daru
       other.vector == @vector and other.name == @name
     end
 
-    def vector
-      @vector
-    end
-
     def to_json
-      @vector.to_a.to_json
+      self.to_a.to_json
     end
 
     def to_a
