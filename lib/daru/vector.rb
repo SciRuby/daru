@@ -30,7 +30,7 @@ module Daru
       @vector.each(&block)
     end
 
-    attr_reader :name
+    attr_accessor :name
 
     attr_reader :size
 
@@ -64,6 +64,10 @@ module Daru
 
     def ==(other)
       other.vector == @vector and other.name == @name
+    end
+
+    def <<(element)
+      @vector << element
     end
 
     def to_json

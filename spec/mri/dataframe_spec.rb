@@ -14,9 +14,9 @@ describe Daru::DataFrame do
       expect(@df.size).to eq(3)
     end
 
-    it "raises exception for eneven vectors" do
+    it "raises exception for uneven vectors" do
       expect do
-        df = Daru::DataFrame.new({a: (1..5).daru_vector, b: [1,2,3].daru_vector})
+        df = Daru::DataFrame.new({a: (1..5).dv, b: [1,2,3].daru_vector})
       end.to raise_error
     end
 
@@ -32,6 +32,12 @@ describe Daru::DataFrame do
       expect(@df.column(:a)).to eq(@vector)
     end
 
+    it "returns a row" do
+      r = @df.row 0
+
+      expect(r).to eq([1,50,'Jesse'])
+    end
+
     it "iterates over columns" do
       @df.each_column do |col|
         expect(col.is_a?(Daru::Vector)).to be(true)
@@ -39,9 +45,9 @@ describe Daru::DataFrame do
       end
     end
 
-    it "iterates over rows" do 
+    it "iterates over rows" do
       @df.each_row do |row|
-        expect(row[0].nil?).to be(false)
+        expect(row.size).to be(@df.fields.size)
       end
     end
 
@@ -50,37 +56,37 @@ describe Daru::DataFrame do
     end
 
     it "inserts a new vector" do
-      @df.insert_vector({c: Daru::Vector.new([3,6,9]) })
+      @df.insert_vector :c, Daru::Vector.new([3,6,9])
 
       expect(@df.fields.include?(:c)).to be(true)
     end
 
     it "inserts a new row" do
-      @df.insert_row [6,6,"Fred",6]
+      @df.insert_row [6,6,"Fred"]
 
       expect(@df.a.vector)    .to eq([1,2,3,6])
-      expect(@df.b.vector)    .to eq([51,52,53,6])
+      expect(@df.b.vector)    .to eq([50,51,52,6])
       expect(@df.b_bad.vector).to eq(['Jesse', 'Walter', 'Hank', 'Fred'])
-      expect(@df.c.vector)    .to eq([3,6,9,6])
     end
 
     it "raises an error for inappropriate row insertion" do
       expect { @df.insert_row [1,1] }.to raise_error
     end
 
-    it "deletes a column" do
-      @df.delete(:c)
+    it "deletes a vector" do
+      @df.delete :a
 
-      expect(@df.fields.include?(:c)).to be(false)
+      expect(@df.fields.include? :a).to be(false)
     end
   end
 
   context "DataFrame loads from files" do
+
     it "loads a DataFrame from CSV" do
       df = Daru::DataFrame.from_csv 'fixtures/test_matrix.csv'
+
+      expect(df.fields).to eq([:image_resolution, :true_transform, :mls])
+      expect(df.size).to eq(100)
     end
   end
-
-  # context "DataFrame from NMatrix vectors" do
-  # end
 end if RUBY_ENGINE == 'ruby'
