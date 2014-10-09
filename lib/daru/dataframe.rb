@@ -58,6 +58,14 @@ module Daru
       @fields.delete name
     end
 
+    # def filter_rows
+      
+    # end
+
+    # def filter_columns
+      
+    # end
+
     def [](name)
       column name
     end
@@ -124,7 +132,7 @@ module Daru
         html += '<tr>'
         row.each{ |val| html.concat('<td>' + val.to_s + '</td>') }
         html += '</tr>'
-        if i == threshold
+        if index == threshold
           html += '<tr>'
           row.size.times { html.concat('<td>...</td>') }
           html += '</tr>'
@@ -137,7 +145,7 @@ module Daru
     def to_s
       to_html
     end
-    
+
     def method_missing(name, *args)
       if md = name.match(/(.+)\=/)
         insert_vector name[/(.+)\=/].delete("="), args[0]

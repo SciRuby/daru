@@ -3,6 +3,8 @@ daru
 
 Data Analysis in RUby
 
+[![Gem Version](https://badge.fury.io/rb/daru.svg)](http://badge.fury.io/rb/daru)
+
 ## Introduction
 
 daru (Data Analysis in RUby) is a library for storage, analysis and manipulation of data. It aims to be the preferred data analysis library for Ruby. 
@@ -29,8 +31,15 @@ Then switch to MRI, do a normal `bundle install` followed by `rspec` for testing
 
 ## Roadmap
 
+* Integration with IRuby
 * Automate testing for both MRI and JRuby.
 * Enable creation of DataFrame by only specifying an NMatrix/MDArray in initialize. Vector naming happens automatically (alphabetic) or is specified in an Array.
 * Add support for missing values in vectors.
 * Add normal and destructive map iterators.
 * Completely test all functionality for NMatrix and MDArray.
+* Basic Data manipulation and analysis operations: 
+    - Different kinds of join operations
+    - Dataframe/vector merge
+    - Creation of correlation, covariance matrices
+    - Verification of data in a vector
+    - Basic vector statistics - mean, median, variance, etc.
