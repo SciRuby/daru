@@ -66,8 +66,24 @@ module Daru
       
     # end
 
-    def [](name)
-      column name
+    def [](*name)
+      unless name[1]
+        return column(name[0])
+      end
+
+      h = {}
+      req_fields = @fields & name
+
+      req_fields.each do |f|
+        h[f] = @vectors[f]
+      end
+
+      DataFrame.new h, req_fields, @name
+    end
+
+    def ==(other)
+      @name == other.name and @vectors == other.vectors and 
+      @size == other.size and @fields  == other.fields 
     end
 
     def []=(name, vector)
@@ -90,21 +106,35 @@ module Daru
     end
 
     def each_row
-      0.upto(@size) do |index|
+      0.upto(@size-1) do |index|
         yield row(index)
       end
+
+      self
     end
 
     def each_row_with_index
-      0.upto(@size) do |index|
+      0.upto(@size-1) do |index|
         yield row(index), index
       end
+
+      self
     end
 
     def each_column
-      @vectors.values.each do |column|
-        yield column
+      @fields.each do |field|
+        yield @vectors[field]
       end
+
+      self
+    end
+
+    def each_column_with_name
+      @fields.each do |field|
+        yield @vectors[field], field
+      end
+
+      self
     end
 
     def insert_vector name, vector
@@ -126,6 +156,10 @@ module Daru
 
     def to_html(threshold=15)
       html = '<table>'
+
+      html += '<tr>'
+      @fields.each { |f| html.concat('<td>' + f.to_s + '</td>') }
+      html += '</tr>'
 
       self.each_row_with_index do |row, index|
         break if index > threshold and index <= @size

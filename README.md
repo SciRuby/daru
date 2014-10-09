@@ -31,7 +31,8 @@ Then switch to MRI, do a normal `bundle install` followed by `rspec` for testing
 
 ## Roadmap
 
-* Integration with IRuby
+* Print dataframe in same order as fields.
+* Return rows in same order as that of fields.
 * Automate testing for both MRI and JRuby.
 * Enable creation of DataFrame by only specifying an NMatrix/MDArray in initialize. Vector naming happens automatically (alphabetic) or is specified in an Array.
 * Add support for missing values in vectors.
@@ -43,3 +44,11 @@ Then switch to MRI, do a normal `bundle install` followed by `rspec` for testing
     - Creation of correlation, covariance matrices
     - Verification of data in a vector
     - Basic vector statistics - mean, median, variance, etc.
+* Add indexing on vectors.
+    - Creation of vector by supplying an index-value hash.
+    - Auto generation of real numbered indices for any vector.
+    - Ability to separately specify index for each element of a vector.
+    - Runtime alteration of index.
+* Indexing on DataFrame.
+* Vector arithmetic - elementwise addition, subtraction, multiplication, division.
+* Transpose a dataframe.

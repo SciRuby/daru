@@ -5,7 +5,8 @@ describe Daru::DataFrame do
     
     before :each do
       @df = Daru::DataFrame.new({a: Daru::Vector.new(1..3), 
-        b: (50..52).daru_vector, b_bad: ['Jesse', 'Walter', 'Hank'].daru_vector})
+        b: (50..52).daru_vector, b_bad: ['Jesse', 'Walter', 'Hank'].daru_vector}, 
+        [:b_bad, :a, :b], :muddler)
 
       @vector = Daru::Vector.new 1..3, :a
     end
@@ -35,14 +36,18 @@ describe Daru::DataFrame do
     it "returns a row" do
       r = @df.row 0
 
-      expect(r).to eq([1,50,'Jesse'])
+      expect(r).to eq(['Jesse',1,50])
     end
 
-    it "iterates over columns" do
-      @df.each_column do |col|
+    it "iterates over columns in the specified order" do
+      cols = []
+      df = @df.each_column do |col|
         expect(col.is_a?(Daru::Vector)).to be(true)
-        expect([:a, :b, :b_bad].include? col.name).to be(true)
+        cols << col.name
       end
+
+      expect(cols).to eq([:b_bad, :a, :b])
+      expect(df).to eq(@df)
     end
 
     it "iterates over rows" do
@@ -52,7 +57,7 @@ describe Daru::DataFrame do
     end
 
     it "shows column fields" do
-      expect(@df.fields).to eq([:a, :b, :b_bad])
+      expect(@df.fields).to eq([:b_bad, :a, :b])
     end
 
     it "inserts a new vector" do
@@ -62,7 +67,7 @@ describe Daru::DataFrame do
     end
 
     it "inserts a new row" do
-      @df.insert_row [6,6,"Fred"]
+      @df.insert_row ["Fred",6, 6]
 
       expect(@df.a.vector)    .to eq([1,2,3,6])
       expect(@df.b.vector)    .to eq([50,51,52,6])
@@ -77,6 +82,13 @@ describe Daru::DataFrame do
       @df.delete :a
 
       expect(@df.fields.include? :a).to be(false)
+    end
+
+    it "returns a DataFrame of requested fields" do
+      req = @df = Daru::DataFrame.new({a: Daru::Vector.new(1..3), 
+        b: (50..52).daru_vector}, [:a, :b], :muddler)
+
+      expect(@df[:a, :b]).to eq(req)
     end
   end
 
