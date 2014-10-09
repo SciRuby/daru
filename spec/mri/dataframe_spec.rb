@@ -83,10 +83,21 @@ describe Daru::DataFrame do
   context "DataFrame loads from files" do
 
     it "loads a DataFrame from CSV" do
-      df = Daru::DataFrame.from_csv 'fixtures/test_matrix.csv'
+      df = Daru::DataFrame.from_csv('spec/fixtures/matrix_test.csv', 
+        {col_sep: ' ', headers: true}) do |csv|
+        csv.convert do |field, info|
+          case info[:header]
+          when :true_transform
+            field.split(',').map { |s| s.to_f }
+          else
+            field
+          end
+        end
+      end
 
       expect(df.fields).to eq([:image_resolution, :true_transform, :mls])
-      expect(df.size).to eq(100)
+      expect(df[:image_resolution].first).to eq(6.55779)
+      expect(df.column(:true_transform).first[15]).to eq(1.0)
     end
   end
 end if RUBY_ENGINE == 'ruby'

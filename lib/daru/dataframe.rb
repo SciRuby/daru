@@ -11,7 +11,7 @@ module Daru
 
     def initialize source, fields=[], name=SecureRandom.uuid
       if source.empty?
-        @vectors = fields.inject({}){ |a,x| a[x]=Statsample::Vector.new; a}
+        @vectors = fields.inject({}){ |a,x| a[x]=Daru::Vector.new; a}
       else
         @vectors = source
       end
@@ -24,8 +24,29 @@ module Daru
       set_vector_names
     end
 
-    def self.from_csv file
-      # TODO
+    def self.from_csv file, opts={}
+      opts[:col_sep]           ||= ','
+      opts[:headers]           ||= true
+      opts[:converters]        ||= :numeric
+      opts[:header_converters] ||= :symbol
+
+      csv = CSV.open file, 'r', opts
+
+      yield csv if block_given?
+
+      first = true
+      df    = nil
+
+      csv.each do |row|
+        if first
+          df = Daru::DataFrame.new({}, csv.headers)
+          first = false
+        end
+
+        df.insert_row row
+      end
+
+      df
     end
 
     def column name
@@ -66,6 +87,12 @@ module Daru
       end
     end
 
+    def each_row_with_index
+      0.upto(@size) do |index|
+        yield row(index), index
+      end
+    end
+
     def each_column
       @vectors.values.each do |column|
         yield column
@@ -89,6 +116,28 @@ module Daru
       end
     end
 
+    def to_html(threshold=15)
+      html = '<table>'
+
+      self.each_row_with_index do |row, index|
+        break if index > threshold and index <= @size
+        html += '<tr>'
+        row.each{ |val| html.concat('<td>' + val.to_s + '</td>') }
+        html += '</tr>'
+        if i == threshold
+          html += '<tr>'
+          row.size.times { html.concat('<td>...</td>') }
+          html += '</tr>'
+        end
+      end
+
+      html += '</table>'
+    end
+
+    def to_s
+      to_html
+    end
+    
     def method_missing(name, *args)
       if md = name.match(/(.+)\=/)
         insert_vector name[/(.+)\=/].delete("="), args[0]

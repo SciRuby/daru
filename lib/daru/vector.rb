@@ -22,6 +22,22 @@ class Hash
   alias_method :dv, :daru_vector
 end
 
+class NMatrix
+  def daru_vector
+    Daru::Vector.new self
+  end
+
+  alias_method :dv, :daru_vector
+end
+
+class MDArray
+  def daru_vector
+    Daru::Vector.new self
+  end
+
+  alias_method :dv, :daru_vector
+end
+
 module Daru
   class Vector
     include Enumerable
@@ -32,10 +48,10 @@ module Daru
 
     attr_accessor :name
 
-    attr_reader :size
+    attr_reader   :size
 
-    attr_reader :vector
-
+    attr_reader   :vector
+ 
     def initialize source=[], name=nil
       if source.is_a?(Hash)
         initialize source.values[0], source.keys[0]
@@ -76,6 +92,16 @@ module Daru
 
     def to_a
       @vector.to_a
+    end
+
+    def to_nmatrix
+      @vector.to_nm
+    end
+
+    alias_method :to_nm, :to_nmatrix
+
+    def first lim=1
+      lim == 1 ? @vector.first : @vector.first(lim)
     end
 
     def to_html threshold=15
