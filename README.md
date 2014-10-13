@@ -31,12 +31,11 @@ Then switch to MRI, do a normal `bundle install` followed by `rspec` for testing
 
 ## Roadmap
 
-* Print dataframe in same order as fields.
-* Return rows in same order as that of fields.
 * Automate testing for both MRI and JRuby.
 * Enable creation of DataFrame by only specifying an NMatrix/MDArray in initialize. Vector naming happens automatically (alphabetic) or is specified in an Array.
 * Add support for missing values in vectors.
 * Add normal and destructive map iterators.
+* NMatrix.first should return NMatrix (in vector).
 * Completely test all functionality for NMatrix and MDArray.
 * Basic Data manipulation and analysis operations: 
     - Different kinds of join operations
@@ -52,3 +51,4 @@ Then switch to MRI, do a normal `bundle install` followed by `rspec` for testing
 * Indexing on DataFrame.
 * Vector arithmetic - elementwise addition, subtraction, multiplication, division.
 * Transpose a dataframe.
+* Option to express a DataFrame as an NMatrix or MDArray so as to use more efficient storage techniques.

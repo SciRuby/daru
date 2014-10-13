@@ -36,7 +36,7 @@ describe Daru::DataFrame do
     it "returns a row" do
       r = @df.row 0
 
-      expect(r).to eq(['Jesse',1,50])
+      expect(r).to eq({:b_bad=> "Jesse", :a=> 1, :b=> 50})
     end
 
     it "iterates over columns in the specified order" do
@@ -54,6 +54,13 @@ describe Daru::DataFrame do
       @df.each_row do |row|
         expect(row.size).to be(@df.fields.size)
       end
+    end
+
+    it "filters rows according to given block" do
+      res = @df.filter_rows(@df.name) { |row| row[:b] == 50 }
+
+      expect(res).to eq(Daru::DataFrame.new({a: [1].dv, b: [50].dv, b_bad: ['Jesse'].dv}, 
+        @df.fields, @df.name))
     end
 
     it "shows column fields" do
@@ -110,6 +117,15 @@ describe Daru::DataFrame do
       expect(df.fields).to eq([:image_resolution, :true_transform, :mls])
       expect(df[:image_resolution].first).to eq(6.55779)
       expect(df.column(:true_transform).first[15]).to eq(1.0)
+    end
+  end
+
+  context "Malformed DataFrame creation" do
+    it "adds vectors if specified as fields while preserving order" do
+      df = Daru::DataFrame.new({a: (1..4).dv, b: (50..53).dv}, [:b, :a, :jazzy, :joe])
+
+      expect(df.fields).to eq([:b, :a, :jazzy, :joe])
+      expect(df.jazzy).to eq(([nil]*4).dv(:jazzy))
     end
   end
 end if RUBY_ENGINE == 'ruby'

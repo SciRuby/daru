@@ -9,11 +9,21 @@ module Daru
 
     attr_reader :name
 
-    def initialize source, fields=[], name=SecureRandom.uuid
+    def initialize source, fields=[], name=SecureRandom.uuid, opts={}
+      @opts = opts
+      set_default_opts
+
       if source.empty?
         @vectors = fields.inject({}){ |a,x| a[x]=Daru::Vector.new; a}
       else
-        @vectors = source
+        if @opts[:duplicate_vectors]
+          @vectors = source.inject({}) do |acc, h|
+            acc[h[0]] = h[1].dup
+            acc
+          end
+        else
+          @vectors = source
+        end
       end
 
       @fields = fields.empty? ? source.keys.sort : fields
@@ -58,9 +68,17 @@ module Daru
       @fields.delete name
     end
 
-    # def filter_rows
-      
-    # end
+    def filter_rows(name=SecureRandom.uuid, &block)
+      df = DataFrame.new({}, @fields, name)
+
+      self.each_row do |row|
+        keep_row = yield row
+
+        df.insert_row(row.values) if keep_row
+      end
+
+      df
+    end
 
     # def filter_columns
       
@@ -93,9 +111,9 @@ module Daru
     def row index
       raise Exception, "Expected index to be within bounds" if index > @size
 
-      row = []
+      row = {}
       self.each_column do |column|
-        row << column[index]
+        row[column.name] = column[index]
       end
 
       row
@@ -152,6 +170,8 @@ module Daru
       @fields.each_with_index do |field, index|
         @vectors[field] << row[index]
       end
+
+      @size += 1
     end
 
     def to_html(threshold=15)
@@ -164,7 +184,7 @@ module Daru
       self.each_row_with_index do |row, index|
         break if index > threshold and index <= @size
         html += '<tr>'
-        row.each{ |val| html.concat('<td>' + val.to_s + '</td>') }
+        row.each_value { |val| html.concat('<td>' + val.to_s + '</td>') }
         html += '</tr>'
         if index == threshold
           html += '<tr>'
@@ -208,15 +228,19 @@ module Daru
 
     def set_fields_order
       @fields = @vectors.keys & @fields
-      @fields += @vecorts.keys.sort - @fields
+      @fields += @vectors.keys.sort - @fields
     end
 
     # Writes names specified in the hash to the actual name of the vector.
     # Will over-ride any previous name assigned to the vector.
-    def set_vector_names
+    def set_vector_names      
       @fields.each do |name|
         @vectors[name].name = name
       end
+    end
+
+    def set_default_opts
+      @opts[:duplicate_vectors] ||= true
     end
   end
 end

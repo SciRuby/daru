@@ -1,14 +1,14 @@
 class Array
-  def daru_vector
-    Daru::Vector.new self
+  def daru_vector name=nil
+    Daru::Vector.new self, name
   end
 
   alias_method :dv, :daru_vector
 end
 
 class Range
-  def daru_vector
-    Daru::Vector.new self
+  def daru_vector name=nil
+    Daru::Vector.new self, name
   end
 
   alias_method :dv, :daru_vector
@@ -23,7 +23,7 @@ class Hash
 end
 
 class NMatrix
-  def daru_vector
+  def daru_vector name=nil
     Daru::Vector.new self
   end
 
@@ -31,8 +31,8 @@ class NMatrix
 end
 
 class MDArray
-  def daru_vector
-    Daru::Vector.new self
+  def daru_vector name=nil
+    Daru::Vector.new self, name
   end
 
   alias_method :dv, :daru_vector
@@ -117,7 +117,7 @@ module Daru
     end
 
     def dup
-      Daru::Vector.new @vector.dup, @name.dup
+      Daru::Vector.new @vector.dup, @name
     end
   end
 end

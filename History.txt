@@ -1,0 +1,17 @@
+== 0.0.1
+* Added classes for DataFrame and Vector alongwith some super-basic functions to get off the ground
+
+== 0.0.2
+* Added iterators for dataframe and vector alongwith printing functions (to_html) to interface properly with iRuby notebook.
+
+== 0.0.2.1
+* Fixed bugs with previous code and more iterators
+
+== 0.0.2.2
+* Added test cases and multiple column access through the [] operator on DataFrames
+
+== 0.0.2.3
+* Added #filter_rows to DataFrame and changed #row to return a row containing a Hash of column name and value.
+* Vector objects passed into a DataFrame are now duplicated so that any changes dont affect the original vector.
+* Added an optional opts argument to DataFrame.
+* 
