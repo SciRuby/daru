@@ -1,7 +1,7 @@
 require 'spec_helper.rb'
 
 describe Daru::DataFrame do
-  context "DataFrame from normal array vectors" do
+  context "DataFrame of Array" do
     
     before :each do
       @df = Daru::DataFrame.new({a: Daru::Vector.new(1..3), 
@@ -41,7 +41,7 @@ describe Daru::DataFrame do
 
     it "iterates over columns in the specified order" do
       cols = []
-      df = @df.each_column do |col|
+      df = @df.each_vector do |col|
         expect(col.is_a?(Daru::Vector)).to be(true)
         cols << col.name
       end
@@ -56,7 +56,7 @@ describe Daru::DataFrame do
       end
     end
 
-    it "filters rows according to given block" do
+    it "filters rows" do
       res = @df.filter_rows(@df.name) { |row| row[:b] == 50 }
 
       expect(res).to eq(Daru::DataFrame.new({a: [1].dv, b: [50].dv, b_bad: ['Jesse'].dv}, 
@@ -99,7 +99,17 @@ describe Daru::DataFrame do
     end
   end
 
-  context "DataFrame loads from files" do
+  context "Malformed DataFrame from Array" do
+    it "adds extra nil vectors from fields" do
+      df = Daru::DataFrame.new({a: (1..4).dv, b: (50..53).dv}, [:b, :a, :jazzy, :joe])
+
+      expect(df.fields).to eq([:b, :a, :jazzy, :joe])
+      expect(df.jazzy).to eq(([nil]*4).dv(:jazzy))
+      expect(df.joe).to eq(([nil]*4).dv(:joe))
+    end
+  end
+
+  context "DataFrame from files" do
 
     it "loads a DataFrame from CSV" do
       df = Daru::DataFrame.from_csv('spec/fixtures/matrix_test.csv', 
@@ -117,15 +127,6 @@ describe Daru::DataFrame do
       expect(df.fields).to eq([:image_resolution, :true_transform, :mls])
       expect(df[:image_resolution].first).to eq(6.55779)
       expect(df.column(:true_transform).first[15]).to eq(1.0)
-    end
-  end
-
-  context "Malformed DataFrame creation" do
-    it "adds vectors if specified as fields while preserving order" do
-      df = Daru::DataFrame.new({a: (1..4).dv, b: (50..53).dv}, [:b, :a, :jazzy, :joe])
-
-      expect(df.fields).to eq([:b, :a, :jazzy, :joe])
-      expect(df.jazzy).to eq(([nil]*4).dv(:jazzy))
     end
   end
 end if RUBY_ENGINE == 'ruby'

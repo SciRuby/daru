@@ -11,7 +11,7 @@
 * Added test cases and multiple column access through the [] operator on DataFrames
 
 == 0.0.2.3
-* Added #filter_rows to DataFrame and changed #row to return a row containing a Hash of column name and value.
+* Added #filter\_rows and #delete_row to DataFrame and changed #row to return a row containing a Hash of column name and value.
 * Vector objects passed into a DataFrame are now duplicated so that any changes dont affect the original vector.
 * Added an optional opts argument to DataFrame.
-* 
+* Sending more fields than vectors in DataFrame will cause addition of nil vectors.

@@ -28,9 +28,10 @@ module Daru
 
       @fields = fields.empty? ? source.keys.sort : fields
       @name   = name
- 
+
       check_length
-      set_fields_order if @vectors.keys.sort != @fields.sort
+      set_missing_vectors if @vectors.keys.size < @fields.size
+      set_fields_order    if @vectors.keys.sort != @fields.sort
       set_vector_names
     end
 
@@ -63,12 +64,24 @@ module Daru
       @vectors[name]
     end
 
-    def delete name
+    def delete_vector name
       @vectors.delete name
       @fields.delete name
     end
 
-    def filter_rows(name=SecureRandom.uuid, &block)
+    alias_method :delete, :delete_vector
+
+    def delete_row index
+      # TODO: Make this work with NMatrix and MDArray
+      raise "Expected index less than size." if index > @size
+
+      @fields.each do |field|
+        @vectors[field].delete index
+      end
+      puts @vectors
+    end
+
+    def filter_rows name=self.name, &block
       df = DataFrame.new({}, @fields, name)
 
       self.each_row do |row|
@@ -80,11 +93,7 @@ module Daru
       df
     end
 
-    # def filter_columns
-      
-    # end
-
-    def [](*name)
+    def [] *name
       unless name[1]
         return column(name[0])
       end
@@ -99,12 +108,12 @@ module Daru
       DataFrame.new h, req_fields, @name
     end
 
-    def ==(other)
+    def == other
       @name == other.name and @vectors == other.vectors and 
       @size == other.size and @fields  == other.fields 
     end
 
-    def []=(name, vector)
+    def []= name, vector
       insert_vector name, vector
     end
 
@@ -112,7 +121,7 @@ module Daru
       raise Exception, "Expected index to be within bounds" if index > @size
 
       row = {}
-      self.each_column do |column|
+      self.each_vector do |column|
         row[column.name] = column[index]
       end
 
@@ -123,7 +132,7 @@ module Daru
       !!@vectors[vector]
     end
 
-    def each_row
+    def each_row(&block)
       0.upto(@size-1) do |index|
         yield row(index)
       end
@@ -131,7 +140,7 @@ module Daru
       self
     end
 
-    def each_row_with_index
+    def each_row_with_index(&block)
       0.upto(@size-1) do |index|
         yield row(index), index
       end
@@ -139,7 +148,7 @@ module Daru
       self
     end
 
-    def each_column
+    def each_vector(&block)
       @fields.each do |field|
         yield @vectors[field]
       end
@@ -147,7 +156,7 @@ module Daru
       self
     end
 
-    def each_column_with_name
+    def each_vector_with_name(&block)
       @fields.each do |field|
         yield @vectors[field], field
       end
@@ -226,8 +235,8 @@ module Daru
       @size = size
     end
 
-    def set_fields_order
-      @fields = @vectors.keys & @fields
+    def set_fields_order # vectors more than specified fields
+      @fields = @fields & @vectors.keys
       @fields += @vectors.keys.sort - @fields
     end
 
@@ -241,6 +250,15 @@ module Daru
 
     def set_default_opts
       @opts[:duplicate_vectors] ||= true
+    end
+
+    def set_missing_vectors
+      missing_fields = @fields - @vectors.keys
+
+      missing_fields.each do |field|
+        @vectors[field] = ([nil]*@size).dv
+        @fields << field
+      end
     end
   end
 end

@@ -48,7 +48,7 @@ module Daru
 
     attr_accessor :name
 
-    attr_reader   :size
+    attr_reader :size
 
     attr_reader   :vector
  
@@ -104,6 +104,12 @@ module Daru
       lim == 1 ? @vector.first : @vector.first(lim)
     end
 
+    def delete index
+      @vector[index] = nil
+      @vector.compact!
+      @size -= 1
+    end
+
     def to_html threshold=15
       html = '<table><tr><th>' + @name.to_s + '</th></tr>>'
 
@@ -118,6 +124,10 @@ module Daru
 
     def dup
       Daru::Vector.new @vector.dup, @name
+    end
+
+    def compact!
+      @vector.compact!
     end
   end
 end
