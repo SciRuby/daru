@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    daru (0.0.2.2)
+    daru (0.0.2.3)
 
 GEM
   remote: https://rubygems.org/

@@ -97,6 +97,13 @@ describe Daru::DataFrame do
 
       expect(@df[:a, :b]).to eq(req)
     end
+
+    it "creates DataFrame from Array" do
+      a_df = Daru::DataFrame.new({a: [1,2,3,4], b: [10,11,12,13]})
+
+      expect(a_df.a.is_a? Daru::Vector).to eq(true)
+      expect(a_df.a.vector).to eq([1,2,3,4])
+    end
   end
 
   context "Malformed DataFrame from Array" do

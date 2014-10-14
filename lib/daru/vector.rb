@@ -1,43 +1,3 @@
-class Array
-  def daru_vector name=nil
-    Daru::Vector.new self, name
-  end
-
-  alias_method :dv, :daru_vector
-end
-
-class Range
-  def daru_vector name=nil
-    Daru::Vector.new self, name
-  end
-
-  alias_method :dv, :daru_vector
-end
-
-class Hash
-  def daru_vector
-    Daru::Vector.new self.values[0], self.keys[0]
-  end
-
-  alias_method :dv, :daru_vector
-end
-
-class NMatrix
-  def daru_vector name=nil
-    Daru::Vector.new self
-  end
-
-  alias_method :dv, :daru_vector
-end
-
-class MDArray
-  def daru_vector name=nil
-    Daru::Vector.new self, name
-  end
-
-  alias_method :dv, :daru_vector
-end
-
 module Daru
   class Vector
     include Enumerable
@@ -48,7 +8,7 @@ module Daru
 
     attr_accessor :name
 
-    attr_reader :size
+    attr_reader   :size
 
     attr_reader   :vector
  
@@ -79,11 +39,13 @@ module Daru
     end
 
     def ==(other)
-      other.vector == @vector and other.name == @name
+      other.vector == @vector and other.name == @name and other.size == @size
     end
 
     def <<(element)
       @vector << element
+
+      @size += 1
     end
 
     def to_json
@@ -125,6 +87,12 @@ module Daru
     def dup
       Daru::Vector.new @vector.dup, @name
     end
+
+    def daru_vector
+      self
+    end
+
+    alias_method :dv, :daru_vector
 
     def compact!
       @vector.compact!

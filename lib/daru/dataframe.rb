@@ -16,13 +16,9 @@ module Daru
       if source.empty?
         @vectors = fields.inject({}){ |a,x| a[x]=Daru::Vector.new; a}
       else
-        if @opts[:duplicate_vectors]
-          @vectors = source.inject({}) do |acc, h|
-            acc[h[0]] = h[1].dup
-            acc
-          end
-        else
-          @vectors = source
+        @vectors = source.inject({}) do |acc, h|
+          acc[h[0]] = h[1].dv.dup
+          acc
         end
       end
 
@@ -249,7 +245,7 @@ module Daru
     end
 
     def set_default_opts
-      @opts[:duplicate_vectors] ||= true
+      # Future proofing
     end
 
     def set_missing_vectors
