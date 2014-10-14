@@ -14,16 +14,22 @@ module Daru
       set_default_opts
 
       if source.empty?
-        @vectors = fields.inject({}){ |a,x| a[x]=Daru::Vector.new; a}
-      else
-        @vectors = source.inject({}) do |acc, h|
-          acc[h[0]] = h[1].dv.dup
+        create_empty_vectors_with fields
+      elsif source.is_a? Array
+        create_empty_vectors_with source[0].keys
+        source.each do |hash|
+          self.insert_row hash.values
+        end
+      else # source is a Hash
+        @vectors = source.inject({}) do |acc, (k,v)|
+          acc[k] = v.dv.dup
           acc
         end
+
+        @fields = fields.empty? ? source.keys.sort : fields
       end
 
-      @fields = fields.empty? ? source.keys.sort : fields
-      @name   = name
+      @name = name
 
       check_length
       set_missing_vectors if @vectors.keys.size < @fields.size
@@ -176,6 +182,8 @@ module Daru
         @vectors[field] << row[index]
       end
 
+      @size = 0 if @size.nil?
+
       @size += 1
     end
 
@@ -255,6 +263,15 @@ module Daru
         @vectors[field] = ([nil]*@size).dv
         @fields << field
       end
+    end
+
+    def create_empty_vectors_with fields
+      @vectors = fields.inject({}) do |a,x| 
+        a[x.to_sym] = Daru::Vector.new [], x.to_sym 
+        a
+      end
+
+      @fields  = fields.map { |f| f.to_sym}
     end
   end
 end

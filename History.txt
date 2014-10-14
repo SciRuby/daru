@@ -15,3 +15,7 @@
 * Vector objects passed into a DataFrame are now duplicated so that any changes dont affect the original vector.
 * Added an optional opts argument to DataFrame.
 * Sending more fields than vectors in DataFrame will cause addition of nil vectors.
+* Init a DataFrame without having to convert explicitly to vectors.
+
+== 0.0.2.4
+* Initialize dataframe from an array which looks like [{a: 10, b: 20}, {a: 11, b: 12}]. Works for parsed JSON.

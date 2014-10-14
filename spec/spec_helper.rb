@@ -1,4 +1,5 @@
 require 'rspec'
+require 'awesome_print'
 
 if RUBY_ENGINE == 'jruby'
   require 'mdarray'

@@ -135,5 +135,12 @@ describe Daru::DataFrame do
       expect(df[:image_resolution].first).to eq(6.55779)
       expect(df.column(:true_transform).first[15]).to eq(1.0)
     end
+
+    it "loads data from JSON" , :focus => true do
+      require 'json'
+      file = File.read 'spec/fixtures/countries.json'
+
+      df = Daru::DataFrame.new JSON.parse(file)
+    end
   end
 end if RUBY_ENGINE == 'ruby'

@@ -6,6 +6,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
+    awesome_print (1.2.0)
     diff-lcs (1.2.5)
     json (1.8.1)
     nmatrix (0.1.0.rc5)
@@ -29,6 +30,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  awesome_print
   bundler
   daru!
   nmatrix (~> 0.1.0.rc5)
