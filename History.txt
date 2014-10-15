@@ -19,3 +19,5 @@
 
 == 0.0.2.4
 * Initialize dataframe from an array which looks like [{a: 10, b: 20}, {a: 11, b: 12}]. Works for parsed JSON.
+* Over-riding vectors in DataFrame will still preserve order.
+* Any re-assignment of rows in #each_row will reflect in the DataFrame.

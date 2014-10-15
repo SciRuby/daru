@@ -52,3 +52,4 @@ Then switch to MRI, do a normal `bundle install` followed by `rspec` for testing
 * Vector arithmetic - elementwise addition, subtraction, multiplication, division.
 * Transpose a dataframe.
 * Option to express a DataFrame as an NMatrix or MDArray so as to use more efficient storage techniques.
+* Pretty printing for the command line.

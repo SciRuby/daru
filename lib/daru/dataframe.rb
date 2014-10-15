@@ -136,10 +136,12 @@ module Daru
 
     def each_row(&block)
       0.upto(@size-1) do |index|
-        yield row(index)
-      end
+        r = row(index)
+        yield r
 
-      self
+        @fields.each { |f| @vectors[f][index] = r[f] }
+        # TODO: Make this faaassst. Unbearably slow!
+      end
     end
 
     def each_row_with_index(&block)
@@ -171,12 +173,12 @@ module Daru
         size." if vector.size != self.size
 
       @vectors.merge({name => vector})
-      @fields << name
+      @fields << name unless @fields.include? name
     end
 
     def insert_row row
-      raise Exception, "Expected new row to same as the number of rows \ 
-        in the DataFrame" if row.size != @fields.size
+      raise Exception, "Expected new row.size equal to width of DataFrame" if 
+        row.size != @fields.size
 
       @fields.each_with_index do |field, index|
         @vectors[field] << row[index]

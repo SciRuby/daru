@@ -56,6 +56,16 @@ describe Daru::DataFrame do
       end
     end
 
+    it "modifies a row with each_row" do
+      @df.each_row do |row|
+        row[:a] = 666
+      end
+
+      expect(@df).to eq(Daru::DataFrame.new({a: [666,666,666], 
+        b: (50..52).daru_vector, b_bad: ['Jesse', 'Walter', 'Hank'].daru_vector}, 
+        [:b_bad, :a, :b], :muddler))
+    end
+
     it "filters rows" do
       res = @df.filter_rows(@df.name) { |row| row[:b] == 50 }
 
