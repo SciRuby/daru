@@ -17,6 +17,7 @@ module Daru
         create_empty_vectors_with fields
       elsif source.is_a? Array
         create_empty_vectors_with source[0].keys
+        
         source.each do |hash|
           self.insert_row hash.values
         end
@@ -80,7 +81,6 @@ module Daru
       @fields.each do |field|
         @vectors[field].delete index
       end
-      puts @vectors
     end
 
     def filter_rows name=self.name, &block
@@ -140,16 +140,17 @@ module Daru
         yield r
 
         @fields.each { |f| @vectors[f][index] = r[f] }
-        # TODO: Make this faaassst. Unbearably slow!
+        # TODO: Make this faaassst.
       end
     end
 
     def each_row_with_index(&block)
       0.upto(@size-1) do |index|
-        yield row(index), index
-      end
+        r = row(index)
+        yield r, index
 
-      self
+        @fields.each { |f| @vectors[f][index] = r[f] }
+      end
     end
 
     def each_vector(&block)
@@ -172,7 +173,8 @@ module Daru
       raise Exeception, "Expected vector size to be same as DataFrame\ 
         size." if vector.size != self.size
 
-      @vectors.merge({name => vector})
+      @vectors.merge!({name.to_sym => vector.dv(name.to_sym)})
+
       @fields << name unless @fields.include? name
     end
 
@@ -193,7 +195,7 @@ module Daru
       html = '<table>'
 
       html += '<tr>'
-      @fields.each { |f| html.concat('<td>' + f.to_s + '</td>') }
+      @fields.each { |f| html.concat('<th>' + f.to_s + '</th>') }
       html += '</tr>'
 
       self.each_row_with_index do |row, index|

@@ -88,7 +88,7 @@ module Daru
       Daru::Vector.new @vector.dup, @name
     end
 
-    def daru_vector
+    def daru_vector name=nil
       self
     end
 

@@ -77,10 +77,11 @@ describe Daru::DataFrame do
       expect(@df.fields).to eq([:b_bad, :a, :b])
     end
 
-    it "inserts a new vector" do
+    it "inserts a new vector" , :focus => true do
       @df.insert_vector :c, Daru::Vector.new([3,6,9])
 
       expect(@df.fields.include?(:c)).to be(true)
+      expect(@df.c.vector).to eq([3,6,9])
     end
 
     it "inserts a new row" do
@@ -151,6 +152,8 @@ describe Daru::DataFrame do
       file = File.read 'spec/fixtures/countries.json'
 
       df = Daru::DataFrame.new JSON.parse(file)
+      
+      expect(df[:name].is_a? Daru::Vector).to eq(true)
     end
   end
 end if RUBY_ENGINE == 'ruby'
