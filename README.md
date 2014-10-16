@@ -56,3 +56,4 @@ Then switch to MRI, do a normal `bundle install` followed by `rspec` for testing
 * Assignment of a column to a single number should set the entire column to that number.
 * == between daru_vector and string/number.
 * Multiple column assignment with []=
+* Creation of DataFrame from Array of Arrays.
