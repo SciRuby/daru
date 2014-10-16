@@ -6,7 +6,7 @@ module Daru
       @vector.each(&block)
     end
 
-    attr_accessor :name
+    attr_reader   :name
 
     attr_reader   :size
 
@@ -16,7 +16,7 @@ module Daru
       if source.is_a?(Hash)
         initialize source.values[0], source.keys[0]
       else
-        @name = name || SecureRandom.uuid
+        @name = name.to_sym || SecureRandom.uuid
 
         @vector = 
         case source
@@ -28,6 +28,10 @@ module Daru
 
         @size = @vector.size
       end
+    end
+
+    def name=(name)
+      @name = name.to_sym
     end
 
     def [](index)

@@ -53,3 +53,6 @@ Then switch to MRI, do a normal `bundle install` followed by `rspec` for testing
 * Transpose a dataframe.
 * Option to express a DataFrame as an NMatrix or MDArray so as to use more efficient storage techniques.
 * Pretty printing for the command line.
+* Assignment of a column to a single number should set the entire column to that number.
+* == between daru_vector and string/number.
+* Multiple column assignment with []=
