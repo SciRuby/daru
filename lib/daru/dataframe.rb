@@ -217,6 +217,20 @@ module Daru
       to_html
     end
 
+    def to_a
+      data = []
+
+      0.upto(@size - 1) do |index|
+        data << self.row(index)
+      end
+
+      data
+    end
+
+    def to_json *args
+      self.to_a.to_json
+    end
+
     def method_missing(name, *args)
       if md = name.match(/(.+)\=/)
         insert_vector name[/(.+)\=/].delete("="), args[0]
