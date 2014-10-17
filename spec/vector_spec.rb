@@ -51,13 +51,13 @@ describe Daru::Vector do
       expect(@dv[:yoda]).to eq(1)
     end
 
+    it "returns an element after passing a numeric index" , :focus => true do
+      expect(@dv[0]).to eq(1)
+    end
+
     it "returns a vector with given indices for multiple indices" do
       expect(@dv[:yoda, :anakin]).to eq(Daru::Vector.new(:yoga, [1,2], 
         [:yoda, :anakin]))
-    end
-
-    it "returns an element after passing a numeric index" do
-      expect(@dv[0]).to eq(1)
     end
   end
 end if RUBY_ENGINE == 'ruby'

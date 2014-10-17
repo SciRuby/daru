@@ -11,7 +11,7 @@ module Daru
     attr_reader :size
 
     def initialize name=SecureRandom.uuid, source=[], index=nil
-      @name = name.to_sym
+      @name = name.to_sym unless name.nil?
 
       @vector = 
       case source
@@ -39,22 +39,31 @@ module Daru
       @size = @vector.size
     end
 
-    def [](index)
-      if index.is_a?(Numeric)
-        
+    def [](index, *indexes)
+      if indexes.empty?
+        if @index.index_class != Integer and index.is_a?(Integer)
+          @vector[index]
+        else
+          @vector[@index[index]]
+        end
       else
-        @vector[@index[index]]
+        indexes.unshift index
+
+        Daru::Vector.new @name, indexes.map { |index| @vector[@index[index]] }, indexes
       end
     end
 
     # Two vectors are equal if the have the exact same index values corresponding
     # with the exact same elements.
     def == other
-      # @index == other.index and @size == other.size and
-      # self.all? do
-      #   self[el]
-      # end
-      # iterate over each element in this vector and the other vector and compare.
+      @index == other.index and @size == other.size and
+      @index.all? do |index|
+        self[index] == other[index]
+      end
+    end
+
+    def rename new_name
+      @name = new_name.to_sym
     end
   end
 end
