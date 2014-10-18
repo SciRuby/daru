@@ -13,6 +13,8 @@ module Daru
     attr_reader :index_class
 
     def initialize index
+      index = 0 if index.nil?
+      
       @relation_hash = {}
 
       index = Array.new(index) { |i| i} if index.is_a? Integer

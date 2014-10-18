@@ -28,7 +28,6 @@ module Daru
       else
         @index = index.to_index
       end
-
       # TODO: Will need work for NMatrix/MDArray
       if @index.size >= @vector.size
         (@index.size - @vector.size).times { @vector << nil }
@@ -65,5 +64,11 @@ module Daru
     def rename new_name
       @name = new_name.to_sym
     end
+
+    def daru_vector *name
+      self
+    end
+
+    alias_method :dv, :daru_vector
   end
 end
