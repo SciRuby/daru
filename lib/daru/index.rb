@@ -2,8 +2,9 @@ module Daru
   class Index
     include Enumerable
 
+    # needs to iterate over keys sorted by their values
     def each(&block)
-      @relation_hash.each_key(&block)  
+      @relation_hash.each_key(&block)
     end
 
     attr_reader :relation_hash
@@ -13,8 +14,9 @@ module Daru
     attr_reader :index_class
 
     def initialize index
+      @index = index
       index = 0 if index.nil?
-      
+
       @relation_hash = {}
 
       index = Array.new(index) { |i| i} if index.is_a? Integer
@@ -49,6 +51,10 @@ module Daru
 
     def to_index
       self
+    end
+
+    def dup
+      Daru::Index.new @index.dup
     end
   end
 end

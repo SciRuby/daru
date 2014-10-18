@@ -65,6 +65,10 @@ module Daru
       @name = new_name.to_sym
     end
 
+    def dup 
+      Daru::Vector.new @name, @vector.dup, @index.dup
+    end
+
     def daru_vector *name
       self
     end
