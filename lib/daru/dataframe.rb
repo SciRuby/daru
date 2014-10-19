@@ -44,8 +44,8 @@ module Daru
           index   = source.values[0].size if index.nil?
 
           if vectors.is_a?(Daru::Index) or index.is_a?(Daru::Index)
-            @vectors = vectors
-            @index   = index
+            @vectors = vectors.to_index
+            @index   = index.to_index
           else
             @vectors = Daru::Index.new (vectors + (source.keys - vectors)).uniq.map(&:to_sym)
             @index   = Daru::Index.new index     
@@ -54,8 +54,6 @@ module Daru
           @vectors.each do |name|
             @data << source[name].dv(name, @index).dup
           end
-
-          validate_labels_for source
         end
       end
 
@@ -68,10 +66,18 @@ module Daru
       vector names
     end
 
-    def vector *names
-      unless names[1]
-        @data[@vectors[names[0]]]
+    def vector names
+      return @data[@vectors[names[0]]] unless names[1]
+
+      new_vcs = {}
+
+      names.each do |name|
+        name = name.to_sym unless name.is_a?(Integer)
+
+        new_vcs[name] = @data[@vectors[name]]
       end
+
+      Daru::DataFrame.new new_vcs, new_vcs.keys, @index, @name
     end
 
     def has_vector? name
@@ -85,7 +91,7 @@ module Daru
     def == other
       @index == other.index and @size == other.size and 
       @vectors.each do |vector|
-        self[@vectors[vector]] == other[@vectors[vector]]
+        self[vector] == other[vector]
       end
     end
 
@@ -93,7 +99,7 @@ module Daru
       if md = name.match(/(.+)\=/)
         insert_vector name[/(.+)\=/].delete("="), args[0]
       elsif self.has_vector? name
-        vector name
+        self[name]
       else
         super(name, *args)
       end
@@ -106,16 +112,16 @@ module Daru
       end
     end
 
-    def validate_labels_for source
+    def validate_labels
       raise IndexError, "Expected equal number of vectors for number of Hash pairs" if 
-        @vectors.size != source.size
+        @vectors.size != @data.size
 
       raise IndexError, "Expected number of indexes same as number of rows" if
         @index.size != @data[0].size
     end
 
     def validate
-      
+      validate_labels
     end
   end
 end

@@ -2,7 +2,7 @@ require 'spec_helper.rb'
 
 describe Daru::DataFrame do
   context "#initialize" do
-    it "initializes an empty DataFrame", :focus => true do
+    it "initializes an empty DataFrame" do
       df = Daru::DataFrame.new({}, [:a, :b])
 
       expect(df.vectors).to eq(Daru::Index.new [:a, :b])
@@ -78,21 +78,23 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#[]" do
+  context "#[]", :focus => true do
     before :each do
       @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
         c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
     end
 
     it "returns a Vector" do
-      expect(@df[:a]).to eq([1,2,3,4,5].dv(:a))
+      expect(@df[:a]).to eq([1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five]))
     end
 
     it "returns a DataFrame" do
       temp = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, 
         [:a, :b], [:one, :two, :three, :four, :five])
 
-      expect(@df[:a, :b]).eq(temp)
+      puts @df[:a, :b]
+      
+      expect(@df[:a, :b]).to eq(temp)
     end
   end
 
@@ -106,5 +108,8 @@ describe Daru::DataFrame do
 
       expect(a).to eq(b)
     end
+  end
+
+  context "#insert_vector" do
   end
 end if RUBY_ENGINE == 'ruby'
