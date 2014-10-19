@@ -24,7 +24,7 @@ end
 
 class Hash
   def daru_vector index=nil
-    Daru::Vector.new self.keys[0], self.values[0], index
+    Daru::Vector.new self.values[0], self.keys[0], index
   end
 
   alias_method :dv, :daru_vector

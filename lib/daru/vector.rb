@@ -10,8 +10,13 @@ module Daru
     attr_reader :index
     attr_reader :size
 
-    def initialize name=SecureRandom.uuid, source=[], index=nil
-      @name = name.to_sym unless name.nil?
+    # Pass it name, source and index
+    def initialize *args
+      name   = args.shift
+      source = args.shift || []
+      index  = args.shift
+
+      @name  = name.to_sym if name
 
       @vector = 
       case source

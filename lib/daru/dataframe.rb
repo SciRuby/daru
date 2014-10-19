@@ -13,7 +13,6 @@ module Daru
       index   = args.shift
       @name   = args.shift || SecureRandom.uuid
 
-      raise ArgumentError, "Expected non-nil source" if source.nil?
       @data = []
 
       if source.empty?
@@ -25,16 +24,38 @@ module Daru
         case source
         when Array
           @vectors = Daru::Index.new (vectors + (source[0].keys - vectors)).uniq.map(&:to_sym)
-          @index   = Daru::Index.new source.size
+          if index.nil?
+            @index = Daru::Index.new source.size
+          else
+            @index = Daru::Index.new index
+          end
 
-          create_empty_vectors
+          @vectors.each do |name|
+            v = []
+
+            source.each do |hsh|
+              v << hsh[name]
+            end
+
+            @data << v.dv(name, @index)
+          end
         when Hash
-          @vectors = Daru::Index.new (vectors + (source.keys - vectors)).uniq.map(&:to_sym)
-          @index   = Daru::Index.new index
+          vectors = source.keys.sort      if vectors.nil?
+          index   = source.values[0].size if index.nil?
+
+          if vectors.is_a?(Daru::Index) or index.is_a?(Daru::Index)
+            @vectors = vectors
+            @index   = index
+          else
+            @vectors = Daru::Index.new (vectors + (source.keys - vectors)).uniq.map(&:to_sym)
+            @index   = Daru::Index.new index     
+          end
 
           @vectors.each do |name|
             @data << source[name].dv(name, @index).dup
           end
+
+          check_incomplete_labels_for source
         end
       end
 
@@ -91,5 +112,12 @@ module Daru
       end
     end
 
+    def check_incomplete_labels_for source
+      raise IndexError, "Expected equal number of vectors for number of Hash pairs" if 
+        @vectors.size != source.size
+
+      raise IndexError, "Expected number of indexes same as number of rows" if
+        @index.size != @data[0].size
+    end
   end
 end

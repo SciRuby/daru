@@ -35,9 +35,9 @@ describe Daru::DataFrame do
         {a: 4, b: 14}, {a: 5, b: 15}], [:b, :a], [:one, :two, :three, :four, :five])
 
       expect(df.index)  .to eq(Daru::Index.new [:one, :two, :three, :four, :five])
-      expect(df.vectors).to eq(Daru::Index.new [:a, :b])
+      expect(df.vectors).to eq(Daru::Index.new [:b, :a])
       expect(df.a.class).to eq(Daru::Vector)
-      expect(df.a)      .to eq([1,2,3,4,5].dv(:a)) 
+      expect(df.a)      .to eq([1,2,3,4,5].dv(:a,[:one, :two, :three, :four, :five])) 
     end
 
     it "accepts Index objects for row/col" do
@@ -46,8 +46,8 @@ describe Daru::DataFrame do
 
       df  = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, cols, rows)
 
-      expect(df.a)      .to eq(Daru::Vector.new([1,2,3,4,5]     , rows))
-      expect(df.a)      .to eq(Daru::Vector.new([11,12,13,14,15], rows))
+      expect(df.a)      .to eq(Daru::Vector.new(:a,  [1,2,3,4,5]     , rows))
+      expect(df.b)      .to eq(Daru::Vector.new(:b, [11,12,13,14,15], rows))
       expect(df.index)  .to eq(Daru::Index.new [:one, :two, :three, :four, :five])
       expect(df.vectors).to eq(Daru::Index.new [:a, :b])
     end

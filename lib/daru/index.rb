@@ -14,7 +14,6 @@ module Daru
     attr_reader :index_class
 
     def initialize index
-      @index = index
       index = 0 if index.nil?
 
       @relation_hash = {}
@@ -51,10 +50,6 @@ module Daru
 
     def to_index
       self
-    end
-
-    def dup
-      Daru::Index.new @index.dup
     end
   end
 end
