@@ -55,23 +55,17 @@ module Daru
             @data << source[name].dv(name, @index).dup
           end
 
-          check_incomplete_labels_for source
+          validate_labels_for source
         end
       end
 
       @size = @index.size
-      # i want to create a dataframe from a hash (k = name v = array, k = name, v = dv), 
-      # array of hashes, empty hash.
-      # 
-      # For each vector I need to have an index which contains the column names
-      # mapped against their order of appearance.
-      # For each row I need to have an index.
-      # 
-      # The vectors will be duplicated before they are stored inside the dataframe
+
+      validate
     end
 
     def [](*names)
-      vector names.flatten
+      vector names
     end
 
     def vector *names
@@ -112,12 +106,16 @@ module Daru
       end
     end
 
-    def check_incomplete_labels_for source
+    def validate_labels_for source
       raise IndexError, "Expected equal number of vectors for number of Hash pairs" if 
         @vectors.size != source.size
 
       raise IndexError, "Expected number of indexes same as number of rows" if
         @index.size != @data[0].size
+    end
+
+    def validate
+      
     end
   end
 end
