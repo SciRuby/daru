@@ -33,9 +33,7 @@ Then switch to MRI, do a normal `bundle install` followed by `rspec` for testing
 
 * Automate testing for both MRI and JRuby.
 * Enable creation of DataFrame by only specifying an NMatrix/MDArray in initialize. Vector naming happens automatically (alphabetic) or is specified in an Array.
-* Add support for missing values in vectors.
 * Destructive version #filter\_rows!
-* NMatrix.first should return NMatrix (in vector).
 * Completely test all functionality for NMatrix and MDArray.
 * Basic Data manipulation and analysis operations: 
     - Different kinds of join operations
@@ -44,11 +42,9 @@ Then switch to MRI, do a normal `bundle install` followed by `rspec` for testing
     - Verification of data in a vector
     - Basic vector statistics - mean, median, variance, etc.
 * Add indexing on vectors.
-    - Creation of vector by supplying an index-value hash.
-    - Auto generation of real numbered indices for any vector.
-    - Ability to separately specify index for each element of a vector.
     - Runtime alteration of index.
 * Indexing on DataFrame.
+    - Creation of DataFrame from vectors of different indexes by inserting nils into places with missing index.
 * Vector arithmetic - elementwise addition, subtraction, multiplication, division.
 * Transpose a dataframe.
 * Option to express a DataFrame as an NMatrix or MDArray so as to use more efficient storage techniques.

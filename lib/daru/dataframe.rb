@@ -120,8 +120,25 @@ module Daru
         @index.size != @data[0].size
     end
 
+    def validate_vector_sizes
+      @data.each do |vector|
+        raise IndexError, "Expected vectors with equal length" if vector.size != @size
+      end
+    end
+
+    def validate_vector_indexes
+      @data.each do |vector|
+        raise NotImplementedError, "Expected matching indexes in all vectors. DataFrame with mismatched indexes not implemented yet." unless 
+          vector.index == @index 
+      end
+    end
+
     def validate
+      # TODO: [IMP] when vectors of different dimensions are specified, they should
+      # be inserted into the dataframe by inserting nils wherever necessary.
       validate_labels
+      validate_vector_indexes 
+      validate_vector_sizes
     end
   end
 end

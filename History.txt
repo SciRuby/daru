@@ -22,3 +22,6 @@
 * Over-riding vectors in DataFrame will still preserve order.
 * Any re-assignment of rows in #each_row and #each_row_with_index will reflect in the DataFrame.
 * Added #to_a and #to_json to DataFrame.
+
+== 0.0.3
+* This release is a complete rewrite of the entire gem to accomodate index values.
