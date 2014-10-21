@@ -23,6 +23,8 @@ daru employs several data structures for storing and manipulating data:
 
 daru data structures can be constructed by using several Ruby classes. These include `Array`, `Hash`, `Matrix`, [NMatrix](https://github.com/SciRuby/nmatrix) and [MDArray](https://github.com/rbotafogo/mdarray). daru brings a uniform API for handling and manipulating data represented in any of the above Ruby classes.
 
+Currently things work as expected for Arrays only. Rest will added over the next few weeks.
+
 ## Testing
 
 Install jruby using `rvm install jruby`, then run `jruby -S gem install mdarray`, followed by `bundle install`. You will need to install `mdarray` manually because of strange gemspec file behaviour. If anyone can automate this then I'd greatly appreciate it! Then run `rspec` in JRuby to test for MDArray functionality.
@@ -42,7 +44,7 @@ Then switch to MRI, do a normal `bundle install` followed by `rspec` for testing
     - Verification of data in a vector
     - Basic vector statistics - mean, median, variance, etc.
 * Add indexing on vectors.
-    - Runtime alteration of index.
+    - Reindex function.
 * Indexing on DataFrame.
     - Creation of DataFrame from vectors of different indexes by inserting nils into places with missing index.
 * Vector arithmetic - elementwise addition, subtraction, multiplication, division.

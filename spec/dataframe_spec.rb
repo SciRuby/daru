@@ -61,7 +61,9 @@ describe Daru::DataFrame do
     end
 
     it "initializes from Vectors by correct index" do
-      pending "Implement creation of DataFrame from unequal vectors by inserting nils into resulting DataFrame"
+      pending "Implement creation of DataFrame from unequal vectors by \
+        inserting nils into resulting DataFrame"
+
     end
 
     it "completes incomplete vectors" do
@@ -99,8 +101,6 @@ describe Daru::DataFrame do
     it "returns a DataFrame" do
       temp = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, 
         [:a, :b], [:one, :two, :three, :four, :five])
-
-      puts @df[:a, :b]
 
       expect(@df[:a, :b]).to eq(temp)
     end
@@ -156,16 +156,42 @@ describe Daru::DataFrame do
       # TODO: Remove this. Must work for mismatched indexes.
     end    
 
-    it "inserts vector of same length as DataFrame but of different index" do
+    it "inserts vector of same length as DataFrame but of mangled index" do
       pending "Implement after adding constructor for DataFrame from vectors with \ 
         unequal index."
+
+      # Rudimentary example. Yet to think this out.
+      @df[:shankar] = [69,99,108,85,49].dv(:shankar, [:two, :one, :three, :five, :four])
+
+      expect(@df.shankar).to eq([99,69,108,49,85].dv(:shankar, 
+        [:one, :two, :three, :four, :five]))
     end
 
     it "appends multiple vectors at a time" do
+      pending "Implement after initialize with array of arrays is done with."
+
+      # Rudimentary example. Yet to think this out.
+
       @df[:woo, :boo] = [[69,99,108,85,49].dv(nil, [:one, :two, :three, :four, :five]), 
                          [69,99,108,85,49].dv(nil, [:one, :two, :three, :four, :five])]
-
-      pending "Implement after basic stuff is done with."
     end
+  end
+
+  context "#each_vector" do
+  end
+
+  context "#each_vector_with_index" do
+  end
+
+  context "#each_row" do
+  end
+
+  context "#each_row_with_index" do
+  end
+
+  context "#index=" do
+  end
+
+  context "#index" do
   end
 end if RUBY_ENGINE == 'ruby'

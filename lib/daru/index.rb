@@ -2,7 +2,8 @@ module Daru
   class Index
     include Enumerable
 
-    # needs to iterate over keys sorted by their values
+    # needs to iterate over keys sorted by their values. Happens right now by 
+    # virtue of ordered Hashes (ruby).
     def each(&block)
       @relation_hash.each_key(&block)
     end
@@ -46,6 +47,24 @@ module Daru
 
     def [](key)
       @relation_hash[key]
+    end
+
+    def +(other)
+      if other.respond_to? :relation_hash #another index object
+        (@relation_hash.keys + other.relation_hash.keys).uniq.to_index
+      elsif other.is_a?(Symbol)
+        (@relation_hash.keys << other).to_index
+      else
+        (@relation_hash.keys + other).uniq.to_index
+      end
+    end
+
+    def re_index new_index
+      new_index.to_index
+    end
+
+    def include? index
+      @relation_hash.keys.include? index
     end
 
     def to_index

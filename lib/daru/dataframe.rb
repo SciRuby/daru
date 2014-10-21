@@ -66,6 +66,18 @@ module Daru
       vector names
     end
 
+    def []=(name, vector)
+      # Expect an array of one or more vector names.
+      # There will be an equal number of names as there are vectors.
+      # Will need to reindex the vectors index. 
+      # No need to reindex the rows index for now. Later, insertions will be
+      # aligned according to row index of the DataFrame wrt to the new vector(s).
+      @vectors = @vectors.re_index(@vectors + name)
+
+      self.insert_vector vector, name
+      
+    end
+
     def vector names
       return @data[@vectors[names[0]]] unless names[1]
 
@@ -84,8 +96,18 @@ module Daru
       !!@vectors[name]
     end
 
-    def insert_vector vector, name=nil
-      
+    def insert_vector vector, name
+      if @vectors.include? name
+        # If a daru vector is passed with predefined indexes, nothing will happen.
+        # Otherwise an index exactly like the DataFrame will be assigned to the vector.
+        validate_vector_indexes vector if vector.is_a?(Daru::Vector)
+
+        v = vector.dv(name, @index)
+
+        @data[@vectors[name]] = vector.dv(name, @index)
+      else
+        raise Exception, "Vectors dont include specified name"
+      end
     end
 
     def == other
@@ -126,10 +148,15 @@ module Daru
       end
     end
 
-    def validate_vector_indexes
-      @data.each do |vector|
-        raise NotImplementedError, "Expected matching indexes in all vectors. DataFrame with mismatched indexes not implemented yet." unless 
-          vector.index == @index 
+    def validate_vector_indexes single_vector=nil
+      if single_vector.nil?
+        @data.each do |vector|
+          raise NotImplementedError, "Expected matching indexes in all vectors. DataFrame with mismatched indexes not implemented yet." unless 
+            vector.index == @index 
+        end
+      else
+        raise IndexError, "Expected same index as DataFrame" unless 
+          single_vector.index == @index
       end
     end
 
