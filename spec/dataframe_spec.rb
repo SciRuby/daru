@@ -178,20 +178,123 @@ describe Daru::DataFrame do
   end
 
   context "#each_vector" do
+    it "iterates over all vectors" do
+      df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
+        c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
+
+      ret = df.each_vector do |vector|
+        expect(vector.index).to eq([:one, :two, :three, :four, :five].to_index)
+        expect(vector.class).to eq(Daru::Vector) 
+      end
+
+      expect(ret).to eq(df)
+    end
   end
 
   context "#each_vector_with_index" do
+    it "iterates over vectors with index" do
+      df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
+        c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
+
+      idxs = []
+      ret = df.each_vector_with_index do |vector, index|
+        idxs << index
+        expect(vector.index).to eq([:one, :two, :three, :four, :five].to_index)
+        expect(vector.class).to eq(Daru::Vector) 
+      end
+
+      expect(idxs).to eq([:a, :b, :c])
+
+      expect(ret).to eq(df)
+    end
   end
 
   context "#each_row" do
+    it "iterates over rows" do
+      df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
+        c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
+
+      ret = df.each_row do |row|
+        expect(row.index).to eq([:a, :b, :c].to_index)
+        expect(row.class).to eq(Daru::Vector)
+      end
+
+      expect(ret).to eq(df)
+    end
   end
 
   context "#each_row_with_index" do
-  end
+    it "iterates over rows with indexes" do
+      df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
+        c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
 
-  context "#index=" do
+      idxs = []
+      ret = df.each_row do |row, idx|
+        idxs << idx
+        expect(row.index).to eq([:a, :b, :c].to_index)
+        expect(row.class).to eq(Daru::Vector)
+      end
+
+      expect(idxs).to eq([:one, :two, :three, :four, :five])
+      expect(ret) .to eq(df)
+    end
   end
 
   context "#index" do
+    it "returns a row with the given index" do
+      df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
+        c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
+
+      expect(df.index(:one)).to eq([11,1,11].dv(:one, [:a, :b, :c]))
+    end
+  end
+
+  context "#index=" do
+    before :each do
+      @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
+        c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
+    end
+
+    it "creates an index for assignment if not already specified" do
+      @df.index(:one) = [49, 99, 59]
+
+      expect(@df.index(:one))      .to eq([49, 99, 59].dv(:one, [:a, :b, :c]))
+      expect(@df.index(:one).index).to eq([:a, :b, :c].to_index)
+      expect(@df.index(:one).name) .to eq(:one)
+    end
+
+    it "assigns specified row when DV" do
+      @df.index(:one) = [49, 99, 59].dv(nil, [:a, :b, :c])
+
+      expect(@df.index(:one)).to eq([49, 99, 59].dv(:one, [:a, :b, :c]))
+    end
+
+    it "raises error for DV assignment with wrong index" do
+      expect {
+        @df.index(:two) = [49, 99, 59].dv(nil, [:oo, :aah, :gaah])
+      }.to raise_error
+    end
+
+    it "raises error for assignment with wrong size" do
+      expect {
+        @df.index(:three) = [99, 59].dv(nil, [:aah, :gaah])
+      }.to raise_error
+    end
+
+    it "correctly aligns assigned DV by index" do
+      pending "Do this once the misalign initialize is done."
+    end
+  end
+
+  context "#map_rows" do
+  end
+
+  context "#map_rows_with_index" do
+  end
+
+  context "#map_vectors" do
+  end
+
+  context "#map_vectors_with_index" do
   end
 end if RUBY_ENGINE == 'ruby'
