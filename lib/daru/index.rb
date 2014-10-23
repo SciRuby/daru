@@ -64,7 +64,7 @@ module Daru
     end
 
     def include? index
-      @relation_hash.keys.include? index
+      @relation_hash.has_key? index
     end
 
     def to_index

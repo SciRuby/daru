@@ -62,34 +62,50 @@ module Daru
       validate
     end
 
-    def [](*names)
-      vector names
+    def [](*names, axis)
+      if axis == :vector
+        access_vector names
+      elsif axis == :row
+        # Return DataFrame if more than one name
+        access_row names
+      else
+        raise IndexError, "Expected axis to be row or vector not #{axis}"
+      end
     end
 
-    def []=(name, vector)
-      # Expect an array of one or more vector names.
-      # There will be an equal number of names as there are vectors.
-      # Will need to reindex the vectors index. 
-      # No need to reindex the rows index for now. Later, insertions will be
-      # aligned according to row index of the DataFrame wrt to the new vector(s).
-      @vectors = @vectors.re_index(@vectors + name)
+    def []=(name, axis ,vector)
+      if axis == :vector
+        @vectors = @vectors.re_index(@vectors + name)
 
-      self.insert_vector vector, name
+        self.insert_vector name, vector
+      elsif axis == :row
+      else
+        raise IndexError, "Expected axis to be row or vector, not #{axis}."
+      end
+    end
+
+    def vector
       
     end
 
-    def vector names
-      return @data[@vectors[names[0]]] unless names[1]
+    def row
+      
+    end
 
-      new_vcs = {}
+    def each_vector
+      
+    end
 
-      names.each do |name|
-        name = name.to_sym unless name.is_a?(Integer)
+    def each_vector_with_index
+      
+    end
 
-        new_vcs[name] = @data[@vectors[name]]
-      end
+    def each_row
+      
+    end
 
-      Daru::DataFrame.new new_vcs, new_vcs.keys, @index, @name
+    def each_row_with_index
+      
     end
 
     def has_vector? name
@@ -98,8 +114,6 @@ module Daru
 
     def insert_vector vector, name
       if @vectors.include? name
-        # If a daru vector is passed with predefined indexes, nothing will happen.
-        # Otherwise an index exactly like the DataFrame will be assigned to the vector.
         validate_vector_indexes vector if vector.is_a?(Daru::Vector)
 
         v = vector.dv(name, @index)
@@ -113,7 +127,7 @@ module Daru
     def == other
       @index == other.index and @size == other.size and 
       @vectors.each do |vector|
-        self[vector] == other[vector]
+        self[vector, :vector] == other[vector, :vector]
       end
     end
 
@@ -121,12 +135,40 @@ module Daru
       if md = name.match(/(.+)\=/)
         insert_vector name[/(.+)\=/].delete("="), args[0]
       elsif self.has_vector? name
-        self[name]
+        self[name, :vector]
       else
         super(name, *args)
       end
     end
-   private 
+
+   private
+
+    def access_vector names
+      return @data[@vectors[names[0]]] unless names[1]
+
+      new_vcs = {}
+
+      names.each do |name|
+        name = name.to_sym unless name.is_a?(Integer)
+
+        new_vcs[name] = @data[@vectors[name]]
+      end
+
+      Daru::DataFrame.new new_vcs, new_vcs.keys, @index, @name
+    end
+
+    def access_row names
+      unless names[1]
+        row = []
+
+        @vectors.each do |vector|
+          row << @data[@vectors[vector]][names[0]]
+        end
+
+        Daru::Vector.new names[0], row, @vectors
+      else
+      end
+    end
 
     def create_empty_vectors
       @vectors.each do |name|
