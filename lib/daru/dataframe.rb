@@ -70,7 +70,6 @@ module Daru
       if axis == :vector
         access_vector names
       elsif axis == :row
-        # Return DataFrame if more than one name
         access_row names
       else
         raise IndexError, "Expected axis to be row or vector not #{axis}"
@@ -116,7 +115,7 @@ module Daru
       !!@vectors[name]
     end
 
-    def insert_vector vector, name
+    def insert_vector name, vector
       if @vectors.include? name
         validate_vector_indexes vector if vector.is_a?(Daru::Vector)
 
@@ -148,7 +147,13 @@ module Daru
    private
 
     def access_vector names
-      return @data[@vectors[names[0]]] unless names[1]
+      unless names[1]
+        if @vectors.index_class != Integer and names[0].is_a?(Integer)
+          return @data[names[0]]
+        else
+          return @data[@vectors[names[0]]]
+        end
+      end
 
       new_vcs = {}
 
@@ -169,7 +174,13 @@ module Daru
           row << @data[@vectors[vector]][names[0]]
         end
 
-        Daru::Vector.new names[0], row, @vectors
+        if @vectors.index_class != Integer and names[0].is_a?(Integer)
+          name = @index.key names[0]
+        else
+          name = names[0]
+        end
+
+        Daru::Vector.new name, row, @vectors
       else
       end
     end

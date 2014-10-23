@@ -59,6 +59,10 @@ module Daru
       end
     end
 
+    def key(value)
+      @relation_hash.key value
+    end
+
     def re_index new_index
       new_index.to_index
     end

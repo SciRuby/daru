@@ -60,4 +60,22 @@ describe Daru::Vector do
         [:yoda, :anakin]))
     end
   end
+
+  context "#[]=" do
+    before :each do
+      @dv = Daru::Vector.new :yoga, [1,2,3,4,5], [:yoda, :anakin, :obi, :padme, :r2d2]
+    end
+
+    it "assigns at the specified index" do
+      @dv[:yoda] = 666
+
+      expect(@dv[:yoda]).to eq(666)
+    end
+
+    it "assigns at the specified Integer index" do
+      @dv[0] = 666
+
+      expect(@dv[:yoda]).to eq(666)
+    end
+  end
 end if RUBY_ENGINE == 'ruby'

@@ -217,8 +217,16 @@ describe Daru::DataFrame do
       }.to raise_error
     end
 
+    it "returns a DataFrame when mutiple indexes specified" do
+      pending "Next release"
+
+      raise
+    end
+
     it "correctly aligns assigned DV by index" do
       pending "Do this once the misalign initialize is done."
+
+      raise
     end
   end
 
