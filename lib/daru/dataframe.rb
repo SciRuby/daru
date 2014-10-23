@@ -1,3 +1,7 @@
+require_relative 'dataframe_by_row.rb'
+require_relative 'dataframe_by_vector.rb'
+
+
 module Daru
   class DataFrame
 
@@ -85,11 +89,11 @@ module Daru
     end
 
     def vector
-      
+      Daru::DataFrameByVector.new(self)
     end
 
     def row
-      
+      Daru::DataFrameByRow.new(self)
     end
 
     def each_vector
