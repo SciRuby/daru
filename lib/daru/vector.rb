@@ -45,7 +45,7 @@ module Daru
 
     def [](index, *indexes)
       if indexes.empty?
-        if @index.index_class != Integer and index.is_a?(Integer)
+        if access_as_int? index
           @vector[index]
         else
           @vector[@index[index]]
@@ -57,8 +57,16 @@ module Daru
       end
     end
 
+    def []=(index, value)
+      if access_as_int? index
+        @vector[index] = value
+      else
+        @vector[@index[index]] = value
+      end
+    end
+
     # Two vectors are equal if the have the exact same index values corresponding
-    # with the exact same elements.
+    # with the exact same elements. Name is ignored.
     def == other
       @index == other.index and @size == other.size and
       @index.all? do |index|
@@ -79,5 +87,11 @@ module Daru
     end
 
     alias_method :dv, :daru_vector
+
+   private
+
+    def access_as_int? index
+      @index.index_class != Integer and index.is_a?(Integer)
+    end
   end
 end

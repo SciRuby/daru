@@ -205,6 +205,18 @@ describe Daru::DataFrame do
       expect(@df[:one, :row]).to eq([49, 99, 59].dv(:one, [:a, :b, :c]))
     end
 
+    it "creates a new row from an Array" do
+      @df.row[:patekar] = [9,2,11]
+
+      expect(@df[:patekar, :row]).to eq([9,2,11].dv(:patekar, [:a, :b, :c]))
+    end
+
+    it "creates a new row from a DV" do
+      @df.row[:patekar] = [9,2,11].dv(nil, [:a, :b, :c])
+
+      expect(@df[:patekar, :row]).to eq([9,2,11].dv(:patekar, [:a, :b, :c]))
+    end
+
     it "raises error for DV assignment with wrong index" do
       expect {
         @df[:two, :row] = [49, 99, 59].dv(nil, [:oo, :aah, :gaah])
