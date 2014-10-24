@@ -82,6 +82,9 @@ module Daru
 
         self.insert_vector name, vector
       elsif axis == :row
+        @index = @index.re_index(@index + name)
+
+        self.insert_row name, vector
       else
         raise IndexError, "Expected axis to be row or vector, not #{axis}."
       end
@@ -123,7 +126,21 @@ module Daru
 
         @data[@vectors[name]] = vector.dv(name, @index)
       else
-        raise Exception, "Vectors dont include specified name"
+        raise Exception, "Vector named #{name} not found in Index."
+      end
+    end
+
+    def insert_row name, vector
+      if @index.include? name
+        validate_vector_indexes vector, @vectors if vector.is_a?(Daru::Vector)
+
+        v = vector.dv(name, @vectors)
+
+        @vectors.each do |name|
+          @data[@vectors[name]] << v[name]
+        end
+      else
+        raise Exception, "Vectors with name #{name} not found in vector index."
       end
     end
 
@@ -205,15 +222,17 @@ module Daru
       end
     end
 
-    def validate_vector_indexes single_vector=nil
+    def validate_vector_indexes single_vector=nil, index=nil
+      index = @index if index.nil?
+
       if single_vector.nil?
         @data.each do |vector|
           raise NotImplementedError, "Expected matching indexes in all vectors. DataFrame with mismatched indexes not implemented yet." unless 
-            vector.index == @index 
+            vector.index == index 
         end
       else
         raise IndexError, "Expected same index as DataFrame" unless 
-          single_vector.index == @index
+          single_vector.index == index
       end
     end
 

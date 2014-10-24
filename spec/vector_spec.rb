@@ -78,4 +78,34 @@ describe Daru::Vector do
       expect(@dv[:yoda]).to eq(666)
     end
   end
+
+  context "#concat" do
+    before :each do
+      @dv = Daru::Vector.new :yoga, [1,2,3,4,5], [:warwick, :thompson, :jackson, :fender, :esp]
+    end
+
+    it "concatenates a new element at the end of vector with index" do
+      @dv.concat 6, :ibanez
+
+      expect(@dv.index)   .to eq(
+        [:warwick, :thompson, :jackson, :fender, :esp, :ibanez].to_index)
+      expect(@dv[:ibanez]).to eq(6)
+      expect(@dv[5])      .to eq(6)
+    end
+
+    it "concatenates without index if index is default numeric" do
+      vector = Daru::Vector.new :nums, [1,2,3,4,5]
+
+      vector.concat 6
+
+      expect(vector.index).to eq([0,1,2,3,4,5].to_index)
+      expect(vector[5])   .to eq(6)
+    end
+
+    it "raises error if index not specified and non-numeric index" do
+      expect {
+        @dv.concat 6
+      }.to raise_error
+    end
+  end
 end if RUBY_ENGINE == 'ruby'

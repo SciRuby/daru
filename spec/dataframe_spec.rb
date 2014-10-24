@@ -161,7 +161,7 @@ describe Daru::DataFrame do
         @df[:woo, :vector] = [69,99,108,85,49].dv
       }.to raise_error
 
-      # TODO: Remove this. Must work for mismatched indexes.
+      # TODO: Remove this. Must work for mismatched indexes(?).
     end    
 
     it "inserts vector of same length as DataFrame but of mangled index" do
@@ -191,7 +191,7 @@ describe Daru::DataFrame do
         c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
     end
 
-    it "creates an index for assignment if not already specified" do
+    it "assigns specified row when Array" do
       @df[:one, :row] = [49, 99, 59]
 
       expect(@df[:one, :row])      .to eq([49, 99, 59].dv(:one, [:a, :b, :c]))
