@@ -18,14 +18,22 @@ describe Daru::Index do
   end
 
   context "#re_index" do
+    before :each do
+      @old = Daru::Index.new [:bob, :fisher, :zakir]
+    end
     it "returns a new index object" do
-      old = Daru::Index.new [:bob, :fisher, :zakir]
+      n   = @old.re_index(@old + [:john, :shrinivas]) 
 
-      n   = old.re_index(old + [:john, :shrinivas]) 
-
-      expect(n.object_id).not_to eq(old.object_id)
+      expect(n.object_id).not_to eq(@old.object_id)
       expect(n.relation_hash).to eq({bob: 0 , fisher: 1, zakir: 2, john: 3, 
         shrinivas: 4})
+    end
+
+    it "does not over-ride existing indexes" do
+      n = @old.re_index(@old + :bob)
+
+      expect(n.object_id).not_to eq(@old.object_id)
+      expect(n.relation_hash).to eq({bob: 0 , fisher: 1, zakir: 2})
     end
   end
 

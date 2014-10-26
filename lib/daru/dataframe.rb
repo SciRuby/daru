@@ -80,11 +80,9 @@ module Daru
       if axis == :vector
         @vectors = @vectors.re_index(@vectors + name)
 
-        self.insert_vector name, vector
-      elsif axis == :row
-        @index = @index.re_index(@index + name)
-
-        self.insert_row name, vector
+        insert_vector name, vector
+      elsif axis == :row        
+        insert_or_modify_row name, vector
       else
         raise IndexError, "Expected axis to be row or vector, not #{axis}."
       end
@@ -127,20 +125,6 @@ module Daru
         @data[@vectors[name]] = vector.dv(name, @index)
       else
         raise Exception, "Vector named #{name} not found in Index."
-      end
-    end
-
-    def insert_row name, vector
-      if @index.include? name
-        validate_vector_indexes vector, @vectors if vector.is_a?(Daru::Vector)
-
-        v = vector.dv(name, @vectors)
-
-        @vectors.each do |name|
-          @data[@vectors[name]] << v[name]
-        end
-      else
-        raise Exception, "Vectors with name #{name} not found in vector index."
       end
     end
 
@@ -199,6 +183,28 @@ module Daru
 
         Daru::Vector.new name, row, @vectors
       else
+      end
+    end
+
+    def insert_or_modify_row name, vector      
+      if @index.include? name
+        validate_vector_indexes vector, @vectors if vector.is_a?(Daru::Vector)
+
+        v = vector.dv(name, @vectors)
+
+        @vectors.each do |vector|
+          @data[@vectors[vector]][name] = v[vector]
+        end
+      else
+        @index = @index.re_index(@index + name)
+
+        validate_vector_indexes vector, @vectors if vector.is_a?(Daru::Vector)
+
+        v = vector.dv(name, @vectors)
+
+        @vectors.each do |vector|
+          @data[@vectors[vector]].concat v[vector], name
+        end
       end
     end
 

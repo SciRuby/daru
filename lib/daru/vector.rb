@@ -74,6 +74,29 @@ module Daru
       end
     end
 
+    def << element
+      concat element
+    end
+
+    def concat element, index=nil
+      raise IndexError, "Expected new unique index" if @index.include? index
+
+      if index.nil? and @index.index_class == Integer
+        @index = Daru::Index.new @size+1
+        index  = @size
+      else
+        begin
+          @index = @index.re_index(@index + index)
+        rescue Exception => e
+          raise e, "Expected valid index."
+        end
+      end
+
+      @size += 1
+
+      @vector[@index[index]] = element
+    end
+
     def rename new_name
       @name = new_name.to_sym
     end

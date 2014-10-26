@@ -19,13 +19,12 @@ module Daru
     attr_reader :index_class
 
     def initialize index
-      index = 0 if index.nil?
-
       @relation_hash = {}
 
+      index = 0                         if index.nil?
       index = Array.new(index) { |i| i} if index.is_a? Integer
 
-      index.each.with_index do |n, idx|
+      index.each_with_index do |n, idx|
         n = n.to_sym unless n.is_a?(Integer)
 
         @relation_hash[n] = idx 
@@ -57,7 +56,7 @@ module Daru
       if other.respond_to? :relation_hash #another index object
         (@relation_hash.keys + other.relation_hash.keys).uniq.to_index
       elsif other.is_a?(Symbol)
-        (@relation_hash.keys << other).to_index
+        (@relation_hash.keys << other).uniq.to_index
       else
         (@relation_hash.keys + other).uniq.to_index
       end

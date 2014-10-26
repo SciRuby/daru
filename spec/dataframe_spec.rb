@@ -192,7 +192,7 @@ describe Daru::DataFrame do
     end
 
     it "assigns specified row when Array" do
-      @df[:one, :row] = [49, 99, 59]
+      @df.row[:one] = [49, 99, 59]
 
       expect(@df[:one, :row])      .to eq([49, 99, 59].dv(:one, [:a, :b, :c]))
       expect(@df[:one, :row].index).to eq([:a, :b, :c].to_index)
