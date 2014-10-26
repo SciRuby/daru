@@ -1,6 +1,11 @@
 require 'spec_helper.rb'
 
 describe Daru::DataFrame do
+  before :each do
+    @data_frame = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
+      c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
+  end
+
   context "#initialize" do
     it "initializes an empty DataFrame" do
       df = Daru::DataFrame.new({}, [:a, :b])
@@ -284,25 +289,19 @@ describe Daru::DataFrame do
 
   context "#each_vector" do
     it "iterates over all vectors" do
-      df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
-        c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
-
-      ret = df.each_vector do |vector|
+      ret = @data_frame.each_vector do |vector|
         expect(vector.index).to eq([:one, :two, :three, :four, :five].to_index)
         expect(vector.class).to eq(Daru::Vector) 
       end
 
-      expect(ret).to eq(df)
+      expect(ret).to eq(@data_frame)
     end
   end
 
   context "#each_vector_with_index" do
     it "iterates over vectors with index" do
-      df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
-        c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
-
       idxs = []
-      ret = df.each_vector_with_index do |vector, index|
+      ret = @data_frame.each_vector_with_index do |vector, index|
         idxs << index
         expect(vector.index).to eq([:one, :two, :three, :four, :five].to_index)
         expect(vector.class).to eq(Daru::Vector) 
@@ -310,50 +309,93 @@ describe Daru::DataFrame do
 
       expect(idxs).to eq([:a, :b, :c])
 
-      expect(ret).to eq(df)
+      expect(ret).to eq(@data_frame)
     end
   end
 
   context "#each_row" do
     it "iterates over rows" do
-      df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
-        c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
-
-      ret = df.each_row do |row|
+      ret = @data_frame.each_row do |row|
         expect(row.index).to eq([:a, :b, :c].to_index)
         expect(row.class).to eq(Daru::Vector)
       end
 
-      expect(ret).to eq(df)
+      expect(ret).to eq(@data_frame)
     end
   end
 
   context "#each_row_with_index" do
     it "iterates over rows with indexes" do
-      df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
-        c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
-
       idxs = []
-      ret = df.each_row_with_index do |row, idx|
+      ret = @data_frame.each_row_with_index do |row, idx|
         idxs << idx
         expect(row.index).to eq([:a, :b, :c].to_index)
         expect(row.class).to eq(Daru::Vector)
       end
 
       expect(idxs).to eq([:one, :two, :three, :four, :five])
-      expect(ret) .to eq(df)
+      expect(ret) .to eq(@data_frame)
+    end
+  end
+
+  context "#map_vectors" do
+    it "iterates over vectors and returns a modified DataFrame" do
+      ans = Daru::DataFrame.new({b: [21,22,23,24,25], a: [10,20,30,40,50], 
+      c: [21,32,43,54,65]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
+
+      ret = @data_frame.map_vectors do |vector|
+        vector.map! { |e| e += 10}
+      end
+
+      expect(ret).to     eq(ans)
+      expect(ret).not_to eq(@data_frame)
+    end
+  end
+
+  context "#map_vectors_with_index" do
+    it "iterates over vectors with index and returns a modified DataFrame" do
+      ans = Daru::DataFrame.new({b: [21,22,23,24,25], a: [10,20,30,40,50], 
+      c: [21,32,43,54,65]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
+
+      idx = []
+      ret = @data_frame.map_vectors_with_index do |vector, index|
+        idx << index
+        vector.map! { |e| e += 10}
+      end
+
+      expect(ret).to eq(ans)
+      expect(idx).to eq([:a, :b, :c])
     end
   end
 
   context "#map_rows" do
+    it "iterates over rows and returns a modified DataFrame" do
+      ans = Daru::DataFrame.new({b: [121, 144, 169, 196, 225], a: [1,4,9,16,25], 
+        c: [121, 484, 1089, 1936, 3025]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
+
+      ret = @data_frame.map_rows do |row|
+        expect(row.class).to eq(Daru::Vector)
+        row.map! { |e| e*e }
+      end
+
+      expect(ret).to eq(ans)
+    end
   end
 
   context "#map_rows_with_index" do
-  end
+    it "iterates over rows with index and returns a modified DataFrame" do
+      ans = Daru::DataFrame.new({b: [121, 144, 169, 196, 225], a: [1,4,9,16,25], 
+        c: [121, 484, 1089, 1936, 3025]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
 
-  context "#map_vectors" do
-  end
+      idx = []
+      ret = @data_frame.map_rows_with_index do |row, index|
+        idx << index
+        expect(row.class).to eq(Daru::Vector)
+        row.map! { |e| e*e }
+      end
 
-  context "#map_vectors_with_index" do
+      expect(ret).to eq(ans)
+      expect(idx).to eq([:one, :two, :three, :four, :five])
+    end
   end
 end if RUBY_ENGINE == 'ruby'
