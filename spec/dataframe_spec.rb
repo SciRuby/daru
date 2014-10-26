@@ -334,7 +334,7 @@ describe Daru::DataFrame do
         c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
 
       idxs = []
-      ret = df.each_row do |row, idx|
+      ret = df.each_row_with_index do |row, idx|
         idxs << idx
         expect(row.index).to eq([:a, :b, :c].to_index)
         expect(row.class).to eq(Daru::Vector)

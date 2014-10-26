@@ -96,36 +96,38 @@ module Daru
       Daru::DataFrameByRow.new(self)
     end
 
-    def each_vector
-      
+    def each_vector(&block)
+      @data.each(&block)
+
+      self
     end
 
-    def each_vector_with_index
-      
+    def each_vector_with_index(&block)
+      @vectors.each do |vector|
+        yield @data[@vectors[vector]], vector
+      end 
+
+      self
     end
 
-    def each_row
-      
+    def each_row(&block)
+      @index.each do |index|
+        yield access_row([index])
+      end
+
+      self
     end
 
-    def each_row_with_index
-      
+    def each_row_with_index(&block)
+      @index.each do |index|
+        yield access_row([index]), index
+      end
+
+      self
     end
 
     def has_vector? name
       !!@vectors[name]
-    end
-
-    def insert_vector name, vector
-      if @vectors.include? name
-        validate_vector_indexes vector if vector.is_a?(Daru::Vector)
-
-        v = vector.dv(name, @index)
-
-        @data[@vectors[name]] = vector.dv(name, @index)
-      else
-        raise Exception, "Vector named #{name} not found in Index."
-      end
     end
 
     def == other
@@ -165,6 +167,18 @@ module Daru
       end
 
       Daru::DataFrame.new new_vcs, new_vcs.keys, @index, @name
+    end
+
+    def insert_vector name, vector
+      if @vectors.include? name
+        validate_vector_indexes vector if vector.is_a?(Daru::Vector)
+
+        v = vector.dv(name, @index)
+
+        @data[@vectors[name]] = vector.dv(name, @index)
+      else
+        raise Exception, "Vector named #{name} not found in Index."
+      end
     end
 
     def access_row names
