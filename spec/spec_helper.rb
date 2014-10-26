@@ -1,7 +1,15 @@
 require 'rspec'
 require 'awesome_print'
 
-if RUBY_ENGINE == 'jruby'
+def mri?
+  RUBY_ENGINE == 'ruby'
+end
+
+def jruby?
+  RUBY_ENGINE == 'jruby'
+end
+
+if jruby?
   require 'mdarray'
 else
   require 'nmatrix'

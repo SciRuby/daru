@@ -8,10 +8,6 @@ module Daru
       @relation_hash.each_key(&block)
     end
 
-    def each_with_index(&block)
-      @relation_hash.each(&block)
-    end
-
     attr_reader :relation_hash
 
     attr_reader :size

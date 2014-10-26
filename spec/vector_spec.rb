@@ -108,4 +108,4 @@ describe Daru::Vector do
       }.to raise_error
     end
   end
-end if RUBY_ENGINE == 'ruby'
+end if mri?

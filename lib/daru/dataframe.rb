@@ -126,15 +126,35 @@ module Daru
       self
     end
 
+    def map_vectors(&block)
+      df = self.clone
+
+      df.each_vector_with_index do |vector, name|
+        df[name, :vector] = yield(vector)
+      end
+
+      df
+    end
+
+    def map_vectors_with_index(&block)
+      
+    end
+
+    def map_rows(&block)
+      
+    end
+
+    def map_rows_with_index(&block)
+      
+    end
+
     def has_vector? name
       !!@vectors[name]
     end
 
     def == other
-      @index == other.index and @size == other.size and 
-      @vectors.each do |vector|
-        self[vector, :vector] == other[vector, :vector]
-      end
+      @index == other.index and @size == other.size and @vectors.all? { |vector|
+                            self[vector, :vector] == other[vector, :vector] }
     end
 
     def method_missing(name, *args)

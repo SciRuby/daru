@@ -5,7 +5,7 @@ module Daru
     end
 
     def [](*names)
-      @data_frame[names, :row]
+      @data_frame[*names, :row]
     end
 
     def []=(name, vector)

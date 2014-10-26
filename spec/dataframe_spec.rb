@@ -287,6 +287,20 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#dup" do
+    it "dups every data structure inside DataFrame" , :focus => true do
+      clo = @data_frame.dup
+
+      expect(clo.object_id)        .not_to eq(@data_frame.object_id)
+      expect(clo.vectors.object_id).not_to eq(@data_frame.object_id)
+      expect(clo.index.object_id)  .not_to eq(@data_frame.object_id)
+
+      @data_frame.each_vector_with_index do |vector, index|
+        expect(vector.object_id).not_to eq(clo.vector[index].object_id)
+      end
+    end
+  end
+
   context "#each_vector" do
     it "iterates over all vectors" do
       ret = @data_frame.each_vector do |vector|
@@ -340,15 +354,15 @@ describe Daru::DataFrame do
 
   context "#map_vectors" do
     it "iterates over vectors and returns a modified DataFrame" do
-      ans = Daru::DataFrame.new({b: [21,22,23,24,25], a: [10,20,30,40,50], 
+      ans = Daru::DataFrame.new({b: [21,22,23,24,25], a: [11,12,13,14,15], 
       c: [21,32,43,54,65]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
 
       ret = @data_frame.map_vectors do |vector|
-        vector.map! { |e| e += 10}
+        vector = vector.map { |e| e += 10}
       end
 
-      expect(ret).to     eq(ans)
-      expect(ret).not_to eq(@data_frame)
+      expect(ret).to eq(ans)
+      expect(ret == @data_frame).to eq(false)
     end
   end
 
@@ -398,4 +412,4 @@ describe Daru::DataFrame do
       expect(idx).to eq([:one, :two, :three, :four, :five])
     end
   end
-end if RUBY_ENGINE == 'ruby'
+end if mri?
