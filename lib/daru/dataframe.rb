@@ -96,6 +96,15 @@ module Daru
       Daru::DataFrameByRow.new(self)
     end
 
+    def dup
+      src = {}
+      @vectors.each do |vector|
+        src[vector] = @data[@vectors[vector]]
+      end
+
+      Daru::DataFrame.new src, @vectors.dup, @index.dup, @name
+    end
+
     def each_vector(&block)
       @data.each(&block)
 
@@ -127,7 +136,7 @@ module Daru
     end
 
     def map_vectors(&block)
-      df = self.clone
+      df = self.dup
 
       df.each_vector_with_index do |vector, name|
         df[name, :vector] = yield(vector)
@@ -137,15 +146,33 @@ module Daru
     end
 
     def map_vectors_with_index(&block)
-      
+      df = self.dup
+
+      df.each_vector_with_index do |vector, name|
+        df[name, :vector] = yield(vector, name)
+      end
+
+      df
     end
 
     def map_rows(&block)
-      
+      df = self.dup
+
+      df.each_row_with_index do |row, index|
+        df[index, :row] = yield(row)
+      end
+
+      df
     end
 
     def map_rows_with_index(&block)
-      
+      df = self.dup
+
+      df.each_row_with_index do |row, index|
+        df[index, :row] = yield(row, index)
+      end
+
+      df
     end
 
     def has_vector? name

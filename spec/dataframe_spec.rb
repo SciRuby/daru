@@ -368,13 +368,13 @@ describe Daru::DataFrame do
 
   context "#map_vectors_with_index" do
     it "iterates over vectors with index and returns a modified DataFrame" do
-      ans = Daru::DataFrame.new({b: [21,22,23,24,25], a: [10,20,30,40,50], 
+      ans = Daru::DataFrame.new({b: [21,22,23,24,25], a: [11,12,13,14,15], 
       c: [21,32,43,54,65]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
 
       idx = []
       ret = @data_frame.map_vectors_with_index do |vector, index|
         idx << index
-        vector.map! { |e| e += 10}
+        vector = vector.map { |e| e += 10}
       end
 
       expect(ret).to eq(ans)
@@ -389,7 +389,7 @@ describe Daru::DataFrame do
 
       ret = @data_frame.map_rows do |row|
         expect(row.class).to eq(Daru::Vector)
-        row.map! { |e| e*e }
+        row = row.map { |e| e*e }
       end
 
       expect(ret).to eq(ans)
@@ -405,7 +405,7 @@ describe Daru::DataFrame do
       ret = @data_frame.map_rows_with_index do |row, index|
         idx << index
         expect(row.class).to eq(Daru::Vector)
-        row.map! { |e| e*e }
+        row = row.map { |e| e*e }
       end
 
       expect(ret).to eq(ans)
