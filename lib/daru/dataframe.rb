@@ -281,6 +281,8 @@ module Daru
           @data[@vectors[vector]].concat v[vector], name
         end
       end
+
+      @size = @index.size
     end
 
     def create_empty_vectors

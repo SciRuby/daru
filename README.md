@@ -54,4 +54,5 @@ Then switch to MRI, do a normal `bundle install` followed by `rspec` for testing
 * Multiple column assignment with []=
 * Creation of DataFrame from Array of Arrays.
 * Multiple value assignment for vectors with []=.
-* Load DataFrame from multiple sources (excel, SQL, etc.)
+* Load DataFrame from multiple sources (excel, SQL, etc.).
+* Support for mixed numeric, symbol, string index for Vector and DataFrame.

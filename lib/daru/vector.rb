@@ -40,7 +40,7 @@ module Daru
         raise IndexError, "Expected index size >= vector size"
       end
 
-      @size = @vector.size
+      set_size
     end
 
     def [](index, *indexes)
@@ -63,6 +63,8 @@ module Daru
       else
         @vector[@index[index]] = value
       end
+
+      set_size
     end
 
     # Two vectors are equal if the have the exact same index values corresponding
@@ -105,9 +107,9 @@ module Daru
       Daru::Vector.new @name, @vector.dup, @index.dup
     end
 
-    def inspect threshold=15
+    # def inspect threshold=15
       
-    end
+    # end
 
     def daru_vector *name
       self
@@ -119,6 +121,10 @@ module Daru
 
     def access_as_int? index
       @index.index_class != Integer and index.is_a?(Integer)
+    end
+
+    def set_size
+      @size = @vector.size
     end
   end
 end
