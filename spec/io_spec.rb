@@ -20,4 +20,43 @@ describe Daru::DataFrame do
       expect(df.vector[:true_transform].first[15]).to eq(1.0)
     end
   end
+
+  context "JSON" do
+    it "loads parsed JSON" do
+      require 'json'
+
+      json = File.read 'spec/fixtures/countries.json'
+      df   = Daru::DataFrame.new JSON.parse(json)
+
+      expect(df.vectors).to eq([
+        :name, :nativeName, :tld, :cca2, :ccn3, :cca3, :currency, :callingCode, 
+        :capital, :altSpellings, :relevance, :region, :subregion, :language, 
+        :languageCodes, :translations, :latlng, :demonym, :borders, :area].to_index)
+
+      ap df.row[0].inspect
+      expect(df.row[0][:name]).to eq("Afghanistan")
+    end
+  end
+
+  context "#inspect" do
+    it "prints DataFrame pretty" do
+
+    end
+  end
+end
+
+describe Daru::Vector do
+  context "#inspect" do
+    it "prints Vector pretty" do
+
+    end
+  end
+end
+
+describe Daru::Index do
+  context "#inspect" do
+    it "prints Index pretty" do
+
+    end
+  end
 end

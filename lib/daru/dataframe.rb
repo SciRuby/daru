@@ -33,7 +33,12 @@ module Daru
       else
         case source
         when Array
-          @vectors = Daru::Index.new (vectors + (source[0].keys - vectors)).uniq.map(&:to_sym)
+          if vectors.nil?
+            @vectors = Daru::Index.new source[0].keys.map(&:to_sym)
+          else
+            @vectors = Daru::Index.new (vectors + (source[0].keys - vectors)).uniq.map(&:to_sym)
+          end
+          
           if index.nil?
             @index = Daru::Index.new source.size
           else
@@ -247,6 +252,8 @@ module Daru
         else
           name = names[0]
         end
+
+        name = nil if name.is_a?(Numeric)
 
         Daru::Vector.new name, row, @vectors
       else

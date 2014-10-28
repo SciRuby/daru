@@ -129,6 +129,13 @@ describe Daru::DataFrame do
     it "returns a row with given Integer index" do
       expect(@df[0, :row]).to eq([1,11,11].dv(:one, [:a, :b, :c]))
     end
+
+    it "returns a row with given Integer index for default index-less DataFrame" do
+      df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
+        c: [11,22,33,44,55]}, [:a, :b, :c])
+
+      expect(df[0, :row]).to eq([1,11,11].dv(nil, [:a, :b, :c]))
+    end
   end
 
   context "#[:vector]=" do
