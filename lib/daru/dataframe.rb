@@ -1,9 +1,15 @@
 require_relative 'dataframe_by_row.rb'
 require_relative 'dataframe_by_vector.rb'
-
+require_relative 'io.rb'
 
 module Daru
   class DataFrame
+
+    class << self
+      def from_csv path, opts={}
+        Daru::IO.from_csv path, opts          
+      end
+    end
 
     attr_reader :vectors
     attr_reader :index
