@@ -38,7 +38,7 @@ module Daru
           else
             @vectors = Daru::Index.new (vectors + (source[0].keys - vectors)).uniq.map(&:to_sym)
           end
-          
+
           if index.nil?
             @index = Daru::Index.new source.size
           else
@@ -49,7 +49,7 @@ module Daru
             v = []
 
             source.each do |hsh|
-              v << hsh[name]
+              v << (hsh[name] || hsh[name.to_s])
             end
 
             @data << v.dv(name, @index)
