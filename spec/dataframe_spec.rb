@@ -229,6 +229,12 @@ describe Daru::DataFrame do
       expect(@df[:patekar, :row]).to eq([9,2,11].dv(:patekar, [:a, :b, :c]))
     end
 
+    it "creates a new row from numeric named DV" do
+      @df.row[2] = [9,2,11].dv(nil, [:a, :b, :c])
+
+      expect(@df[2, :row]).to eq([9,2,11].dv(nil, [:a, :b, :c]))
+    end
+
     it "raises error for DV assignment with wrong index" do
       expect {
         @df[:two, :row] = [49, 99, 59].dv(nil, [:oo, :aah, :gaah])

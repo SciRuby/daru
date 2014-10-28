@@ -73,8 +73,7 @@ module Daru
         end
       end
 
-      @size = @index.size
-
+      set_size
       validate
     end
 
@@ -210,10 +209,12 @@ module Daru
 
     def access_vector names
       unless names[1]
-        if @vectors.index_class != Integer and names[0].is_a?(Integer)
+        if @vectors.include? names[0]
+          return @data[@vectors[names[0]]]
+        elsif @vectors.key names[0]
           return @data[names[0]]
         else
-          return @data[@vectors[names[0]]]
+          raise IndexError, "Specified index #{names[0]} does not exist."
         end
       end
 
@@ -248,16 +249,17 @@ module Daru
           row << @data[@vectors[vector]][names[0]]
         end
 
-        if @vectors.index_class != Integer and names[0].is_a?(Integer)
+        if @index.include? names[0]
+          name = names[0]
+        elsif @index.key names[0]
           name = @index.key names[0]
         else
-          name = names[0]
+          raise IndexError, "Specified row #{names[0]} does not exist."
         end
-
-        name = nil if name.is_a?(Numeric)
 
         Daru::Vector.new name, row, @vectors
       else
+        # TODO: Access multiple rows
       end
     end
 
@@ -282,7 +284,7 @@ module Daru
         end
       end
 
-      @size = @index.size
+      set_size
     end
 
     def create_empty_vectors
@@ -325,6 +327,10 @@ module Daru
       validate_labels
       validate_vector_indexes 
       validate_vector_sizes
+    end
+
+    def set_size
+      @size = @index.size
     end
   end
 end

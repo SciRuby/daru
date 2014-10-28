@@ -51,7 +51,7 @@ module Daru
     def +(other)
       if other.respond_to? :relation_hash #another index object
         (@relation_hash.keys + other.relation_hash.keys).uniq.to_index
-      elsif other.is_a?(Symbol)
+      elsif other.is_a?(Symbol) or other.is_a?(Integer)
         (@relation_hash.keys << other).uniq.to_index
       else
         (@relation_hash.keys + other).uniq.to_index

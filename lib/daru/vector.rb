@@ -16,7 +16,7 @@ module Daru
       source = args.shift || []
       index  = args.shift
 
-      @name  = name.to_sym if name
+      set_name name
 
       @vector = 
       case source
@@ -45,10 +45,10 @@ module Daru
 
     def [](index, *indexes)
       if indexes.empty?
-        if access_as_int? index
-          @vector[index]
-        else
+        if @index.include? index
           @vector[@index[index]]
+        else
+          @vector[index]
         end
       else
         indexes.unshift index
@@ -58,10 +58,10 @@ module Daru
     end
 
     def []=(index, value)
-      if access_as_int? index
-        @vector[index] = value
-      else
+      if @index.include? index
         @vector[@index[index]] = value
+      else
+        @vector[index] = value
       end
 
       set_size
@@ -107,10 +107,6 @@ module Daru
       Daru::Vector.new @name, @vector.dup, @index.dup
     end
 
-    # def inspect threshold=15
-      
-    # end
-
     def daru_vector *name
       self
     end
@@ -119,12 +115,16 @@ module Daru
 
    private
 
-    def access_as_int? index
-      @index.index_class != Integer and index.is_a?(Integer)
-    end
-
     def set_size
       @size = @vector.size
+    end
+
+    def set_name name
+      if name.is_a?(Numeric)
+        @name = name 
+      elsif name
+        @name = name.to_sym
+      end
     end
   end
 end
