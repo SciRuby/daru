@@ -70,6 +70,10 @@ module Daru
       @relation_hash.has_key? index
     end
 
+    def dup
+      Daru::Index.new @relation_hash.keys
+    end
+
     def to_index
       self
     end

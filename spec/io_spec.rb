@@ -33,7 +33,6 @@ describe Daru::DataFrame do
         :capital, :altSpellings, :relevance, :region, :subregion, :language, 
         :languageCodes, :translations, :latlng, :demonym, :borders, :area].to_index)
 
-      ap df.row[0].inspect
       expect(df.row[0][:name]).to eq("Afghanistan")
     end
   end
@@ -48,7 +47,7 @@ end
 describe Daru::Vector do
   context "#inspect" do
     it "prints Vector pretty" do
-
+      v = [1,2,3,4].dv(:n)
     end
   end
 end

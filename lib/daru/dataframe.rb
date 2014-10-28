@@ -18,6 +18,7 @@ module Daru
 
     # DataFrame basically consists of an Array of Vector objects.
     # These objects are indexed by row and column by vectors and index Index objects.
+    # Arguments - source, vectors, index, name in that order. Last 3 are optional.
     def initialize source, *args
       vectors = args.shift
       index   = args.shift

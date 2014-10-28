@@ -105,6 +105,10 @@ module Daru
       Daru::Vector.new @name, @vector.dup, @index.dup
     end
 
+    def inspect threshold=15
+      
+    end
+
     def daru_vector *name
       self
     end
