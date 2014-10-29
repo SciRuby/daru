@@ -108,4 +108,10 @@ describe Daru::Vector do
       }.to raise_error
     end
   end
+
+  context "#delete" do
+    it "deletes element of specified index" do
+      
+    end
+  end
 end if mri?

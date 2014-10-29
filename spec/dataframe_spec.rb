@@ -425,4 +425,28 @@ describe Daru::DataFrame do
       expect(idx).to eq([:one, :two, :three, :four, :five])
     end
   end
+
+  context "#delete_vector" do
+    it "deletes the specified vector" do
+
+    end
+  end
+
+  context "#delete_row" do
+    it "deletes the specified row" do
+
+    end
+  end
+
+  context "#keep_row_if" do
+    it "keeps row if block evaluates to true" do
+
+    end
+  end
+
+  context "#keep_vector_if" do
+    it "keeps vector if block evaluates to true" do
+      
+    end
+  end
 end if mri?

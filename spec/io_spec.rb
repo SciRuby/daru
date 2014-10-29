@@ -42,6 +42,10 @@ describe Daru::DataFrame do
 
     end
   end
+
+  context "#to_csv" do
+    
+  end
 end
 
 describe Daru::Vector do
