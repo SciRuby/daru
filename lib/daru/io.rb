@@ -7,7 +7,7 @@ module Daru
         opts[:converters]        ||= :numeric
         opts[:header_converters] ||= :symbol
 
-        csv = CSV.open path, 'r', opts
+        csv = CSV.open(path, 'r', opts)
 
         yield csv if block_given?
 
@@ -16,11 +16,11 @@ module Daru
 
         csv.each_with_index do |row, index|
           if first
-            df = Daru::DataFrame.new({}, csv.headers)
+            df    = Daru::DataFrame.new({}, csv.headers)
             first = false
           end
 
-          df.row[index.to_s.to_sym] = row
+          df.row[index] = row.fields
         end
 
         df

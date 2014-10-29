@@ -6,8 +6,8 @@ module Daru
   class DataFrame
 
     class << self
-      def from_csv path, opts={}
-        Daru::IO.from_csv path, opts          
+      def from_csv path, opts={}, &block
+        Daru::IO.from_csv path, opts, &block      
       end
     end
 
