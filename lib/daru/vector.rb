@@ -99,6 +99,14 @@ module Daru
       @vector[@index[index]] = element
     end
 
+    def delete element
+      
+    end
+
+    def delete_at index
+      
+    end
+
     def rename new_name
       @name = new_name.to_sym
     end

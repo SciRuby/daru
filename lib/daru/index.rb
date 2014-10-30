@@ -39,9 +39,7 @@ module Daru
     def ==(other)
       return false if other.size != @size
 
-      @relation_hash.all? do |k,v|
-        v == other.relation_hash[k]
-      end
+      @relation_hash.keys == other.to_a
     end
 
     def [](key)
@@ -56,6 +54,10 @@ module Daru
       else
         (@relation_hash.keys + other).uniq.to_index
       end
+    end
+
+    def to_a
+      @relation_hash.keys
     end
 
     def key(value)

@@ -428,25 +428,44 @@ describe Daru::DataFrame do
 
   context "#delete_vector" do
     it "deletes the specified vector" do
+      @data_frame.delete_vector :a
 
+      expect(@data_frame).to eq(Daru::DataFrame.new({b: [11,12,13,14,15], 
+              c: [11,22,33,44,55]}, [:b, :c], [:one, :two, :three, :four, :five]))    
     end
   end
 
   context "#delete_row" do
     it "deletes the specified row" do
+      @data_frame.delete_row :one
 
+      expect(@data_frame).to eq(Daru::DataFrame.new({b: [12,13,14,15], a: [2,3,4,5], 
+      c: [22,33,44,55]}, [:a, :b, :c], [:two, :three, :four, :five]))
     end
   end
 
   context "#keep_row_if" do
     it "keeps row if block evaluates to true" do
+      df = Daru::DataFrame.new({b: [10,12,20,23,30], a: [50,30,30,1,5], 
+        c: [10,20,30,40,50]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
 
+      df.keep_row_if do |row|
+        row.all? {|a| a % 5 == 0 }
+      end
+
+      expect(df).to eq(Daru::DataFrame.new({b: [10,20,30], a: [50, 30, 5],
+        c: [10,30,50]}, [:a, :b, :c], [:one, :two, :three, :four, :five]))
     end
   end
 
   context "#keep_vector_if" do
     it "keeps vector if block evaluates to true" do
-      
+      @data_frame.keep_vector_if do |vector|
+        vector == [1,2,3,4,5].dv(nil, [:one, :two, :three, :four, :five])
+      end
+
+      expect(@data_frame).to eq(Daru::DataFrame.new({a: [1,2,3,4,5]}, [:a], 
+        [:one, :two, :three, :four, :five]))
     end
   end
 end if mri?

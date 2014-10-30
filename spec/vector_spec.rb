@@ -110,8 +110,30 @@ describe Daru::Vector do
   end
 
   context "#delete" do
+    it "deletes specified value in the vector" do
+      dv = Daru::Vector.new :a, [1,2,3,4,5]
+
+      dv.delete 3
+
+      expect(dv).to eq(Daru::Vector.new :a, [1,2,4,5])
+    end
+  end
+
+  context "#delete_at" do
+    before :each do
+      @dv = Daru::Vector.new :a, [1,2,3,4,5], [:one, :two, :three, :four, :five]
+    end
+
     it "deletes element of specified index" do
-      
+      @dv.delete_at :one
+
+      expect(@dv).to eq(Daru::Vector.new :a, [2,3,4,5], [:two, :three, :four, :five])
+    end
+
+    it "deletes element of specified integer index" do
+      @dv.delete_at 2
+
+      expect(@dv).to eq(Daru::Vector.new :a, [1,2,4,5], [:one, :two, :four, :five])
     end
   end
 end if mri?

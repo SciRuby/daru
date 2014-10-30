@@ -55,4 +55,6 @@ Then switch to MRI, do a normal `bundle install` followed by `rspec` for testing
 * Creation of DataFrame from Array of Arrays.
 * Multiple value assignment for vectors with []=.
 * Load DataFrame from multiple sources (excel, SQL, etc.).
-* Support for mixed numeric, symbol, string index for Vector and DataFrame.
+* Allow for boolean operations inside #[].
+* Deletion of elements from Vector should only modify the index and leave the vector as it is so that compacting is not needed and things are faster.
+* Add a #sync method which will sync the modified index with the unmodified vector.

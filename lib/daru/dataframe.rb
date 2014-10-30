@@ -186,6 +186,35 @@ module Daru
       df
     end
 
+    def delete_vector vector
+      if @vectors.include? vector
+        @data.delete_at @vectors[vector]
+        @vectors = Daru::Index.new @vectors.to_a - [vector]
+      else
+        raise IndexError, "Vector #{vector} does not exist."
+      end
+    end
+
+    def delete_row index
+      if @index.include? index
+        
+      else
+        raise IndexError, "Index #{index} does not exist."
+      end
+    end
+
+    def keep_row_if &block
+      
+    end
+
+    def keep_vector_if &block
+      @vectors.each do |vector|
+        keep_vector = yield @data[@vectors[vector]], vector
+        
+        delete_vector vector unless keep_vector
+      end
+    end
+
     def has_vector? name
       !!@vectors[name]
     end

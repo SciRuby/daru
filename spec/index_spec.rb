@@ -5,7 +5,7 @@ describe Daru::Index do
     it "creates an Index from Array" do
       idx = Daru::Index.new ['speaker', 'mic', 'guitar', 'amp']
 
-      expect(idx.relation_hash).to eq({speaker: 0, mic: 1, guitar: 2, amp: 3})
+      expect(idx.to_a).to eq([:speaker, :mic, :guitar, :amp])
     end
   end
 
@@ -25,15 +25,14 @@ describe Daru::Index do
       n   = @old.re_index(@old + [:john, :shrinivas]) 
 
       expect(n.object_id).not_to eq(@old.object_id)
-      expect(n.relation_hash).to eq({bob: 0 , fisher: 1, zakir: 2, john: 3, 
-        shrinivas: 4})
+      expect(n.to_a).to eq([:bob, :fisher, :zakir, :john, :shrinivas])
     end
 
     it "does not over-ride existing indexes" do
       n = @old.re_index(@old + :bob)
 
       expect(n.object_id).not_to eq(@old.object_id)
-      expect(n.relation_hash).to eq({bob: 0 , fisher: 1, zakir: 2})
+      expect(n.to_a)     .to eq([:bob, :fisher, :zakir])
     end
   end
 
