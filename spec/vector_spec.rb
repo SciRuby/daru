@@ -136,4 +136,12 @@ describe Daru::Vector do
       expect(@dv).to eq(Daru::Vector.new :a, [1,2,4,5], [:one, :two, :four, :five])
     end
   end
+
+  context "#index_of" do
+    it "returns index of specified value" do
+      dv = Daru::Vector.new :a, [1,2,3,4,5], [:one, :two, :three, :four, :five]
+
+      expect(dv.index_of(1)).to eq(:one)
+    end
+  end
 end if mri?

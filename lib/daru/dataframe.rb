@@ -79,9 +79,9 @@ module Daru
 
     def [](*names, axis)
       if axis == :vector
-        access_vector names
+        access_vector *names
       elsif axis == :row
-        access_row names
+        access_row *names
       else
         raise IndexError, "Expected axis to be row or vector not #{axis}"
       end
@@ -132,7 +132,7 @@ module Daru
 
     def each_row(&block)
       @index.each do |index|
-        yield access_row([index])
+        yield access_row(index)
       end
 
       self
@@ -140,7 +140,7 @@ module Daru
 
     def each_row_with_index(&block)
       @index.each do |index|
-        yield access_row([index]), index
+        yield access_row(index), index
       end
 
       self
@@ -196,15 +196,27 @@ module Daru
     end
 
     def delete_row index
-      if @index.include? index
-        
+      idx = named_index_for index
+
+      if @index.include? idx
+        @index = (@index.to_a - [idx]).to_index
+
+        self.each_vector do |vector|
+          vector.delete_at idx
+        end
       else
         raise IndexError, "Index #{index} does not exist."
       end
+
+      set_size
     end
 
     def keep_row_if &block
-      
+      @index.each do |index|
+        keep_row = yield access_row(index)
+
+        delete_row index unless keep_row
+      end
     end
 
     def keep_vector_if &block
@@ -236,7 +248,7 @@ module Daru
 
    private
 
-    def access_vector names
+    def access_vector *names
       unless names[1]
         if @vectors.include? names[0]
           return @data[@vectors[names[0]]]
@@ -270,7 +282,7 @@ module Daru
       end
     end
 
-    def access_row names
+    def access_row *names
       unless names[1]
         row = []
 
@@ -360,6 +372,16 @@ module Daru
 
     def set_size
       @size = @index.size
+    end
+
+    def named_index_for index
+      if @index.include? index
+        index
+      elsif @index.key index
+        @index.key index
+      else
+        raise IndexError, "Specified index #{index} does not exist."
+      end
     end
   end
 end

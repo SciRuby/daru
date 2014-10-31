@@ -100,11 +100,31 @@ module Daru
     end
 
     def delete element
-      
+      self.delete_at index_of(element)      
     end
 
     def delete_at index
-      
+      idx = named_index_for index
+
+      @vector.delete_at @index[idx]
+
+      if @index.index_class == Integer
+        @index = Daru::Index.new @size-1
+      else
+        @index = (@index.to_a - [idx]).to_index
+      end
+
+      set_size
+    end
+
+    def index_of element
+      @index.key @vector.index(element) #calling Array#index
+    end
+
+    def compact!
+      # TODO: Compact and also take care of indexes
+      # @vector.compact!
+      # set_size
     end
 
     def rename new_name
@@ -122,6 +142,16 @@ module Daru
     alias_method :dv, :daru_vector
 
    private
+
+    def named_index_for index
+      if @index.include? index
+        index
+      elsif @index.key index
+        @index.key index
+      else
+        raise IndexError, "Specified index #{index} does not exist."
+      end
+    end
 
     def set_size
       @size = @vector.size

@@ -454,7 +454,7 @@ describe Daru::DataFrame do
       end
 
       expect(df).to eq(Daru::DataFrame.new({b: [10,20,30], a: [50, 30, 5],
-        c: [10,30,50]}, [:a, :b, :c], [:one, :two, :three, :four, :five]))
+        c: [10,30,50]}, [:a, :b, :c], [:one, :three, :five]))
     end
   end
 
