@@ -231,6 +231,65 @@ module Daru
       !!@vectors[name]
     end
 
+    # Converts the DataFrame into an array of hashes where key is vector name
+    # and value is the corresponding element.
+    # The 0th index of the array contains the array of hashes while the 1th
+    # index contains the indexes of each row of the dataframe. Each element in
+    # the index array corresponds to its row in the array of hashes, which has
+    # the same index.
+    def to_a
+      arry = [[],[]]
+
+      self.each_row do |row|
+        arry[0] << row.to_hash
+      end
+
+      arry[1] = @index.to_a
+
+      arry
+    end
+
+    def to_json no_index=true
+      if no_index
+        self.to_a[0].to_json
+      else
+        self.to_a.to_json
+      end
+    end
+
+    def to_html threshold=15
+      html = '<table><tr><th></th>'
+
+      @vectors.each { |vector| html += '<th>' + vector.to_s + '</th>' }
+
+      html += '</tr>'
+
+      @index.each_with_index do |index, num|
+        html += '<tr>'
+        html += '<td>' + index.to_s + '</td>'
+
+        self.row[index].each do |element|
+          html += '<td>' + element.to_s + '</td>'
+        end
+        html += '</tr>'
+
+        if num > threshold
+          html += '<tr>'
+          (@vectors + 1).size.times { html += '<td>...</td>' }
+          html += '</tr>'
+          break
+        end
+      end
+
+      html += '</table>'
+
+      html
+    end
+
+    def to_s
+      to_html
+    end
+
     def == other
       @index == other.index and @size == other.size and @vectors.all? { |vector|
                             self[vector, :vector] == other[vector, :vector] }

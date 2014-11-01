@@ -468,4 +468,24 @@ describe Daru::DataFrame do
         [:one, :two, :three, :four, :five]))
     end
   end
+
+  context "#to_a" do
+    it "converts DataFrame into array of hashes" do
+      arry = @data_frame.to_a
+
+      expect(arry).to eq(
+        [
+          [
+            {a: 1, b: 11, c: 11}, 
+            {a: 2, b: 12, c: 22},
+            {a: 3, b: 13, c: 33},
+            {a: 4, b: 14, c: 44}, 
+            {a: 5, b: 15, c: 55}
+          ],
+          [
+            :one, :two, :three, :four, :five
+          ]
+        ])
+    end
+  end
 end if mri?

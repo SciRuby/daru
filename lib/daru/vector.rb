@@ -121,6 +121,36 @@ module Daru
       @index.key @vector.index(element) #calling Array#index
     end
 
+    def to_hash
+      @index.inject({}) do |hsh, index|
+        hsh[index] = self[index]
+        hsh
+      end
+    end
+
+    def to_html threshold=15
+      name = @name || 'nil'
+
+      html = '<table>' + '<tr><th> </th><th>' + name.to_s + '</th></tr>'
+
+      @index.each_with_index do |index, num|
+        html += '<tr><td>' + index.to_s + '</td>' + '<td>' + self[index].to_s + '</td></tr>'
+    
+        if num > threshold
+          html += '<tr><td>...</td><td>...</td></tr>'
+          break
+        end
+      end
+
+      html += '</table>'
+
+      html
+    end
+
+    def to_s
+      to_html
+    end
+
     def compact!
       # TODO: Compact and also take care of indexes
       # @vector.compact!
@@ -160,8 +190,10 @@ module Daru
     def set_name name
       if name.is_a?(Numeric)
         @name = name 
-      elsif name
+      elsif name # anything but Numeric or nil
         @name = name.to_sym
+      else
+        @name = nil
       end
     end
   end

@@ -144,4 +144,12 @@ describe Daru::Vector do
       expect(dv.index_of(1)).to eq(:one)
     end
   end
+
+  context "#to_hash" do
+    it "returns the vector as a hash" do
+      dv = Daru::Vector.new :a, [1,2,3,4,5], [:one, :two, :three, :four, :five]
+
+      expect(dv.to_hash).to eq({one: 1, two: 2, three: 3, four: 4, five: 5})
+    end
+  end
 end if mri?
