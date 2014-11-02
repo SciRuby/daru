@@ -276,15 +276,10 @@ describe Daru::DataFrame do
   end
 
   context "#vector" do
-    before :each do
-      @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
-        c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
-    end
-
     it "appends an Array as a Daru::Vector" do
-      @df[:d, :vector] = [69,99,108,85,49]
+      @data_frame[:d, :vector] = [69,99,108,85,49]
 
-      expect(@df.d.class).to eq(Daru::Vector)
+      expect(@data_frame.d.class).to eq(Daru::Vector)
     end
   end
 

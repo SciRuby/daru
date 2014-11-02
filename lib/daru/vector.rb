@@ -159,18 +159,26 @@ module Daru
       longest = [@index.to_a.map(&:to_s).map(&:size).max, 
                  @vector    .map(&:to_s).map(&:size).max].max
 
+      content   = ""
       longest   = spacing if longest > spacing
       name      = @name || 'nil'
       formatter = "\n%#{longest}.#{longest}s %#{longest}.#{longest}s"
 
-      puts "\n#<" + self.class.to_s + ":" + self.object_id.to_s + " @name = " + name.to_s + " @size = " + size.to_s + " >"
+      content += "\n#<" + self.class.to_s + ":" + self.object_id.to_s + " @name = " + name.to_s + " @size = " + size.to_s + " >"
 
-      printf formatter, "", name
-      @index.each do |index|
-        printf formatter, index.to_s, self[index]
+      content += sprintf formatter, "", name
+      @index.each_with_index do |index, num|
+        content += sprintf formatter, index.to_s, self[index]
+
+        if num > threshold
+          content += sprintf formatter, '...', '...'
+          break
+        end
       end
 
-      puts "\n"
+      content += "\n"
+
+      content
     end
 
     def compact!

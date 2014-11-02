@@ -290,12 +290,48 @@ module Daru
       to_html
     end
 
+    def inspect spacing=10, threshold=15
+      longest = [@vectors.map(&:to_s).map(&:size).max, 
+                 @index  .map(&:to_s).map(&:size).max].max
+
+      name      = @name || 'nil'
+      content   = ""
+      longest   = spacing if longest > spacing
+      formatter = "\n"
+
+      (@vectors.size + 1).times { formatter += "%#{longest}.#{longest}s " }
+
+      content += "\n#<" + self.class.to_s + ":" + self.object_id.to_s + " @name = " + 
+                    name.to_s + " @size = " + @size.to_s + ">"
+
+      content += sprintf formatter, "" , *@vectors.map(&:to_s)
+
+      row_num = 1
+
+      self.each_row_with_index do |row, index|
+        content += sprintf formatter, index.to_s, *row.to_hash.values.map(&:to_s)
+
+        row_num += 1
+        if row_num > threshold
+          dots = []
+
+          (@vectors.size + 1).times { dots << "..." }
+          content += sprint formatter, *dots
+          break
+        end
+      end
+
+      content += "\n"
+
+      content
+    end
+
     def == other
       @index == other.index and @size == other.size and @vectors.all? { |vector|
                             self[vector, :vector] == other[vector, :vector] }
     end
 
-    def method_missing(name, *args)
+    def method_missing(name, *args, &block)
       if md = name.match(/(.+)\=/)
         insert_vector name[/(.+)\=/].delete("="), args[0]
       elsif self.has_vector? name
