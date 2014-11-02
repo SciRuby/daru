@@ -128,6 +128,10 @@ module Daru
       end
     end
 
+    def to_json *args 
+      self.to_hash.to_json
+    end
+
     def to_html threshold=15
       name = @name || 'nil'
 
@@ -149,6 +153,24 @@ module Daru
 
     def to_s
       to_html
+    end
+
+    def inspect spacing=10, threshold=15
+      longest = [@index.to_a.map(&:to_s).map(&:size).max, 
+                 @vector    .map(&:to_s).map(&:size).max].max
+
+      longest   = spacing if longest > spacing
+      name      = @name || 'nil'
+      formatter = "\n%#{longest}.#{longest}s %#{longest}.#{longest}s"
+
+      puts "\n#<" + self.class.to_s + ":" + self.object_id.to_s + " @name = " + name.to_s + " @size = " + size.to_s + " >"
+
+      printf formatter, "", name
+      @index.each do |index|
+        printf formatter, index.to_s, self[index]
+      end
+
+      puts "\n"
     end
 
     def compact!

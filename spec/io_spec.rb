@@ -47,19 +47,3 @@ describe Daru::DataFrame do
     # TODO
   end
 end
-
-describe Daru::Vector do
-  context "#inspect" do
-    it "prints Vector pretty" do
-      v = [1,2,3,4].dv(:n)
-    end
-  end
-end
-
-describe Daru::Index do
-  context "#inspect" do
-    it "prints Index pretty" do
-
-    end
-  end
-end
