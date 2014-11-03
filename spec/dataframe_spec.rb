@@ -263,21 +263,33 @@ describe Daru::DataFrame do
       expect(@df[:patekar, :row]).to eq([9,2,11].dv(:patekar, [:a, :b, :c]))
     end
 
-    it "creates a new row from numeric named DV" do
+    it "creates a new row from numeric row index and named DV" do
       @df.row[2] = [9,2,11].dv(nil, [:a, :b, :c])
 
       expect(@df[2, :row]).to eq([9,2,11].dv(nil, [:a, :b, :c]))
     end
 
-    it "raises error for DV assignment with wrong index" do
-      expect {
-        @df[:two, :row] = [49, 99, 59].dv(nil, [:oo, :aah, :gaah])
-      }.to raise_error
+    it "correctly aligns assigned DV by index" do
+      @df.row[:two] = [9,2,11].dv(nil, [:b, :a, :c])
+      
+      expect(@df.row[:two]).to eq([2,9,11].dv(:two, [:a, :b, :c]))
     end
 
-    it "raises error for assignment with wrong size" do
-      expect {
-        @df[:three, :row] = [99, 59].dv(nil, [:aah, :gaah])
+    it "inserts nils for indexes that dont exist in the DataFrame" do
+      @df.row[:two] = [49, 99, 59].dv(nil, [:oo, :aah, :gaah])
+
+      expect(@df.row[:two]).to eq([nil,nil,nil].dv(nil, [:a, :b, :c]))
+    end
+
+    it "correctly inserts row of a different length by matching indexes" do
+      @df.row[:four] = [5,4,3,2,1,3].dv(nil, [:you, :have, :a, :big, :appetite, :spock])
+
+      expect(@df.row[:four]).to eq([3,nil,nil].dv(:four, [:a, :b, :c]))
+    end
+
+    it "raises error for row insertion by Array of wrong length" do
+      expect{
+        @df.row[:one] = [1,2,3,4,5,6,7]
       }.to raise_error
     end
 
@@ -285,12 +297,6 @@ describe Daru::DataFrame do
       pending "Next release"
 
       raise
-    end
-
-    it "correctly aligns assigned DV by index" do
-      @df.row[:two] = [9,2,11].dv(nil, [:b, :a, :c])
-      
-      expect(@df.row[:two]).to eq([2,9,11].dv(:two, [:a, :b, :c]))
     end
   end
 
@@ -330,7 +336,7 @@ describe Daru::DataFrame do
   end
 
   context "#dup" do
-    it "dups every data structure inside DataFrame" , :focus => true do
+    it "dups every data structure inside DataFrame" do
       clo = @data_frame.dup
 
       expect(clo.object_id)        .not_to eq(@data_frame.object_id)
