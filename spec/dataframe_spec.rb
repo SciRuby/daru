@@ -65,11 +65,46 @@ describe Daru::DataFrame do
       expect(df.vectors).to eq(Daru::Index.new [:a, :b])
     end
 
-    it "initializes from Vectors by correct index" do
-      pending "Implement creation of DataFrame from unequal vectors by \
-        inserting nils into resulting DataFrame"
+    it "aligns indexes properly" do
+      df = Daru::DataFrame.new({b: [11,12,13,14,15].dv(:b, [:two, :one, :four, 
+        :five, :three]), a: [1,2,3,4,5].dv(:a, [:two,:one,:three, :four, :five])}, 
+        [:a, :b])
 
-      raise
+      expect(df).to eq(Daru::DataFrame.new({
+          b: [12,11,15,13,14].dv(:b, [:one, :two, :three, :four, :five]), 
+          a:      [2,1,3,4,5].dv(:a, [:one, :two, :three, :four, :five])
+        }, [:a, :b])
+      )
+    end
+
+    it "adds nil values for missing indexes and aligns by index" do
+      df = Daru::DataFrame.new({b: [11,12,13,14,15].dv(:b, [:two, :one, :four, 
+        :five, :three]), a: [1,2,3].dv(:a, [:two,:one,:three])}, 
+        [:a, :b])
+
+      expect(df).to eq(Daru::DataFrame.new({
+          b: [12,11,15,13,14].dv(:b, [:one,:two,:three, :four, :five]), 
+          a:  [2,1,3,nil,nil].dv(:a, [:one,:two,:three, :four, :five])
+        }, 
+        [:a, :b])
+      )
+    end
+
+    it "adds nils in first vector when other vectors have many extra indexes" do
+      df = Daru::DataFrame.new({
+          b: [11]                .dv(nil, [:one]), 
+          a: [1,2,3]             .dv(nil, [:one, :two, :three]), 
+          c: [11,22,33,44,55]    .dv(nil, [:one, :two, :three, :four, :five]),
+          d: [49,69,89,99,108,44].dv(nil, [:one, :two, :three, :four, :five, :six])
+        }, [:a, :b, :c, :d])
+
+      expect(df).to eq(Daru::DataFrame.new({
+          b: [11,nil,nil,nil,nil,nil].dv(nil, [:one, :two, :three, :four, :five, :six]), 
+          a: [1,2,3,nil,nil,nil]     .dv(nil, [:one, :two, :three, :four, :five, :six]), 
+          c: [11,22,33,44,55,nil]    .dv(nil, [:one, :two, :three, :four, :five, :six]),
+          d: [49,69,89,99,108,44]    .dv(nil, [:one, :two, :three, :four, :five, :six])
+        }, [:a, :b, :c, :d], [:one, :two, :three, :four, :five, :six])
+      )
     end
 
     it "completes incomplete vectors" do
@@ -79,7 +114,7 @@ describe Daru::DataFrame do
       expect(df.vectors).to eq([:a,:c,:b].to_index)
     end
 
-    it "raises error for incomplete index" do
+    it "raises error for incomplete DataFrame index" do
       expect {
         df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
           c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three])
@@ -90,6 +125,11 @@ describe Daru::DataFrame do
       expect {
         df = Daru::DataFrame.new({b: [11,12,13], a: [1,2,3,4,5], 
           c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three])
+      }.to raise_error
+
+      expect {
+        df = Daru::DataFrame.new({b: [11,12,13].dv, a: [1,2,3,4,5].dv, 
+          c: [11,22,33,44,55].dv}, [:a, :b, :c], [:one, :two, :three])
       }.to raise_error
     end
   end
@@ -166,25 +206,19 @@ describe Daru::DataFrame do
       @df[:woo, :vector] = [69,99,108,85,49]
 
       expect(@df.woo.index).to eq([:one, :two, :three, :four, :five].to_index)
-    end
+    end   
 
-    it "raises error if index mismatch between DataFrame and new vector(s)" do
-      expect {
-        @df[:woo, :vector] = [69,99,108,85,49].dv
-      }.to raise_error
-
-      # TODO: Remove this. Must work for mismatched indexes(?).
-    end    
-
-    it "inserts vector of same length as DataFrame but of mangled index" do
-      pending "Implement after adding constructor for DataFrame from vectors with \ 
-        unequal index."
-
-      # Rudimentary example. Yet to think this out.
+    it "matches index of vector to be inserted with the DataFrame index" do
       @df[:shankar, :vector] = [69,99,108,85,49].dv(:shankar, [:two, :one, :three, :five, :four])
 
       expect(@df.shankar).to eq([99,69,108,49,85].dv(:shankar, 
         [:one, :two, :three, :four, :five]))
+    end
+
+    it "matches index of vector to be inserted, inserting nils where no match found" do
+      @df.vector[:shankar] = [1,2,3].dv(:shankar, [:one, :james, :hetfield])
+
+      expect(@df.shankar).to eq([1,nil,nil,nil,nil].dv(:shankar, [:one, :two, :three, :four, :five]))
     end
 
     it "appends multiple vectors at a time" do
@@ -254,9 +288,9 @@ describe Daru::DataFrame do
     end
 
     it "correctly aligns assigned DV by index" do
-      pending "Do this once the misalign initialize is done."
-
-      raise
+      @df.row[:two] = [9,2,11].dv(nil, [:b, :a, :c])
+      
+      expect(@df.row[:two]).to eq([2,9,11].dv(:two, [:a, :b, :c]))
     end
   end
 
