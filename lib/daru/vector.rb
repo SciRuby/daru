@@ -47,8 +47,10 @@ module Daru
       if indexes.empty?
         if @index.include? index
           @vector[@index[index]]
-        else
+        elsif index.is_a?(Numeric)
           @vector[index]
+        else
+          raise IndexError, "Specified index #{index} does not exist."
         end
       else
         indexes.unshift index

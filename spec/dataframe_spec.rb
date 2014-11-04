@@ -25,7 +25,7 @@ describe Daru::DataFrame do
       expect(df.a)      .to eq([1,2,3,4,5].dv(:a, df.index)) 
     end
 
-    it "initializes from a Hash of Vectors" do
+    it "initializes from a Hash of Vectors", :focus => true do
       df = Daru::DataFrame.new({b: [11,12,13,14,15].dv(:b, [:one, :two, :three, :four, :five]), 
         a: [1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five])}, [:a, :b],
         [:one, :two, :three, :four, :five])
@@ -66,25 +66,31 @@ describe Daru::DataFrame do
     end
 
     it "aligns indexes properly" do
-      df = Daru::DataFrame.new({b: [11,12,13,14,15].dv(:b, [:two, :one, :four, 
-        :five, :three]), a: [1,2,3,4,5].dv(:a, [:two,:one,:three, :four, :five])}, 
-        [:a, :b])
+      df = Daru::DataFrame.new({
+          b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
+          a:      [1,2,3,4,5].dv(:a, [:two,:one,:three, :four, :five])
+        }, 
+          [:a, :b]
+        )
 
       expect(df).to eq(Daru::DataFrame.new({
-          b: [12,11,15,13,14].dv(:b, [:one, :two, :three, :four, :five]), 
-          a:      [2,1,3,4,5].dv(:a, [:one, :two, :three, :four, :five])
+          b: [14,13,12,15,11].dv(:b, [:five, :four, :one, :three, :two]), 
+          a:      [5,4,2,3,1].dv(:a, [:five, :four, :one, :three, :two])
         }, [:a, :b])
       )
     end
 
     it "adds nil values for missing indexes and aligns by index" do
-      df = Daru::DataFrame.new({b: [11,12,13,14,15].dv(:b, [:two, :one, :four, 
-        :five, :three]), a: [1,2,3].dv(:a, [:two,:one,:three])}, 
-        [:a, :b])
+      df = Daru::DataFrame.new({
+               b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
+               a: [1,2,3]         .dv(:a, [:two,:one,:three])
+             }, 
+             [:a, :b]
+           )
 
       expect(df).to eq(Daru::DataFrame.new({
-          b: [12,11,15,13,14].dv(:b, [:one,:two,:three, :four, :five]), 
-          a:  [2,1,3,nil,nil].dv(:a, [:one,:two,:three, :four, :five])
+          b: [14,13,12,15,11].dv(:b, [:five, :four, :one, :three, :two]), 
+          a:  [nil,nil,2,3,1].dv(:a, [:five, :four, :one, :three, :two])
         }, 
         [:a, :b])
       )
@@ -96,7 +102,7 @@ describe Daru::DataFrame do
           a: [1,2,3]             .dv(nil, [:one, :two, :three]), 
           c: [11,22,33,44,55]    .dv(nil, [:one, :two, :three, :four, :five]),
           d: [49,69,89,99,108,44].dv(nil, [:one, :two, :three, :four, :five, :six])
-        }, [:a, :b, :c, :d])
+        }, [:a, :b, :c, :d], [:one, :two, :three, :four, :five, :six])
 
       expect(df).to eq(Daru::DataFrame.new({
           b: [11,nil,nil,nil,nil,nil].dv(nil, [:one, :two, :three, :four, :five, :six]), 
@@ -104,6 +110,22 @@ describe Daru::DataFrame do
           c: [11,22,33,44,55,nil]    .dv(nil, [:one, :two, :three, :four, :five, :six]),
           d: [49,69,89,99,108,44]    .dv(nil, [:one, :two, :three, :four, :five, :six])
         }, [:a, :b, :c, :d], [:one, :two, :three, :four, :five, :six])
+      )
+    end
+
+    it "correctly matches the supplied DataFrame index with the individual vector indexes" do
+      df = Daru::DataFrame.new({
+          b: [11,12,13] .dv(nil, [:one, :bleh, :blah]), 
+          a: [1,2,3,4,5].dv(nil, [:one, :two, :booh, :baah, :three]), 
+          c: [11,22,33,44,55].dv(nil, [0,1,3,:three, :two])
+        }, [:a, :b, :c], [:one, :two, :three])
+
+      expect(df).to eq(Daru::DataFrame.new({
+        b: [11,nil,nil].dv(nil, [:one, :two, :three]),
+        a: [1,2,5]     .dv(nil, [:one, :two, :three]),
+        c: [1,2,5]     .dv(nil, [:one, :two, :three]),
+        }
+        )
       )
     end
 
@@ -121,15 +143,10 @@ describe Daru::DataFrame do
       }.to raise_error
     end
 
-    it "raises error for unequal sized vectors" do
+    it "raises error for unequal sized vectors/arrays" do
       expect {
         df = Daru::DataFrame.new({b: [11,12,13], a: [1,2,3,4,5], 
           c: [11,22,33,44,55]}, [:a, :b, :c], [:one, :two, :three])
-      }.to raise_error
-
-      expect {
-        df = Daru::DataFrame.new({b: [11,12,13].dv, a: [1,2,3,4,5].dv, 
-          c: [11,22,33,44,55].dv}, [:a, :b, :c], [:one, :two, :three])
       }.to raise_error
     end
   end

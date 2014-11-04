@@ -58,3 +58,7 @@ Then switch to MRI, do a normal `bundle install` followed by `rspec` for testing
 * Allow for boolean operations inside #[].
 * Deletion of elements from Vector should only modify the index and leave the vector as it is so that compacting is not needed and things are faster.
 * Add a #sync method which will sync the modified index with the unmodified vector.
+* Ability to reorder the index of a dataframe.
+
+Copyright (c) 2014, Sameer Deshmukh
+All rights reserved

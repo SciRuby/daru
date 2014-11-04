@@ -56,20 +56,54 @@ module Daru
             @data << v.dv(name, @index)
           end
         when Hash
-          vectors = source.keys.sort      if vectors.nil?
-          index   = source.values[0].size if index.nil?
+          create_vectors_index_with vectors, source
 
-          if vectors.is_a?(Daru::Index) or index.is_a?(Daru::Index)
-            @vectors = vectors.to_index
-            @index   = index.to_index
-          else
-            @vectors = Daru::Index.new (vectors + (source.keys - vectors)).uniq.map(&:to_sym)
-            @index   = Daru::Index.new index     
+          if all_daru_vectors_in_source? source
+
+            if !index.nil?
+              @index = index.to_index
+            elsif all_vectors_have_equal_indexes? source
+              @index = source.values[0].index.dup
+            else
+              all_indexes = []
+
+              source.each_value do |vector|
+                all_indexes << vector.index.to_a
+              end
+              # sort only if missing indexes detected
+              all_indexes.flatten!.uniq!.sort!
+
+              @index = Daru::Index.new all_indexes
+            end
+
+            @vectors.each do |vector|
+              @data << Daru::Vector.new(vector, [], @index)
+
+              @index.each do |idx|
+                begin
+                  @data[@vectors[vector]][idx] = source[vector][idx]                   
+                rescue IndexError
+                  # If the index is not present in the vector under consideration
+                  # (in source) then an error is raised. Put a nil in that place if
+                  # that is the case.
+                  @data[@vectors[vector]][idx] = nil                  
+                end
+              end
+            end
+          else   
+            index = source.values[0].size if index.nil?
+
+            if index.is_a?(Daru::Index)
+              @index   = index.to_index
+            else
+              @index   = Daru::Index.new index     
+            end
+
+            @vectors.each do |name|
+              @data << source[name].dup.dv(name, @index)
+            end
           end
 
-          @vectors.each do |name|
-            @data << source[name].dv(name, @index).dup
-          end
         end
       end
 
@@ -292,7 +326,8 @@ module Daru
 
     def inspect spacing=10, threshold=15
       longest = [@vectors.map(&:to_s).map(&:size).max, 
-                 @index  .map(&:to_s).map(&:size).max].max
+                 @index  .map(&:to_s).map(&:size).max,
+                 @data   .map{ |v|  v.map(&:to_s).map(&:size).max }.max].max
 
       name      = @name || 'nil'
       content   = ""
@@ -309,7 +344,7 @@ module Daru
       row_num = 1
 
       self.each_row_with_index do |row, index|
-        content += sprintf formatter, index.to_s, *row.to_hash.values.map(&:to_s)
+        content += sprintf formatter, index.to_s, *row.to_hash.values.map { |e| (e || 'nil').to_s }
 
         row_num += 1
         if row_num > threshold
@@ -465,6 +500,12 @@ module Daru
       validate_vector_sizes
     end
 
+    def all_daru_vectors_in_source? source
+      source.values.all? do |vector|
+        vector.is_a?(Daru::Vector)
+      end
+    end
+
     def set_size
       @size = @index.size
     end
@@ -476,6 +517,24 @@ module Daru
         @index.key index
       else
         raise IndexError, "Specified index #{index} does not exist."
+      end
+    end
+
+    def create_vectors_index_with vectors, source
+      vectors = source.keys.sort if vectors.nil?
+
+      if vectors.is_a?(Daru::Index)
+        @vectors = vectors.to_index
+      else
+        @vectors = Daru::Index.new (vectors + (source.keys - vectors)).uniq.map(&:to_sym)
+      end
+    end
+
+    def all_vectors_have_equal_indexes? source
+      index = source.values[0].index
+
+      source.all? do |name, vector|
+        index == vector.index
       end
     end
   end
