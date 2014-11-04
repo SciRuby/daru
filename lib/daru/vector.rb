@@ -1,5 +1,10 @@
+require_relative 'math/arithmetic/vector.rb'
+require_relative 'math/statistics/vector.rb'
+
 module Daru
   class Vector
+    include Daru::Math::Arithmetic::Vector
+    include Daru::Math::Statistics::Vector
     include Enumerable
 
     def each(&block)

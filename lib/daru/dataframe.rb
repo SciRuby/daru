@@ -1,9 +1,14 @@
-require_relative 'dataframe_by_row.rb'
-require_relative 'dataframe_by_vector.rb'
-require_relative 'io.rb'
+require_relative 'accessors/dataframe_by_row.rb'
+require_relative 'accessors/dataframe_by_vector.rb'
+require_relative 'math/arithmetic/dataframe.rb'
+require_relative 'math/statistics/dataframe.rb'
+require_relative 'io/io.rb'
 
 module Daru
   class DataFrame
+
+    include Daru::Math::Arithmetic::DataFrame
+    include Daru::Math::Statistics::DataFrame
 
     class << self
       def from_csv path, opts={}, &block
