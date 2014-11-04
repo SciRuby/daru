@@ -123,8 +123,6 @@ module Daru
 
     def []=(name, axis ,vector)
       if axis == :vector
-        @vectors = @vectors.re_index(@vectors + name)
-
         insert_or_modify_vector name, vector
       elsif axis == :row        
         insert_or_modify_row name, vector
@@ -423,27 +421,28 @@ module Daru
     end
 
     def insert_or_modify_vector name, vector
-      if @vectors.include? name
-        v = nil
+      @vectors = @vectors.re_index(@vectors + name)
 
-        if vector.is_a?(Daru::Vector)
-          v = Daru::Vector.new name, [], @index
+      v = nil
 
-          @index.each do |idx|
-            begin
-              v[idx] = vector[idx]
-            rescue IndexError
-              v[idx] = nil
-            end
+      if vector.is_a?(Daru::Vector)
+        v = Daru::Vector.new name, [], @index
+
+        @index.each do |idx|
+          begin
+            v[idx] = vector[idx]
+          rescue IndexError
+            v[idx] = nil
           end
-        else
-          v = vector.dv(name, @index)
         end
-
-        @data[@vectors[name]] = v
       else
-        raise Exception, "Vector named #{name} not found in Index."
+        raise Exception, "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}" if
+          @size != vector.size
+
+        v = vector.dv(name, @index)
       end
+
+      @data[@vectors[name]] = v
     end
 
     def insert_or_modify_row name, vector      
@@ -493,25 +492,10 @@ module Daru
       end
     end
 
-    def validate_vector_indexes single_vector=nil, index=nil
-      index = @index if index.nil?
-
-      if single_vector.nil?
-        @data.each do |vector|
-          raise NotImplementedError, "Expected matching indexes in all vectors. DataFrame with mismatched indexes not implemented yet." unless 
-            vector.index == index 
-        end
-      else
-        raise IndexError, "Expected same index as DataFrame" unless 
-          single_vector.index == index
-      end
-    end
-
     def validate
       # TODO: [IMP] when vectors of different dimensions are specified, they should
       # be inserted into the dataframe by inserting nils wherever necessary.
       validate_labels
-      validate_vector_indexes 
       validate_vector_sizes
     end
 

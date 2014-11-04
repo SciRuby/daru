@@ -239,6 +239,12 @@ describe Daru::DataFrame do
       expect(@df.shankar).to eq([1,nil,nil,nil,nil].dv(:shankar, [:one, :two, :three, :four, :five]))
     end
 
+    it "raises error for Array assignment of wrong length" do
+      expect{
+        @df.vector[:shiva] = [1,2,3]
+        }.to raise_error
+    end
+
     it "appends multiple vectors at a time" do
       pending "Implement after initialize with array of arrays is done with."
 
