@@ -158,7 +158,8 @@ module Daru
     end
 
     def inspect spacing=10, threshold=15
-      longest = [@index.to_a.map(&:to_s).map(&:size).max, 
+      longest = [@name.to_s.size,
+                 @index.to_a.map(&:to_s).map(&:size).max, 
                  @vector    .map(&:to_s).map(&:size).max].max
 
       content   = ""
@@ -170,7 +171,7 @@ module Daru
 
       content += sprintf formatter, "", name
       @index.each_with_index do |index, num|
-        content += sprintf formatter, index.to_s, self[index]
+        content += sprintf formatter, index.to_s, (self[index] || 'nil').to_s
 
         if num > threshold
           content += sprintf formatter, '...', '...'

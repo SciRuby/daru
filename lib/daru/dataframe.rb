@@ -323,7 +323,8 @@ module Daru
     end
 
     def inspect spacing=10, threshold=15
-      longest = [@vectors.map(&:to_s).map(&:size).max, 
+      longest = [@name.to_s.size,
+                 @vectors.map(&:to_s).map(&:size).max, 
                  @index  .map(&:to_s).map(&:size).max,
                  @data   .map{ |v|  v.map(&:to_s).map(&:size).max }.max].max
 
