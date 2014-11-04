@@ -43,12 +43,9 @@ Then switch to MRI, do a normal `bundle install` followed by `rspec` for testing
     - Creation of correlation, covariance matrices
     - Verification of data in a vector
     - Basic vector statistics - mean, median, variance, etc.
-* Indexing on DataFrame.
-    - Creation of DataFrame from vectors of different indexes by inserting nils into places with missing index.
 * Vector arithmetic - elementwise addition, subtraction, multiplication, division.
 * Transpose a dataframe.
 * Option to express a DataFrame as an NMatrix or MDArray so as to use more efficient storage techniques.
-* Pretty printing for the command line.
 * Assignment of a column to a single number should set the entire column to that number.
 * == between daru_vector and string/number.
 * Multiple column assignment with []=
