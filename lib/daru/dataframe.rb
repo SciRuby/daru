@@ -125,7 +125,7 @@ module Daru
       if axis == :vector
         @vectors = @vectors.re_index(@vectors + name)
 
-        insert_vector name, vector
+        insert_or_modify_vector name, vector
       elsif axis == :row        
         insert_or_modify_row name, vector
       else
@@ -368,7 +368,7 @@ module Daru
 
     def method_missing(name, *args, &block)
       if md = name.match(/(.+)\=/)
-        insert_vector name[/(.+)\=/].delete("="), args[0]
+        insert_or_modify_vector name[/(.+)\=/].delete("="), args[0]
       elsif self.has_vector? name
         self[name, :vector]
       else
@@ -400,18 +400,6 @@ module Daru
       Daru::DataFrame.new new_vcs, new_vcs.keys, @index, @name
     end
 
-    def insert_vector name, vector
-      if @vectors.include? name
-        validate_vector_indexes vector if vector.is_a?(Daru::Vector)
-
-        v = vector.dv(name, @index)
-
-        @data[@vectors[name]] = vector.dv(name, @index)
-      else
-        raise Exception, "Vector named #{name} not found in Index."
-      end
-    end
-
     def access_row *names
       unless names[1]
         row = []
@@ -434,24 +422,51 @@ module Daru
       end
     end
 
+    def insert_or_modify_vector name, vector
+      if @vectors.include? name
+        v = nil
+
+        if vector.is_a?(Daru::Vector)
+          v = Daru::Vector.new name, [], @index
+
+          @index.each do |idx|
+            begin
+              v[idx] = vector[idx]
+            rescue IndexError
+              v[idx] = nil
+            end
+          end
+        else
+          v = vector.dv(name, @index)
+        end
+
+        @data[@vectors[name]] = v
+      else
+        raise Exception, "Vector named #{name} not found in Index."
+      end
+    end
+
     def insert_or_modify_row name, vector      
       if @index.include? name
-        validate_vector_indexes vector, @vectors if vector.is_a?(Daru::Vector)
-
         v = vector.dv(name, @vectors)
 
         @vectors.each do |vector|
-          @data[@vectors[vector]][name] = v[vector]
+          begin
+            @data[@vectors[vector]][name] = v[vector] 
+          rescue IndexError
+            @data[@vectors[vector]][name] = nil
+          end
         end
       else
         @index = @index.re_index(@index + name)
-
-        validate_vector_indexes vector, @vectors if vector.is_a?(Daru::Vector)
-
-        v = vector.dv(name, @vectors)
+        v      = vector.dv(name, @vectors)
 
         @vectors.each do |vector|
-          @data[@vectors[vector]].concat v[vector], name
+          begin
+            @data[@vectors[vector]].concat v[vector], name     
+          rescue IndexError
+            @data[@vectors[vector]].concat nil, name
+          end
         end
       end
 

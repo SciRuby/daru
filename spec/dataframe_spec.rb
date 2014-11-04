@@ -121,10 +121,11 @@ describe Daru::DataFrame do
         }, [:a, :b, :c], [:one, :two, :three])
 
       expect(df).to eq(Daru::DataFrame.new({
-        b: [11,nil,nil].dv(nil, [:one, :two, :three]),
-        a: [1,2,5]     .dv(nil, [:one, :two, :three]),
-        c: [1,2,5]     .dv(nil, [:one, :two, :three]),
-        }
+          b: [11,nil,nil].dv(nil, [:one, :two, :three]),
+          a: [1,2,5]     .dv(nil, [:one, :two, :three]),
+          c: [nil,55,44] .dv(nil, [:one, :two, :three]),
+        },  
+        [:a, :b, :c], [:one, :two, :three]
         )
       )
     end
