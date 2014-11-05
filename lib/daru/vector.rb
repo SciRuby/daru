@@ -16,10 +16,10 @@ module Daru
     attr_reader :size
 
     # Pass it name, source and index
-    def initialize *args
-      name   = args.shift
-      source = args.shift || []
-      index  = args.shift
+    def initialize source, opts={}
+      source = source || []
+      name   = opts[:name]
+      index  = opts[:index]
 
       set_name name
 
@@ -60,7 +60,8 @@ module Daru
       else
         indexes.unshift index
 
-        Daru::Vector.new @name, indexes.map { |index| @vector[@index[index]] }, indexes
+        Daru::Vector.new indexes.map { |index| @vector[@index[index]] },name: @name, 
+          index: indexes
       end
     end
 
@@ -135,6 +136,10 @@ module Daru
       end
     end
 
+    def to_a
+      @vector.to_a
+    end
+
     def to_json *args 
       self.to_hash.to_json
     end
@@ -200,7 +205,7 @@ module Daru
     end
 
     def dup 
-      Daru::Vector.new @name, @vector.dup, @index.dup
+      Daru::Vector.new @vector.dup, name: @name, index: @index.dup
     end
 
     def daru_vector *name

@@ -16,7 +16,7 @@ module Daru
 
         csv.each_with_index do |row, index|
           if first
-            df    = Daru::DataFrame.new({}, csv.headers)
+            df    = Daru::DataFrame.new({}, vectors: csv.headers)
             first = false
           end
 

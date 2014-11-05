@@ -24,10 +24,10 @@ module Daru
     # DataFrame basically consists of an Array of Vector objects.
     # These objects are indexed by row and column by vectors and index Index objects.
     # Arguments - source, vectors, index, name in that order. Last 3 are optional.
-    def initialize source, *args
-      vectors = args.shift
-      index   = args.shift
-      @name   = args.shift || SecureRandom.uuid
+    def initialize source, opts={}
+      vectors = opts[:vectors]
+      index   = opts[:index]
+      @name   = (opts[:name] || SecureRandom.uuid).to_sym
 
       @data = []
 
@@ -82,7 +82,7 @@ module Daru
             end
 
             @vectors.each do |vector|
-              @data << Daru::Vector.new(vector, [], @index)
+              @data << Daru::Vector.new([], name: vector, index: @index)
 
               @index.each do |idx|
                 begin
@@ -137,11 +137,11 @@ module Daru
     end
 
     def vector
-      Daru::DataFrameByVector.new(self)
+      Daru::Accessors::DataFrameByVector.new(self)
     end
 
     def row
-      Daru::DataFrameByRow.new(self)
+      Daru::Accessors::DataFrameByRow.new(self)
     end
 
     def dup
@@ -150,7 +150,7 @@ module Daru
         src[vector] = @data[@vectors[vector]]
       end
 
-      Daru::DataFrame.new src, @vectors.dup, @index.dup, @name
+      Daru::DataFrame.new src, vectors: @vectors.dup, index: @index.dup, name: @name
     end
 
     def each_vector(&block)
@@ -271,7 +271,7 @@ module Daru
     end
 
     def filter_rows &block
-      df = Daru::DataFrame.new({}, @vectors.to_a)
+      df = Daru::DataFrame.new({}, vectors: @vectors.to_a)
       marked = []
 
       @index.each do |index|
@@ -432,7 +432,7 @@ module Daru
         new_vcs[name] = @data[@vectors[name]]
       end
 
-      Daru::DataFrame.new new_vcs, new_vcs.keys, @index, @name
+      Daru::DataFrame.new new_vcs, vectors: new_vcs.keys, index: @index, name: @name
     end
 
     def access_row *names
@@ -453,7 +453,7 @@ module Daru
           row << @data[@vectors[vector]][name]
         end
 
-        Daru::Vector.new name, row, @vectors
+        Daru::Vector.new row, index: @vectors, name: name
       else
         # TODO: Access multiple rows
       end
@@ -465,7 +465,7 @@ module Daru
       v = nil
 
       if vector.is_a?(Daru::Vector)
-        v = Daru::Vector.new name, [], @index
+        v = Daru::Vector.new [], name: name, index: @index
 
         @index.each do |idx|
           begin
@@ -513,7 +513,7 @@ module Daru
 
     def create_empty_vectors
       @vectors.each do |name|
-        @data << Daru::Vector.new(name, [], @index)
+        @data << Daru::Vector.new([],name: name, index: @index)
       end
     end
 

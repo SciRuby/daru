@@ -43,8 +43,7 @@ A basic DataFrame can be initialized like this:
 
 ```ruby
 
-    df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, [:a, :b],
-        [:one, :two, :three, :four, :five])
+    df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, vectors: [:a, :b], index: [:one, :two, :three, :four, :five])
     df
     # => 
     # # <Daru::DataFrame:87274040 @name = 7308c587-4073-4e7d-b3ca-3679d1dcc946 # @size = 5>
@@ -66,7 +65,7 @@ The vectors of the DataFrame will be arranged according to the array specified i
         b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
         a:      [1,2,3,4,5].dv(:a, [:two,:one,:three, :four, :five])
       }, 
-        [:a, :b]
+        vectors: [:a, :b]
       )
     df
 
@@ -90,7 +89,7 @@ If an index for the DataFrame is supplied (third argument), then the indexes of 
         a: [1,2,3]             .dv(nil, [:one, :two, :three]), 
         c: [11,22,33,44,55]    .dv(nil, [:one, :two, :three, :four, :five]),
         d: [49,69,89,99,108,44].dv(nil, [:one, :two, :three, :four, :five, :six])
-      }, [:a, :b, :c, :d], [:one, :two, :three, :four, :five, :six])
+      }, vectors: [:a, :b, :c, :d], index: [:one, :two, :three, :four, :five, :six])
     df
     # => 
     # #<Daru::DataFrame:87523270 @name = bda4eb68-afdd-4404-9981-708edab14201  #@size = 6>
@@ -112,7 +111,7 @@ If some of the supplied vectors do not contain certain indexes that are containe
              b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
              a: [1,2,3]         .dv(:a, [:two,:one,:three])
            }, 
-           [:a, :b]
+           vectors: [:a, :b]
          )
     df
 
@@ -135,7 +134,7 @@ In the simplest case it can be constructed like this:
 
 ```ruby
 
-    dv = Daru::Vector.new :ravan, [1,2,3,4,5], [:ek, :don, :teen, :char, :pach]
+    dv = Daru::Vector.new [1,2,3,4,5], name: ravan, index: [:ek, :don, :teen, :char, :pach]
     dv
 
     #  => 
@@ -153,7 +152,7 @@ Initializing a vector with indexes will insert nils in places where elements don
 
 ```ruby
 
-    dv = Daru::Vector.new :yoga, [1,2,3], [0,1,2,3,4]
+    dv = Daru::Vector.new [1,2,3], name: yoga, index: [0,1,2,3,4]
     dv
     #  => 
     # #<Daru::Vector:87890840 @name = yoga @size = 5 >
@@ -177,7 +176,7 @@ Initialize a dataframe:
         b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
         a:      [1,2,3,4,5].dv(:a, [:two,:one,:three, :four, :five])
       }, 
-        [:a, :b]
+        vectors: [:a, :b]
       )
 
     #  => 
@@ -241,7 +240,7 @@ Keep/remove row according to a specified condition:
 
 ```ruby
 
-    df.keep_row_if do |row|
+    df = df.filter_rows do |row|
         row[:a] == 5
     end
 

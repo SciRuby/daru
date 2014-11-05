@@ -3,7 +3,7 @@ require 'spec_helper.rb'
 describe Daru::Vector do
   context "#initialize" do
     it "initializes from an Array" do
-      dv = Daru::Vector.new :ravan, [1,2,3,4,5], [:ek, :don, :teen, :char, :pach]
+      dv = Daru::Vector.new [1,2,3,4,5], name: :ravan, index: [:ek, :don, :teen, :char, :pach]
 
       expect(dv.name) .to eq(:ravan)
       expect(dv.index).to eq(Daru::Index.new [:ek, :don, :teen, :char, :pach])
@@ -12,7 +12,7 @@ describe Daru::Vector do
     it "accepts Index object" do
       idx = Daru::Index.new [:yoda, :anakin, :obi, :padme, :r2d2]
 
-      dv = Daru::Vector.new :yoga, [1,2,3,4,5], idx
+      dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, index: idx
 
       expect(dv.name) .to eq(:yoga)
       expect(dv.index).to eq(idx)
@@ -20,23 +20,23 @@ describe Daru::Vector do
 
     it "raises error for improper Index" do
       expect {
-        dv = Daru::Vector.new :yoga, [1,2,3,4,5], [:i, :j, :k]
+        dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, index: [:i, :j, :k]
       }.to raise_error
 
       expect {
         idx = Daru::Index.new [:i, :j, :k]
-        dv  = Daru::Vector.new :yoga, [1,2,3,4,5], idx 
+        dv  = Daru::Vector.new [1,2,3,4,5], name: :yoda, index: idx 
       }.to raise_error
     end
 
     it "initializes without specifying an index" do
-      dv = Daru::Vector.new :vishnu, [1,2,3,4,5]
+      dv = Daru::Vector.new [1,2,3,4,5], name: :vishnu
 
       expect(dv.index).to eq(Daru::Index.new [0,1,2,3,4])
     end
 
     it "inserts nils for extra indices" do
-      dv = Daru::Vector.new :yoga, [1,2,3], [0,1,2,3,4]
+      dv = Daru::Vector.new [1,2,3], name: :yoga, index: [0,1,2,3,4]
 
       expect(dv).to eq([1,2,3,nil,nil].dv(:yoga))
     end
@@ -44,7 +44,7 @@ describe Daru::Vector do
 
   context "#[]" do
     before :each do
-      @dv = Daru::Vector.new :yoga, [1,2,3,4,5], [:yoda, :anakin, :obi, :padme, :r2d2]
+      @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, index: [:yoda, :anakin, :obi, :padme, :r2d2]
     end
 
     it "returns an element after passing an index" do
@@ -56,14 +56,14 @@ describe Daru::Vector do
     end
 
     it "returns a vector with given indices for multiple indices" do
-      expect(@dv[:yoda, :anakin]).to eq(Daru::Vector.new(:yoga, [1,2], 
-        [:yoda, :anakin]))
+      expect(@dv[:yoda, :anakin]).to eq(Daru::Vector.new([1,2], name: :yoda, 
+        index: [:yoda, :anakin]))
     end
   end
 
   context "#[]=" do
     before :each do
-      @dv = Daru::Vector.new :yoga, [1,2,3,4,5], [:yoda, :anakin, :obi, :padme, :r2d2]
+      @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, index: [:yoda, :anakin, :obi, :padme, :r2d2]
     end
 
     it "assigns at the specified index" do
@@ -81,7 +81,7 @@ describe Daru::Vector do
 
   context "#concat" do
     before :each do
-      @dv = Daru::Vector.new :yoga, [1,2,3,4,5], [:warwick, :thompson, :jackson, :fender, :esp]
+      @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, index: [:warwick, :thompson, :jackson, :fender, :esp]
     end
 
     it "concatenates a new element at the end of vector with index" do
@@ -94,7 +94,7 @@ describe Daru::Vector do
     end
 
     it "concatenates without index if index is default numeric" do
-      vector = Daru::Vector.new :nums, [1,2,3,4,5]
+      vector = Daru::Vector.new [1,2,3,4,5], name: :nums
 
       vector.concat 6
 
@@ -111,35 +111,35 @@ describe Daru::Vector do
 
   context "#delete" do
     it "deletes specified value in the vector" do
-      dv = Daru::Vector.new :a, [1,2,3,4,5]
+      dv = Daru::Vector.new [1,2,3,4,5], name: :a
 
       dv.delete 3
 
-      expect(dv).to eq(Daru::Vector.new :a, [1,2,4,5])
+      expect(dv).to eq(Daru::Vector.new [1,2,4,5], name: :a)
     end
   end
 
   context "#delete_at" do
     before :each do
-      @dv = Daru::Vector.new :a, [1,2,3,4,5], [:one, :two, :three, :four, :five]
+      @dv = Daru::Vector.new [1,2,3,4,5], name: :a, index: [:one, :two, :three, :four, :five]
     end
 
     it "deletes element of specified index" do
       @dv.delete_at :one
 
-      expect(@dv).to eq(Daru::Vector.new :a, [2,3,4,5], [:two, :three, :four, :five])
+      expect(@dv).to eq(Daru::Vector.new [2,3,4,5], name: :a, index: [:two, :three, :four, :five])
     end
 
     it "deletes element of specified integer index" do
       @dv.delete_at 2
 
-      expect(@dv).to eq(Daru::Vector.new :a, [1,2,4,5], [:one, :two, :four, :five])
+      expect(@dv).to eq(Daru::Vector.new [1,2,4,5], name: :a, index: [:one, :two, :four, :five])
     end
   end
 
   context "#index_of" do
     it "returns index of specified value" do
-      dv = Daru::Vector.new :a, [1,2,3,4,5], [:one, :two, :three, :four, :five]
+      dv = Daru::Vector.new [1,2,3,4,5], name: :a, index: [:one, :two, :three, :four, :five]
 
       expect(dv.index_of(1)).to eq(:one)
     end
@@ -147,7 +147,7 @@ describe Daru::Vector do
 
   context "#to_hash" do
     it "returns the vector as a hash" do
-      dv = Daru::Vector.new :a, [1,2,3,4,5], [:one, :two, :three, :four, :five]
+      dv = Daru::Vector.new [1,2,3,4,5], name: :a, index: [:one, :two, :three, :four, :five]
 
       expect(dv.to_hash).to eq({one: 1, two: 2, three: 3, four: 4, five: 5})
     end
