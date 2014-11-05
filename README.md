@@ -251,7 +251,7 @@ Keep/remove row according to a specified condition:
     # five    5   14 
 
 ```
-The same can be applied to vectors using `keep_vector_if`.
+The same can be applied to vectors using `filter_vectors`.
 
 To iterate over a DataFrame and perform operations on rows or vectors, `#each_row` or `#each_vector` can be used, which works just like `#each` for Ruby Arrays.
 
@@ -260,7 +260,7 @@ To change the values of a row/vector while iterating through the DataFrame, use 
 ```ruby
 
     df.map_rows do |row|
-        row = row.map { |e| e*e }
+        row = row * row
     end
 
     df
@@ -280,7 +280,24 @@ Rows/vectors can be deleted using `delete_row` or `delete_vector`.
 
 #### Basic Math Operations
 
-Coming soon!
+Performing a binary arithmetic operation on two `Daru::Vector` objects will return a `Vector` object in which the operation will be performed on elements of the same index.
+
+```ruby
+
+    dv1 = Daru::Vector.new [1,2,3,4], name: :boozy, index: [:a, :b, :c, :d]
+
+    dv2 = Daru::Vector.new [1,2,3,4], name: :mayer, index: [:e, :f, :b, :d]
+
+    dv1 * dv2
+
+    # #<Daru::Vector:80924700 @name = boozy @size = 2 >
+    #         boozy
+    #      b      6
+    #      d     16
+ 
+```
+
+Arithmetic operators applied on a single Numeric will perform the operation with that number against the entire vector.
 
 ## Roadmap
 
@@ -294,7 +311,6 @@ Coming soon!
     - Creation of correlation, covariance matrices
     - Verification of data in a vector
     - Basic vector statistics - mean, median, variance, etc.
-* Vector arithmetic - elementwise addition, subtraction, multiplication, division.
 * Transpose a dataframe.
 * Option to express a DataFrame as an NMatrix or MDArray so as to use more efficient storage techniques.
 * Assignment of a column to a single number should set the entire column to that number.
@@ -310,8 +326,6 @@ Coming soon!
 * Slicing operations using Range.
 * Create DataFrame by providing rows.
 * Integrate basic plotting with Nyaplot.
-* Filter through a dataframe with filter\_rows or filter\_vectors based on whatever boolean value evaluates to true.
-* Named arguments
 
 Copyright (c) 2014, Sameer Deshmukh
 All rights reserved

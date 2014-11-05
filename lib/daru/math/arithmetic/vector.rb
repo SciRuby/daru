@@ -7,7 +7,7 @@ module Daru
           when Daru::Vector
             v2v_binary :+, other
           else
-            Daru::Vector.new self.map { |e| e + other }, name: @name, index: @index
+            v2o_binary :+, other
           end
         end
 
@@ -16,7 +16,7 @@ module Daru
           when Daru::Vector
             v2v_binary :-, other
           else
-            Daru::Vector.new self.map { |e| e - other }, name: @name, index: @index
+            v2o_binary :-, other
           end
         end
 
@@ -25,7 +25,7 @@ module Daru
           when Daru::Vector
             v2v_binary :*, other
           else
-            Daru::Vector.new self.map { |e| e * other }, name: @name, index: @index
+            v2v_binary :*, other
           end
         end
 
@@ -34,7 +34,7 @@ module Daru
           when Daru::Vector
             v2v_binary :/, other
           else
-            Daru::Vector.new self.map { |e| e / other }, name: @name, index: @index
+            v2o_binary :/, other
           end
         end
 
@@ -43,11 +43,24 @@ module Daru
           when Daru::Vector
             v2v_binary :%, other
           else
-            Daru::Vector.new self.map { |e| e % other }, name: @name, index: @index
+            v2o_binary :%, other
+          end
+        end
+
+        def ** other
+          case other
+          when Daru::Vector
+            v2v_binary :**, other
+          else
+            v2o_binary :**, other
           end
         end
 
        private
+
+        def v2o_binary operation, other
+          Daru::Vector.new self.map { |e| e.send(operation, other) }, name: @name, index: @index
+        end
 
         def v2v_binary operation, other
           common_idxs = []
