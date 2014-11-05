@@ -55,7 +55,7 @@ module Daru
         elsif index.is_a?(Numeric)
           @vector[index]
         else
-          raise IndexError, "Specified index #{index} does not exist."
+          return nil
         end
       else
         indexes.unshift index
