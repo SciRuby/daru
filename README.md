@@ -311,6 +311,8 @@ Coming soon!
 * Slicing operations using Range.
 * Create DataFrame by providing rows.
 * Integrate basic plotting with Nyaplot.
+* Filter through a dataframe with filter\_rows or filter\_vectors based on whatever boolean value evaluates to true.
+* Named arguments
 
 Copyright (c) 2014, Sameer Deshmukh
 All rights reserved

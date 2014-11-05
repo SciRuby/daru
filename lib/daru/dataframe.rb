@@ -249,11 +249,17 @@ module Daru
     end
 
     def keep_row_if &block
+      deletion = []
+
       @index.each do |index|
         keep_row = yield access_row(index)
 
-        delete_row index unless keep_row
+        deletion << index unless keep_row
       end
+
+      deletion.each { |idx| 
+        delete_row idx 
+      }
     end
 
     def keep_vector_if &block
@@ -262,6 +268,31 @@ module Daru
         
         delete_vector vector unless keep_vector
       end
+    end
+
+    def filter_rows &block
+      df = Daru::DataFrame.new({}, @vectors.to_a)
+      marked = []
+
+      @index.each do |index|
+        keep_row = yield access_row(index)
+
+        marked << index if keep_row
+      end
+
+      marked.each do |idx|
+        df.row[idx] = self[idx, :row]
+      end
+
+      df
+    end
+
+    def filter_vectors &block
+      df = self.dup
+
+      df.keep_vector_if &block
+
+      df
     end
 
     def has_vector? name
@@ -408,9 +439,7 @@ module Daru
       unless names[1]
         row = []
 
-        @vectors.each do |vector|
-          row << @data[@vectors[vector]][names[0]]
-        end
+        name = nil
 
         if @index.include? names[0]
           name = names[0]
@@ -418,6 +447,10 @@ module Daru
           name = @index.key names[0]
         else
           raise IndexError, "Specified row #{names[0]} does not exist."
+        end
+
+        @vectors.each do |vector|
+          row << @data[@vectors[vector]][name]
         end
 
         Daru::Vector.new name, row, @vectors

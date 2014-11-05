@@ -503,17 +503,15 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#keep_row_if" do
+  context "#keep_row_if", :focus => true do
     it "keeps row if block evaluates to true" do
       df = Daru::DataFrame.new({b: [10,12,20,23,30], a: [50,30,30,1,5], 
         c: [10,20,30,40,50]}, [:a, :b, :c], [:one, :two, :three, :four, :five])
 
       df.keep_row_if do |row|
-        row.all? {|a| a % 5 == 0 }
+        row[:a] % 10 == 0
       end
-
-      expect(df).to eq(Daru::DataFrame.new({b: [10,20,30], a: [50, 30, 5],
-        c: [10,30,50]}, [:a, :b, :c], [:one, :three, :five]))
+      # TODO: write expectation
     end
   end
 
@@ -525,6 +523,30 @@ describe Daru::DataFrame do
 
       expect(@data_frame).to eq(Daru::DataFrame.new({a: [1,2,3,4,5]}, [:a], 
         [:one, :two, :three, :four, :five]))
+    end
+  end
+
+  context "#filter_rows" do
+    it "filters rows" do
+      df = Daru::DataFrame.new({a: [1,2,3], b: [2,3,4]})
+
+      a = df.filter_rows do |row|
+        row[:a] % 2 == 0
+      end
+
+      expect(a).to eq(Daru::DataFrame.new({a: [2], b: [3]}, [:a, :b], [1]))
+    end
+  end
+
+  context "#filter_vectors" do
+    it "filters vectors" do
+      df = Daru::DataFrame.new({a: [1,2,3], b: [2,3,4]})
+
+      a = df.filter_vectors do |vector|
+        vector[0] == 1
+      end
+
+      expect(a).to eq(Daru::DataFrame.new({a: [1,2,3]}))
     end
   end
 
