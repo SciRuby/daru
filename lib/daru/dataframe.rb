@@ -11,19 +11,42 @@ module Daru
     include Daru::Math::Statistics::DataFrame
 
     class << self
+      # Load data from a CSV file. 
+      # Arguments - path, options
+      # 
+      # Accepts a block for pre-conditioning of CSV data if any.
       def from_csv path, opts={}, &block
         Daru::IO.from_csv path, opts, &block      
       end
     end
 
+    # The vectors (columns) index of the DataFrame
     attr_reader :vectors
+
+    # The index of the rows of the DataFrame
     attr_reader :index
+
+    # The name of the DataFrame
     attr_reader :name
+
+    # The number of rows present in the DataFrame
     attr_reader :size
 
     # DataFrame basically consists of an Array of Vector objects.
     # These objects are indexed by row and column by vectors and index Index objects.
-    # Arguments - source, vectors, index, name in that order. Last 3 are optional.
+    # Arguments - source, vectors, index, name.
+    # 
+    # == Usage
+    #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [6,7,8,9]}, vectors: [:b, :a], 
+    #     index: [:a, :b, :c, :d], name: :spider_man)
+    # 
+    #   # => 
+    #   # <Daru::DataFrame:80766980 @name = spider_man @size = 4>
+    #   #             b          a 
+    #   #  a          6          1 
+    #   #  b          7          2 
+    #   #  c          8          3 
+    #   #  d          9          4 
     def initialize source, opts={}
       vectors = opts[:vectors]
       index   = opts[:index]
@@ -116,6 +139,10 @@ module Daru
       validate
     end
 
+    # Access row or vector. Specify name of row/vector followed by axis(:row, :vector).
+    # Use of this method is not recommended for accessing rows or vectors.
+    # Use df.row[:a] for accessing row with index ':a' or df.vector[:vec] for
+    # accessing vector with index ':vec'
     def [](*names, axis)
       if axis == :vector
         access_vector *names
@@ -126,6 +153,13 @@ module Daru
       end
     end
 
+    # Insert a new row/vector of the specified name or modify a previous row.
+    # Instead of using this method directly, use df.row[:a] = [1,2,3] to set/create
+    # a row ':a' to [1,2,3], or df.vector[:vec] = [1,2,3] for vectors.
+    # 
+    # In case a Daru::Vector is specified after the equality the sign, the indexes
+    # of the vector will be matched against the row/vector indexes of the DataFrame
+    # before an insertion is performed. Unmatched indexes will be set to nil.
     def []=(name, axis ,vector)
       if axis == :vector
         insert_or_modify_vector name, vector
@@ -136,14 +170,25 @@ module Daru
       end
     end
 
+    # Access a vector or set/create a vector. Refer #[] and #[]= docs for details.
+    # 
+    # == Usage
+    #   df.vector[:a] # access vector named ':a'
+    #   df.vector[:b] = [1,2,3] # set vector ':b' to [1,2,3]
     def vector
       Daru::Accessors::DataFrameByVector.new(self)
     end
 
+    # Access a row or set/create a row. Refer #[] and #[]= docs for details.
+    # 
+    # == Usage
+    #   df.row[:a] # access row named ':a'
+    #   df.row[:b] = [1,2,3] # set row ':b' to [1,2,3]
     def row
       Daru::Accessors::DataFrameByRow.new(self)
     end
 
+    # Duplicate the DataFrame entirely.
     def dup
       src = {}
       @vectors.each do |vector|
@@ -153,12 +198,14 @@ module Daru
       Daru::DataFrame.new src, vectors: @vectors.dup, index: @index.dup, name: @name
     end
 
+    # Iterate over each vector
     def each_vector(&block)
       @data.each(&block)
 
       self
     end
 
+    # Iterate over each vector alongwith the name of the vector
     def each_vector_with_index(&block)
       @vectors.each do |vector|
         yield @data[@vectors[vector]], vector
@@ -167,6 +214,7 @@ module Daru
       self
     end
 
+    # Iterate over each row
     def each_row(&block)
       @index.each do |index|
         yield access_row(index)
@@ -183,6 +231,8 @@ module Daru
       self
     end
 
+    # Map each vector. Returns a DataFrame whose vectors are modified according
+    # to the value returned by the block.
     def map_vectors(&block)
       df = self.dup
 
@@ -203,6 +253,7 @@ module Daru
       df
     end
 
+    # Map each row
     def map_rows(&block)
       df = self.dup
 
@@ -223,6 +274,7 @@ module Daru
       df
     end
 
+    # Delete a vector
     def delete_vector vector
       if @vectors.include? vector
         @data.delete_at @vectors[vector]
@@ -270,6 +322,8 @@ module Daru
       end
     end
 
+    # Iterates over each row and retains it in a new DataFrame if the block returns
+    # true for that row.
     def filter_rows &block
       df = Daru::DataFrame.new({}, vectors: @vectors.to_a)
       marked = []
@@ -287,6 +341,8 @@ module Daru
       df
     end
 
+    # Iterates over each vector and retains it in a new DataFrame if the block returns
+    # true for that vector.
     def filter_vectors &block
       df = self.dup
 
@@ -295,6 +351,7 @@ module Daru
       df
     end
 
+    # Check if a vector is present
     def has_vector? name
       !!@vectors[name]
     end
@@ -325,7 +382,8 @@ module Daru
       end
     end
 
-    def to_html threshold=15
+    # Convert to html for IRuby.
+    def to_html threshold=30
       html = '<table><tr><th></th>'
 
       @vectors.each { |vector| html += '<th>' + vector.to_s + '</th>' }
@@ -358,6 +416,7 @@ module Daru
       to_html
     end
 
+    # Pretty print in a nice table format for the command line (irb)
     def inspect spacing=10, threshold=15
       longest = [@name.to_s.size,
                  @vectors.map(&:to_s).map(&:size).max, 
