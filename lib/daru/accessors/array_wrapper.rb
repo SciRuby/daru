@@ -3,8 +3,6 @@ module Daru
     # Internal class for wrapping ruby array
     class ArrayWrapper
       module Statistics
-
-<<<<<<< HEAD
         # def average_deviation_population m=nil
         #   m ||= self.mean
         #   (self.reduce(0){|memo, val| val + (val - m).abs})/self.length
@@ -172,9 +170,6 @@ module Daru
         #   self.sum_of_squares(m)/(self.length-1)
         # end
       end # module Statistics
-=======
-      end
->>>>>>> parent of 3816c8b... started array wrapper statistics
 
       include Statistics
       include Enumerable

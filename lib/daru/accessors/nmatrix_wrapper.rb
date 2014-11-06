@@ -5,7 +5,6 @@ module Daru
 
     # Internal class for wrapping NMatrix
     class NMatrixWrapper
-<<<<<<< HEAD
       module Statistics
         # def average_deviation_population m=nil
         #   m ||= self.mean
@@ -251,9 +250,6 @@ module Daru
 
         @vector = NMatrix.new [size], @vector.to_a
       end
-=======
-
->>>>>>> parent of 3816c8b... started array wrapper statistics
     end
   end
 end

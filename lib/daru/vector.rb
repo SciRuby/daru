@@ -99,14 +99,11 @@ module Daru
       concat element
     end
 
-<<<<<<< HEAD
     def push element
       concat element  
     end
 
     # Append an element to the vector by specifying the element and index
-=======
->>>>>>> parent of 3816c8b... started array wrapper statistics
     def concat element, index=nil
       raise IndexError, "Expected new unique index" if @index.include? index
 

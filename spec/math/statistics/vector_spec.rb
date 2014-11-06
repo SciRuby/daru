@@ -1,7 +1,6 @@
 require 'spec_helper.rb'
 
 describe Daru::Vector do
-<<<<<<< HEAD
   [NMatrix, Array].each do |stype|
     describe stype do
       before :each do
@@ -14,14 +13,5 @@ describe Daru::Vector do
         end
       end
     end
-=======
-
-  context "#mean" do
-
-  end
-
-  context "#median" do
-
->>>>>>> parent of 3816c8b... started array wrapper statistics
   end
 end
