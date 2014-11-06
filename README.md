@@ -326,6 +326,7 @@ Arithmetic operators applied on a single Numeric will perform the operation with
 * Slicing operations using Range.
 * Create DataFrame by providing rows.
 * Integrate basic plotting with Nyaplot.
+* head/tail for DF/DV.
 
 Copyright (c) 2014, Sameer Deshmukh
 All rights reserved

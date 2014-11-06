@@ -1,5 +1,6 @@
 require_relative 'math/arithmetic/vector.rb'
 require_relative 'math/statistics/vector.rb'
+require_relative 'accessors/array_wrapper.rb'
 
 module Daru
   class Vector
@@ -26,11 +27,13 @@ module Daru
       @vector = 
       case source
       when Array
-        source.dup
+        Daru::Accessors::ArrayWrapper.new source.dup
       when Range, Matrix
-        source.to_a.dup
-      else # NMatrix or MDArray
-        source.dup
+        Daru::Accessors::ArrayWrapper.new source.to_a.dup
+      when NMatrix
+        Daru::Accessors::NMatrixWrapper.new source.dup
+      when MDArray
+        Daru::Accessors::MDArrayWrapper.new source.dup
       end
 
       if index.nil?
@@ -102,9 +105,9 @@ module Daru
         end
       end
 
-      @size += 1
-
       @vector[@index[index]] = element
+
+      set_size
     end
 
     def delete element
