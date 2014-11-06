@@ -327,6 +327,7 @@ Arithmetic operators applied on a single Numeric will perform the operation with
 * Create DataFrame by providing rows.
 * Integrate basic plotting with Nyaplot.
 * head/tail for DF/DV.
+* Tests for checking NMatrix resizing
 
 Copyright (c) 2014, Sameer Deshmukh
 All rights reserved

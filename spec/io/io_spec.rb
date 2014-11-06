@@ -15,6 +15,7 @@ describe Daru::DataFrame do
         end
       end
 
+
       expect(df.vectors).to eq([:image_resolution, :true_transform, :mls].to_index)
       expect(df.vector[:image_resolution].first).to eq(6.55779)
       expect(df.vector[:true_transform].first[15]).to eq(1.0)

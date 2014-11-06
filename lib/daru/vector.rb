@@ -1,6 +1,7 @@
 require_relative 'math/arithmetic/vector.rb'
 require_relative 'math/statistics/vector.rb'
 require_relative 'accessors/array_wrapper.rb'
+require_relative 'accessors/nmatrix_wrapper.rb'
 
 module Daru
   class Vector
@@ -21,25 +22,27 @@ module Daru
     attr_reader :name
     attr_reader :index
     attr_reader :size
+    attr_reader :stype
 
     # Pass it name, source and index
     def initialize source, opts={}
       source = source || []
       name   = opts[:name]
       index  = opts[:index]
+      @stype = opts[:stype] || Array
 
       set_name name
 
       @vector = 
-      case source
-      when Array
+      case
+      when @stype == Array
         Daru::Accessors::ArrayWrapper.new source.dup
-      when Range, Matrix
-        Daru::Accessors::ArrayWrapper.new source.to_a.dup
-      when NMatrix
+      when @stype == NMatrix
         Daru::Accessors::NMatrixWrapper.new source.dup
-      when MDArray
+      when @stype == MDArray
         Daru::Accessors::MDArrayWrapper.new source.dup
+      when @stype == Range, Matrix
+        Daru::Accessors::ArrayWrapper.new source.to_a.dup
       end
 
       if index.nil?
@@ -57,6 +60,11 @@ module Daru
       set_size
     end
 
+    # Get one or more elements with specified index.
+    # 
+    # == Usage
+    #   v[:one, :two] # => Daru::Vector with indexes :one and :two
+    #   v[:one]       # => Single element
     def [](index, *indexes)
       if indexes.empty?
         if @index.include? index
@@ -101,6 +109,7 @@ module Daru
       concat element  
     end
 
+    # Append an element to the vector by specifying the element and index
     def concat element, index=nil
       raise IndexError, "Expected new unique index" if @index.include? index
 
@@ -120,10 +129,17 @@ module Daru
       set_size
     end
 
+    def stype= stype
+      @stype  = stype
+      @vector = @vector.coerce stype
+    end
+
+    # Delete an element by value
     def delete element
       self.delete_at index_of(element)      
     end
 
+    # Delete element by index
     def delete_at index
       idx = named_index_for index
 
@@ -138,10 +154,12 @@ module Daru
       set_size
     end
 
+    # Get index of element
     def index_of element
-      @index.key @vector.index(element) #calling Array#index
+      @index.key @vector.index(element)
     end
 
+    # Convert to hash. Hash keys are indexes and values are the correspoding elements
     def to_hash
       @index.inject({}) do |hsh, index|
         hsh[index] = self[index]
@@ -149,15 +167,18 @@ module Daru
       end
     end
 
+    # Return an array
     def to_a
       @vector.to_a
     end
 
+    # Convert the hash from to_hash to json
     def to_json *args 
       self.to_hash.to_json
     end
 
-    def to_html threshold=15
+    # Convert to html for iruby
+    def to_html threshold=30
       name = @name || 'nil'
 
       html = '<table>' + '<tr><th> </th><th>' + name.to_s + '</th></tr>'
@@ -180,6 +201,7 @@ module Daru
       to_html
     end
 
+    # Over rides original inspect for pretty printing in irb
     def inspect spacing=10, threshold=15
       longest = [@name.to_s.size,
                  @index.to_a.map(&:to_s).map(&:size).max, 
@@ -213,10 +235,12 @@ module Daru
       # set_size
     end
 
+    # Give the vector a new name
     def rename new_name
       @name = new_name.to_sym
     end
 
+    # Duplicate elements and indexes
     def dup 
       Daru::Vector.new @vector.dup, name: @name, index: @index.dup
     end
