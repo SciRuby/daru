@@ -12,6 +12,12 @@ module Daru
       @vector.each(&block)
     end
 
+    def each_with_index(&block)
+      @index.each do |idx|
+        yield @vector[@index[idx]], idx
+      end
+    end
+
     attr_reader :name
     attr_reader :index
     attr_reader :size
@@ -89,6 +95,10 @@ module Daru
 
     def << element
       concat element
+    end
+
+    def push element
+      concat element  
     end
 
     def concat element, index=nil
