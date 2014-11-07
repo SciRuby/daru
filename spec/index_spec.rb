@@ -51,4 +51,12 @@ describe Daru::Index do
         :bob, :jimi, :richie].to_index)
     end
   end
+
+  context "#[]" do
+    it "works with ranges" do
+      id = Daru::Index.new [:one, :two, :three, :four, :five, :six, :seven]
+
+      expect(id[:two..:five]).to eq(Daru::Index.new([:two, :three, :four, :five]))
+    end
+  end
 end

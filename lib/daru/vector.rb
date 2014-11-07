@@ -45,10 +45,10 @@ module Daru
         @index = index.to_index
       end
       # TODO: Will need work for NMatrix/MDArray
-      if @index.size >= @vector.size
-        self.stype = Array # NM with nils seg faults
+      if @index.size > @vector.size
+        self.coerce Array # NM with nils seg faults
         (@index.size - @vector.size).times { @vector << nil }
-      else
+      elsif @index.size < @vector.size
         raise IndexError, "Expected index size >= vector size"
       end
 
@@ -62,12 +62,17 @@ module Daru
     #   v[:one]       # => Single element
     def [](index, *indexes)
       if indexes.empty?
-        if @index.include? index
-          @vector[@index[index]]
-        elsif index.is_a?(Numeric)
-          @vector[index]
+        case index
+        when Range
+
         else
-          return nil
+          if @index.include? index
+            @vector[@index[index]]
+          elsif index.is_a?(Numeric)
+            @vector[index]
+          else
+            return nil
+          end
         end
       else
         indexes.unshift index
@@ -126,7 +131,7 @@ module Daru
       set_size
     end
 
-    def stype= stype
+    def coerce stype
       @stype  = stype
       @vector = @vector.coerce @stype
     end
@@ -154,6 +159,10 @@ module Daru
     # Get index of element
     def index_of element
       @index.key @vector.index(element)
+    end
+
+    def sort ascending=true
+      
     end
 
     # Convert to hash. Hash keys are indexes and values are the correspoding elements

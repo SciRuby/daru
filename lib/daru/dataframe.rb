@@ -357,6 +357,22 @@ module Daru
       !!@vectors[name]
     end
 
+    def head quantity=10
+      
+    end
+
+    def tail quantity=10
+      
+    end
+
+    def sort_row name
+      
+    end
+
+    def sort_vector name
+      
+    end
+    
     # Converts the DataFrame into an array of hashes where key is vector name
     # and value is the corresponding element.
     # The 0th index of the array contains the array of hashes while the 1th
@@ -446,7 +462,7 @@ module Daru
           dots = []
 
           (@vectors.size + 1).times { dots << "..." }
-          content += sprint formatter, *dots
+          content += sprintf formatter, *dots
           break
         end
       end
@@ -459,8 +475,9 @@ module Daru
     def stype= stype
       @stype = stype
 
-      @vectors.each do |vec|  
-        @data[@vectors[vec]] = @data[@vectors[vec]].coerce(@stype)
+      @vectors.each do |vec|
+        pos = @vectors[vec]
+        @data[pos] = @data[pos].coerce(@stype)
       end
     end
 
