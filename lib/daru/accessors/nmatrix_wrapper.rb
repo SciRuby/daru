@@ -181,11 +181,12 @@ module Daru
         @vector.each(&block)
       end
 
-      attr_reader :size, :vector
+      attr_reader :size, :vector, :missing_data
 
       def initialize vector
         @size = vector.size
-        @vector = NMatrix.new [@size*2], vector 
+        @vector = NMatrix.new [@size*2], vector.to_a
+        @missing_data = false
         # init with twice the storage for reducing the need to resize
       end
 
@@ -196,6 +197,10 @@ module Daru
       def []= index, value
         resize if index >= @size
 
+        if value.nil?
+          @missing_data = true
+          @vector = @vector.cast(dtype: :object)
+        end
         @vector[index] = value
       end 
  
@@ -218,8 +223,8 @@ module Daru
         if @size >= @vector.size
           resize
         end
-
-        @vector[@size] = element
+        
+        self[@size] = element
 
         @size += 1
       end
@@ -229,7 +234,7 @@ module Daru
       end
  
       def dup
-        NMatrixWrapper.new @vector.dup
+        NMatrixWrapper.new @vector.to_a
       end
 
       def coerce stype

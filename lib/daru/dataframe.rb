@@ -50,6 +50,7 @@ module Daru
     def initialize source, opts={}
       vectors = opts[:vectors]
       index   = opts[:index]
+      @stype  = opts[:stype] || Array
       @name   = (opts[:name] || SecureRandom.uuid).to_sym
 
       @data = []
@@ -81,7 +82,7 @@ module Daru
               v << (hsh[name] || hsh[name.to_s])
             end
 
-            @data << v.dv(name, @index)
+            @data << v.dv(name, @index, @stype)
           end
         when Hash
           create_vectors_index_with vectors, source
@@ -105,7 +106,7 @@ module Daru
             end
 
             @vectors.each do |vector|
-              @data << Daru::Vector.new([], name: vector, index: @index)
+              @data << Daru::Vector.new([], name: vector, index: @index, stype: @stype)
 
               @index.each do |idx|
                 begin
@@ -128,7 +129,7 @@ module Daru
             end
 
             @vectors.each do |name|
-              @data << source[name].dup.dv(name, @index)
+              @data << source[name].dup.dv(name, @index, @stype)
             end
           end
 
@@ -192,10 +193,10 @@ module Daru
     def dup
       src = {}
       @vectors.each do |vector|
-        src[vector] = @data[@vectors[vector]]
+        src[vector] = @data[@vectors[vector]].dup
       end
 
-      Daru::DataFrame.new src, vectors: @vectors.dup, index: @index.dup, name: @name
+      Daru::DataFrame.new src, vectors: @vectors.dup, index: @index.dup, name: @name, stype: @stype
     end
 
     # Iterate over each vector
@@ -455,6 +456,14 @@ module Daru
       content
     end
 
+    def stype= stype
+      @stype = stype
+
+      @vectors.each do |vec|  
+        @data[@vectors[vec]] = @data[@vectors[vec]].coerce(@stype)
+      end
+    end
+
     def == other
       @index == other.index and @size == other.size and @vectors.all? { |vector|
                             self[vector, :vector] == other[vector, :vector] }
@@ -512,7 +521,7 @@ module Daru
           row << @data[@vectors[vector]][name]
         end
 
-        Daru::Vector.new row, index: @vectors, name: name
+        Daru::Vector.new row, index: @vectors, name: name, stype: @stype
       else
         # TODO: Access multiple rows
       end
@@ -524,8 +533,8 @@ module Daru
       v = nil
 
       if vector.is_a?(Daru::Vector)
-        v = Daru::Vector.new [], name: name, index: @index
-
+        v = Daru::Vector.new [], name: name, index: @index, stype: @stype
+        nil_data = false
         @index.each do |idx|
           begin
             v[idx] = vector[idx]
@@ -537,7 +546,7 @@ module Daru
         raise Exception, "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}" if
           @size != vector.size
 
-        v = vector.dv(name, @index)
+        v = vector.dv(name, @index, @stype)
       end
 
       @data[@vectors[name]] = v
@@ -545,7 +554,7 @@ module Daru
 
     def insert_or_modify_row name, vector      
       if @index.include? name
-        v = vector.dv(name, @vectors)
+        v = vector.dv(name, @vectors, @stype)
 
         @vectors.each do |vector|
           begin
@@ -556,7 +565,7 @@ module Daru
         end
       else
         @index = @index.re_index(@index + name)
-        v      = vector.dv(name, @vectors)
+        v      = vector.dv(name, @vectors, @stype)
 
         @vectors.each do |vector|
           begin
@@ -572,7 +581,7 @@ module Daru
 
     def create_empty_vectors
       @vectors.each do |name|
-        @data << Daru::Vector.new([],name: name, index: @index)
+        @data << Daru::Vector.new([],name: name, index: @index, stype: @stype)
       end
     end
 

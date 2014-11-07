@@ -1,8 +1,8 @@
 require 'spec_helper.rb'
 
 describe Daru::DataFrame do
-  [Array, NMatrix].each do |stype|
-    describe stype.to_s do
+  [Array].each do |stype|
+    describe stype do
       before :each do
         @data_frame = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
           c: [11,22,33,44,55]}, 

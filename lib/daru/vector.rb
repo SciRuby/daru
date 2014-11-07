@@ -46,6 +46,7 @@ module Daru
       end
       # TODO: Will need work for NMatrix/MDArray
       if @index.size >= @vector.size
+        self.stype = Array # NM with nils seg faults
         (@index.size - @vector.size).times { @vector << nil }
       else
         raise IndexError, "Expected index size >= vector size"
@@ -77,6 +78,8 @@ module Daru
     end
 
     def []=(index, value)
+      @vector = @vector.coerce(Array) if value.nil?
+
       if @index.include? index
         @vector[@index[index]] = value
       else
@@ -125,7 +128,7 @@ module Daru
 
     def stype= stype
       @stype  = stype
-      @vector = @vector.coerce stype
+      @vector = @vector.coerce @stype
     end
 
     # Delete an element by value
