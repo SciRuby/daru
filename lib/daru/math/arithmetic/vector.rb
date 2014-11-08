@@ -3,60 +3,51 @@ module Daru
     module Arithmetic
       module Vector
         def + other
-          case other
-          when Daru::Vector
-            v2v_binary :+, other
-          else
-            v2o_binary :+, other
-          end
+          binary_op :+, other
         end
 
         def - other
-          case other
-          when Daru::Vector
-            v2v_binary :-, other
-          else
-            v2o_binary :-, other
-          end
+          binary_op :-, other
         end
 
         def * other
-          case other
-          when Daru::Vector
-            v2v_binary :*, other
-          else
-            v2v_binary :*, other
-          end
+          binary_op :*, other
         end
 
         def / other
-          case other
-          when Daru::Vector
-            v2v_binary :/, other
-          else
-            v2o_binary :/, other
-          end
+          binary_op :/, other
         end
 
         def % other
-          case other
-          when Daru::Vector
-            v2v_binary :%, other
-          else
-            v2o_binary :%, other
-          end
+          binary_op :%, other
         end
 
         def ** other
-          case other
-          when Daru::Vector
-            v2v_binary :**, other
-          else
-            v2o_binary :**, other
-          end
+          binary_op :**, other
+        end
+
+        def exp
+          
+        end
+
+        def sqrt
+          
+        end
+
+        def round
+          
         end
 
        private
+
+        def binary_op operation, other
+          case other
+          when Daru::Vector
+            v2v_binary operation, other
+          else
+            v2o_binary operation, other
+          end
+        end
 
         def v2o_binary operation, other
           Daru::Vector.new self.map { |e| e.send(operation, other) }, name: @name, index: @index

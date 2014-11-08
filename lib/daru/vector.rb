@@ -16,26 +16,26 @@ module Daru
     attr_reader :name
     attr_reader :index
     attr_reader :size
-    attr_reader :stype
+    attr_reader :dtype
 
     # Pass it name, source and index
     def initialize source, opts={}
       source = source || []
       name   = opts[:name]
       index  = opts[:index]
-      @stype = opts[:stype] || Array
+      @dtype = opts[:dtype] || Array
 
       set_name name
 
       @vector = 
       case
-      when @stype == Array
+      when @dtype == Array
         Daru::Accessors::ArrayWrapper.new source.dup
-      when @stype == NMatrix
+      when @dtype == NMatrix
         Daru::Accessors::NMatrixWrapper.new source.dup
-      when @stype == MDArray
+      when @dtype == MDArray
         Daru::Accessors::MDArrayWrapper.new source.dup
-      when @stype == Range, Matrix
+      when @dtype == Range, Matrix
         Daru::Accessors::ArrayWrapper.new source.to_a.dup
       end
 
@@ -64,7 +64,8 @@ module Daru
       if indexes.empty?
         case index
         when Range
-
+          # range into vector
+          # 
         else
           if @index.include? index
             @vector[@index[index]]
@@ -131,9 +132,9 @@ module Daru
       set_size
     end
 
-    def coerce stype
-      @stype  = stype
-      @vector = @vector.coerce @stype
+    def coerce dtype
+      @dtype  = dtype
+      @vector = @vector.coerce @dtype
     end
 
     # Delete an element by value
@@ -144,7 +145,6 @@ module Daru
     # Delete element by index
     def delete_at index
       idx = named_index_for index
-
       @vector.delete_at @index[idx]
 
       if @index.index_class == Integer
@@ -186,9 +186,7 @@ module Daru
     # Convert to html for iruby
     def to_html threshold=30
       name = @name || 'nil'
-
       html = '<table>' + '<tr><th> </th><th>' + name.to_s + '</th></tr>'
-
       @index.each_with_index do |index, num|
         html += '<tr><td>' + index.to_s + '</td>' + '<td>' + self[index].to_s + '</td></tr>'
     
@@ -197,7 +195,6 @@ module Daru
           break
         end
       end
-
       html += '</table>'
 
       html
@@ -217,19 +214,16 @@ module Daru
       longest   = spacing if longest > spacing
       name      = @name || 'nil'
       formatter = "\n%#{longest}.#{longest}s %#{longest}.#{longest}s"
-
-      content += "\n#<" + self.class.to_s + ":" + self.object_id.to_s + " @name = " + name.to_s + " @size = " + size.to_s + " >"
+      content  += "\n#<" + self.class.to_s + ":" + self.object_id.to_s + " @name = " + name.to_s + " @size = " + size.to_s + " >"
 
       content += sprintf formatter, "", name
       @index.each_with_index do |index, num|
         content += sprintf formatter, index.to_s, (self[index] || 'nil').to_s
-
         if num > threshold
           content += sprintf formatter, '...', '...'
           break
         end
       end
-
       content += "\n"
 
       content

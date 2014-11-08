@@ -237,16 +237,16 @@ module Daru
         NMatrixWrapper.new @vector.to_a
       end
 
-      def coerce stype
+      def coerce dtype
         case 
-        when stype == Array
+        when dtype == Array
           Daru::Accessors::ArrayWrapper.new @vector[0..(@size-1)].to_a
-        when stype == NMatrix
+        when dtype == NMatrix
           self
-        when stype == MDArray
+        when dtype == MDArray
           raise NotImplementedError
         else
-          raise ArgumentError, "Cant coerce to stype #{stype}"
+          raise ArgumentError, "Cant coerce to dtype #{dtype}"
         end
       end
 

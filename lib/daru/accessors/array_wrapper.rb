@@ -46,7 +46,7 @@ module Daru
         # end
 
         def mean
-          @vector.inject(0) { |sum, num| sum += num } / @size
+          @vector.inject(:+)/@size
         end
 
         # def median
@@ -66,9 +66,9 @@ module Daru
         #   @data==other
         # end
 
-        # def n_valid
-        #   self.length
-        # end
+        def n_valid
+          @size
+        end
 
         # def percentil(percent)
         #   index = @data.sorted_indices
@@ -81,9 +81,9 @@ module Daru
         #   end
         # end
 
-        # def product
-        #   @data.inject(1){|memo, val| memo*val}
-        # end
+        def product
+          @data.inject(1){ |memo, val| memo*val }
+        end
 
         # def proportion(val=1)
         #   self.frequencies[val]/self.n_valid
@@ -100,11 +100,6 @@ module Daru
         # def proportions
         #   len = self.n_valid
         #   self.frequencies.reduce({}){|memo, arr| memo[arr[0]] = arr[1]/len}
-        # end
-
-        # def push(val)
-        #   self.expand(self.length+1)
-        #   self[self.length-1] = recode
         # end
 
         # def range
@@ -135,40 +130,40 @@ module Daru
         #   th/((self.length)*self.sd(m)**3)
         # end
 
-        # def standard_deviation_population(m=nil)
-        #   m ||= self.mean
-        #   Math.sqrt(self.variance_population(m))
-        # end
+        def standard_deviation_population(m=nil)
+          m ||= self.mean
+          Math.sqrt(self.variance_population(m))
+        end
 
-        # def standard_deviation_sample(m=nil)
-        #   if !m.nil?
-        #     Math.sqrt(variance_sample(m))
-        #   else
-        #     @data.std.first
-        #   end
-        # end
+        def standard_deviation_sample(m=nil)
+          Math.sqrt(variance_sample(m))
+        end
 
-        # def standard_error
-        #   self.standard_deviation_sample/(Math.sqrt(self.length))
-        # end
+        def standard_error
+          self.standard_deviation_sample/(Math.sqrt(@size))
+        end
 
-        # def sum_of_squared_deviation
-        #   self.reduce(0){|memo, val| val**2 + memo}
-        # end
+        def sum_of_squared_deviation
+          self.reduce(0){|memo, val| val**2 + memo}
+        end
 
-        # def sum_of_squares(m=nil)
-        #   m ||= self.mean
-        #   self.reduce(0){|memo, val| memo + (val-m)**2}
-        # end
+        def sum_of_squares(m=nil)
+          m ||= self.mean
+          @vector.inject(0) { |memo, val| memo + (val - m)**2 }
+        end
 
-        # def sum
-        #   @data.sum.first
-        # end
+        def sum
+          @vector.inject(:+)
+        end
 
-        # def variance_sample(m=nil)
-        #   m ||= self.mean
-        #   self.sum_of_squares(m)/(self.length-1)
-        # end
+        def variance_sample m=nil
+          m ||= self.mean
+          self.sum_of_squares(m)/(@size - 1)
+        end
+
+        def variance_population m=nil
+            
+        end
       end # module Statistics
 
       include Statistics
@@ -222,16 +217,16 @@ module Daru
         ArrayWrapper.new @vector.dup
       end
 
-      def coerce stype
+      def coerce dtype
         case
-        when stype == Array
+        when dtype == Array
           self
-        when stype == NMatrix
+        when dtype == NMatrix
           Daru::Accessors::NMatrixWrapper.new @vector
-        when stype == MDArray
+        when dtype == MDArray
           raise NotImplementedError
         else
-          raise ArgumentError, "Cant coerce to stype #{stype}"
+          raise ArgumentError, "Cant coerce to dtype #{dtype}"
         end
       end
 

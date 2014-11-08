@@ -1,6 +1,6 @@
 class Array
-  def daru_vector name=nil, index=nil, stype=Array
-    Daru::Vector.new self, name: name, index: index, stype: stype
+  def daru_vector name=nil, index=nil, dtype=Array
+    Daru::Vector.new self, name: name, index: index, dtype: dtype
   end
 
   alias_method :dv, :daru_vector
@@ -11,8 +11,8 @@ class Array
 end
 
 class Range
-  def daru_vector name=nil, index=nil, stype=Array
-    Daru::Vector.new self, name: name, index: index, stype: Array
+  def daru_vector name=nil, index=nil, dtype=Array
+    Daru::Vector.new self, name: name, index: index, dtype: Array
   end
 
   alias_method :dv, :daru_vector
@@ -23,24 +23,24 @@ class Range
 end
 
 class Hash
-  def daru_vector index=nil, stype=Array
-    Daru::Vector.new self.values[0], name: self.keys[0], index: index, stype: Array
+  def daru_vector index=nil, dtype=Array
+    Daru::Vector.new self.values[0], name: self.keys[0], index: index, dtype: Array
   end
 
   alias_method :dv, :daru_vector
 end
 
 class NMatrix
-  def daru_vector name=nil, index=nil, stype=NMatrix
-    Daru::Vector.new self, name: name, index: index, stype: NMatrix
+  def daru_vector name=nil, index=nil, dtype=NMatrix
+    Daru::Vector.new self, name: name, index: index, dtype: NMatrix
   end
 
   alias_method :dv, :daru_vector
 end
 
 class MDArray
-  def daru_vector name=nil, index=nil, stype=MDArray
-    Daru::Vector.new self, name: name, index: index, stype: MDArray
+  def daru_vector name=nil, index=nil, dtype=MDArray
+    Daru::Vector.new self, name: name, index: index, dtype: MDArray
   end
 
   alias_method :dv, :daru_vector

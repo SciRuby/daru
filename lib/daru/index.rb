@@ -14,17 +14,27 @@ module Daru
 
     attr_reader :index_class
 
-    def initialize index
+    def initialize index, values=nil
       @relation_hash = {}
 
       index = 0                         if index.nil?
       index = Array.new(index) { |i| i} if index.is_a? Integer
 
-      index.each_with_index do |n, idx|
-        n = n.to_sym unless n.is_a?(Integer)
+      if values.nil?
+        index.each_with_index do |n, idx|
+          n = n.to_sym unless n.is_a?(Integer)
 
-        @relation_hash[n] = idx 
+          @relation_hash[n] = idx 
+        end
+      else
+        raise IndexError, "Size of values : #{values.size} and index : #{index.size} do not match" if
+          index.size != values.size
+
+        values.each_with_index do |value,i|
+          @relation_hash[index[i]] = value
+        end
       end
+
       @relation_hash.freeze
 
       @size = @relation_hash.size
@@ -43,7 +53,21 @@ module Daru
     end
 
     def [](key)
-      @relation_hash[key]
+      case key
+      when Range
+        first = @relation_hash[key.first]
+        last  = @relation_hash[key.last]
+
+        indexes = []
+
+        (first..last).each do |idx|
+          indexes << @relation_hash.key(idx)
+        end
+
+        Daru::Index.new indexes, (first..last).to_a
+      else
+        @relation_hash[key]
+      end
     end
 
     def +(other)
