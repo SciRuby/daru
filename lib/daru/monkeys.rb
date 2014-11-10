@@ -45,3 +45,9 @@ class MDArray
 
   alias_method :dv, :daru_vector
 end
+
+class Numeric
+  def square
+    self * self
+  end
+end

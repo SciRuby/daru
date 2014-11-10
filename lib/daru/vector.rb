@@ -13,6 +13,8 @@ module Daru
       @vector.each(&block)
     end
 
+    alias_method :recode, :map
+
     attr_reader :name
     attr_reader :index
     attr_reader :size
@@ -135,6 +137,8 @@ module Daru
     def coerce dtype
       @dtype  = dtype
       @vector = @vector.coerce @dtype
+
+      self
     end
 
     # Delete an element by value

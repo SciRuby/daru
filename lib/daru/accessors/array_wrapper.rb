@@ -31,9 +31,9 @@ module Daru
         #   index.reduce({}){|memo, val| memo[@data[val]] ||= 0; memo[@data[val]] += 1; memo}
         # end
 
-        # def has_missing_data?
-        #   false
-        # end
+        def has_missing_data?
+          self.has_missing_data
+        end
 
         # def is_valid?
         #   true
@@ -46,7 +46,7 @@ module Daru
         # end
 
         def mean
-          @vector.inject(:+)/@size
+          @vector.inject(:+).quo(@size).to_f
         end
 
         # def median
@@ -60,10 +60,6 @@ module Daru
 
         # def mode
         #   self.frequencies.max
-        # end
-
-        # def ==(other)
-        #   @data==other
         # end
 
         def n_valid
@@ -82,7 +78,15 @@ module Daru
         # end
 
         def product
-          @data.inject(1){ |memo, val| memo*val }
+          @vector.inject(:*)
+        end
+
+        def max
+          @vector.max
+        end
+
+        def min
+          @vector.min
         end
 
         # def proportion(val=1)
@@ -102,9 +106,9 @@ module Daru
         #   self.frequencies.reduce({}){|memo, arr| memo[arr[0]] = arr[1]/len}
         # end
 
-        # def range
-        #   max - min
-        # end
+        def range
+          max - min
+        end
 
         # def ranked
         #   sum = 0
@@ -116,21 +120,22 @@ module Daru
         #   Mikon::DArray.new(self.reduce{|val| r[val]})
         # end
 
-        # def recode(&block)
-        #   Mikon::DArray.new(@data.map(&block))
-        # end
+        def recode(&block)
+          @vector.map(&block)
+        end
 
-        # def recode!(&block)
-        #   @data.map!(&block)
-        # end
+        def recode!(&block)
+          @vector.map!(&block)
+        end
 
-        # def skew(m=nil)
-        #   m ||= self.mean
-        #   th = self.reduce(0){|memo, val| memo + ((val - m)**3)}
-        #   th/((self.length)*self.sd(m)**3)
-        # end
+        # Calculate skewness using (sigma(xi - mean)^3)/((N)*std_dev_sample^3)
+        def skew m=nil
+          m ||= self.mean
+          th  = @vector.inject(0) { |memo, val| memo + ((val - m)**3) }
+          th.quo (@size * (self.standard_deviation_sample(m)**3))
+        end
 
-        def standard_deviation_population(m=nil)
+        def standard_deviation_population m=nil
           m ||= self.mean
           Math.sqrt(self.variance_population(m))
         end
@@ -144,7 +149,7 @@ module Daru
         end
 
         def sum_of_squared_deviation
-          self.reduce(0){|memo, val| val**2 + memo}
+          (@vector.inject(0) { |a,x| x.square + a } - (sum.square.quo(@size))).to_f
         end
 
         def sum_of_squares(m=nil)
@@ -156,13 +161,18 @@ module Daru
           @vector.inject(:+)
         end
 
+        # Sample variance with numerator (N-1)
         def variance_sample m=nil
           m ||= self.mean
-          self.sum_of_squares(m)/(@size - 1)
+
+          self.sum_of_squares(m).quo(@size - 1)
         end
 
+        # Population variance with denominator (N)
         def variance_population m=nil
-            
+          m ||= self.mean
+
+          self.sum_of_squares(m).quo @size
         end
       end # module Statistics
 
@@ -175,6 +185,7 @@ module Daru
 
       attr_accessor :size
       attr_reader   :vector
+      attr_reader   :has_missing_data
 
       def initialize vector
         @vector = vector
@@ -187,6 +198,7 @@ module Daru
       end
 
       def []= index, value
+        has_missing_data = true if value.nil?
         @vector[index] = value
         set_size
       end

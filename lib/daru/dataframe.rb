@@ -52,13 +52,11 @@ module Daru
       index   = opts[:index]
       @dtype  = opts[:dtype] || Array
       @name   = (opts[:name] || SecureRandom.uuid).to_sym
-
-      @data = []
+      @data   = []
 
       if source.empty?
         @vectors = Daru::Index.new vectors
         @index   = Daru::Index.new index
-
         create_empty_vectors
       else
         case source
@@ -77,7 +75,6 @@ module Daru
 
           @vectors.each do |name|
             v = []
-
             source.each do |hsh|
               v << (hsh[name] || hsh[name.to_s])
             end
@@ -86,16 +83,13 @@ module Daru
           end
         when Hash
           create_vectors_index_with vectors, source
-
           if all_daru_vectors_in_source? source
-
             if !index.nil?
               @index = index.to_index
             elsif all_vectors_have_equal_indexes? source
               @index = source.values[0].index.dup
             else
               all_indexes = []
-
               source.each_value do |vector|
                 all_indexes << vector.index.to_a
               end
@@ -104,7 +98,6 @@ module Daru
 
               @index = Daru::Index.new all_indexes
             end
-
             @vectors.each do |vector|
               @data << Daru::Vector.new([], name: vector, index: @index, dtype: @dtype)
 
@@ -121,7 +114,6 @@ module Daru
             end
           else   
             index = source.values[0].size if index.nil?
-
             if index.is_a?(Daru::Index)
               @index   = index.to_index
             else
@@ -132,7 +124,6 @@ module Daru
               @data << source[name].dup.dv(name, @index, @dtype)
             end
           end
-
         end
       end
 
@@ -236,7 +227,6 @@ module Daru
     # to the value returned by the block.
     def map_vectors(&block)
       df = self.dup
-
       df.each_vector_with_index do |vector, name|
         df[name, :vector] = yield(vector)
       end
@@ -246,7 +236,6 @@ module Daru
 
     def map_vectors_with_index(&block)
       df = self.dup
-
       df.each_vector_with_index do |vector, name|
         df[name, :vector] = yield(vector, name)
       end
@@ -257,7 +246,6 @@ module Daru
     # Map each row
     def map_rows(&block)
       df = self.dup
-
       df.each_row_with_index do |row, index|
         df[index, :row] = yield(row)
       end
@@ -267,7 +255,6 @@ module Daru
 
     def map_rows_with_index(&block)
       df = self.dup
-
       df.each_row_with_index do |row, index|
         df[index, :row] = yield(row, index)
       end
@@ -290,7 +277,6 @@ module Daru
 
       if @index.include? idx
         @index = (@index.to_a - [idx]).to_index
-
         self.each_vector do |vector|
           vector.delete_at idx
         end
@@ -309,7 +295,6 @@ module Daru
 
         deletion << index unless keep_row
       end
-
       deletion.each { |idx| 
         delete_row idx 
       }
@@ -331,7 +316,6 @@ module Daru
 
       @index.each do |index|
         keep_row = yield access_row(index)
-
         marked << index if keep_row
       end
 
@@ -346,7 +330,6 @@ module Daru
     # true for that vector.
     def filter_vectors &block
       df = self.dup
-
       df.keep_vector_if &block
 
       df
@@ -381,11 +364,9 @@ module Daru
     # the same index.
     def to_a
       arry = [[],[]]
-
       self.each_row do |row|
         arry[0] << row.to_hash
       end
-
       arry[1] = @index.to_a
 
       arry
@@ -401,10 +382,8 @@ module Daru
 
     # Convert to html for IRuby.
     def to_html threshold=30
-      html = '<table><tr><th></th>'
-
+      html  = '<table><tr><th></th>'
       @vectors.each { |vector| html += '<th>' + vector.to_s + '</th>' }
-
       html += '</tr>'
 
       @index.each_with_index do |index, num|
@@ -414,8 +393,8 @@ module Daru
         self.row[index].each do |element|
           html += '<td>' + element.to_s + '</td>'
         end
-        html += '</tr>'
 
+        html += '</tr>'
         if num > threshold
           html += '<tr>'
           (@vectors + 1).size.times { html += '<td>...</td>' }
@@ -423,7 +402,6 @@ module Daru
           break
         end
       end
-
       html += '</table>'
 
       html
@@ -446,17 +424,13 @@ module Daru
       formatter = "\n"
 
       (@vectors.size + 1).times { formatter += "%#{longest}.#{longest}s " }
-
       content += "\n#<" + self.class.to_s + ":" + self.object_id.to_s + " @name = " + 
                     name.to_s + " @size = " + @size.to_s + ">"
-
       content += sprintf formatter, "" , *@vectors.map(&:to_s)
-
-      row_num = 1
+      row_num  = 1
 
       self.each_row_with_index do |row, index|
         content += sprintf formatter, index.to_s, *row.to_hash.values.map { |e| (e || 'nil').to_s }
-
         row_num += 1
         if row_num > threshold
           dots = []
@@ -466,7 +440,6 @@ module Daru
           break
         end
       end
-
       content += "\n"
 
       content
@@ -508,7 +481,6 @@ module Daru
           raise IndexError, "Specified index #{names[0]} does not exist."
         end
       end
-
       new_vcs = {}
 
       names.each do |name|
@@ -516,14 +488,12 @@ module Daru
 
         new_vcs[name] = @data[@vectors[name]]
       end
-
       Daru::DataFrame.new new_vcs, vectors: new_vcs.keys, index: @index, name: @name
     end
 
     def access_row *names
       unless names[1]
-        row = []
-
+        row  = []
         name = nil
 
         if @index.include? names[0]
@@ -546,8 +516,7 @@ module Daru
 
     def insert_or_modify_vector name, vector
       @vectors = @vectors.re_index(@vectors + name)
-
-      v = nil
+      v        = nil
 
       if vector.is_a?(Daru::Vector)
         v = Daru::Vector.new [], name: name, index: @index, dtype: @dtype
