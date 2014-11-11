@@ -5,8 +5,8 @@ module Daru
 
         extend Forwardable
 
-        def_delegators :@vector, :mean, :sum ,:product ,:standard_error,
-          :sum_of_squared_deviation,:max,:min,:has_missing_data?, :range
+        def_delegators :@vector, :mean, :median, :sum ,:product, :standard_error,
+          :sum_of_squared_deviation, :max, :min, :has_missing_data?, :range
 
         %w{ variance_population 
             variance_sample 
@@ -23,6 +23,10 @@ module Daru
           @vector.recode!(&block)
         end
 
+        def percentile percent
+          @vector.percentile percent
+        end
+
         alias_method :sdp, :standard_deviation_population
         alias_method :sds, :standard_deviation_sample
         # alias_method :adp, :average_deviation_population
@@ -30,6 +34,7 @@ module Daru
         # alias_method :variance, :variance_sample    
         alias_method :sd, :standard_deviation_sample
         alias_method :ss, :sum_of_squares
+        alias_method :percentil, :percentile
       end
     end
   end

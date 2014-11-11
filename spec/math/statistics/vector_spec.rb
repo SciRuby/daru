@@ -83,12 +83,24 @@ describe Daru::Vector do
         end
       end
 
+      context "#percentile" do
+        it "calculates percentile" do
+          expect(@dv.percentile(50)).to eq(333.0)
+        end
+      end
+
       context "#recode" do
 
       end
 
       context "#recode!" do
 
+      end
+
+      context "#frequencies" do
+        it "calculates frequencies" do
+          
+        end
       end
     end
   end

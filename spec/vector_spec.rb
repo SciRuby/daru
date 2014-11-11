@@ -39,7 +39,7 @@ describe Daru::Vector do
         end
 
         it "inserts nils for extra indices" do
-          dv = Daru::Vector.new [1,2,3], name: :yoga, index: [0,1,2,3,4], dtype: dtype
+          dv = Daru::Vector.new [1,2,3], name: :yoga, index: [0,1,2,3,4], dtype: Array
 
           expect(dv).to eq([1,2,3,nil,nil].dv(:yoga,nil, Array))
         end

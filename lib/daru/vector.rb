@@ -135,8 +135,12 @@ module Daru
     end
 
     def coerce dtype
-      @dtype  = dtype
-      @vector = @vector.coerce @dtype
+      begin
+        @vector = @vector.coerce @dtype
+        @dtype  = dtype
+      rescue StandardError => e
+        puts "Cannot convert to #{dtype} because of data type mismatch. #{e}"
+      end
 
       self
     end

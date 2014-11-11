@@ -4,7 +4,7 @@ module Daru
     class ArrayWrapper
       module Statistics
         # def average_deviation_population m=nil
-        #   m ||= self.mean
+        #   m ||= mean
         #   (self.reduce(0){|memo, val| val + (val - m).abs})/self.length
         # end
 
@@ -26,32 +26,31 @@ module Daru
         #   index.reduce([]){|memo, val| memo.push(@data[val]) if memo.last != @data[val]; memo}
         # end
 
-        # def frequencies
-        #   index = @data.sorted_indices
-        #   index.reduce({}){|memo, val| memo[@data[val]] ||= 0; memo[@data[val]] += 1; memo}
-        # end
+        def frequencies
+          
+        end
 
         def has_missing_data?
-          self.has_missing_data
+          has_missing_data
         end
 
         # def is_valid?
         #   true
         # end
 
-        # def kurtosis(m=nil)
-        #   m ||= self.mean
-        #   fo=self.reduce(0){|a, x| a+((x-m)**4)}
-        #   fo.quo(self.length*sd(m)**4)-3
-        # end
-
-        def mean
-          @vector.inject(:+).quo(@size).to_f
+        def kurtosis m=nil
+          m ||= mean
+          fo  = @vector.inject(0){ |a, x| a + ((x - m) ** 4) }
+          fo.quo(@size * standard_deviation_sample(m) ** 4) - 3
         end
 
-        # def median
-        #   self.percentil(50)
-        # end
+        def mean
+          sum.quo(@size).to_f
+        end
+
+        def median
+          percentile 50
+        end
 
         # def median_absolute_deviation
         #   m = self.median
@@ -66,16 +65,15 @@ module Daru
           @size
         end
 
-        # def percentil(percent)
-        #   index = @data.sorted_indices
-        #   pos = (self.length * percent)/100
-        #   if pos.to_i == pos
-        #     @data[index[pos.to_i]]
-        #   else
-        #     pos = (pos-0.5).to_i
-        #     (@data[index[pos]] + @data[index[pos+1]])/2
-        #   end
-        # end
+        def percentile percent
+          sorted = @vector.sort
+          v      = (n_valid * percent).quo(100)
+          if v.to_i != v
+            sorted[v.round]
+          else
+            (sorted[(v - 0.5).round].to_f + sorted[(v + 0.5).round]).quo(2)
+          end
+        end
 
         def product
           @vector.inject(:*)
@@ -132,12 +130,12 @@ module Daru
         def skew m=nil
           m ||= self.mean
           th  = @vector.inject(0) { |memo, val| memo + ((val - m)**3) }
-          th.quo (@size * (self.standard_deviation_sample(m)**3))
+          th.quo (@size * (standard_deviation_sample(m)**3))
         end
 
         def standard_deviation_population m=nil
-          m ||= self.mean
-          Math.sqrt(self.variance_population(m))
+          m ||= mean
+          Math.sqrt(variance_population(m))
         end
 
         def standard_deviation_sample(m=nil)
@@ -145,7 +143,7 @@ module Daru
         end
 
         def standard_error
-          self.standard_deviation_sample/(Math.sqrt(@size))
+          standard_deviation_sample/(Math.sqrt(@size))
         end
 
         def sum_of_squared_deviation
@@ -153,7 +151,7 @@ module Daru
         end
 
         def sum_of_squares(m=nil)
-          m ||= self.mean
+          m ||= mean
           @vector.inject(0) { |memo, val| memo + (val - m)**2 }
         end
 
@@ -165,14 +163,14 @@ module Daru
         def variance_sample m=nil
           m ||= self.mean
 
-          self.sum_of_squares(m).quo(@size - 1)
+          sum_of_squares(m).quo(@size - 1)
         end
 
         # Population variance with denominator (N)
         def variance_population m=nil
-          m ||= self.mean
+          m ||= mean
 
-          self.sum_of_squares(m).quo @size
+          sum_of_squares(m).quo @size
         end
       end # module Statistics
 

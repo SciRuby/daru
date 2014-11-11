@@ -6,51 +6,51 @@ module Daru
     # Internal class for wrapping NMatrix
     class NMatrixWrapper
       module Statistics
-        def average_deviation_population m=nil
-          m ||= self.mean
-          (self.reduce(0){|memo, val| val + (val - m).abs})/self.length
-        end
+        # def average_deviation_population m=nil
+        #   m ||= self.mean
+        #   (self.reduce(0){|memo, val| val + (val - m).abs})/self.length
+        # end
 
-        def coefficient_of_variation
-          self.standard_deviation_sample/self.mean
-        end
+        # def coefficient_of_variation
+        #   self.standard_deviation_sample/self.mean
+        # end
 
-        def count x=false
-          if block_given?
-            self.reduce(0){|memo, val| memo += 1 if yield val; memo}
-          else
-            val = self.frequencies[x]
-            val.nil? ? 0 : val
-          end
-        end
+        # def count x=false
+        #   if block_given?
+        #     self.reduce(0){|memo, val| memo += 1 if yield val; memo}
+        #   else
+        #     val = self.frequencies[x]
+        #     val.nil? ? 0 : val
+        #   end
+        # end
 
-        def factors
-          index = @data.sorted_indices
-          index.reduce([]){|memo, val| memo.push(@data[val]) if memo.last != @data[val]; memo}
-        end
+        # def factors
+        #   index = @data.sorted_indices
+        #   index.reduce([]){|memo, val| memo.push(@data[val]) if memo.last != @data[val]; memo}
+        # end
 
-        def frequencies
-          index = @data.sorted_indices
-          index.reduce({}){|memo, val| memo[@data[val]] ||= 0; memo[@data[val]] += 1; memo}
-        end
+        # def frequencies
+        #   index = @data.sorted_indices
+        #   index.reduce({}){|memo, val| memo[@data[val]] ||= 0; memo[@data[val]] += 1; memo}
+        # end
 
-        def has_missing_data?
-          @missing_data
-        end
+        # def has_missing_data?
+        #   @missing_data
+        # end
 
-        def is_valid?
-          true
-        end
+        # def is_valid?
+        #   true
+        # end
 
-        def kurtosis(m=nil)
-          m ||= self.mean
-          fo=self.reduce(0){|a, x| a+((x-m)**4)}
-          fo.quo(self.length*sd(m)**4)-3
-        end
+        # def kurtosis(m=nil)
+        #   m ||= self.mean
+        #   fo=self.reduce(0){|a, x| a+((x-m)**4)}
+        #   fo.quo(self.length*sd(m)**4)-3
+        # end
 
-        def mean
-          @vector[0...@size].mean.first
-        end
+        # def mean
+        #   @vector[0...@size].mean.first
+        # end
 
         # def median
         #   self.percentil(50)
