@@ -6,6 +6,12 @@ require 'version.rb'
 DESCRIPTION = <<MSG
 Daru (Data Analysis in RUby) is a library for storage, analysis and manipulation
 of data.
+
+Daru works with Ruby arrays, NMatrix and MDArray, thus working seamlessly accross
+ruby interpreters, at the same time providing speed for those who need it.
+
+This library is under active development so NMatrix and MDArray support is
+somewhat limited, but should be available soon!
 MSG
 
 Gem::Specification.new do |spec|
@@ -27,6 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'awesome_print'
+  spec.add_development_dependency 'nyaplot'
   if RUBY_ENGINE != 'jruby'
     spec.add_development_dependency 'nmatrix', '~> 0.1.0.rc5'
   end

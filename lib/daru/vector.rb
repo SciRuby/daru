@@ -1,12 +1,16 @@
-require_relative 'math/arithmetic/vector.rb'
-require_relative 'math/statistics/vector.rb'
-require_relative 'accessors/array_wrapper.rb'
-require_relative 'accessors/nmatrix_wrapper.rb'
+$:.unshift File.dirname(__FILE__)
+
+require 'math/arithmetic/vector.rb'
+require 'math/statistics/vector.rb'
+require 'plotting/vector.rb'
+require 'accessors/array_wrapper.rb'
+require 'accessors/nmatrix_wrapper.rb'
 
 module Daru
   class Vector
     include Daru::Math::Arithmetic::Vector
     include Daru::Math::Statistics::Vector
+    include Daru::Plotting::Vector
     include Enumerable
 
     def each(&block)
