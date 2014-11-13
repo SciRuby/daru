@@ -1,4 +1,8 @@
-require 'nyaplot'
+begin
+  require 'nyaplot'
+rescue LoadError => e
+  puts "#{e}"
+end
 
 module Daru
   module Plotting
