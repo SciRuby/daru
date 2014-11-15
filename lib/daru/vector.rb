@@ -36,13 +36,13 @@ module Daru
       @vector = 
       case
       when @dtype == Array
-        Daru::Accessors::ArrayWrapper.new source.dup
+        Daru::Accessors::ArrayWrapper.new source.dup, self
       when @dtype == NMatrix
-        Daru::Accessors::NMatrixWrapper.new source.dup
+        Daru::Accessors::NMatrixWrapper.new source.dup, self
       when @dtype == MDArray
         Daru::Accessors::MDArrayWrapper.new source.dup
       when @dtype == Range, Matrix
-        Daru::Accessors::ArrayWrapper.new source.to_a.dup
+        Daru::Accessors::ArrayWrapper.new source.to_a.dup, self
       end
 
       if index.nil?

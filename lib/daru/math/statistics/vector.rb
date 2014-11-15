@@ -3,20 +3,103 @@ module Daru
     module Statistics
       module Vector
 
-        extend Forwardable
+        def mean
+          @vector.mean
+        end
 
-        def_delegators :@vector, :mean, :median, :sum ,:product, :standard_error,
-          :sum_of_squared_deviation, :max, :min, :has_missing_data?, :range
+        def median
+          @vector.median
+        end
 
-        %w{ variance_population 
-            variance_sample 
-            sum_of_squares 
-            standard_deviation_sample
-            standard_deviation_population
-            skew
-            kurtosis
-          }.each do |meth|
-          define_method(meth) { |mean = nil| @vector.send(meth, mean)}
+        def mode
+          @vector.mode
+        end
+
+        def sum
+          @vector.sum
+        end
+
+        def product
+          @vector.product
+        end
+
+        def median_absolute_deviation
+          @vector.median_absolute_deviation  
+        end
+
+        def standard_error
+          @vector.standard_error
+        end
+
+        def sum_of_squared_deviation
+          @vector.sum_of_squared_deviation
+        end
+
+        def max
+          @vector.max
+        end
+
+        def min
+          @vector.min
+        end
+
+        def has_missing_data?
+          @vector.has_missing_data?
+        end
+
+        def range
+          @vector.range
+        end
+
+        def frequencies
+          @vector.frequencies
+        end
+
+        def proportions
+          @vector.proportions
+        end
+
+        def ranked
+          @vector.ranked
+        end
+
+        def proportion value=1
+          @vector.proportion value
+        end
+
+        # Population variance with denominator (N)
+        def variance_population m=nil
+          @vector.variance_population m
+        end
+
+        # Sample variance with denominator (N-1)
+        def variance_sample m=nil
+          @vector.variance_sample m
+        end
+
+        def sum_of_squares m=nil
+          @vector.sum_of_squares m
+        end
+
+        def standard_deviation_sample m=nil
+          @vector.standard_deviation_sample m
+        end
+
+        def standard_deviation_population m=nil
+          @vector.standard_deviation_population m
+        end
+
+        # Calculate skewness using (sigma(xi - mean)^3)/((N)*std_dev_sample^3)
+        def skew m=nil
+          @vector.skew m
+        end
+
+        def kurtosis m=nil
+          @vector.kurtosis m
+        end
+
+        def average_deviation_population m=nil
+          @vector.average_deviation_population m
         end
 
         def recode!(&block)

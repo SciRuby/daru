@@ -102,6 +102,23 @@ describe Daru::Vector do
           
         end
       end
+
+      context "#average_deviation_population" do
+      end
+
+      context "#proportion" do
+
+      end
+
+      context "#proportions" do
+        
+      end
+
+      context "#ranked" do
+        it "curates by rank" do
+          @dv.ranked
+        end
+      end
     end
   end
 end

@@ -183,10 +183,11 @@ module Daru
 
       attr_reader :size, :vector, :missing_data
 
-      def initialize vector
+      def initialize vector, caller
         @size = vector.size
         @vector = NMatrix.new [@size*2], vector.to_a
         @missing_data = false
+        @caller = caller
         # init with twice the storage for reducing the need to resize
       end
 
@@ -240,7 +241,7 @@ module Daru
       def coerce dtype
         case 
         when dtype == Array
-          Daru::Accessors::ArrayWrapper.new @vector[0..(@size-1)].to_a
+          Daru::Accessors::ArrayWrapper.new @vector[0..(@size-1)].to_a, @caller
         when dtype == NMatrix
           self
         when dtype == MDArray

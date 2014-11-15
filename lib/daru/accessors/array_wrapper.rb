@@ -3,10 +3,10 @@ module Daru
     # Internal class for wrapping ruby array
     class ArrayWrapper
       module Statistics
-        # def average_deviation_population m=nil
-        #   m ||= mean
-        #   (self.reduce(0){|memo, val| val + (val - m).abs})/self.length
-        # end
+        def average_deviation_population m=nil
+          m ||= mean
+          (@vector.inject(0) {|memo, val| val + (val - m).abs }) / n_valid
+        end
 
         # def coefficient_of_variation
         #   self.standard_deviation_sample/self.mean
@@ -27,7 +27,11 @@ module Daru
         # end
 
         def frequencies
-          
+          @vector.inject({}) do |hash, element|
+            hash[element] ||= 0
+            hash[element] += 1
+            hash
+          end
         end
 
         def has_missing_data?
@@ -52,14 +56,16 @@ module Daru
           percentile 50
         end
 
-        # def median_absolute_deviation
-        #   m = self.median
-        #   self.recode{|val| (val-m).abls}.median
-        # end
+        def median_absolute_deviation
+          m = median
+          recode {|val| (val - m).abs }.median
+        end
 
-        # def mode
-        #   self.frequencies.max
-        # end
+        def mode
+          freqs = frequencies.values
+
+          @vector.keys[freqs.index(freqs.max)]
+        end
 
         def n_valid
           @size
@@ -87,9 +93,9 @@ module Daru
           @vector.min
         end
 
-        # def proportion(val=1)
-        #   self.frequencies[val]/self.n_valid
-        # end
+        def proportion value=1
+          frequencies[value] / n_valid
+        end
 
         # def proportion_confidence_interval_t
         #   raise "NotImplementedError"
@@ -99,24 +105,26 @@ module Daru
         #   raise "NotImplementedError"
         # end
 
-        # def proportions
-        #   len = self.n_valid
-        #   self.frequencies.reduce({}){|memo, arr| memo[arr[0]] = arr[1]/len}
-        # end
+        def proportions
+          len = n_valid
+          frequencies.inject({}) { |hash, arr| hash[arr[0]] = arr[1] / len; hash }
+        end
 
         def range
           max - min
         end
 
-        # def ranked
-        #   sum = 0
-        #   r = self.frequencies.sort.reduce({}) do |memo, val|
-        #     memo[val[0]] = ((sum+1) + (sum+val[1]))/2
-        #     sum += val[1]
-        #     memo
-        #   end
-        #   Mikon::DArray.new(self.reduce{|val| r[val]})
-        # end
+        def ranked
+          sum = 0
+          r = frequencies.sort.inject( {} ) do |memo, val|
+            memo[val[0]] = ((sum + 1) + (sum + val[1])) / 2
+            sum += val[1]
+            memo
+          end
+
+          Daru::Vector.new @vector.map { |e| r[e] }, index: @caller.index,
+            name: @caller.name, dtype: @caller.dtype
+        end
 
         def recode(&block)
           @vector.map(&block)
@@ -159,7 +167,7 @@ module Daru
           @vector.inject(:+)
         end
 
-        # Sample variance with numerator (N-1)
+        # Sample variance with denominator (N-1)
         def variance_sample m=nil
           m ||= self.mean
 
@@ -185,8 +193,9 @@ module Daru
       attr_reader   :vector
       attr_reader   :has_missing_data
 
-      def initialize vector
+      def initialize vector, caller
         @vector = vector
+        @caller = caller
 
         set_size
       end
@@ -224,7 +233,7 @@ module Daru
       end
 
       def dup
-        ArrayWrapper.new @vector.dup
+        ArrayWrapper.new @vector.dup, @caller
       end
 
       def coerce dtype
@@ -232,7 +241,7 @@ module Daru
         when dtype == Array
           self
         when dtype == NMatrix
-          Daru::Accessors::NMatrixWrapper.new @vector
+          Daru::Accessors::NMatrixWrapper.new @vector, @caller
         when dtype == MDArray
           raise NotImplementedError
         else

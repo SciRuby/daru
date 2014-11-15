@@ -25,3 +25,11 @@
 
 == 0.0.3
 * This release is a complete rewrite of the entire gem to accomodate index values.
+
+== 0.0.3.1
+* Added aritmetic methods for vector aritmetic by taking the index of values into account.
+
+== 0.0.4
+* Added wrappers for Array, NMatrix and MDArray such that the external implementation is completely transparent of the data type being used internally.
+* Added statistics methods for vectors for ArrayWrapper. These are compatible with statsample methods.
+* Added plotting functions for DataFrame and Vector using Nyaplot.
