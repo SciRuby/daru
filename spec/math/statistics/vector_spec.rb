@@ -50,36 +50,50 @@ describe Daru::Vector do
       end
 
       context "#skew" do
-
+        it "calculates skewness" do
+          @dv.skew
+        end
       end
 
       context "#max" do
-
+        it "returns the max value" do
+          @dv.max
+        end
       end
 
       context "#min" do
-
-      end
+        it "returns the min value" do
+          @dv.min
+        end
+      end 
 
       context "#sum" do
-
+        it "returns the sum" do
+          @dv.sum
+        end
       end
 
       context "#product" do
-
+        it "returns the product" do
+          @dv.product
+        end
       end
 
       context "#median" do
-
+        it "returns the median" do
+          @dv.median
+        end
       end
 
       context "#mode" do
-
+        it "returns the mode" do
+          @dv.mode
+        end
       end
 
       context "#kurtosis" do
         it "calculates kurtosis" do
-          
+          @dv.kurtosis
         end
       end
 
@@ -99,11 +113,14 @@ describe Daru::Vector do
 
       context "#frequencies" do
         it "calculates frequencies" do
-          
+          @dv.frequencies
         end
       end
 
       context "#average_deviation_population" do
+        it "calculates average_deviation_population" do
+          @dv.average_deviation_population
+        end
       end
 
       context "#proportion" do
@@ -111,12 +128,24 @@ describe Daru::Vector do
       end
 
       context "#proportions" do
-        
+        it "calculates proportions" do
+          @dv.proportions
+        end
       end
 
       context "#ranked" do
         it "curates by rank" do
           @dv.ranked
+        end
+      end
+
+      context "#count" do
+
+      end
+
+      context "#coefficient_of_variation" do
+        it "calculates coefficient_of_variation" do
+          @dv.coefficient_of_variation
         end
       end
     end

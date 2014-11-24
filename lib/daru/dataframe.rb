@@ -1,15 +1,15 @@
 require_relative 'accessors/dataframe_by_row.rb'
 require_relative 'accessors/dataframe_by_vector.rb'
-require_relative 'math/arithmetic/dataframe.rb'
-require_relative 'math/statistics/dataframe.rb'
+require_relative 'maths/arithmetic/dataframe.rb'
+require_relative 'maths/statistics/dataframe.rb'
 require_relative 'plotting/dataframe.rb'
 require_relative 'io/io.rb'
 
 module Daru
   class DataFrame
 
-    include Daru::Math::Arithmetic::DataFrame
-    include Daru::Math::Statistics::DataFrame
+    include Daru::Maths::Arithmetic::DataFrame
+    include Daru::Maths::Statistics::DataFrame
     include Daru::Plotting::DataFrame
 
     class << self

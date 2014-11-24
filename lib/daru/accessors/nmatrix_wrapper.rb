@@ -140,19 +140,19 @@ module Daru
 
         # def standard_deviation_population(m=nil)
         #   m ||= self.mean
-        #   Math.sqrt(self.variance_population(m))
+        #   Maths.sqrt(self.variance_population(m))
         # end
 
         # def standard_deviation_sample(m=nil)
         #   if !m.nil?
-        #     Math.sqrt(variance_sample(m))
+        #     Maths.sqrt(variance_sample(m))
         #   else
         #     @data.std.first
         #   end
         # end
 
         # def standard_error
-        #   self.standard_deviation_sample/(Math.sqrt(self.length))
+        #   self.standard_deviation_sample/(Maths.sqrt(self.length))
         # end
 
         # def sum_of_squared_deviation

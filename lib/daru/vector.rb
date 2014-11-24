@@ -1,15 +1,15 @@
 $:.unshift File.dirname(__FILE__)
 
-require 'math/arithmetic/vector.rb'
-require 'math/statistics/vector.rb'
+require 'maths/arithmetic/vector.rb'
+require 'maths/statistics/vector.rb'
 require 'plotting/vector.rb'
 require 'accessors/array_wrapper.rb'
 require 'accessors/nmatrix_wrapper.rb'
 
 module Daru
   class Vector
-    include Daru::Math::Arithmetic::Vector
-    include Daru::Math::Statistics::Vector
+    include Daru::Maths::Arithmetic::Vector
+    include Daru::Maths::Statistics::Vector
     include Daru::Plotting::Vector
     include Enumerable
 
@@ -175,6 +175,10 @@ module Daru
 
     def sort ascending=true
       
+    end
+
+    def is_valid? value
+      !self[index_of(value)].nil?
     end
 
     # Convert to hash. Hash keys are indexes and values are the correspoding elements

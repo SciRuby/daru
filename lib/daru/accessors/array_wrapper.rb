@@ -3,28 +3,29 @@ module Daru
     # Internal class for wrapping ruby array
     class ArrayWrapper
       module Statistics
+
         def average_deviation_population m=nil
           m ||= mean
           (@vector.inject(0) {|memo, val| val + (val - m).abs }) / n_valid
         end
 
-        # def coefficient_of_variation
-        #   self.standard_deviation_sample/self.mean
-        # end
+        def coefficient_of_variation
+          standard_deviation_sample / mean
+        end
 
-        # def count x=false
-        #   if block_given?
-        #     self.reduce(0){|memo, val| memo += 1 if yield val; memo}
-        #   else
-        #     val = self.frequencies[x]
-        #     val.nil? ? 0 : val
-        #   end
-        # end
+        def count value=false
+          if block_given?
+            @vector.inject(0){ |memo, val| memo += 1 if yield val; memo}
+          else
+            val = frequencies[value]
+            val.nil? ? 0 : val
+          end
+        end
 
-        # def factors
-        #   index = @data.sorted_indices
-        #   index.reduce([]){|memo, val| memo.push(@data[val]) if memo.last != @data[val]; memo}
-        # end
+        def factors
+          index = @data.sorted_indices
+          index.reduce([]){|memo, val| memo.push(@data[val]) if memo.last != @data[val]; memo}
+        end # TODO
 
         def frequencies
           @vector.inject({}) do |hash, element|
@@ -37,10 +38,6 @@ module Daru
         def has_missing_data?
           has_missing_data
         end
-
-        # def is_valid?
-        #   true
-        # end
 
         def kurtosis m=nil
           m ||= mean
@@ -64,7 +61,7 @@ module Daru
         def mode
           freqs = frequencies.values
 
-          @vector.keys[freqs.index(freqs.max)]
+          @vector[freqs.index(freqs.max)]
         end
 
         def n_valid
@@ -97,14 +94,6 @@ module Daru
           frequencies[value] / n_valid
         end
 
-        # def proportion_confidence_interval_t
-        #   raise "NotImplementedError"
-        # end
-
-        # def proportion_confidence_interval_z
-        #   raise "NotImplementedError"
-        # end
-
         def proportions
           len = n_valid
           frequencies.inject({}) { |hash, arr| hash[arr[0]] = arr[1] / len; hash }
@@ -136,22 +125,22 @@ module Daru
 
         # Calculate skewness using (sigma(xi - mean)^3)/((N)*std_dev_sample^3)
         def skew m=nil
-          m ||= self.mean
+          m ||= mean
           th  = @vector.inject(0) { |memo, val| memo + ((val - m)**3) }
           th.quo (@size * (standard_deviation_sample(m)**3))
         end
 
         def standard_deviation_population m=nil
           m ||= mean
-          Math.sqrt(variance_population(m))
+          Math::sqrt(variance_population(m))
         end
 
-        def standard_deviation_sample(m=nil)
-          Math.sqrt(variance_sample(m))
+        def standard_deviation_sample m=nil
+          Math::sqrt(variance_sample(m))
         end
 
         def standard_error
-          standard_deviation_sample/(Math.sqrt(@size))
+          standard_deviation_sample/(Math::sqrt(@size))
         end
 
         def sum_of_squared_deviation
@@ -178,7 +167,7 @@ module Daru
         def variance_population m=nil
           m ||= mean
 
-          sum_of_squares(m).quo @size
+          sum_of_squares(m).quo(@size).to_f
         end
       end # module Statistics
 

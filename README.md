@@ -278,7 +278,7 @@ To change the values of a row/vector while iterating through the DataFrame, use 
 
 Rows/vectors can be deleted using `delete_row` or `delete_vector`.
 
-#### Basic Math Operations
+#### Basic Maths Operations
 
 Performing a binary arithmetic operation on two `Daru::Vector` objects will return a `Vector` object in which the operation will be performed on elements of the same index.
 
