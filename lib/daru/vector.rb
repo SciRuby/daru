@@ -104,9 +104,14 @@ module Daru
     # Two vectors are equal if the have the exact same index values corresponding
     # with the exact same elements. Name is ignored.
     def == other
-      @index == other.index and @size == other.size and
-      @index.all? do |index|
-        self[index] == other[index]
+      case other
+      when Daru::Vector
+        @index == other.index and @size == other.size and
+        @index.all? do |index|
+          self[index] == other[index]
+        end
+      else
+        # TODO: Compare against some other obj (string, number, etc.)
       end
     end
 

@@ -6,13 +6,13 @@ describe Daru::DataFrame do
       before :each do
         @data_frame = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
           c: [11,22,33,44,55]}, 
-          vectors: [:a, :b, :c], 
+          order: [:a, :b, :c], 
           index: [:one, :two, :three, :four, :five], dtype: dtype)
       end
 
       context "#initialize" do
         it "initializes an empty DataFrame" do
-          df = Daru::DataFrame.new({}, vectors: [:a, :b], dtype: dtype)
+          df = Daru::DataFrame.new({}, order: [:a, :b], dtype: dtype)
 
           expect(df.vectors).to eq(Daru::Index.new [:a, :b])
           expect(df.a.class).to eq(Daru::Vector)
@@ -20,7 +20,7 @@ describe Daru::DataFrame do
         end
 
         it "initializes from a Hash" do
-          df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, vectors: [:a, :b],
+          df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, order: [:a, :b],
             index: [:one, :two, :three, :four, :five], dtype: dtype)
 
           expect(df.index)  .to eq(Daru::Index.new [:one, :two, :three, :four, :five])
@@ -31,7 +31,7 @@ describe Daru::DataFrame do
 
         it "initializes from a Hash of Vectors", :focus => true do
           df = Daru::DataFrame.new({b: [11,12,13,14,15].dv(:b, [:one, :two, :three, :four, :five]), 
-            a: [1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five])}, vectors: [:a, :b],
+            a: [1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five])}, order: [:a, :b],
             index: [:one, :two, :three, :four, :five], dtype: dtype)
 
           expect(df.index)  .to eq(Daru::Index.new [:one, :two, :three, :four, :five])
@@ -42,7 +42,7 @@ describe Daru::DataFrame do
 
         it "initializes from an Array of Hashes" do
           df = Daru::DataFrame.new([{a: 1, b: 11}, {a: 2, b: 12}, {a: 3, b: 13},
-            {a: 4, b: 14}, {a: 5, b: 15}], vectors: [:b, :a], 
+            {a: 4, b: 14}, {a: 5, b: 15}], order: [:b, :a], 
             index: [:one, :two, :three, :four, :five], dtype: dtype)
 
           expect(df.index)  .to eq(Daru::Index.new [:one, :two, :three, :four, :five])
@@ -55,10 +55,10 @@ describe Daru::DataFrame do
           rows = Daru::Index.new [:one, :two, :three, :four, :five]
           cols = Daru::Index.new [:a, :b]
 
-          df  = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, vectors: cols, 
+          df  = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, order: cols, 
             index: rows, dtype: dtype)
 
-          expect(df.a)      .to eq(Daru::Vector.new([1,2,3,4,5], vectors: [:a], index: rows, dtype: dtype))
+          expect(df.a)      .to eq(Daru::Vector.new([1,2,3,4,5], order: [:a], index: rows, dtype: dtype))
           expect(df.b)      .to eq(Daru::Vector.new([11,12,13,14,15], name: :b, index: rows, dtype: dtype))
           expect(df.index)  .to eq(Daru::Index.new [:one, :two, :three, :four, :five])
           expect(df.vectors).to eq(Daru::Index.new [:a, :b])
@@ -76,13 +76,13 @@ describe Daru::DataFrame do
               b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
               a:      [1,2,3,4,5].dv(:a, [:two,:one,:three, :four, :five])
             }, 
-              vectors: [:a, :b], dtype: dtype
+              order: [:a, :b], dtype: dtype
             )
 
           expect(df).to eq(Daru::DataFrame.new({
               b: [14,13,12,15,11].dv(:b, [:five, :four, :one, :three, :two]), 
               a:      [5,4,2,3,1].dv(:a, [:five, :four, :one, :three, :two])
-            }, vectors: [:a, :b], dtype: dtype)
+            }, order: [:a, :b], dtype: dtype)
           )
         end
 
@@ -91,14 +91,14 @@ describe Daru::DataFrame do
                    b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
                    a: [1,2,3]         .dv(:a, [:two,:one,:three])
                  }, 
-                 vectors: [:a, :b], dtype: dtype
+                 order: [:a, :b], dtype: dtype
                )
 
           expect(df).to eq(Daru::DataFrame.new({
               b: [14,13,12,15,11].dv(:b, [:five, :four, :one, :three, :two]), 
               a:  [nil,nil,2,3,1].dv(:a, [:five, :four, :one, :three, :two])
             }, 
-            vectors: [:a, :b], dtype: dtype)
+            order: [:a, :b], dtype: dtype)
           )
         end
 
@@ -108,7 +108,7 @@ describe Daru::DataFrame do
               a: [1,2,3]             .dv(nil, [:one, :two, :three]), 
               c: [11,22,33,44,55]    .dv(nil, [:one, :two, :three, :four, :five]),
               d: [49,69,89,99,108,44].dv(nil, [:one, :two, :three, :four, :five, :six])
-            }, vectors: [:a, :b, :c, :d], 
+            }, order: [:a, :b, :c, :d], 
             index: [:one, :two, :three, :four, :five, :six], dtype: dtype)
 
           expect(df).to eq(Daru::DataFrame.new({
@@ -116,7 +116,7 @@ describe Daru::DataFrame do
               a: [1,2,3,nil,nil,nil]     .dv(nil, [:one, :two, :three, :four, :five, :six]), 
               c: [11,22,33,44,55,nil]    .dv(nil, [:one, :two, :three, :four, :five, :six]),
               d: [49,69,89,99,108,44]    .dv(nil, [:one, :two, :three, :four, :five, :six])
-            }, vectors: [:a, :b, :c, :d], 
+            }, order: [:a, :b, :c, :d], 
             index: [:one, :two, :three, :four, :five, :six], dtype: dtype)
           )
         end
@@ -126,21 +126,21 @@ describe Daru::DataFrame do
               b: [11,12,13] .dv(nil, [:one, :bleh, :blah]), 
               a: [1,2,3,4,5].dv(nil, [:one, :two, :booh, :baah, :three]), 
               c: [11,22,33,44,55].dv(nil, [0,1,3,:three, :two])
-            }, vectors: [:a, :b, :c], index: [:one, :two, :three], dtype: dtype)
+            }, order: [:a, :b, :c], index: [:one, :two, :three], dtype: dtype)
 
           expect(df).to eq(Daru::DataFrame.new({
               b: [11,nil,nil].dv(nil, [:one, :two, :three]),
               a: [1,2,5]     .dv(nil, [:one, :two, :three]),
               c: [nil,55,44] .dv(nil, [:one, :two, :three]),
             },  
-            vectors: [:a, :b, :c], index: [:one, :two, :three], dtype: dtype
+            order: [:a, :b, :c], index: [:one, :two, :three], dtype: dtype
             )
           )
         end
 
         it "completes incomplete vectors" do
           df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
-            c: [11,22,33,44,55]}, vectors: [:a, :c], dtype: dtype)
+            c: [11,22,33,44,55]}, order: [:a, :c], dtype: dtype)
 
           expect(df.vectors).to eq([:a,:c,:b].to_index)
         end
@@ -148,7 +148,7 @@ describe Daru::DataFrame do
         it "raises error for incomplete DataFrame index" do
           expect {
             df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
-              c: [11,22,33,44,55]}, vectors: [:a, :b, :c], 
+              c: [11,22,33,44,55]}, order: [:a, :b, :c], 
               index: [:one, :two, :three], dtype: dtype)
           }.to raise_error
         end
@@ -156,7 +156,7 @@ describe Daru::DataFrame do
         it "raises error for unequal sized vectors/arrays" do
           expect {
             df = Daru::DataFrame.new({b: [11,12,13], a: [1,2,3,4,5], 
-              c: [11,22,33,44,55]}, vectors: [:a, :b, :c], 
+              c: [11,22,33,44,55]}, order: [:a, :b, :c], 
               index: [:one, :two, :three], dtype: dtype)
           }.to raise_error
         end
@@ -165,7 +165,7 @@ describe Daru::DataFrame do
       context "#[:vector]" do
         before :each do
           @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
-            c: [11,22,33,44,55]}, vectors: [:a, :b, :c], 
+            c: [11,22,33,44,55]}, order: [:a, :b, :c], 
             index: [:one, :two, :three, :four, :five], dtype: dtype)
         end
 
@@ -175,7 +175,7 @@ describe Daru::DataFrame do
 
         it "returns a DataFrame" do
           temp = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, 
-            vectors: [:a, :b], index: [:one, :two, :three, :four, :five], dtype: dtype)
+            order: [:a, :b], index: [:one, :two, :three, :four, :five], dtype: dtype)
 
           expect(@df[:a, :b, :vector]).to eq(temp)
         end
@@ -189,7 +189,7 @@ describe Daru::DataFrame do
         before :each do
           @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
             c: [11,22,33,44,55]}, 
-            vectors: [:a, :b, :c], 
+            order: [:a, :b, :c], 
             index: [:one, :two, :three, :four, :five], dtype: dtype)
         end
 
@@ -203,7 +203,7 @@ describe Daru::DataFrame do
 
         it "returns a row with given Integer index for default index-less DataFrame" do
           df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
-            c: [11,22,33,44,55]}, vectors: [:a, :b, :c], dtype: dtype)
+            c: [11,22,33,44,55]}, order: [:a, :b, :c], dtype: dtype)
 
           expect(df[0, :row]).to eq([1,11,11].dv(nil, [:a, :b, :c]))
         end
@@ -212,7 +212,7 @@ describe Daru::DataFrame do
       context "#[:vector]=" do
         before :each do
           @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
-            c: [11,22,33,44,55]}, vectors: [:a, :b, :c], 
+            c: [11,22,33,44,55]}, order: [:a, :b, :c], 
             index: [:one, :two, :three, :four, :five], dtype: dtype)
         end
 
@@ -272,7 +272,7 @@ describe Daru::DataFrame do
       context "#[:row]=" do
         before :each do
           @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
-            c: [11,22,33,44,55]}, vectors: [:a, :b, :c], 
+            c: [11,22,33,44,55]}, order: [:a, :b, :c], 
             index: [:one, :two, :three, :four, :five], dtype: dtype)
         end
 
@@ -342,7 +342,7 @@ describe Daru::DataFrame do
       context "#row" do
         before :each do
           @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
-            c: [11,22,33,44,55]}, vectors: [:a, :b, :c], 
+            c: [11,22,33,44,55]}, order: [:a, :b, :c], 
             index: [:one, :two, :three, :four, :five], dtype: dtype)
         end
 
@@ -366,10 +366,10 @@ describe Daru::DataFrame do
       context "#==" do
         it "compares by vectors, index and values of a DataFrame (ignores name)" do
           a = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, 
-            vectors: [:a, :b], index: [:one, :two, :three, :four, :five], dtype: dtype)
+            order: [:a, :b], index: [:one, :two, :three, :four, :five], dtype: dtype)
 
           b = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, 
-            vectors: [:a, :b], index: [:one, :two, :three, :four, :five], dtype: dtype)
+            order: [:a, :b], index: [:one, :two, :three, :four, :five], dtype: dtype)
 
           expect(a).to eq(b)
         end
@@ -443,7 +443,7 @@ describe Daru::DataFrame do
       context "#map_vectors" do
         it "iterates over vectors and returns a modified DataFrame" do
           ans = Daru::DataFrame.new({b: [21,22,23,24,25], a: [11,12,13,14,15], 
-          c: [21,32,43,54,65]}, vectors: [:a, :b, :c], 
+          c: [21,32,43,54,65]}, order: [:a, :b, :c], 
           index: [:one, :two, :three, :four, :five], dtype: dtype)
 
           ret = @data_frame.map_vectors do |vector|
@@ -458,7 +458,7 @@ describe Daru::DataFrame do
       context "#map_vectors_with_index" do
         it "iterates over vectors with index and returns a modified DataFrame" do
           ans = Daru::DataFrame.new({b: [21,22,23,24,25], a: [11,12,13,14,15], 
-          c: [21,32,43,54,65]}, vectors: [:a, :b, :c], 
+          c: [21,32,43,54,65]}, order: [:a, :b, :c], 
           index: [:one, :two, :three, :four, :five], dtype: dtype)
 
           idx = []
@@ -475,7 +475,7 @@ describe Daru::DataFrame do
       context "#map_rows" do
         it "iterates over rows and returns a modified DataFrame" do
           ans = Daru::DataFrame.new({b: [121, 144, 169, 196, 225], a: [1,4,9,16,25], 
-            c: [121, 484, 1089, 1936, 3025]}, vectors: [:a, :b, :c], 
+            c: [121, 484, 1089, 1936, 3025]}, order: [:a, :b, :c], 
             index: [:one, :two, :three, :four, :five], dtype: dtype)
 
           ret = @data_frame.map_rows do |row|
@@ -490,7 +490,7 @@ describe Daru::DataFrame do
       context "#map_rows_with_index" do
         it "iterates over rows with index and returns a modified DataFrame" do
           ans = Daru::DataFrame.new({b: [121, 144, 169, 196, 225], a: [1,4,9,16,25], 
-            c: [121, 484, 1089, 1936, 3025]},vectors: [:a, :b, :c], 
+            c: [121, 484, 1089, 1936, 3025]},order: [:a, :b, :c], 
             index: [:one, :two, :three, :four, :five], dtype: dtype)
 
           idx = []
@@ -510,7 +510,7 @@ describe Daru::DataFrame do
           @data_frame.delete_vector :a
 
           expect(@data_frame).to eq(Daru::DataFrame.new({b: [11,12,13,14,15], 
-                  c: [11,22,33,44,55]}, vectors: [:b, :c], 
+                  c: [11,22,33,44,55]}, order: [:b, :c], 
                   index: [:one, :two, :three, :four, :five], dtype: dtype))    
         end
       end
@@ -520,14 +520,14 @@ describe Daru::DataFrame do
           @data_frame.delete_row :one
 
           expect(@data_frame).to eq(Daru::DataFrame.new({b: [12,13,14,15], a: [2,3,4,5], 
-          c: [22,33,44,55]}, vectors: [:a, :b, :c], index: [:two, :three, :four, :five], dtype: dtype))
+          c: [22,33,44,55]}, order: [:a, :b, :c], index: [:two, :three, :four, :five], dtype: dtype))
         end
       end
 
       context "#keep_row_if", :focus => true do
         it "keeps row if block evaluates to true" do
           df = Daru::DataFrame.new({b: [10,12,20,23,30], a: [50,30,30,1,5], 
-            c: [10,20,30,40,50]}, vectors: [:a, :b, :c], 
+            c: [10,20,30,40,50]}, order: [:a, :b, :c], 
             index: [:one, :two, :three, :four, :five], dtype: dtype)
 
           df.keep_row_if do |row|
@@ -543,7 +543,7 @@ describe Daru::DataFrame do
             vector == [1,2,3,4,5].dv(nil, [:one, :two, :three, :four, :five])
           end
 
-          expect(@data_frame).to eq(Daru::DataFrame.new({a: [1,2,3,4,5]}, vectors: [:a], 
+          expect(@data_frame).to eq(Daru::DataFrame.new({a: [1,2,3,4,5]}, order: [:a], 
             index: [:one, :two, :three, :four, :five], dtype: dtype))
         end
       end
@@ -556,7 +556,7 @@ describe Daru::DataFrame do
             row[:a] % 2 == 0
           end
 
-          expect(a).to eq(Daru::DataFrame.new({a: [2], b: [3]}, vectors: [:a, :b], index: [1]))
+          expect(a).to eq(Daru::DataFrame.new({a: [2], b: [3]}, order: [:a, :b], index: [1]))
         end
       end
 

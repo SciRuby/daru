@@ -11,9 +11,9 @@ daru (Data Analysis in RUby) is a library for storage, analysis and manipulation
 
 Development of daru was started to address the fragmentation of Dataframe-like classes which were created in many ruby gems as per their own needs. daru offers a uniform interface for all sorts of data analysis and manipulation operations and aims to be compatible with all ruby gems involved in any way with data.
 
-daru is heavily inspired by `Statsample::Dataset`, `Nyaplot::DataFrame` and the super-awesome pandas, a very mature solution in Python.
+daru is heavily inspired by `Statsample::Dataset` and pandas, a very mature solution in Python.
 
-daru works with CRuby (1.9.3+) and JRuby and in a few weeks will be completely compatible with NMatrix and MDArray for fast data manipulation using C or Java structures.
+daru works with CRuby (1.9.3+) and JRuby.
 
 ## Features
 
@@ -33,7 +33,7 @@ The gem consists of two data structures, Vector and DataFrame. Any data in a ser
 #### Initialization of DataFrame
 
 A data frame can be initialized from the following sources:
-* Hash of indexed vectors: `{ b: Daru::Vector.new(:b, [11,12,13,14,15], [:two, :one, :four, :five, :three]), a: Daru::Vector.new(:a, [1,2,3,4,5], [:two,:one,:three, :four, :five])}`.
+* Hash of indexed order: `{ b: Daru::Vector.new(:b, [11,12,13,14,15], [:two, :one, :four, :five, :three]), a: Daru::Vector.new(:a, [1,2,3,4,5], [:two,:one,:three, :four, :five])}`.
 * Array of hashes: `[{a: 1, b: 11}, {a: 2, b: 12}, {a: 3, b: 13},{a: 4, b: 14}, {a: 5, b: 15}]`.
 * Hash of names and Arrays: `{b: [11,12,13,14,15], a: [1,2,3,4,5]}`
 
@@ -43,7 +43,7 @@ A basic DataFrame can be initialized like this:
 
 ```ruby
 
-    df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, vectors: [:a, :b], index: [:one, :two, :three, :four, :five])
+    df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, order: [:a, :b], index: [:one, :two, :three, :four, :five])
     df
     # => 
     # # <Daru::DataFrame:87274040 @name = 7308c587-4073-4e7d-b3ca-3679d1dcc946 # @size = 5>
@@ -65,7 +65,7 @@ The vectors of the DataFrame will be arranged according to the array specified i
         b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
         a:      [1,2,3,4,5].dv(:a, [:two,:one,:three, :four, :five])
       }, 
-        vectors: [:a, :b]
+        order: [:a, :b]
       )
     df
 
@@ -89,7 +89,7 @@ If an index for the DataFrame is supplied (third argument), then the indexes of 
         a: [1,2,3]             .dv(nil, [:one, :two, :three]), 
         c: [11,22,33,44,55]    .dv(nil, [:one, :two, :three, :four, :five]),
         d: [49,69,89,99,108,44].dv(nil, [:one, :two, :three, :four, :five, :six])
-      }, vectors: [:a, :b, :c, :d], index: [:one, :two, :three, :four, :five, :six])
+      }, order: [:a, :b, :c, :d], index: [:one, :two, :three, :four, :five, :six])
     df
     # => 
     # #<Daru::DataFrame:87523270 @name = bda4eb68-afdd-4404-9981-708edab14201  #@size = 6>
@@ -111,7 +111,7 @@ If some of the supplied vectors do not contain certain indexes that are containe
              b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
              a: [1,2,3]         .dv(:a, [:two,:one,:three])
            }, 
-           vectors: [:a, :b]
+           order: [:a, :b]
          )
     df
 
@@ -176,7 +176,7 @@ Initialize a dataframe:
         b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
         a:      [1,2,3,4,5].dv(:a, [:two,:one,:three, :four, :five])
       }, 
-        vectors: [:a, :b]
+        order: [:a, :b]
       )
 
     #  => 

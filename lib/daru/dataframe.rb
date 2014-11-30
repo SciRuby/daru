@@ -39,7 +39,7 @@ module Daru
     # Arguments - source, vectors, index, name.
     # 
     # == Usage
-    #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [6,7,8,9]}, vectors: [:b, :a], 
+    #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [6,7,8,9]}, order: [:b, :a], 
     #     index: [:a, :b, :c, :d], name: :spider_man)
     # 
     #   # => 
@@ -50,7 +50,7 @@ module Daru
     #   #  c          8          3 
     #   #  d          9          4 
     def initialize source, opts={}
-      vectors = opts[:vectors]
+      vectors = opts[:order]
       index   = opts[:index]
       @dtype  = opts[:dtype] || Array
       @name   = (opts[:name] || SecureRandom.uuid).to_sym
@@ -189,7 +189,7 @@ module Daru
         src[vector] = @data[@vectors[vector]].dup
       end
 
-      Daru::DataFrame.new src, vectors: @vectors.dup, index: @index.dup, name: @name, dtype: @dtype
+      Daru::DataFrame.new src, order: @vectors.dup, index: @index.dup, name: @name, dtype: @dtype
     end
 
     # Iterate over each vector
@@ -313,7 +313,7 @@ module Daru
     # Iterates over each row and retains it in a new DataFrame if the block returns
     # true for that row.
     def filter_rows &block
-      df = Daru::DataFrame.new({}, vectors: @vectors.to_a)
+      df = Daru::DataFrame.new({}, order: @vectors.to_a)
       marked = []
 
       @index.each do |index|
@@ -490,7 +490,7 @@ module Daru
 
         new_vcs[name] = @data[@vectors[name]]
       end
-      Daru::DataFrame.new new_vcs, vectors: new_vcs.keys, index: @index, name: @name
+      Daru::DataFrame.new new_vcs, order: new_vcs.keys, index: @index, name: @name
     end
 
     def access_row *names
