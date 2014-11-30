@@ -10,6 +10,35 @@ describe Daru::DataFrame do
           index: [:one, :two, :three, :four, :five], dtype: dtype)
       end
 
+      context ".rows" do
+        before do 
+          @rows = [
+            [1,2,3,4,5],
+            [1,2,3,4,5],
+            [1,2,3,4,5],
+            [1,2,3,4,5]
+          ]
+        end
+
+        it "creates a DataFrame from Array rows" do
+          df = Daru::DataFrame.rows @rows, order: [:a,:b,:c,:d,:e]
+
+          expect(df.index)      .to eq(Daru::Index.new [0,1,2,3])
+          expect(df.vectors)    .to eq(Daru::Index.new [:a,:b,:c,:d,:e])
+          expect(df.vector[:a]) .to eq(Daru::Vector.new [1,1,1,1])
+        end
+
+        it "creates a DataFrame from Vector rows" do
+          rows = @rows.map { |r| Daru::Vector.new r, index: [:a,:b,:c,:d,:e] }
+
+          df = Daru::DataFrame.rows rows, order: [:a,:b,:c,:d,:e]
+
+          expect(df.index)      .to eq(Daru::Index.new [0,1,2,3])
+          expect(df.vectors)    .to eq(Daru::Index.new [:a,:b,:c,:d,:e])
+          expect(df.vector[:a]) .to eq(Daru::Vector.new [1,1,1,1])
+        end
+      end
+
       context "#initialize" do
         it "initializes an empty DataFrame" do
           df = Daru::DataFrame.new({}, order: [:a, :b], dtype: dtype)

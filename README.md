@@ -11,7 +11,7 @@ daru (Data Analysis in RUby) is a library for storage, analysis and manipulation
 
 Development of daru was started to address the fragmentation of Dataframe-like classes which were created in many ruby gems as per their own needs. daru offers a uniform interface for all sorts of data analysis and manipulation operations and aims to be compatible with all ruby gems involved in any way with data.
 
-daru is heavily inspired by `Statsample::Dataset` and pandas, a very mature solution in Python.
+daru is inspired by `Statsample::Dataset` and pandas, a very mature solution in Python.
 
 daru works with CRuby (1.9.3+) and JRuby.
 
@@ -303,14 +303,13 @@ Arithmetic operators applied on a single Numeric will perform the operation with
 
 * Automate testing for both MRI and JRuby.
 * Enable creation of DataFrame by only specifying an NMatrix/MDArray in initialize. Vector naming happens automatically (alphabetic) or is specified in an Array.
-* Destructive map iterators for DataFrame and Vector.
+* Destructive map iterators for DataFrame.
 * Completely test all functionality for NMatrix and MDArray.
 * Basic Data manipulation and analysis operations: 
     - Different kinds of join operations
     - Dataframe/vector merge
     - Creation of correlation, covariance matrices
     - Verification of data in a vector
-    - Basic vector statistics - mean, median, variance, etc.
 * Transpose a dataframe.
 * Option to express a DataFrame as an NMatrix or MDArray so as to use more efficient storage techniques.
 * Assignment of a column to a single number should set the entire column to that number.

@@ -17,6 +17,16 @@ module Daru
       @vector.each(&block)
     end
 
+    def map!(&block)
+      @vector.map!(&block)
+
+      self
+    end
+
+    def map(&block)
+      Daru::Vector.new @vector.map(&block), name: @name, index: @index, dtype: @dtype
+    end
+
     alias_method :recode, :map
 
     attr_reader :name
@@ -179,11 +189,18 @@ module Daru
     end
 
     def sort ascending=true
-      
+      if ascending
+        
+      end
     end
 
     def is_valid? value
       !self[index_of(value)].nil?
+    end
+
+    # Returns *true* if an index exists
+    def has_index? index
+      @index.include? index
     end
 
     # Convert to hash. Hash keys are indexes and values are the correspoding elements
@@ -229,7 +246,8 @@ module Daru
     def inspect spacing=10, threshold=15
       longest = [@name.to_s.size,
                  @index.to_a.map(&:to_s).map(&:size).max, 
-                 @vector    .map(&:to_s).map(&:size).max].max
+                 @vector    .map(&:to_s).map(&:size).max,
+                 'nil'.size].max
 
       content   = ""
       longest   = spacing if longest > spacing
@@ -271,6 +289,16 @@ module Daru
     end
 
     alias_method :dv, :daru_vector
+
+    def method_missing(name, *args, &block)
+      if name.match(/(.+)\=/)
+        self[name] = args[0]
+      elsif has_index?(name)
+        self[name]
+      else
+        super(name, *args, &block)
+      end
+    end
 
    private
 

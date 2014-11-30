@@ -14,11 +14,40 @@ module Daru
 
     class << self
       # Load data from a CSV file. 
-      # Arguments - path, options
+      # Arguments - path, options, block(optional)
       # 
       # Accepts a block for pre-conditioning of CSV data if any.
       def from_csv path, opts={}, &block
         Daru::IO.from_csv path, opts, &block      
+      end
+
+      # Create DataFrame by specifying rows as an Array of Arrays or Array of
+      # Daru::Vector objects.
+      def rows source, opts={}
+        if source.all? { |v| v.size == source[0].size }
+          first = source[0]
+          order = 
+          unless opts[:order]
+            if first.is_a?(Daru::Vector)
+              first.index.to_a
+            elsif first.is_a?(Array)
+              Array.new(first.size) { |i| i.to_s }
+            end
+          else
+            opts[:order]
+          end
+
+          opts.merge!({order: order})
+          df = Daru::DataFrame.new({}, opts)
+
+          source.each_with_index do |row,index|
+            df[index, :row] = row
+          end
+        else
+          raise SizeError, "All vectors must have same length"
+        end
+
+        df
       end
     end
 
@@ -350,11 +379,11 @@ module Daru
       
     end
 
-    def sort_row name
+    def sort_by_row name
       
     end
 
-    def sort_vector name
+    def sort_by_vector name
       
     end
     
@@ -467,7 +496,7 @@ module Daru
       elsif self.has_vector? name
         self[name, :vector]
       else
-        super(name, *args)
+        super(name, *args, &block)
       end
     end
 
@@ -513,6 +542,8 @@ module Daru
         Daru::Vector.new row, index: @vectors, name: name, dtype: @dtype
       else
         # TODO: Access multiple rows
+        # If a numeric range is specified then just do a to_a, collect all the 
+        # rows corresponding to each of the numbers and return them as a DataFrame.
       end
     end
 

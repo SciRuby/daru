@@ -178,6 +178,10 @@ module Daru
         @vector.each(&block)
       end
 
+      def map!(&block)
+        @vector.map!(&block)
+      end
+
       attr_accessor :size
       attr_reader   :vector
       attr_reader   :has_missing_data
