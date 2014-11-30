@@ -26,9 +26,11 @@ module Daru
       def rows source, opts={}
         if source.all? { |v| v.size == source[0].size }
           first = source[0]
-          order = 
+          index = []
+          order =
           unless opts[:order]
-            if first.is_a?(Daru::Vector)
+            if first.is_a?(Daru::Vector) # assume that all are Vectors only
+              source.each { |vec| index << vec.name }
               first.index.to_a
             elsif first.is_a?(Array)
               Array.new(first.size) { |i| i.to_s }
@@ -37,11 +39,10 @@ module Daru
             opts[:order]
           end
 
-          opts.merge!({order: order})
-          df = Daru::DataFrame.new({}, opts)
-
-          source.each_with_index do |row,index|
-            df[index, :row] = row
+          opts[:order] = order
+          df           = Daru::DataFrame.new({}, opts)
+          source.each_with_index do |row,idx|
+            df[(index[idx] || idx), :row] = row
           end
         else
           raise SizeError, "All vectors must have same length"
@@ -372,20 +373,20 @@ module Daru
     end
 
     def head quantity=10
-      
+      self[0..quantity, :row]
     end
 
     def tail quantity=10
-      
+      self[(@size - quantity)..@size, :row]
     end
 
-    def sort_by_row name
+    # def sort_by_row name
       
-    end
+    # end
 
-    def sort_by_vector name
+    # def sort_by_vector name
       
-    end
+    # end
     
     # Converts the DataFrame into an array of hashes where key is vector name
     # and value is the corresponding element.
@@ -523,28 +524,39 @@ module Daru
     end
 
     def access_row *names
-      unless names[1]
-        row  = []
-        name = nil
+      if names[1].nil?
+        access_token = names[0]
+        if access_token.is_a?(Range)
+          index_arry = @index.to_a
 
-        if @index.include? names[0]
-          name = names[0]
-        elsif @index.key names[0]
-          name = @index.key names[0]
+          range = 
+          if access_token.first.is_a?(Numeric)
+            access_token
+          else
+            first_index = index_arry.index access_token.first
+            last_index  = index_arry.index access_token.last
+
+            first_index..last_index
+          end
+
+          names = index_arry[range]
         else
-          raise IndexError, "Specified row #{names[0]} does not exist."
-        end
+          row  = []
+          name = named_index_for names[0]
+          @vectors.each do |vector|
+            row << @data[@vectors[vector]][name]
+          end
 
-        @vectors.each do |vector|
-          row << @data[@vectors[vector]][name]
+          return Daru::Vector.new(row, index: @vectors, name: name, dtype: @dtype)
         end
-
-        Daru::Vector.new row, index: @vectors, name: name, dtype: @dtype
-      else
-        # TODO: Access multiple rows
-        # If a numeric range is specified then just do a to_a, collect all the 
-        # rows corresponding to each of the numbers and return them as a DataFrame.
       end
+      # Access multiple rows
+      rows = []
+      names.each do |name|
+        rows << self.row[name]
+      end
+      
+      Daru::DataFrame.rows rows, name: @name, dtype: @dtype
     end
 
     def insert_or_modify_vector name, vector

@@ -360,12 +360,6 @@ describe Daru::DataFrame do
             @df.row[:one] = [1,2,3,4,5,6,7]
           }.to raise_error
         end
-
-        it "returns a DataFrame when mutiple indexes specified" do
-          pending "Next release"
-
-          raise
-        end
       end
 
       context "#row" do
@@ -381,6 +375,22 @@ describe Daru::DataFrame do
           expect(@df[:one, :row])      .to eq([49, 99, 59].dv(:one, [:a, :b, :c]))
           expect(@df[:one, :row].index).to eq([:a, :b, :c].to_index)
           expect(@df[:one, :row].name) .to eq(:one)
+        end
+
+        it "returns a DataFrame when specifying numeric Range" do
+          expect(@df.row[0..2]).to eq(
+            Daru::DataFrame.new({b: [11,12,13], a: [1,2,3], 
+              c: [11,22,33]}, order: [:a, :b, :c], 
+              index: [:one, :two, :three], dtype: dtype)
+            )
+        end
+
+        it "returns a DataFrame when specifying symbolic Range" do
+          expect(@df.row[:one..:three]).to eq(
+            Daru::DataFrame.new({b: [11,12,13], a: [1,2,3], 
+              c: [11,22,33]}, order: [:a, :b, :c], 
+              index: [:one, :two, :three], dtype: dtype)
+            )
         end
       end
 

@@ -188,11 +188,11 @@ module Daru
       @index.key @vector.index(element)
     end
 
-    def sort ascending=true
-      if ascending
+    # def sort ascending=true
+    #   if ascending
         
-      end
-    end
+    #   end
+    # end
 
     def is_valid? value
       !self[index_of(value)].nil?
