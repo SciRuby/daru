@@ -318,19 +318,16 @@ Arithmetic operators applied on a single Numeric will perform the operation with
 * Creation of DataFrame from Array of Arrays.
 * Multiple value assignment for vectors with []=.
 * Load DataFrame from multiple sources (excel, SQL, etc.).
-* Allow for boolean operations inside #[].
 * Deletion of elements from Vector should only modify the index and leave the vector as it is so that compacting is not needed and things are faster.
 * Add a #sync method which will sync the modified index with the unmodified vector.
 * Ability to reorder the index of a dataframe.
-* Slicing operations using Range.
-* Create DataFrame by providing rows.
-* Integrate basic plotting with Nyaplot.
-* head/tail for DF/DV.
+* head/tail for DV.
 * #find\_max function which will evaluate a block and return the row for the value of the block is max.
 * Function to check if a value of a row/vector is within a specified range.
 * Create a new vector in map_rows if any of the already present rows dont match the one assigned in the block.
 * Direct functions to answer something like 'number of something per thousand of something else'.
 * Tests for checking NMatrix resizing
+* Sort while preserving index.
 
 Copyright (c) 2014, Sameer Deshmukh
 All rights reserved

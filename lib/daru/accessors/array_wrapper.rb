@@ -221,6 +221,10 @@ module Daru
         set_size
       end
 
+      def uniq
+        @vector.uniq
+      end
+
       def to_a
         @vector
       end

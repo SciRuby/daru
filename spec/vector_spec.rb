@@ -163,6 +163,10 @@ describe Daru::Vector do
           expect(dv.to_hash).to eq({one: 1, two: 2, three: 3, four: 4, five: 5})
         end
       end
+
+      context "#uniq" do
+        # TODO
+      end
     end
   end
 end if mri?

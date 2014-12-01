@@ -8,10 +8,10 @@ require 'accessors/nmatrix_wrapper.rb'
 
 module Daru
   class Vector
+    include Enumerable
     include Daru::Maths::Arithmetic::Vector
     include Daru::Maths::Statistics::Vector
     include Daru::Plotting::Vector
-    include Enumerable
 
     def each(&block)
       @vector.each(&block)
@@ -34,11 +34,36 @@ module Daru
     attr_reader :size
     attr_reader :dtype
 
-    # Pass it name, source and index
+    # Create a Vector object.
+    # == Arguments
+    # 
+    # @param source[Array,Hash] - Supply elements in the form of an Array or a Hash. If Array, a
+    # numeric index will be created if not supplied in the options. Specifying more
+    # index elements than actual values in *source* will insert *nil* into the 
+    # surplus index elements. When a Hash is specified, the keys of the Hash are 
+    # taken as the index elements and the corresponding values as the values that
+    # populate the vector.
+    # 
+    # == Options
+    # 
+    # * +:name+ - Name of the vector
+    # 
+    # * +:index+ -  Index of the vector
+    # 
+    # == Usage
+    # 
+    #   vecarr = Daru::Vector.new [1,2,3,4], index: [:a, :e, :i, :o]
+    #   vechsh = Daru::Vector.new({a: 1, e: 2, i: 3, o: 4})
     def initialize source, opts={}
-      source = source || []
+      index = nil
+      if source.is_a?(Hash)
+        index  = source.keys
+        source = source.values
+      else
+        index  = opts[:index]
+        source = source || []
+      end
       name   = opts[:name]
-      index  = opts[:index]
       @dtype = opts[:dtype] || Array
 
       set_name name
@@ -133,6 +158,10 @@ module Daru
       concat element  
     end
 
+    def re_index new_index
+      
+    end
+
     # Append an element to the vector by specifying the element and index
     def concat element, index=nil
       raise IndexError, "Expected new unique index" if @index.include? index
@@ -186,6 +215,17 @@ module Daru
     # Get index of element
     def index_of element
       @index.key @vector.index(element)
+    end
+
+    # Keep only unique elements of the vector alongwith their indexes.
+    def uniq
+      uniq_vector = @vector.uniq
+      new_index   = uniq_vector.inject([]) do |acc, element|  
+        acc << index_of(element) 
+        acc
+      end
+
+      Daru::Vector.new uniq_vector, name: @name, index: new_index, dtype: @dtype
     end
 
     # def sort ascending=true
@@ -268,11 +308,11 @@ module Daru
       content
     end
 
-    def compact!
+    # def compact!
       # TODO: Compact and also take care of indexes
       # @vector.compact!
       # set_size
-    end
+    # end
 
     # Give the vector a new name
     def rename new_name

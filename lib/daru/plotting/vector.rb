@@ -25,7 +25,10 @@ module Daru
         }.merge(opts)
 
         x_axis = options[:type] == :scatter ? Array.new(@size) { |i| i } : @index.to_a
-        plot   = Nyaplot::Plot.new 
+        plot   = Nyaplot::Plot.new
+        plot.width(options[:width])   if options[:width]
+        plot.height(options[:height]) if options[:height]
+        
         p      = plot.add( options[:type], x_axis, @vector.to_a )
         plot.x_label( options[:x_label] )  if options[:x_label]
         plot.y_label( options[:y_label] )  if options[:y_label]

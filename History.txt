@@ -33,3 +33,11 @@
 * Added wrappers for Array, NMatrix and MDArray such that the external implementation is completely transparent of the data type being used internally.
 * Added statistics methods for vectors for ArrayWrapper. These are compatible with statsample methods.
 * Added plotting functions for DataFrame and Vector using Nyaplot.
+* Create a DataFrame by specifying the rows with the ".rows" class method.
+* Create a Vector from a Hash.
+* Call a Vector element by specfying the index name as a method call (method_missing logic).
+* Retrive multiple rows of a DataFrame by specfying a Range or an Array with multiple index names.
+* #head and #tail for DataFrame.
+* #uniq for Vector.
+* #max for Vector can return a Vector object with the index set to the index of the max value.
+* Tonnes of documentation for most methods.

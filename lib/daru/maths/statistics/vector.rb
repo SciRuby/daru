@@ -35,8 +35,18 @@ module Daru
           @vector.sum_of_squared_deviation
         end
 
-        def max
-          @vector.max
+        # Maximum element of the vector.
+        # 
+        # @param return_type [Symbol] Data type of the returned value. Defaults
+        # to returning only the maximum number but passing *:vector* will return
+        # a Daru::Vector with the index of the corresponding maximum value.
+        def max return_type=:stored_type
+          max_value = @vector.max
+          if return_type == :vector
+            Daru::Vector.new({index_of(max_value) => max_value}, name: @name, dtype: @dtype)
+          else
+            max_value
+          end
         end
 
         def min
