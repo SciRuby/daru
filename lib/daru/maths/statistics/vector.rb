@@ -49,6 +49,12 @@ module Daru
           end
         end
 
+        # Return a Vector with the max element and its index.
+        # @return [Daru::Vector]
+        def max_index
+          max :vector
+        end
+
         def min
           @vector.min
         end

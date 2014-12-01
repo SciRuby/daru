@@ -24,7 +24,19 @@ daru works with CRuby (1.9.3+) and JRuby.
 * Indexed and named data structures.
 * Flexible and intuitive API for manipulation and analysis of data.
 
-## Usage
+## Notebooks
+
+* [Analysis and plotting of a data set comprising of music listening habits of a last.fm user(iruby notebook)](http://nbviewer.ipython.org/github/v0dro/daru/blob/master/notebooks/intro_with_music_data_.ipynb)
+
+## Blog Posts
+
+* [Data Analysis in RUby: Basic data manipulation and plotting](http://v0dro.github.io/blog/2014/11/25/data-analysis-in-ruby-basic-data-manipulation-and-plotting/)
+
+## Documentation
+
+Docs can be found [here](https://rubygems.org/gems/daru).
+
+## Basic Usage
 
 daru has been created with keeping extreme ease of use in mind.
 
@@ -203,6 +215,20 @@ Select a row from a DataFrame:
 ```
 A row or a vector is returned as a `Daru::Vector` object, so any manipulations supported by `Daru::Vector` can be performed on the chosen row as well.
 
+Select multiple rows with a Range and get a DataFrame in return:
+
+``` ruby
+
+df.row[1..3] # OR df.row[:four..:three]
+# => 
+#<Daru::DataFrame:85361520 @name = d6582f66-5a55-473e-ba57-cb2ba974da6a @size #= 3>
+#                    a          b 
+#      four          4         13 
+#       one          2         12 
+#     three          3         15 
+
+```
+
 Select a single vector:
 
 ```ruby
@@ -253,7 +279,7 @@ Keep/remove row according to a specified condition:
 ```
 The same can be applied to vectors using `filter_vectors`.
 
-To iterate over a DataFrame and perform operations on rows or vectors, `#each_row` or `#each_vector` can be used, which works just like `#each` for Ruby Arrays.
+To iterate over a DataFrame and perform operations on rows or vectors, use `#each_row` or `#each_vector`.
 
 To change the values of a row/vector while iterating through the DataFrame, use `map_rows` or `map_vectors`:
 
@@ -299,6 +325,16 @@ Performing a binary arithmetic operation on two `Daru::Vector` objects will retu
 
 Arithmetic operators applied on a single Numeric will perform the operation with that number against the entire vector.
 
+#### Statistics Operations
+
+Daru::Vector has a whole lot of statistics operations to maintain compatibility with Statsample::Vector. Check the docs for details.
+
+#### Plotting
+
+daru uses [Nyaplot](https://github.com/domitry/nyaplot) for plotting and an example of this can be found in the [notebook](http://nbviewer.ipython.org/github/v0dro/daru/blob/master/notebooks/intro_with_music_data_.ipynb) or [blog post](http://v0dro.github.io/blog/2014/11/25/data-analysis-in-ruby-basic-data-manipulation-and-plotting/).
+
+Head over to the tutorials and notebooks listed above for more examples.
+
 ## Roadmap
 
 * Automate testing for both MRI and JRuby.
@@ -307,15 +343,15 @@ Arithmetic operators applied on a single Numeric will perform the operation with
 * Completely test all functionality for NMatrix and MDArray.
 * Basic Data manipulation and analysis operations: 
     - Different kinds of join operations
-    - Dataframe/vector merge
+    - Dataframe/vector merge (left, right, inner, outer)
     - Creation of correlation, covariance matrices
     - Verification of data in a vector
+    - DF concat
 * Transpose a dataframe.
 * Option to express a DataFrame as an NMatrix or MDArray so as to use more efficient storage techniques.
 * Assignment of a column to a single number should set the entire column to that number.
 * == between daru_vector and string/number.
 * Multiple column assignment with []=
-* Creation of DataFrame from Array of Arrays.
 * Multiple value assignment for vectors with []=.
 * Load DataFrame from multiple sources (excel, SQL, etc.).
 * Deletion of elements from Vector should only modify the index and leave the vector as it is so that compacting is not needed and things are faster.
@@ -325,9 +361,26 @@ Arithmetic operators applied on a single Numeric will perform the operation with
 * #find\_max function which will evaluate a block and return the row for the value of the block is max.
 * Function to check if a value of a row/vector is within a specified range.
 * Create a new vector in map_rows if any of the already present rows dont match the one assigned in the block.
-* Direct functions to answer something like 'number of something per thousand of something else'.
 * Tests for checking NMatrix resizing
 * Sort while preserving index.
+* Sort by index.
+* Convert DF to matrix.
+* Convert DF to Nmatrix.
+* Init DF from array of arrays.
+* Statistics on DataFrame over rows and columns.
+* Produce multiple summary statistics in one shot.
+* Cumulative sum.
+* Time series support.
+* Calculate percentage change.
+* Working with missing data - is\_null?, not\_null?, drop\_missing\_data, dropping rows with missing data, filling data in place of nils
+
+## Contributing
+
+Pick a feature from the Roadmap above or think of your own and send me a Pull Request!
+
+## Acknowledgements
+
+* Thank you [last.fm](http://www.last.fm/) for making user data accessible to the public.
 
 Copyright (c) 2014, Sameer Deshmukh
 All rights reserved

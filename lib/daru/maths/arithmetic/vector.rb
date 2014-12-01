@@ -27,15 +27,15 @@ module Daru
         end
 
         def exp
-          
+          # TODO
         end
 
         def sqrt
-          
+          # TODO
         end
 
         def round
-          
+          # TODO
         end
 
        private

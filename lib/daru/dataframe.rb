@@ -203,6 +203,11 @@ module Daru
       Daru::Accessors::DataFrameByVector.new(self)
     end
 
+    # Access a vector by name.
+    def column name
+      vector[name]
+    end
+
     # Access a row or set/create a row. Refer #[] and #[]= docs for details.
     # 
     # == Usage
@@ -229,6 +234,8 @@ module Daru
       self
     end
 
+    alias_method :each_column, :each_vector
+
     # Iterate over each vector alongwith the name of the vector
     def each_vector_with_index(&block)
       @vectors.each do |vector|
@@ -237,6 +244,8 @@ module Daru
 
       self
     end
+
+    alias_method :each_column_with_index, :each_vector_with_index
 
     # Iterate over each row
     def each_row(&block)
