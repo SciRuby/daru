@@ -1,4 +1,4 @@
-require 'nmatrix'
+require 'nmatrix' unless jruby?
 
 module Daru
   module Accessors

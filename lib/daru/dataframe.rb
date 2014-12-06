@@ -627,10 +627,10 @@ module Daru
 
     def validate_labels
       raise IndexError, "Expected equal number of vectors for number of Hash pairs" if 
-        @vectors.size != @data.size
+        @vectors and @vectors.size != @data.size
 
       raise IndexError, "Expected number of indexes same as number of rows" if
-        @index.size != @data[0].size
+        @index and @data[0] and @index.size != @data[0].size
     end
 
     def validate_vector_sizes

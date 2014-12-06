@@ -41,3 +41,8 @@
 * #uniq for Vector.
 * #max for Vector can return a Vector object with the index set to the index of the max value.
 * Tonnes of documentation for most methods.
+
+== 0.0.5
+
+* Easy accessors for some methods
+* Faster CSV loading.

@@ -7,23 +7,16 @@ module Daru
         opts[:converters]        ||= :numeric
         opts[:header_converters] ||= :symbol
 
-        csv = CSV.open(path, 'r', opts)
+        csv = CSV.read(path, 'r', opts)
 
         yield csv if block_given?
 
-        first = true
-        df    = nil
-
-        csv.each_with_index do |row, index|
-          if first
-            df    = Daru::DataFrame.new({}, order: csv.headers, name: opts[:name])
-            first = false
-          end
-
-          df.row[index] = row.fields
+        hsh = {}
+        csv.by_col!.each do |col_name, values|
+          hsh[col_name] = values
         end
 
-        df
+        Daru::DataFrame.new(hsh)
       end
     end
   end
