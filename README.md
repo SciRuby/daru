@@ -373,7 +373,6 @@ Head over to the tutorials and notebooks listed above for more examples.
 * Time series support.
 * Calculate percentage change.
 * Working with missing data - is\_null?, not\_null?, drop\_missing\_data, dropping rows with missing data, filling data in place of nils
-* smarter_csv support.
 
 ## Contributing
 

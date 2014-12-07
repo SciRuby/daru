@@ -37,6 +37,4 @@ Gem::Specification.new do |spec|
   if RUBY_ENGINE != 'jruby'
     spec.add_development_dependency 'nmatrix', '~> 0.1.0.rc5'
   end
-
-  spec.add_dependency 'fastercsv'
 end
