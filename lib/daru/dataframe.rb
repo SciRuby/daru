@@ -84,7 +84,6 @@ module Daru
     def initialize source, opts={}
       vectors = opts[:order]
       index   = opts[:index]
-      @dtype  = opts[:dtype] || Array
       @name   = (opts[:name] || SecureRandom.uuid).to_sym
       @data   = []
 
@@ -113,7 +112,7 @@ module Daru
               v << (hsh[name] || hsh[name.to_s])
             end
 
-            @data << v.dv(name, @index, @dtype)
+            @data << Daru::Vector.new(v, name: name, index: @index)
           end
         when Hash
           create_vectors_index_with vectors, source
@@ -133,17 +132,10 @@ module Daru
               @index = Daru::Index.new all_indexes
             end
             @vectors.each do |vector|
-              @data << Daru::Vector.new([], name: vector, index: @index, dtype: @dtype)
+              @data << Daru::Vector.new([], name: vector, index: @index)
 
               @index.each do |idx|
-                begin
-                  @data[@vectors[vector]][idx] = source[vector][idx]                   
-                rescue IndexError
-                  # If the index is not present in the vector under consideration
-                  # (in source) then an error is raised. Put a nil in that place if
-                  # that is the case.
-                  @data[@vectors[vector]][idx] = nil                  
-                end
+                @data[@vectors[vector]][idx] = source[vector][idx]                   
               end
             end
           else   
@@ -155,7 +147,7 @@ module Daru
             end
 
             @vectors.each do |name|
-              @data << source[name].dup.dv(name, @index, @dtype)
+              @data << Daru::Vector.new(source[name].dup, name: name, index: @index)
             end
           end
         end
@@ -226,7 +218,7 @@ module Daru
         src[vector] = @data[@vectors[vector]].dup
       end
 
-      Daru::DataFrame.new src, order: @vectors.dup, index: @index.dup, name: @name, dtype: @dtype
+      Daru::DataFrame.new src, order: @vectors.dup, index: @index.dup, name: @name
     end
 
     # Iterate over each vector
@@ -488,15 +480,6 @@ module Daru
       content
     end
 
-    def dtype= dtype
-      @dtype = dtype
-
-      @vectors.each do |vec|
-        pos = @vectors[vec]
-        @data[pos] = @data[pos].coerce(@dtype)
-      end
-    end
-
     def == other
       @index == other.index and @size == other.size and @vectors.all? { |vector|
                             self[vector, :vector] == other[vector, :vector] }
@@ -558,7 +541,7 @@ module Daru
             row << @data[@vectors[vector]][name]
           end
 
-          return Daru::Vector.new(row, index: @vectors, name: name, dtype: @dtype)
+          return Daru::Vector.new(row, index: @vectors, name: name)
         end
       end
       # Access multiple rows
@@ -567,7 +550,7 @@ module Daru
         rows << self.row[name]
       end
       
-      Daru::DataFrame.rows rows, name: @name, dtype: @dtype
+      Daru::DataFrame.rows rows, name: @name
     end
 
     def insert_or_modify_vector name, vector
@@ -575,20 +558,16 @@ module Daru
       v        = nil
 
       if vector.is_a?(Daru::Vector)
-        v = Daru::Vector.new [], name: name, index: @index, dtype: @dtype
+        v = Daru::Vector.new [], name: name, index: @index
         nil_data = false
         @index.each do |idx|
-          begin
-            v[idx] = vector[idx]
-          rescue IndexError
-            v[idx] = nil
-          end
+          v[idx] = vector[idx]
         end
       else
         raise Exception, "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}" if
           @size != vector.size
 
-        v = vector.dv(name, @index, @dtype)
+        v = Daru::Vector.new(vector, name: name, index: @index)
       end
 
       @data[@vectors[name]] = v
@@ -599,22 +578,14 @@ module Daru
         v = vector.dv(name, @vectors, @dtype)
 
         @vectors.each do |vector|
-          begin
-            @data[@vectors[vector]][name] = v[vector] 
-          rescue IndexError
-            @data[@vectors[vector]][name] = nil
-          end
+          @data[@vectors[vector]][name] = v[vector] 
         end
       else
         @index = @index.re_index(@index + name)
-        v      = vector.dv(name, @vectors, @dtype)
+        v      = Daru::Vector.new(vector, name: name, index: @vectors)
 
         @vectors.each do |vector|
-          begin
-            @data[@vectors[vector]].concat v[vector], name     
-          rescue IndexError
-            @data[@vectors[vector]].concat nil, name
-          end
+          @data[@vectors[vector]].concat v[vector], name
         end
       end
 
@@ -623,7 +594,7 @@ module Daru
 
     def create_empty_vectors
       @vectors.each do |name|
-        @data << Daru::Vector.new([],name: name, index: @index, dtype: @dtype)
+        @data << Daru::Vector.new([],name: name, index: @index)
       end
     end
 
