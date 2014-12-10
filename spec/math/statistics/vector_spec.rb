@@ -1,7 +1,7 @@
 require 'spec_helper.rb'
 
 describe Daru::Vector do
-  [NMatrix, Array].each do |dtype|
+  [:array, :nmatrix].each do |dtype|
     describe dtype do
       before :each do
         @dv = Daru::Vector.new [323, 11, 555, 666, 234, 21, 666, 343, 1, 2], dtype: dtype

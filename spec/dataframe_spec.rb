@@ -56,7 +56,7 @@ describe Daru::DataFrame do
       expect(df.a)      .to eq([1,2,3,4,5].dv(:a, df.index)) 
     end
 
-    it "initializes from a Hash of Vectors", :focus => true do
+    it "initializes from a Hash of Vectors" do
       df = Daru::DataFrame.new({b: [11,12,13,14,15].dv(:b, [:one, :two, :three, :four, :five]), 
         a: [1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five])}, order: [:a, :b],
         index: [:one, :two, :three, :four, :five])
@@ -561,7 +561,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#keep_row_if", :focus => true do
+  context "#keep_row_if" do
     it "keeps row if block evaluates to true" do
       df = Daru::DataFrame.new({b: [10,12,20,23,30], a: [50,30,30,1,5], 
         c: [10,20,30,40,50]}, order: [:a, :b, :c], 
@@ -626,6 +626,16 @@ describe Daru::DataFrame do
             :one, :two, :three, :four, :five
           ]
         ])
+    end
+  end
+
+  context "#recast" , focus: true do
+    it "recasts underlying vectors" do
+      @data_frame.recast a: :nmatrix, c: :nmatrix
+
+      expect(@data_frame.a.dtype).to eq(:nmatrix)
+      expect(@data_frame.b.dtype).to eq(:array)
+      expect(@data_frame.c.dtype).to eq(:nmatrix)
     end
   end
 end if mri?

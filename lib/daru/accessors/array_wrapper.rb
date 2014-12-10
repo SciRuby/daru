@@ -6,7 +6,7 @@ module Daru
 
         def average_deviation_population m=nil
           m ||= mean
-          (@vector.inject(0) {|memo, val| val + (val - m).abs }) / n_valid
+          (@data.inject(0) {|memo, val| val + (val - m).abs }) / n_valid
         end
 
         def coefficient_of_variation
@@ -15,7 +15,7 @@ module Daru
 
         def count value=false
           if block_given?
-            @vector.inject(0){ |memo, val| memo += 1 if yield val; memo}
+            @data.inject(0){ |memo, val| memo += 1 if yield val; memo}
           else
             val = frequencies[value]
             val.nil? ? 0 : val
@@ -28,7 +28,7 @@ module Daru
         end # TODO
 
         def frequencies
-          @vector.inject({}) do |hash, element|
+          @data.inject({}) do |hash, element|
             hash[element] ||= 0
             hash[element] += 1
             hash
@@ -41,7 +41,7 @@ module Daru
 
         def kurtosis m=nil
           m ||= mean
-          fo  = @vector.inject(0){ |a, x| a + ((x - m) ** 4) }
+          fo  = @data.inject(0){ |a, x| a + ((x - m) ** 4) }
           fo.quo(@size * standard_deviation_sample(m) ** 4) - 3
         end
 
@@ -61,7 +61,7 @@ module Daru
         def mode
           freqs = frequencies.values
 
-          @vector[freqs.index(freqs.max)]
+          @data[freqs.index(freqs.max)]
         end
 
         def n_valid
@@ -69,7 +69,7 @@ module Daru
         end
 
         def percentile percent
-          sorted = @vector.sort
+          sorted = @data.sort
           v      = (n_valid * percent).quo(100)
           if v.to_i != v
             sorted[v.round]
@@ -79,15 +79,15 @@ module Daru
         end
 
         def product
-          @vector.inject(:*)
+          @data.inject(:*)
         end
 
         def max
-          @vector.max
+          @data.max
         end
 
         def min
-          @vector.min
+          @data.min
         end
 
         def proportion value=1
@@ -111,22 +111,22 @@ module Daru
             memo
           end
 
-          Daru::Vector.new @vector.map { |e| r[e] }, index: @context.index,
+          Daru::Vector.new @data.map { |e| r[e] }, index: @context.index,
             name: @context.name, dtype: @context.dtype
         end
 
         def recode(&block)
-          @vector.map(&block)
+          @data.map(&block)
         end
 
         def recode!(&block)
-          @vector.map!(&block)
+          @data.map!(&block)
         end
 
         # Calculate skewness using (sigma(xi - mean)^3)/((N)*std_dev_sample^3)
         def skew m=nil
           m ||= mean
-          th  = @vector.inject(0) { |memo, val| memo + ((val - m)**3) }
+          th  = @data.inject(0) { |memo, val| memo + ((val - m)**3) }
           th.quo (@size * (standard_deviation_sample(m)**3))
         end
 
@@ -144,16 +144,16 @@ module Daru
         end
 
         def sum_of_squared_deviation
-          (@vector.inject(0) { |a,x| x.square + a } - (sum.square.quo(@size))).to_f
+          (@data.inject(0) { |a,x| x.square + a } - (sum.square.quo(@size))).to_f
         end
 
         def sum_of_squares(m=nil)
           m ||= mean
-          @vector.inject(0) { |memo, val| memo + (val - m)**2 }
+          @data.inject(0) { |memo, val| memo + (val - m)**2 }
         end
 
         def sum
-          @vector.inject(:+)
+          @data.inject(:+)
         end
 
         # Sample variance with denominator (N-1)
@@ -175,81 +175,68 @@ module Daru
       include Enumerable
 
       def each(&block)
-        @vector.each(&block)
+        @data.each(&block)
       end
 
       def map!(&block)
-        @vector.map!(&block)
+        @data.map!(&block)
       end
 
       attr_accessor :size
-      attr_reader   :vector
+      attr_reader   :data
       attr_reader   :has_missing_data
 
       def initialize vector, context
-        @vector = vector
+        @data = vector
         @context = context
 
         set_size
       end
 
       def [] index
-        @vector[index]
+        @data[index]
       end
 
       def []= index, value
         has_missing_data = true if value.nil?
-        @vector[index] = value
+        @data[index] = value
         set_size
       end
 
       def == other
-        @vector == other
+        @data == other
       end
 
       def delete_at index
-        @vector.delete_at index
+        @data.delete_at index
         set_size
       end
 
       def index key
-        @vector.index key
+        @data.index key
       end
 
       def << element
-        @vector << element
+        @data << element
         set_size
       end
 
       def uniq
-        @vector.uniq
+        @data.uniq
       end
 
       def to_a
-        @vector
+        @data
       end
 
       def dup
-        ArrayWrapper.new @vector.dup, @context
-      end
-
-      def coerce dtype
-        case
-        when dtype == Array
-          self
-        when dtype == NMatrix
-          Daru::Accessors::NMatrixWrapper.new @vector, @context
-        when dtype == MDArray
-          raise NotImplementedError
-        else
-          raise ArgumentError, "Cant coerce to dtype #{dtype}"
-        end
+        ArrayWrapper.new @data.dup, @context
       end
 
      private
 
       def set_size
-        @size = @vector.size
+        @size = @data.size
       end
     end
   end

@@ -1,7 +1,7 @@
 require 'spec_helper.rb'
 
 describe Daru::Vector do
-  [Array, NMatrix].each do |dtype|
+  [:array, :nmatrix].each do |dtype|
     describe dtype do
       context "#initialize" do
         it "initializes from an Array" do
@@ -55,7 +55,7 @@ describe Daru::Vector do
           expect(@dv[:yoda]).to eq(1)
         end
 
-        it "returns an element after passing a numeric index" , :focus => true do
+        it "returns an element after passing a numeric index" do
           expect(@dv[0]).to eq(1)
         end
 

@@ -49,7 +49,7 @@ module Daru
         # end
 
         # def mean
-        #   @vector[0...@size].mean.first
+        #   @data[0...@size].mean.first
         # end
 
         # def median
@@ -178,21 +178,22 @@ module Daru
       include Enumerable
 
       def each(&block)
-        @vector.each(&block)
+        @data.each(&block)
       end
 
-      attr_reader :size, :vector, :missing_data
-
-      def initialize vector, caller
+      attr_reader :size, :data, :missing_data
+      
+      def initialize vector, context, ntype=:int32
         @size = vector.size
-        @vector = NMatrix.new [@size*2], vector.to_a
+        @ntype = ntype
+        @data = NMatrix.new [@size*2], vector.to_a, dtype: ntype
         @missing_data = false
-        @caller = caller
+        @context = context
         # init with twice the storage for reducing the need to resize
       end
 
       def [] index
-        @vector[index]
+        @data[index]
       end
  
       def []= index, value
@@ -200,61 +201,45 @@ module Daru
 
         if value.nil?
           @missing_data = true
-          @vector = @vector.cast(dtype: :object)
+          @data = @data.cast(dtype: :object)
         end
-        @vector[index] = value
+        @data[index] = value
       end 
  
       def == other
-        @vector == other and @size == other.size
+        @data == other and @size == other.size
       end
  
       def delete_at index
-        arry = @vector.to_a
+        arry = @data.to_a
         arry.delete_at index
-        @vector = NMatrix.new [@size-1], arry
+        @data = NMatrix.new [@size-1], arry
         @size -= 1
       end
  
       def index key
-        @vector.to_a.index key
+        @data.to_a.index key
       end
  
       def << element
-        if @size >= @vector.size
-          resize
-        end
-
+        resize if @size >= @data.size
         self[@size] = element
 
         @size += 1
       end
  
       def to_a
-        @vector.to_a
+        @data.to_a
       end
  
       def dup
-        NMatrixWrapper.new @vector.to_a
-      end
-
-      def coerce dtype
-        case 
-        when dtype == Array
-          Daru::Accessors::ArrayWrapper.new @vector[0..(@size-1)].to_a, @caller
-        when dtype == NMatrix
-          self
-        when dtype == MDArray
-          raise NotImplementedError
-        else
-          raise ArgumentError, "Cant coerce to dtype #{dtype}"
-        end
+        NMatrixWrapper.new @data.to_a
       end
 
       def resize size = @size*2
         raise "Size must be greater than current size" if size < @size
 
-        @vector = NMatrix.new [size], @vector.to_a
+        @data = NMatrix.new [size], @data.to_a
       end
     end
   end

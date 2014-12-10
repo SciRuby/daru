@@ -47,3 +47,4 @@
 * Easy accessors for some methods
 * Faster CSV loading.
 * Changed vector #is\_valid? to #exists?
+* Revamped dtype specifiers for Vector. Now specify :array/:nmatrix for changing underlying data implementation.

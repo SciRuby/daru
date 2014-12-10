@@ -38,8 +38,8 @@ module Daru
         # Maximum element of the vector.
         # 
         # @param return_type [Symbol] Data type of the returned value. Defaults
-        # to returning only the maximum number but passing *:vector* will return
-        # a Daru::Vector with the index of the corresponding maximum value.
+        #   to returning only the maximum number but passing *:vector* will return
+        #   a Daru::Vector with the index of the corresponding maximum value.
         def max return_type=:stored_type
           max_value = @vector.max
           if return_type == :vector

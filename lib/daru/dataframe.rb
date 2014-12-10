@@ -392,11 +392,10 @@ module Daru
     # end
     
     # Converts the DataFrame into an array of hashes where key is vector name
-    # and value is the corresponding element.
-    # The 0th index of the array contains the array of hashes while the 1th
-    # index contains the indexes of each row of the dataframe. Each element in
-    # the index array corresponds to its row in the array of hashes, which has
-    # the same index.
+    #   and value is the corresponding element. The 0th index of the array contains 
+    #   the array of hashes while the 1th index contains the indexes of each row 
+    #   of the dataframe. Each element in the index array corresponds to its row 
+    #   in the array of hashes, which has the same index.
     def to_a
       arry = [[],[]]
       self.each_row do |row|
@@ -444,6 +443,17 @@ module Daru
 
     def to_s
       to_html
+    end
+
+    # Change dtypes of vectors by supplying a hash of :vector_name => :new_dtype
+    # 
+    # == Usage
+    #   df = Daru::DataFrame.new({a: [1,2,3], b: [1,2,3], c: [1,2,3]})
+    #   df.recast a: :nmatrix, c: :nmatrix
+    def recast opts={}
+      opts.each do |vector_name, dtype|
+        vector[vector_name].cast(dtype: dtype)
+      end
     end
 
     # Pretty print in a nice table format for the command line (irb)

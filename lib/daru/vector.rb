@@ -38,17 +38,22 @@ module Daru
     # == Arguments
     # 
     # @param source[Array,Hash] - Supply elements in the form of an Array or a Hash. If Array, a
-    # numeric index will be created if not supplied in the options. Specifying more
-    # index elements than actual values in *source* will insert *nil* into the 
-    # surplus index elements. When a Hash is specified, the keys of the Hash are 
-    # taken as the index elements and the corresponding values as the values that
-    # populate the vector.
+    #   numeric index will be created if not supplied in the options. Specifying more
+    #   index elements than actual values in *source* will insert *nil* into the 
+    #   surplus index elements. When a Hash is specified, the keys of the Hash are 
+    #   taken as the index elements and the corresponding values as the values that
+    #   populate the vector.
     # 
     # == Options
     # 
-    # * +:name+ - Name of the vector
+    # * +:name+  - Name of the vector
     # 
-    # * +:index+ -  Index of the vector
+    # * +:index+ - Index of the vector
+    # 
+    # * +:dtype+ - The underlying data type. Can be :array or :nmatrix. Default :array.
+    # 
+    # * +:ntype+ - For NMatrix, the data type of the numbers. See the NMatrix docs for
+    #   further information on supported data type.
     # 
     # == Usage
     # 
@@ -64,33 +69,22 @@ module Daru
         source = source || []
       end
       name   = opts[:name]
-      @dtype = opts[:dtype] || Array
-
       set_name name
 
-      @vector = 
-      case
-      when @dtype == Array
-        Daru::Accessors::ArrayWrapper.new source.dup, self
-      when @dtype == NMatrix
-        Daru::Accessors::NMatrixWrapper.new source.dup, self
-      when @dtype == MDArray
-        Daru::Accessors::MDArrayWrapper.new source.dup
-      when @dtype == Range, Matrix
-        Daru::Accessors::ArrayWrapper.new source.to_a.dup, self
-      end
+      @vector = cast_vector_to(opts[:dtype], source, opts[:ntype])
 
       if index.nil?
         @index = Daru::Index.new @vector.size  
       else
-        @index = index.to_index
+        @index = Daru::Index.new index
       end
       # TODO: Will need work for NMatrix/MDArray
       if @index.size > @vector.size
-        self.coerce Array # NM with nils seg faults
+        cast(dtype: :array) # NM with nils seg faults
         (@index.size - @vector.size).times { @vector << nil }
       elsif @index.size < @vector.size
-        raise IndexError, "Expected index size >= vector size"
+        puts "i : #{@index.to_a} v : #{@vector.class}"
+        raise IndexError, "Expected index size >= vector size. Index size : #{@index.size}, vector size : #{@vector.size}"
       end
 
       set_size
@@ -125,7 +119,7 @@ module Daru
     end
 
     def []=(index, value)
-      @vector = @vector.coerce(Array) if value.nil?
+      cast(dtype: :array) if value.nil?
 
       if @index.include? index
         @vector[@index[index]] = value
@@ -182,15 +176,12 @@ module Daru
       set_size
     end
 
-    def coerce dtype
-      begin
-        @vector = @vector.coerce @dtype
-        @dtype  = dtype
-      rescue StandardError => e
-        puts "Cannot convert to #{dtype} because of data type mismatch. #{e}"
-      end
+    def cast opts={}
+      dtype = opts[:dtype]
+      raise ArgumentError, "Unsupported dtype #{opts[:dtype]}" unless 
+        dtype == :array or dtype == :nmatrix
 
-      self
+      @vector = cast_vector_to dtype
     end
 
     # Delete an element by value
@@ -354,6 +345,24 @@ module Daru
     end
 
    private
+
+    # Note: To maintain sanity, this _MUST_ be the _ONLY_ place in daru where the
+    #   @dtype variable is set and the underlying data type of vector changed.
+    def cast_vector_to dtype, source=nil, ntype=nil
+      source = @vector if source.nil?
+
+      new_vector = 
+      case dtype
+      when :array   then Daru::Accessors::ArrayWrapper.new(source.to_a.dup, self)
+      when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source.dup, 
+        self, ntype)
+      when :mdarray then raise NotImplementedError, "MDArray not yet supported."
+      else Daru::Accessors::ArrayWrapper.new(source.to_a.dup, self)
+      end
+
+      @dtype = dtype || :array
+      new_vector
+    end
 
     def named_index_for index
       if @index.include? index
