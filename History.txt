@@ -46,3 +46,4 @@
 
 * Easy accessors for some methods
 * Faster CSV loading.
+* Changed vector #is\_valid? to #exists?

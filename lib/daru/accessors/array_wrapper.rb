@@ -111,8 +111,8 @@ module Daru
             memo
           end
 
-          Daru::Vector.new @vector.map { |e| r[e] }, index: @caller.index,
-            name: @caller.name, dtype: @caller.dtype
+          Daru::Vector.new @vector.map { |e| r[e] }, index: @context.index,
+            name: @context.name, dtype: @context.dtype
         end
 
         def recode(&block)
@@ -186,9 +186,9 @@ module Daru
       attr_reader   :vector
       attr_reader   :has_missing_data
 
-      def initialize vector, caller
+      def initialize vector, context
         @vector = vector
-        @caller = caller
+        @context = context
 
         set_size
       end
@@ -230,7 +230,7 @@ module Daru
       end
 
       def dup
-        ArrayWrapper.new @vector.dup, @caller
+        ArrayWrapper.new @vector.dup, @context
       end
 
       def coerce dtype
@@ -238,7 +238,7 @@ module Daru
         when dtype == Array
           self
         when dtype == NMatrix
-          Daru::Accessors::NMatrixWrapper.new @vector, @caller
+          Daru::Accessors::NMatrixWrapper.new @vector, @context
         when dtype == MDArray
           raise NotImplementedError
         else

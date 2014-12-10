@@ -165,7 +165,41 @@ describe Daru::Vector do
       end
 
       context "#uniq" do
-        # TODO
+        it "keeps only unique values" do
+        end
+      end
+
+      context "#sort" do
+        before do
+          @dv = Daru::Vector.new [33,2,15,332,1], name: :dv, index: [:a, :b, :c, :d, :e]
+        end
+
+        it "sorts the vector with defaults and returns a new vector, preserving indexing" do
+          expect(@dv.sort).to eq(Daru::Vector.new([1,2,15,33,332], name: :dv, index: [:e, :b, :c, :a, :d]))
+        end
+
+        it "sorts the vector in descending order" do
+          expect(@dv.sort(ascending: false)).to eq(Daru::Vector.new([332,33,15,2,1], name: :dv, index: [:d, :a, :c, :b, :e]))
+        end
+      end
+
+      context "#re_index!" do
+        it "recreates with sequential numeric index (bang)" do
+          dv = Daru::Vector.new [1,2,3,4,5], name: :dv, index: [:a, :b, :c, :d, :e]
+          dv.re_index!(index: :seq)
+
+          expect(dv).to eq(Daru::Vector.new([1,2,3,4,5], name: :dv, index: [0,1,2,3,4]))
+        end
+      end
+
+      context "#re_index" do
+        it "recreates with sequential numeric index" do
+          dv = Daru::Vector.new [1,2,3,4,5], name: :dv, index: [:a, :b, :c, :d, :e]
+          a  = dv.re_index(index: :seq)
+
+          expect(a).to eq(Daru::Vector.new([1,2,3,4,5], name: :dv, index: [0,1,2,3,4]))
+          expect(a).to not_eq(dv)
+        end
       end
     end
   end

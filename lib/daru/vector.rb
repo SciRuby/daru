@@ -228,13 +228,26 @@ module Daru
       Daru::Vector.new uniq_vector, name: @name, index: new_index, dtype: @dtype
     end
 
-    # def sort ascending=true
-    #   if ascending
-        
-    #   end
-    # end
+    # Sorts a vector according to its values.
+    # 
+    # == Options
+    # 
+    # * ascending - if false, will sort in descending order. Defaults to true.
+    def sort opts={}, &block
+      opts = {
+        ascending: true,
+        type: :quick_sort
+      }.merge(opts)
 
-    def is_valid? value
+      if opts[:ascending]
+        send opts[:type], :ascending
+      else
+        send opts[:type], :descending
+      end
+    end
+
+    # Returns *true* if the value passed actually exists in the vector.
+    def exists? value
       !self[index_of(value)].nil?
     end
 

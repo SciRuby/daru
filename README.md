@@ -44,11 +44,6 @@ The gem consists of two data structures, Vector and DataFrame. Any data in a ser
 
 #### Initialization of DataFrame
 
-A data frame can be initialized from the following sources:
-* Hash of indexed order: `{ b: Daru::Vector.new(:b, [11,12,13,14,15], [:two, :one, :four, :five, :three]), a: Daru::Vector.new(:a, [1,2,3,4,5], [:two,:one,:three, :four, :five])}`.
-* Array of hashes: `[{a: 1, b: 11}, {a: 2, b: 12}, {a: 3, b: 13},{a: 4, b: 14}, {a: 5, b: 15}]`.
-* Hash of names and Arrays: `{b: [11,12,13,14,15], a: [1,2,3,4,5]}`
-
 The DataFrame constructor takes 4 arguments: source, vectors, indexes and name in that order. The last 3 are optional while the first is mandatory.
 
 A basic DataFrame can be initialized like this:
@@ -373,6 +368,7 @@ Head over to the tutorials and notebooks listed above for more examples.
 * Time series support.
 * Calculate percentage change.
 * Working with missing data - is\_null?, not\_null?, drop\_missing\_data, dropping rows with missing data, filling data in place of nils
+* Have some sample data sets for users to play around with. Should be able to load these from the code itself. Like s
 
 ## Contributing
 
