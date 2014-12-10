@@ -181,7 +181,7 @@ module Daru
         @data.each(&block)
       end
 
-      attr_reader :size, :data, :missing_data
+      attr_reader :size, :data, :missing_data, :ntype
       
       def initialize vector, context, ntype=:int32
         @size = vector.size

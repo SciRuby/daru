@@ -176,6 +176,11 @@ module Daru
       set_size
     end
 
+    # Cast a vector to a new data type.
+    # 
+    # == Options
+    # 
+    # * +:dtype+ - :array for Ruby Array. :nmatrix for NMatrix.
     def cast opts={}
       dtype = opts[:dtype]
       raise ArgumentError, "Unsupported dtype #{opts[:dtype]}" unless 
@@ -219,22 +224,37 @@ module Daru
       Daru::Vector.new uniq_vector, name: @name, index: new_index, dtype: @dtype
     end
 
-    # Sorts a vector according to its values.
+    # Sorts a vector according to its values. If a block is specified, the contents
+    #   will be evaluated and data will be swapped whenever the block evaluates 
+    #   to *true*. Defaults to ascending order sorting. Any missing values will be
+    #   put at the end of the vector. Preserves indexing.
     # 
     # == Options
     # 
     # * ascending - if false, will sort in descending order. Defaults to true.
+    # 
+    # == Usage
+    # 
+    #   v = Daru::Vector.new ["My first guitar", "jazz", "guitar"]
+    #   # Say you want to sort these strings by length.
+    #   v.sort { |a,b| a.length < b.length }
     def sort opts={}, &block
       opts = {
         ascending: true,
         type: :quick_sort
       }.merge(opts)
 
-      if opts[:ascending]
-        send opts[:type], :ascending
-      else
-        send opts[:type], :descending
+      if block.nil?
+        block = 
+        if opts[:ascending]
+          lambda { |a,b| a < b }
+        else
+          lambda { |a,b| a > b }
+        end
       end
+      vector, index = send(opts[:type], &block)
+
+      Daru::Vector.new(vector, index: index, name: @name, dtype: @dtype)
     end
 
     # Returns *true* if the value passed actually exists in the vector.
@@ -346,18 +366,29 @@ module Daru
 
    private
 
+    def quick_sort &block
+      
+    end
+
+    def swap? a, b, &block
+      return false if a.nil? or b.nil?
+      return true  if block.call(a,b)
+      return false
+    end
+
     # Note: To maintain sanity, this _MUST_ be the _ONLY_ place in daru where the
     #   @dtype variable is set and the underlying data type of vector changed.
     def cast_vector_to dtype, source=nil, ntype=nil
       source = @vector if source.nil?
+      return @vector if @dtype and @dtype == dtype
 
       new_vector = 
       case dtype
       when :array   then Daru::Accessors::ArrayWrapper.new(source.to_a.dup, self)
-      when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source.dup, 
+      when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source.to_a.dup, 
         self, ntype)
       when :mdarray then raise NotImplementedError, "MDArray not yet supported."
-      else Daru::Accessors::ArrayWrapper.new(source.to_a.dup, self)
+      else Daru::Accessors::ArrayWrapper.new(source.dup, self)
       end
 
       @dtype = dtype || :array

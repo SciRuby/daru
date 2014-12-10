@@ -187,7 +187,7 @@ module Daru
       attr_reader   :has_missing_data
 
       def initialize vector, context
-        @data = vector
+        @data = vector.to_a
         @context = context
 
         set_size

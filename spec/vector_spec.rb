@@ -1,7 +1,9 @@
 require 'spec_helper.rb'
 
 describe Daru::Vector do
-  [:array, :nmatrix].each do |dtype|
+  ALL_DTYPES = [:array, :nmatrix]
+
+  ALL_DTYPES.each do |dtype|
     describe dtype do
       context "#initialize" do
         it "initializes from an Array" do
@@ -169,6 +171,16 @@ describe Daru::Vector do
         end
       end
 
+      context "#cast" do
+        ALL_DTYPES.each do |new_dtype|
+          it "casts from #{dtype} to #{new_dtype}" do
+            v = Daru::Vector.new [1,2,3,4], dtype: dtype
+            v.cast(dtype: new_dtype)
+            expect(v.dtype).to eq(new_dtype)
+          end
+        end
+      end
+
       context "#sort" do
         before do
           @dv = Daru::Vector.new [33,2,15,332,1], name: :dv, index: [:a, :b, :c, :d, :e]
@@ -180,6 +192,13 @@ describe Daru::Vector do
 
         it "sorts the vector in descending order" do
           expect(@dv.sort(ascending: false)).to eq(Daru::Vector.new([332,33,15,2,1], name: :dv, index: [:d, :a, :c, :b, :e]))
+        end
+
+        it "accepts a block" do
+          str_dv = Daru::Vector.new ["My Jazz Guitar", "Jazz", "My", "Guitar"]
+
+          sorted = str_dv.sort { |a,b| a.length < b.length }
+          expect(sorted).to eq(Daru::Vector.new(["My", "Jazz", "Guitar", "My Jazz Guitar"], index: [2,1,3,0]))
         end
       end
 
