@@ -83,7 +83,6 @@ module Daru
         cast(dtype: :array) # NM with nils seg faults
         (@index.size - @vector.size).times { @vector << nil }
       elsif @index.size < @vector.size
-        puts "i : #{@index.to_a} v : #{@vector.class}"
         raise IndexError, "Expected index size >= vector size. Index size : #{@index.size}, vector size : #{@vector.size}"
       end
 
@@ -245,14 +244,10 @@ module Daru
       }.merge(opts)
 
       if block.nil?
-        block = 
-        if opts[:ascending]
-          lambda { |a,b| a < b }
-        else
-          lambda { |a,b| a > b }
-        end
+        block = lambda { |a,b| a <=> b }
       end
-      vector, index = send(opts[:type], &block)
+      order = opts[:ascending] ? :ascending : :descending
+      vector, index = send(opts[:type], @vector.to_a.dup, @index.to_a, order, &block)
 
       Daru::Vector.new(vector, index: index, name: @name, dtype: @dtype)
     end
@@ -366,13 +361,66 @@ module Daru
 
    private
 
-    def quick_sort &block
-      
+    def quick_sort vector, index, order, &block
+      recursive_quick_sort vector, index, order, 0, @size-1, &block
+      [vector, index]
     end
 
-    def swap? a, b, &block
+    def recursive_quick_sort vector, index, order, left_lower, right_upper, &block
+      if left_lower < right_upper
+        left_upper, right_lower = partition(vector, index, order, left_lower, right_upper, &block)
+        if left_upper - left_lower < right_upper - right_lower
+          recursive_quick_sort(vector, index, order, left_lower, left_upper, &block)
+          recursive_quick_sort(vector, index, order, right_lower, right_upper, &block)
+        else
+          recursive_quick_sort(vector, index, order, right_lower, right_upper, &block)
+          recursive_quick_sort(vector, index, order, left_lower, left_upper, &block)
+        end
+      end
+    end
+
+    def partition vector, index, order, left_lower, right_upper, &block
+      mindex = (left_lower + right_upper) / 2
+      mvalue = vector[mindex]
+      i = left_lower
+      j = right_upper
+      opposite_order = order == :ascending ? :descending : :ascending
+
+      i += 1 while(keep?(vector[i], mvalue, order, &block))
+      j -= 1 while(keep?(vector[j], mvalue, opposite_order, &block))
+
+      while i < j - 1
+        vector[i], vector[j] = vector[j], vector[i]
+        index[i], index[j]   = index[j], index[i]
+        i += 1
+        j -= 1
+
+        i += 1 while(keep?(vector[i], mvalue, order, &block))
+        j -= 1 while(keep?(vector[j], mvalue, opposite_order, &block))
+      end
+
+      if i <= j
+        if i < j
+          vector[i], vector[j] = vector[j], vector[i]
+          index[i], index[j]   = index[j], index[i]
+        end
+        i += 1
+        j -= 1
+      end
+
+      [j,i]
+    end
+
+    def keep? a, b, order, &block
       return false if a.nil? or b.nil?
-      return true  if block.call(a,b)
+      eval = block.call(a,b)
+      if order == :ascending 
+        return true  if eval == -1
+        return false if eval == 1
+      elsif order == :descending
+        return false if eval == -1
+        return true  if eval == 1
+      end
       return false
     end
 

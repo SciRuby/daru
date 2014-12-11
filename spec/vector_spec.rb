@@ -181,7 +181,7 @@ describe Daru::Vector do
         end
       end
 
-      context "#sort" do
+      context "#sort", focus: true do
         before do
           @dv = Daru::Vector.new [33,2,15,332,1], name: :dv, index: [:a, :b, :c, :d, :e]
         end
@@ -190,16 +190,23 @@ describe Daru::Vector do
           expect(@dv.sort).to eq(Daru::Vector.new([1,2,15,33,332], name: :dv, index: [:e, :b, :c, :a, :d]))
         end
 
-        it "sorts the vector in descending order" do
+        it "sorts the vector in descending order", focus: true do
           expect(@dv.sort(ascending: false)).to eq(Daru::Vector.new([332,33,15,2,1], name: :dv, index: [:d, :a, :c, :b, :e]))
         end
 
         it "accepts a block" do
           str_dv = Daru::Vector.new ["My Jazz Guitar", "Jazz", "My", "Guitar"]
 
-          sorted = str_dv.sort { |a,b| a.length < b.length }
+          sorted = str_dv.sort { |a,b| a.length <=> b.length }
           expect(sorted).to eq(Daru::Vector.new(["My", "Jazz", "Guitar", "My Jazz Guitar"], index: [2,1,3,0]))
         end
+
+        it "places nils near the end of the vector" do
+          pending
+          with_nils = Daru::Vector.new [22,4,nil,111,nil,2]
+
+          expect(with_nils.sort).to eq(Daru::Vector.new([2,4,22,111,nil,nil], index: [5,1,0,3,2,4]))
+        end if dtype == :array
       end
 
       context "#re_index!" do

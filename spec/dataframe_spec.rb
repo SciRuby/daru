@@ -629,7 +629,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#recast" , focus: true do
+  context "#recast" do
     it "recasts underlying vectors" do
       @data_frame.recast a: :nmatrix, c: :nmatrix
 
