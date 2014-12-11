@@ -118,7 +118,7 @@ module Daru
           create_vectors_index_with vectors, source
           if all_daru_vectors_in_source? source
             if !index.nil?
-              @index = index.to_index
+              @index = Daru::Index.new index
             elsif all_vectors_have_equal_indexes? source
               @index = source.values[0].index.dup
             else
@@ -141,7 +141,7 @@ module Daru
           else   
             index = source.values[0].size if index.nil?
             if index.is_a?(Daru::Index)
-              @index   = index.to_index
+              @index   = Daru::Index.new index
             else
               @index   = Daru::Index.new index     
             end
@@ -311,7 +311,7 @@ module Daru
       idx = named_index_for index
 
       if @index.include? idx
-        @index = (@index.to_a - [idx]).to_index
+        @index = reassign_index_as(@index.to_a - [idx])
         self.each_vector do |vector|
           vector.delete_at idx
         end
@@ -564,12 +564,11 @@ module Daru
     end
 
     def insert_or_modify_vector name, vector
-      @vectors = @vectors.re_index(@vectors + name)
+      @vectors = reassign_index_as(@vectors + name)
       v        = nil
 
       if vector.is_a?(Daru::Vector)
         v = Daru::Vector.new [], name: name, index: @index
-        nil_data = false
         @index.each do |idx|
           v[idx] = vector[idx]
         end
@@ -585,13 +584,13 @@ module Daru
 
     def insert_or_modify_row name, vector      
       if @index.include? name
-        v = vector.dv(name, @vectors, @dtype)
+        v = vector.dv(name, @vectors, @dtype) 
 
         @vectors.each do |vector|
           @data[@vectors[vector]][name] = v[vector] 
         end
       else
-        @index = @index.re_index(@index + name)
+        @index = reassign_index_as(@index + name)
         v      = Daru::Vector.new(vector, name: name, index: @vectors)
 
         @vectors.each do |vector|
@@ -652,10 +651,10 @@ module Daru
     def create_vectors_index_with vectors, source
       vectors = source.keys.sort if vectors.nil?
 
-      if vectors.is_a?(Daru::Index)
-        @vectors = vectors.to_index
-      else
+      unless vectors.is_a?(Daru::Index)
         @vectors = Daru::Index.new (vectors + (source.keys - vectors)).uniq.map(&:to_sym)
+      else
+        @vectors = vectors
       end
     end
 
@@ -665,6 +664,10 @@ module Daru
       source.all? do |name, vector|
         index == vector.index
       end
+    end
+
+    def reassign_index_as new_index
+      Daru::Index.new new_index
     end
   end
 end

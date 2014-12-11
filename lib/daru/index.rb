@@ -88,20 +88,12 @@ module Daru
       @relation_hash.key value
     end
 
-    def re_index new_index
-      new_index.to_index
-    end
-
     def include? index
       @relation_hash.has_key? index
     end
 
     def dup
       Daru::Index.new @relation_hash.keys
-    end
-
-    def to_index
-      self
     end
   end
 end

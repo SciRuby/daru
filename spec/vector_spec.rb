@@ -65,6 +65,16 @@ describe Daru::Vector do
           expect(@dv[:yoda, :anakin]).to eq(Daru::Vector.new([1,2], name: :yoda, 
             index: [:yoda, :anakin], dtype: dtype))
         end
+
+        it "returns a vector when specified symbol Range" do
+          expect(@dv[:yoda..:anakin]).to eq(Daru::Vector.new([1,2,3], 
+            index: [:yoda, :anakin, :obi], name: :yoga, dtype: dtype))
+        end
+
+        it "returns a vector when specified numeric Range" do
+          expect(@dv[3..4]).to eq(Daru::Vector.new([4,5], name: :yoga, 
+            index: [:padme, :r2d2], name: :yoga, dtype: dtype))
+        end
       end
 
       context "#[]=" do
@@ -209,22 +219,20 @@ describe Daru::Vector do
         end if dtype == :array
       end
 
-      context "#re_index!" do
-        it "recreates with sequential numeric index (bang)" do
-          dv = Daru::Vector.new [1,2,3,4,5], name: :dv, index: [:a, :b, :c, :d, :e]
-          dv.re_index!(index: :seq)
-
-          expect(dv).to eq(Daru::Vector.new([1,2,3,4,5], name: :dv, index: [0,1,2,3,4]))
-        end
-      end
-
       context "#re_index" do
-        it "recreates with sequential numeric index" do
-          dv = Daru::Vector.new [1,2,3,4,5], name: :dv, index: [:a, :b, :c, :d, :e]
-          a  = dv.re_index(index: :seq)
+        it "recreates index with sequential numbers" do
+          @dv = Daru::Vector.new [1,2,3,4,5], name: :dv, index: [:a, :b, :c, :d, :e]
+          a  = @dv.re_index(index: :seq)
 
           expect(a).to eq(Daru::Vector.new([1,2,3,4,5], name: :dv, index: [0,1,2,3,4]))
-          expect(a).to not_eq(dv)
+          expect(a).to not_eq(@dv)
+        end
+
+        it "accepts a new non-numeric index" do
+          a = @dv.re_index(index: [:hello, :my, :name, :is, :ted])
+
+          expect(a).to eq(Daru::Vector.new([1,2,3,4,5], name: :dv, index: [:hello, :my, :name, :is, :ted]))
+          expect(a).to not_eq(@dv)
         end
       end
     end

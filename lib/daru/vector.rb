@@ -101,13 +101,8 @@ module Daru
           # range into vector
           # 
         else
-          if @index.include? index
-            @vector[@index[index]]
-          elsif index.is_a?(Numeric)
-            @vector[index]
-          else
-            return nil
-          end
+          pos = numeric_index_for index
+          pos ? @vector[pos] : nil
         end
       else
         indexes.unshift index
@@ -119,12 +114,8 @@ module Daru
 
     def []=(index, value)
       cast(dtype: :array) if value.nil?
-
-      if @index.include? index
-        @vector[@index[index]] = value
-      else
-        @vector[index] = value
-      end
+      pos = numeric_index_for index
+      @vector[pos] = value
 
       set_size
     end
@@ -164,8 +155,8 @@ module Daru
         index  = @size
       else
         begin
-          @index = @index.re_index(@index + index)
-        rescue Exception => e
+          @index = Daru::Index.new(@index + index)
+        rescue StandardError => e
           raise e, "Expected valid index."
         end
       end
@@ -201,7 +192,7 @@ module Daru
       if @index.index_class == Integer
         @index = Daru::Index.new @size-1
       else
-        @index = (@index.to_a - [idx]).to_index
+        @index = Daru::Index.new (@index.to_a - [idx])
       end
 
       set_size
@@ -226,12 +217,14 @@ module Daru
     # Sorts a vector according to its values. If a block is specified, the contents
     #   will be evaluated and data will be swapped whenever the block evaluates 
     #   to *true*. Defaults to ascending order sorting. Any missing values will be
-    #   put at the end of the vector. Preserves indexing.
+    #   put at the end of the vector. Preserves indexing. Default sort algorithm is
+    #   quick sort.
     # 
     # == Options
     # 
-    # * ascending - if false, will sort in descending order. Defaults to true.
+    # * +:ascending+ - if false, will sort in descending order. Defaults to true.
     # 
+    # * +:quick_sort+
     # == Usage
     # 
     #   v = Daru::Vector.new ["My first guitar", "jazz", "guitar"]
@@ -243,9 +236,8 @@ module Daru
         type: :quick_sort
       }.merge(opts)
 
-      if block.nil?
-        block = lambda { |a,b| a <=> b }
-      end
+      block = lambda { |a,b| a <=> b } unless block
+    
       order = opts[:ascending] ? :ascending : :descending
       vector, index = send(opts[:type], @vector.to_a.dup, @index.to_a, order, &block)
 
@@ -450,6 +442,14 @@ module Daru
         @index.key index
       else
         raise IndexError, "Specified index #{index} does not exist."
+      end
+    end
+
+    def numeric_index_for index
+      if @index.include?(index) 
+        @index[index]
+      elsif index.is_a?(Numeric)
+        index
       end
     end
 

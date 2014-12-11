@@ -48,3 +48,5 @@
 * Faster CSV loading.
 * Changed vector #is\_valid? to #exists?
 * Revamped dtype specifiers for Vector. Now specify :array/:nmatrix for changing underlying data implementation.
+* #sort for Vector. Quick sort algorithm with preservation of original indexes.
+* Removes #re\_index and #to\_index from Daru::Index.

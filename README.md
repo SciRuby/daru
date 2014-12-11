@@ -357,7 +357,6 @@ Head over to the tutorials and notebooks listed above for more examples.
 * Function to check if a value of a row/vector is within a specified range.
 * Create a new vector in map_rows if any of the already present rows dont match the one assigned in the block.
 * Tests for checking NMatrix resizing
-* Sort while preserving index.
 * Sort by index.
 * Convert DF to matrix.
 * Convert DF to Nmatrix.
@@ -369,6 +368,7 @@ Head over to the tutorials and notebooks listed above for more examples.
 * Calculate percentage change.
 * Working with missing data - is\_null?, not\_null?, drop\_missing\_data, dropping rows with missing data, filling data in place of nils
 * Have some sample data sets for users to play around with. Should be able to load these from the code itself. Like s
+* Sorting with missing data present.
 
 ## Contributing
 
