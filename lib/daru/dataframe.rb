@@ -16,7 +16,7 @@ module Daru
 
     class << self
       # Load data from a CSV file. 
-      # Arguments - path, options, block(optional)
+      #   Arguments - path, options, block(optional)
       # 
       # Accepts a block for pre-conditioning of CSV data if any.
       def from_csv path, opts={}, &block
@@ -67,8 +67,8 @@ module Daru
     attr_reader :size
 
     # DataFrame basically consists of an Array of Vector objects.
-    # These objects are indexed by row and column by vectors and index Index objects.
-    # Arguments - source, vectors, index, name.
+    #   These objects are indexed by row and column by vectors and index Index objects.
+    #   Arguments - source, vectors, index, name.
     # 
     # == Usage
     #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [6,7,8,9]}, order: [:b, :a], 
@@ -158,9 +158,9 @@ module Daru
     end
 
     # Access row or vector. Specify name of row/vector followed by axis(:row, :vector).
-    # Use of this method is not recommended for accessing rows or vectors.
-    # Use df.row[:a] for accessing row with index ':a' or df.vector[:vec] for
-    # accessing vector with index ':vec'
+    #   Use of this method is not recommended for accessing rows or vectors.
+    #   Use df.row[:a] for accessing row with index ':a' or df.vector[:vec] for
+    #   accessing vector with index ':vec'
     def [](*names, axis)
       if axis == :vector
         access_vector *names
@@ -172,12 +172,12 @@ module Daru
     end
 
     # Insert a new row/vector of the specified name or modify a previous row.
-    # Instead of using this method directly, use df.row[:a] = [1,2,3] to set/create
-    # a row ':a' to [1,2,3], or df.vector[:vec] = [1,2,3] for vectors.
+    #   Instead of using this method directly, use df.row[:a] = [1,2,3] to set/create
+    #   a row ':a' to [1,2,3], or df.vector[:vec] = [1,2,3] for vectors.
     # 
     # In case a Daru::Vector is specified after the equality the sign, the indexes
-    # of the vector will be matched against the row/vector indexes of the DataFrame
-    # before an insertion is performed. Unmatched indexes will be set to nil.
+    #   of the vector will be matched against the row/vector indexes of the DataFrame
+    #   before an insertion is performed. Unmatched indexes will be set to nil.
     def []=(name, axis ,vector)
       if axis == :vector
         insert_or_modify_vector name, vector
@@ -259,7 +259,7 @@ module Daru
     end
 
     # Map each vector. Returns a DataFrame whose vectors are modified according
-    # to the value returned by the block.
+    #   to the value returned by the block.
     def map_vectors(&block)
       df = self.dup
       df.each_vector_with_index do |vector, name|

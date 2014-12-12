@@ -4,14 +4,12 @@ $:.unshift File.expand_path("../lib", __FILE__)
 require 'version.rb'
 
 DESCRIPTION = <<MSG
-Daru (Data Analysis in RUby) is a library for storage, analysis and manipulation
+Daru (Data Analysis in RUby) is a library for analysis, manipulation and visualization
 of data.
 
 Daru works with Ruby arrays, NMatrix and MDArray, thus working seamlessly accross
-ruby interpreters, at the same time providing speed for those who need it.
-
-This library is under active development so NMatrix and MDArray support is
-somewhat limited, but should be available soon!
+ruby interpreters, at the same time providing speed for those who need it, while 
+making working with data super simple and intuitive.
 MSG
 
 Gem::Specification.new do |spec|

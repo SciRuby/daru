@@ -89,27 +89,36 @@ module Daru
       set_size
     end
 
-    # Get one or more elements with specified index.
+    # Get one or more elements with specified index or a range.
     # 
     # == Usage
     #   v[:one, :two] # => Daru::Vector with indexes :one and :two
     #   v[:one]       # => Single element
+    #   v[:one..:three] # => Daru::Vector with indexes :one, :two and :three
     def [](index, *indexes)
       if indexes.empty?
         case index
         when Range
-          # range into vector
-          # 
+          range = 
+          if index.first.is_a?(Numeric)
+            index
+          else
+            first = numeric_index_for index.first
+            last  = numeric_index_for index.last
+
+            (first..last)
+          end
+
+          indexes = @index.to_a[range]
         else
           pos = numeric_index_for index
-          pos ? @vector[pos] : nil
+          return (pos ? @vector[pos] : nil)
         end
       else
         indexes.unshift index
-
-        Daru::Vector.new indexes.map { |index| @vector[@index[index]] },name: @name, 
-          index: indexes
       end
+      Daru::Vector.new indexes.map { |index| @vector[@index[index]] },name: @name, 
+        index: indexes
     end
 
     def []=(index, value)

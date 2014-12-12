@@ -48,9 +48,9 @@ module Daru
         #   fo.quo(self.length*sd(m)**4)-3
         # end
 
-        # def mean
-        #   @data[0...@size].mean.first
-        # end
+        def mean
+          @data[0...@size].mean.first
+        end
 
         # def median
         #   self.percentil(50)
@@ -63,10 +63,6 @@ module Daru
 
         # def mode
         #   self.frequencies.max
-        # end
-
-        # def ==(other)
-        #   @data==other
         # end
 
         # def n_valid
@@ -110,9 +106,9 @@ module Daru
         #   self[self.length-1] = recode
         # end
 
-        # def range
-        #   max - min
-        # end
+        def range
+          max - min
+        end
 
         # def ranked
         #   sum = 0
@@ -179,6 +175,10 @@ module Daru
 
       def each(&block)
         @data.each(&block)
+      end
+
+      def map!(&block)
+        @data.map!(&block)
       end
 
       attr_reader :size, :data, :missing_data, :ntype
