@@ -380,16 +380,44 @@ module Daru
     end
 
     def tail quantity=10
-      self[(@size - quantity)..@size, :row]
+      self[(@size - quantity)..(@size-1), :row]
     end
 
-    # def sort_by_row name
-      
-    # end
+    # Sorts a dataframe (ascending/descending)according to the given sequence of 
+    #   vectors, using the attributes provided in the blocks.
+    # 
+    # @param order [Array] The order of vector names in which the DataFrame
+    #   should be sorted.
+    # @param [Hash] opts The options to sort with.
+    # @option opts [TrueClass,FalseClass,Array] :ascending (true) Sort in ascending
+    #   or descending order. Specify Array corresponding to *order* for multiple
+    #   sort orders.
+    # @option opts [Hash] :by ({|a,b| a <=> b}) Specify attributes of objects to
+    #   to be used for sorting, for each vector name in *order* as a hash of 
+    #   vector name and lambda pairs. In case a lambda for a vector is not
+    #   specified, the default will be used.
+    # 
+    # == Usage
+    #   
+    #   df = Daru::DataFrame.new({a: [-3,2,-1,4], b: [4,3,2,1]})
+    #   
+    #   #<Daru::DataFrame:140630680 @name = 04e00197-f8d5-4161-bca2-93266bfabc6f @size = 4>
+    #   #            a          b 
+    #   # 0         -3          4 
+    #   # 1          2          3 
+    #   # 2         -1          2 
+    #   # 3          4          1 
+    #   df.sort([:a], by: { a: lambda { |a,b| a.abs <=> b.abs } })
+    #   
+    #   
+    def sort vectors, opts={}
+      opts = {
+        ascending: true,
+        algorithm: :quick_sort
+      }.merge(opts)
 
-    # def sort_by_vector name
       
-    # end
+    end
     
     # Converts the DataFrame into an array of hashes where key is vector name
     #   and value is the corresponding element. The 0th index of the array contains 
@@ -622,8 +650,6 @@ module Daru
     end
 
     def validate
-      # TODO: [IMP] when vectors of different dimensions are specified, they should
-      # be inserted into the dataframe by inserting nils wherever necessary.
       validate_labels
       validate_vector_sizes
     end

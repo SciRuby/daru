@@ -352,11 +352,9 @@ Head over to the tutorials and notebooks listed above for more examples.
 * Deletion of elements from Vector should only modify the index and leave the vector as it is so that compacting is not needed and things are faster.
 * Add a #sync method which will sync the modified index with the unmodified vector.
 * Ability to reorder the index of a dataframe.
-* head/tail for DV.
 * #find\_max function which will evaluate a block and return the row for the value of the block is max.
 * Function to check if a value of a row/vector is within a specified range.
 * Create a new vector in map_rows if any of the already present rows dont match the one assigned in the block.
-* Tests for checking NMatrix resizing
 * Sort by index.
 * Convert DF to matrix.
 * Convert DF to Nmatrix.
@@ -367,7 +365,7 @@ Head over to the tutorials and notebooks listed above for more examples.
 * Time series support.
 * Calculate percentage change.
 * Working with missing data - is\_null?, not\_null?, drop\_missing\_data, dropping rows with missing data, filling data in place of nils
-* Have some sample data sets for users to play around with. Should be able to load these from the code itself. Like s
+* Have some sample data sets for users to play around with. Should be able to load these from the code itself.
 * Sorting with missing data present.
 
 ## Contributing

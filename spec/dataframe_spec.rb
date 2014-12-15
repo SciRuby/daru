@@ -639,4 +639,26 @@ describe Daru::DataFrame do
       expect(@data_frame.c.dtype).to eq(:nmatrix)
     end
   end
+
+  context "#sort" do
+    before :each do
+      @df = Daru::DataFrame.new({a: [-3,2,-1,2], b: [4,3,2,1], c: ['a','aa','aaa','aaaa']})
+    end
+
+    it "sorts according to given vector order" do
+      a_sorter = lambda { |a,b| a.abs <=> b.abs }
+
+      expect(@df.sort([:a], by: { a: a_sorter })).to eq(
+        Daru::DataFrame.new({a: [-1,2,2,-3], b: [2,3,1,4], c: ['aaa','aa','aaaa','a']}, 
+          index: [2,1,3,0])
+        )
+    end
+
+    it "sorts according to vector order using default lambdas (index re ordered according to the last vector)" do
+      expect(@df.sort([:a, :b])).to eq(
+        Daru::DataFrame.new({a: [-3,-1,2,2], b: [4,2,1,3], c: ['a','aaa','aaaa','aa']},
+          index: [0,2,3,1])
+        )
+    end
+  end
 end if mri?

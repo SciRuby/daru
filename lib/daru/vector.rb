@@ -53,7 +53,7 @@ module Daru
     # * +:dtype+ - The underlying data type. Can be :array or :nmatrix. Default :array.
     # 
     # * +:ntype+ - For NMatrix, the data type of the numbers. See the NMatrix docs for
-    #   further information on supported data type.
+    #     further information on supported data type.
     # 
     # == Usage
     # 
@@ -149,6 +149,14 @@ module Daru
 
     def push element
       concat element  
+    end
+
+    def head q=10
+      self[0..q]
+    end
+
+    def tail q=10
+      self[-q..-1]
     end
 
     def re_index new_index
