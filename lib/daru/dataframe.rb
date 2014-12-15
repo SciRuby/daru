@@ -525,7 +525,7 @@ module Daru
 
     def method_missing(name, *args, &block)
       if md = name.match(/(.+)\=/)
-        insert_or_modify_vector name[/(.+)\=/].delete("="), args[0]
+        insert_or_modify_vector name[/(.+)\=/].delete("=").to_sym, args[0]
       elsif self.has_vector? name
         self[name, :vector]
       else

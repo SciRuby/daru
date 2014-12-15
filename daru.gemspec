@@ -33,6 +33,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'awesome_print'
   spec.add_development_dependency 'nyaplot'
   if RUBY_ENGINE != 'jruby'
-    spec.add_development_dependency 'nmatrix', '~> 0.1.0.rc5'
+    spec.add_development_dependency 'nmatrix', '~> 0.1.0'
   end
 end

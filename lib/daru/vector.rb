@@ -72,12 +72,7 @@ module Daru
       set_name name
 
       @vector = cast_vector_to(opts[:dtype], source, opts[:ntype])
-
-      if index.nil?
-        @index = Daru::Index.new @vector.size  
-      else
-        @index = Daru::Index.new index
-      end
+      @index = Daru::Index.new(index || @vector.size)
       # TODO: Will need work for NMatrix/MDArray
       if @index.size > @vector.size
         cast(dtype: :array) # NM with nils seg faults
@@ -177,9 +172,7 @@ module Daru
           raise e, "Expected valid index."
         end
       end
-
       @vector[@index[index]] = element
-
       set_size
     end
 
@@ -336,6 +329,16 @@ module Daru
       content
     end
 
+    # Create a new vector with a different index.
+    # 
+    # @param new_index [Symbol, Array, Daru::Index] The new index. Passing *:seq*
+    #   will reindex with sequential numbers from 0 to (n-1).
+    def reindex new_index
+      index = Daru::Index.new(new_index == :seq ? @size : new_index)
+
+      Daru::Vector.new @vector.to_a, index: index, name: name, dtype: @dtype
+    end
+
     # def compact!
       # TODO: Compact and also take care of indexes
       # @vector.compact!
@@ -343,6 +346,8 @@ module Daru
     # end
 
     # Give the vector a new name
+    # 
+    # @param new_name [Symbol] The new name.
     def rename new_name
       @name = new_name.to_sym
     end

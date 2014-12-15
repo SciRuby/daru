@@ -65,9 +65,9 @@ module Daru
         #   self.frequencies.max
         # end
 
-        # def n_valid
-        #   self.length
-        # end
+        def n_valid
+          @size
+        end
 
         # def percentil(percent)
         #   index = @data.sorted_indices
@@ -80,20 +80,12 @@ module Daru
         #   end
         # end
 
-        # def product
-        #   @data.inject(1){|memo, val| memo*val}
-        # end
+        def product
+          @data.inject(1) { |m,e| m*e }
+        end
 
         # def proportion(val=1)
         #   self.frequencies[val]/self.n_valid
-        # end
-
-        # def proportion_confidence_interval_t
-        #   raise "NotImplementedError"
-        # end
-
-        # def proportion_confidence_interval_z
-        #   raise "NotImplementedError"
         # end
 
         # def proportions
@@ -118,14 +110,6 @@ module Daru
         #     memo
         #   end
         #   Mikon::DArray.new(self.reduce{|val| r[val]})
-        # end
-
-        # def recode(&block)
-        #   Mikon::DArray.new(@data.map(&block))
-        # end
-
-        # def recode!(&block)
-        #   @data.map!(&block)
         # end
 
         # def skew(m=nil)
@@ -160,9 +144,9 @@ module Daru
         #   self.reduce(0){|memo, val| memo + (val-m)**2}
         # end
 
-        # def sum
-        #   @data.sum.first
-        # end
+        def sum
+          @data.inject(:+)
+        end
 
         # def variance_sample(m=nil)
         #   m ||= self.mean
@@ -181,6 +165,9 @@ module Daru
         @data.map!(&block)
       end
 
+      alias_method :recode, :map
+      alias_method :recode!, :map!
+
       attr_reader :size, :data, :missing_data, :ntype
       
       def initialize vector, context, ntype=:int32
@@ -193,12 +180,14 @@ module Daru
       end
 
       def [] index
-        @data[index]
+        return @data[index] if index < @size
+        nil
       end
  
       def []= index, value
-        resize if index >= @size
-
+        resize     if index >= @data.size
+        @size += 1 if index == @size
+        
         if value.nil?
           @missing_data = true
           @data = @data.cast(dtype: :object)
@@ -213,7 +202,7 @@ module Daru
       def delete_at index
         arry = @data.to_a
         arry.delete_at index
-        @data = NMatrix.new [@size-1], arry
+        @data = NMatrix.new [(2*@size-1)], arry, dtype: @ntype
         @size -= 1
       end
  
@@ -233,11 +222,11 @@ module Daru
       end
  
       def dup
-        NMatrixWrapper.new @data.to_a
+        NMatrixWrapper.new @data.to_a, @context, @ntype
       end
 
       def resize size = @size*2
-        raise "Size must be greater than current size" if size < @size
+        raise ArgumentError, "Size must be greater than current size" if size < @size
 
         @data = NMatrix.new [size], @data.to_a
       end

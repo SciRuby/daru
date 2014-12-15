@@ -96,7 +96,7 @@ describe Daru::Vector do
         end
       end
 
-      context "#concat" do
+      context "#concat", focus: true do
         before :each do
           @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, 
             index: [:warwick, :thompson, :jackson, :fender, :esp], dtype: dtype
@@ -191,7 +191,7 @@ describe Daru::Vector do
         end
       end
 
-      context "#sort", focus: true do
+      context "#sort" do
         before do
           @dv = Daru::Vector.new [33,2,15,332,1], name: :dv, index: [:a, :b, :c, :d, :e]
         end
@@ -219,22 +219,23 @@ describe Daru::Vector do
         end if dtype == :array
       end
 
-      context "#re_index" do
-        it "recreates index with sequential numbers" do
-          pending
+      context "#reindex" do
+        before do 
           @dv = Daru::Vector.new [1,2,3,4,5], name: :dv, index: [:a, :b, :c, :d, :e]
-          a  = @dv.re_index(index: :seq)
+        end
+
+        it "recreates index with sequential numbers" do
+          a  = @dv.reindex(:seq)
 
           expect(a).to eq(Daru::Vector.new([1,2,3,4,5], name: :dv, index: [0,1,2,3,4]))
-          expect(a).to not_eq(@dv)
+          expect(a).to_not eq(@dv)
         end
 
         it "accepts a new non-numeric index" do
-          pending
-          a = @dv.re_index(index: [:hello, :my, :name, :is, :ted])
+          a = @dv.reindex([:hello, :my, :name, :is, :ted])
 
           expect(a).to eq(Daru::Vector.new([1,2,3,4,5], name: :dv, index: [:hello, :my, :name, :is, :ted]))
-          expect(a).to not_eq(@dv)
+          expect(a).to_not eq(@dv)
         end
       end
     end
