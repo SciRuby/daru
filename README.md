@@ -1,6 +1,8 @@
 daru
 ====
 
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/v0dro/daru?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Data Analysis in RUby
 
 [![Gem Version](https://badge.fury.io/rb/daru.svg)](http://badge.fury.io/rb/daru)
