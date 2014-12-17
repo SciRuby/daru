@@ -375,12 +375,37 @@ module Daru
       !!@vectors[name]
     end
 
+    # The first ten elements of the DataFrame
+    #
+    # @param [Fixnum] quantity (10) The number of elements to display from the top.
     def head quantity=10
       self[0..quantity, :row]
     end
 
+    # The last ten elements of the DataFrame
+    # 
+    # @param [Fixnum] quantity (10) The number of elements to display from the bottom.
     def tail quantity=10
       self[(@size - quantity)..(@size-1), :row]
+    end
+
+    # Change the index of the DataFrame and its underlying vectors. Destructive.
+    # 
+    # @param [Symbol, Array] new_index Specify an Array if 
+    def reindex! new_index
+      raise ArgumentError, "Index size must equal dataframe size" if new_index.is_a?(Array) and new_index.size != @size
+
+      @index = Daru::Index.new(new_index == :seq ? @size : new_index)
+      @data.map! do |vector|
+        vector.reindex @index.to_a
+      end
+
+      self
+    end
+
+    # Non-destructive version of #reindex!
+    def reindex new_index
+      self.dup.reindex! new_index
     end
 
     # Sorts a dataframe (ascending/descending)according to the given sequence of 

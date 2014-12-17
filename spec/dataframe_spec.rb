@@ -663,5 +663,48 @@ describe Daru::DataFrame do
   end
 
   context "#reindex" do
+    it "sets a new sequential index for DF and its underlying vectors" do
+      a = @data_frame.reindex(:seq)
+
+      expect(a).to eq(Daru::DataFrame.new({b: [11,12,13,14,15], 
+        a: [1,2,3,4,5], c: [11,22,33,44,55]}, order: [:a, :b, :c]))
+      expect(a).to_not eq(@data_frame)
+
+      expect(a.a.index).to eq(Daru::Index.new(5))
+      expect(a.b.index).to eq(Daru::Index.new(5))
+      expect(a.c.index).to eq(Daru::Index.new(5))
+    end
+
+    it "sets a new index for the data frame and its underlying vectors" do
+      a = @data_frame.reindex([:a,:b,:c,:d,:e])
+
+      expect(a).to eq(Daru::DataFrame.new(
+        {b: [11,12,13,14,15], a: [1,2,3,4,5], c: [11,22,33,44,55]}, 
+        order: [:a, :b, :c], index: [:a,:b,:c,:d,:e]))
+      expect(a).to_not eq(@data_frame)
+
+      expect(a.a.index).to eq(Daru::Index.new([:a,:b,:c,:d,:e]))
+      expect(a.b.index).to eq(Daru::Index.new([:a,:b,:c,:d,:e]))
+      expect(a.c.index).to eq(Daru::Index.new([:a,:b,:c,:d,:e]))
+    end
+  end
+
+  context "#reindex!" do
+    it "sets a new sequential index for DF and its underlying vectors" do
+      expect(@data_frame.reindex!(:seq)).to eq(Daru::DataFrame.new({b: [11,12,13,14,15], 
+        a: [1,2,3,4,5], c: [11,22,33,44,55]}, order: [:a, :b, :c]))
+      expect(@data_frame.a.index).to eq(Daru::Index.new(5))
+      expect(@data_frame.b.index).to eq(Daru::Index.new(5))
+      expect(@data_frame.c.index).to eq(Daru::Index.new(5))
+    end
+
+    it "sets a new index for the data frame and its underlying vectors" do
+      expect(@data_frame.reindex!([:a,:b,:c,:d,:e])).to eq(Daru::DataFrame.new(
+        {b: [11,12,13,14,15], a: [1,2,3,4,5], c: [11,22,33,44,55]}, 
+        order: [:a, :b, :c], index: [:a,:b,:c,:d,:e]))
+      expect(@data_frame.a.index).to eq(Daru::Index.new([:a,:b,:c,:d,:e]))
+      expect(@data_frame.b.index).to eq(Daru::Index.new([:a,:b,:c,:d,:e]))
+      expect(@data_frame.c.index).to eq(Daru::Index.new([:a,:b,:c,:d,:e]))
+    end
   end
 end if mri?

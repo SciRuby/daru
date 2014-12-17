@@ -154,10 +154,6 @@ module Daru
       self[-q..-1]
     end
 
-    def re_index new_index
-      
-    end
-
     # Append an element to the vector by specifying the element and index
     def concat element, index=nil
       raise IndexError, "Expected new unique index" if @index.include? index
