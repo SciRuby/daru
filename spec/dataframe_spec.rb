@@ -661,4 +661,7 @@ describe Daru::DataFrame do
         )
     end
   end
+
+  context "#reindex" do
+  end
 end if mri?
