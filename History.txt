@@ -50,3 +50,5 @@
 * Revamped dtype specifiers for Vector. Now specify :array/:nmatrix for changing underlying data implementation.
 * #sort for Vector. Quick sort algorithm with preservation of original indexes.
 * Removes #re\_index and #to\_index from Daru::Index.
+* Ability to change the index of Vector and DataFrame with #reindex/#reindex!.
+* Multi-level #sort! and #sort for DataFrames. Preserves indexing.

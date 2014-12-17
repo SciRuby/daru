@@ -642,25 +642,75 @@ describe Daru::DataFrame do
 
   context "#sort" do
     before :each do
-      @df = Daru::DataFrame.new({a: [-3,2,-1,2], b: [4,3,2,1], c: ['a','aa','aaa','aaaa']})
+      @df = Daru::DataFrame.new({a: [5,1,-6,7,5,5], b: [-2,-1,5,3,9,1], c: ['a','aa','aaa','aaaa','aaaaa','aaaaaa']})
     end
 
-    it "sorts according to given vector order" do
-      a_sorter = lambda { |a,b| a.abs <=> b.abs }
+    it "sorts according to given vector order (bang)" do
+      a_sorter = lambda { |a,b| a <=> b }
+      ans = @df.sort([:a], by: { a: a_sorter })
 
-      expect(@df.sort([:a], by: { a: a_sorter })).to eq(
-        Daru::DataFrame.new({a: [-1,2,2,-3], b: [2,3,1,4], c: ['aaa','aa','aaaa','a']}, 
-          index: [2,1,3,0])
+      expect(ans).to eq(
+        Daru::DataFrame.new({a: [-6,1,5,5,5,7], b: [5,-1,9,1,-2,3], c: ['aaa','aa','aaaaa','aaaaaa','a','aaaa']}, 
+          index: [2,1,4,5,0,3])
         )
+      expect(ans).to_not eq(@df)
     end
 
-    it "sorts according to vector order using default lambdas (index re ordered according to the last vector)" do
-      expect(@df.sort([:a, :b])).to eq(
-        Daru::DataFrame.new({a: [-3,-1,2,2], b: [4,2,1,3], c: ['a','aaa','aaaa','aa']},
-          index: [0,2,3,1])
+    it "sorts according to vector order using default lambdas (index re ordered according to the last vector) (bang)" do
+      ans = @df.sort([:a, :b])
+      expect(ans).to eq(
+        Daru::DataFrame.new({a: [-6,1,5,5,5,7], b: [5,-1,-2,1,9,3], c: ['aaa','aa','a','aaaaaa','aaaaa','aaaa']},
+          index: [2,1,0,5,4,3])
         )
+      expect(ans).to_not eq(@df)
     end
   end
+
+  context "#sort!" do
+    before :each do
+      @df = Daru::DataFrame.new({a: [5,1,-6,7,5,5], b: [-2,-1,5,3,9,1], c: ['a','aa','aaa','aaaa','aaaaa','aaaaaa']})
+    end
+
+    it "sorts according to given vector order (bang)" do
+      a_sorter = lambda { |a,b| a <=> b }
+
+      expect(@df.sort!([:a], by: { a: a_sorter })).to eq(
+        Daru::DataFrame.new({a: [-6,1,5,5,5,7], b: [5,-1,9,1,-2,3], c: ['aaa','aa','aaaaa','aaaaaa','a','aaaa']}, 
+          index: [2,1,4,5,0,3])
+        )
+
+    end
+
+    it "sorts according to vector order using default lambdas (index re ordered according to the last vector) (bang)" do
+      expect(@df.sort!([:a, :b])).to eq(
+        Daru::DataFrame.new({a: [-6,1,5,5,5,7], b: [5,-1,-2,1,9,3], c: ['aaa','aa','a','aaaaaa','aaaaa','aaaa']},
+          index: [2,1,0,5,4,3])
+        )
+    end
+
+    it "sorts both vectors in descending order" do
+      expect(@df.sort!([:a,:b], ascending: [false, false])).to eq(
+        Daru::DataFrame.new({a: [7,5,5,5,1,-6], b: [3,9,1,-2,-1,5], c: ['aaaa','aaaaa','aaaaaa', 'a','aa', 'aaa'] },
+          index: [3,4,5,0,1,2])
+        )
+    end
+
+    it "sorts one vector in desc and other is asc" do
+      expect(@df.sort!([:a, :b], ascending: [false, true])).to eq(
+        Daru::DataFrame.new({a: [7,5,5,5,1,-6], b: [3,-2,1,9,-1,5], c: ['aaaa','a','aaaaaa','aaaaa','aa','aaa']},
+          index: [3,0,5,4,1,2])
+        )
+    end
+
+    it "sorts many vectors", focus: true do
+      d = Daru::DataFrame.new({a: [1,1,1,222,44,5,5,544], b: [44,44,333,222,111,554,22,3], c: [3,2,5,3,3,1,5,5]})
+      
+      expect(d.sort!([:a, :b, :c], ascending: [false, true, false])).to eq(
+        Daru::DataFrame.new({a: [544,222,44,5,5,1,1,1], b: [3,222,111,22,554,44,44,333], c: [5,3,3,5,1,3,2,5]},
+          index: [7,3,4,6,5,0,1,2])
+        )
+    end
+  end 
 
   context "#reindex" do
     it "sets a new sequential index for DF and its underlying vectors" do

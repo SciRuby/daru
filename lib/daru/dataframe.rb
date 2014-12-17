@@ -409,7 +409,7 @@ module Daru
     end
 
     # Sorts a dataframe (ascending/descending)according to the given sequence of 
-    #   vectors, using the attributes provided in the blocks.
+    #   vectors, using the attributes provided in the blocks. Works for 2 LEVELS ONLY.
     # 
     # @param order [Array] The order of vector names in which the DataFrame
     #   should be sorted.
@@ -435,21 +435,24 @@ module Daru
     #   df.sort([:a], by: { a: lambda { |a,b| a.abs <=> b.abs } })
     #   
     #   
-    def sort vector_order, opts={}
+    def sort! vector_order, opts={}
+      raise ArgumentError, "Required atleast one vector name" if vector_order.size < 1
       opts = {
         ascending: true,
         type: :quick_sort,
+        by: {}
       }.merge(opts)
 
-      opts[:by] = create_logic_blocks opts[:by]
+      opts[:by]        = create_logic_blocks vector_order, opts[:by]
       opts[:ascending] = sort_order_array vector_order, opts[:ascending]
       index = @index.to_a
       send(opts[:type], vector_order, index, opts[:by], opts[:ascending])
-      # interchange_rows(vectors, asc_arry, by_blocks)
+      reindex! index
+    end
 
-      # first = vectors.first
-      # second = vectors.second
-      # if keep?(first, first[ob1], )
+    # Non-destructive version of #sort!
+    def sort vector_order, opts={}
+      self.dup.sort! vector_order, opts
     end
     
     # Converts the DataFrame into an array of hashes where key is vector name
@@ -569,11 +572,7 @@ module Daru
    private
 
     def quick_sort vector_order, index, by, ascending
-      # vector_order - array of the vector_order in which the vector_order are to be sorted
-      # index - array of main index of the dataframe
-      # by - Hash of vector_name => sort_block pairs
-      # ascending - tells whether a vector is to sorted in asc or desc
-      recursive_quick_sort vector_order, index, by, ascending, 0, @size-1, []
+      recursive_quick_sort vector_order, index, by, ascending, 0, @size-1
     end
 
     # == Arguments
@@ -584,60 +583,94 @@ module Daru
     # ascending -
     # left_lower -
     # right_upper -
-    def recursive_quick_sort vector_order,index, by, ascending, left_lower, right_upper
+    def recursive_quick_sort vector_order, index, by, ascending, left_lower, right_upper
       if left_lower < right_upper
         left_upper, right_lower = partition(vector_order, index, by, ascending, left_lower, right_upper)
         if left_upper - left_lower < right_upper - right_lower
-
+          recursive_quick_sort(vector_order, index, by, ascending, left_lower, left_upper)
+          recursive_quick_sort(vector_order, index, by, ascending, right_lower, right_upper)
+        else
+          recursive_quick_sort(vector_order, index, by, ascending, right_lower, right_upper)
+          recursive_quick_sort(vector_order, index, by, ascending, left_lower, left_upper)
         end
       end
     end
 
     def partition vector_order, index, by, ascending, left_lower, right_upper
       mindex = (left_lower + right_upper) / 2
+      mvalues = vector_order.inject([]) { |a, vector_name| a << vector[vector_name][mindex]; a }
       i = left_lower
       j = right_upper
       descending = ascending.map { |a| !a }
 
-      i += 1 while(keep?(i, mindex, vector_order, ascending , by))
-      j -= 1 while(keep?(j, mindex, vector_order, descending, by))
-      # take the mindex and mvalue of the first vector name in vector_order
-      # 
-    end
+      i += 1 while(keep?(i, mvalues, vector_order, ascending , by, 0))
+      j -= 1 while(keep?(j, mvalues, vector_order, descending, by, 0))
 
-    def keep? current_index, mindex, vector_order, sort_order, by
-      # if ob1 is less than ob2 then dont bother
-      if vector_order[1]
-        first_vector = vector[vector_order[0]]
-        second_vector = vector[vector_order[1]]
+      while i < j - 1
+        @data.each do |vector|
+          vector[i], vector[j] = vector[j], vector[i]
+        end
+        index[i], index[j] = index[j], index[i]
+        i += 1
+        j -= 1
 
-
+        i += 1 while(keep?(i, mvalues, vector_order, ascending , by,0))
+        j -= 1 while(keep?(j, mvalues, vector_order, descending, by,0))
       end
-      # if sort_order[0] # sort first vector in ascending
-      #   first_vector = vector[vector_order[0]]
-      #   eval1 = by[vector_order[0]].call(first_vector[current_index], first_vector[mindex])
-      #   if eval1 == 1 # two values are in descending order of each other
-      #     return false
-      #   elsif eval1 == 0 # two values are equal
-      #     second_vector = vector[vector_order[1]]
-      #     eval2 = by[vector_order[1]].call(second_vector[current_index], second_vector[mindex])
-      #     if vector_order[1] and sort_order[1] # second vector exists and is to be sorted in asc
-      #       return false if eval2 == 1
-      #     else
 
-      #     end
-      #   end
-      # else
+      if i <= j
+        if i < j
+          @data.each do |vector|
+            vector[i], vector[j] = vector[j], vector[i]
+          end
+          index[i], index[j] = index[j], index[i]
+        end
+        i += 1
+        j -= 1
+      end
 
-      # end
+      [j,i]
     end
 
-    def create_logic_blocks by
-      
+    def keep? current_index, mvalues, vector_order, sort_order, by, vector_order_index
+      vector_name = vector_order[vector_order_index]
+      if vector_name
+        vec = vector[vector_name]
+        eval = by[vector_name].call(vec[current_index], mvalues[vector_order_index])
+
+        if sort_order[vector_order_index] # sort in ascending order
+          return false if eval == 1
+          return true if eval == -1
+          if eval == 0
+            keep?(current_index, mvalues, vector_order, sort_order, by, vector_order_index + 1)
+          end
+        else # sort in descending order
+          return false if eval == -1
+          return true  if eval == 1
+          if eval == 0
+            keep?(current_index, mvalues, vector_order, sort_order, by, vector_order_index + 1)
+          end
+        end
+      end
+    end
+
+    def create_logic_blocks vector_order, by={}
+      universal_block = lambda { |a,b| a <=> b }
+      vector_order.each do |vector|
+        by[vector] ||= universal_block
+      end
+
+      by
     end
 
     def sort_order_array vector_order, ascending
-      
+      if ascending.is_a?(Array)
+        raise ArgumentError, "Specify same number of vector names and sort orders" if
+          vector_order.size != ascending.size
+        return ascending
+      else
+        Array.new(vector_order.size, ascending)
+      end
     end
 
     def access_vector *names
