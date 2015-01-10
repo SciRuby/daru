@@ -1,18 +1,12 @@
 module Daru
   module Maths
+    # Encapsulates statistics methods for vectors. Most basic stuff like mean, etc.
+    #   is done inside the wrapper, so that native methods can be used for most of 
+    #   the computationally intensive tasks.
     module Statistics
       module Vector
-
         def mean
           @vector.mean
-        end
-
-        def median
-          @vector.median
-        end
-
-        def mode
-          @vector.mode
         end
 
         def sum
@@ -23,16 +17,38 @@ module Daru
           @vector.product
         end
 
+        def min
+          @vector.min
+        end
+
+        def has_missing_data?
+          @vector.has_missing_data?
+        end
+
+        def range
+          max - min
+        end
+
+        def median
+          percentile 50
+        end
+
+        def mode
+          freqs = frequencies.values
+          @vector[freqs.index(freqs.max)]
+        end
+
         def median_absolute_deviation
-          @vector.median_absolute_deviation  
+          m = median
+          map {|val| (val - m).abs }.median
         end
 
         def standard_error
-          @vector.standard_error
+          standard_deviation_sample/(Math::sqrt(@size))
         end
 
         def sum_of_squared_deviation
-          @vector.sum_of_squared_deviation
+          (@vector.to_a.inject(0) { |a,x| x.square + a } - (sum.square.quo(@size))).to_f
         end
 
         # Maximum element of the vector.
@@ -55,80 +71,95 @@ module Daru
           max :vector
         end
 
-        def min
-          @vector.min
-        end
-
-        def has_missing_data?
-          @vector.has_missing_data?
-        end
-
-        def range
-          @vector.range
-        end
-
         def frequencies
-          @vector.frequencies
+          @vector.inject({}) do |hash, element|
+            hash[element] ||= 0
+            hash[element] += 1
+            hash
+          end
         end
 
         def proportions
-          @vector.proportions
+          len = n_valid
+          frequencies.inject({}) { |hash, arr| hash[arr[0]] = arr[1] / len; hash }
         end
 
         def ranked
-          @vector.ranked
+          sum = 0
+          r = frequencies.sort.inject( {} ) do |memo, val|
+            memo[val[0]] = ((sum + 1) + (sum + val[1])) / 2
+            sum += val[1]
+            memo
+          end
+
+          Daru::Vector.new @vector.map { |e| r[e] }, index: self.index,
+            name: self.name, dtype: self.dtype, nm_dtype: self.nm_dtype
         end
 
         def coefficient_of_variation
-          @vector.coefficient_of_variation
+          standard_deviation_sample / mean
         end
 
-        # Retrieves number of cases which comply condition.
-        # If block given, retrieves number of instances where
-        # block returns true.
-        # If other values given, retrieves the frequency for
-        # this value.
+        # Retrieves number of cases which comply condition. If block given, 
+        #   retrieves number of instances where block returns true. If other 
+        #   values given, retrieves the frequency for this value.
         def count value=false
-          @vector.count value
+          if block_given?
+            @vector.inject(0){ |memo, val| memo += 1 if yield val; memo}
+          else
+            val = frequencies[value]
+            val.nil? ? 0 : val
+          end
         end
 
         def proportion value=1
-          @vector.proportion value
-        end
-
-        # Population variance with denominator (N)
-        def variance_population m=nil
-          @vector.variance_population m
+          frequencies[value] / n_valid
         end
 
         # Sample variance with denominator (N-1)
         def variance_sample m=nil
-          @vector.variance_sample m
+          m ||= self.mean
+
+          sum_of_squares(m).quo(@size - 1)
         end
 
-        def sum_of_squares m=nil
-          @vector.sum_of_squares m
+        # Population variance with denominator (N)
+        def variance_population m=nil
+          m ||= mean
+
+          sum_of_squares(m).quo(@size).to_f
         end
 
-        def standard_deviation_sample m=nil
-          @vector.standard_deviation_sample m
+        def sum_of_squares(m=nil)
+          m ||= mean
+          @vector.inject(0) { |memo, val| memo + (val - m)**2 }
         end
 
         def standard_deviation_population m=nil
-          @vector.standard_deviation_population m
+          m ||= mean
+          Math::sqrt(variance_population(m))
+        end
+
+        def standard_deviation_sample m=nil
+          Math::sqrt(variance_sample(m))
         end
 
         # Calculate skewness using (sigma(xi - mean)^3)/((N)*std_dev_sample^3)
         def skew m=nil
-          @vector.skew m
+          m ||= mean
+          th  = @vector.inject(0) { |memo, val| memo + ((val - m)**3) }
+          th.quo (@size * (standard_deviation_sample(m)**3))
         end
 
         def kurtosis m=nil
-          @vector.kurtosis m
+          m ||= mean
+          fo  = @vector.inject(0){ |a, x| a + ((x - m) ** 4) }
+          fo.quo(@size * standard_deviation_sample(m) ** 4) - 3
         end
 
         def average_deviation_population m=nil
-          @vector.average_deviation_population m
+          m ||= mean
+          (@vector.inject(0) {|memo, val| val + (val - m).abs }) / n_valid
         end
 
         def recode!(&block)
@@ -136,14 +167,20 @@ module Daru
         end
 
         def percentile percent
-          @vector.percentile percent
+          sorted = @vector.sort
+          v      = (n_valid * percent).quo(100)
+          if v.to_i != v
+            sorted[v.round]
+          else
+            (sorted[(v - 0.5).round].to_f + sorted[(v + 0.5).round]).quo(2)
+          end
         end
 
         alias_method :sdp, :standard_deviation_population
         alias_method :sds, :standard_deviation_sample
         alias_method :adp, :average_deviation_population
-        # alias_method :cov, :coefficient_of_variation
-        # alias_method :variance, :variance_sample    
+        alias_method :cov, :coefficient_of_variation
+        alias_method :variance, :variance_sample    
         alias_method :sd, :standard_deviation_sample
         alias_method :ss, :sum_of_squares
         alias_method :percentil, :percentile

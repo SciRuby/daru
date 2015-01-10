@@ -15,25 +15,25 @@ describe Daru::Vector do
 
       context "#sum_of_squares" do
         it "calcs sum of squares" do
-
+          @dv.sum_of_squares
         end
       end
 
       context "#standard_deviation_sample" do
         it "calcs standard deviation sample" do
-
+          @dv.standard_deviation_sample
         end
       end
 
       context "#variance_sample" do
         it "calculates sample variance" do
-
+          @dv.variance_sample
         end
       end
 
       context "#standard_deviation_population" do
         it "calculates standard deviation population" do
-
+          @dv.standard_deviation_population
         end
       end
 
@@ -124,7 +124,9 @@ describe Daru::Vector do
       end
 
       context "#proportion" do
-
+        it "calculates proportion" do
+          @dv.proportion
+        end
       end
 
       context "#proportions" do
@@ -140,12 +142,30 @@ describe Daru::Vector do
       end
 
       context "#count" do
-
+        it "counts" do
+          @dv.count(323)
+        end
       end
 
       context "#coefficient_of_variation" do
         it "calculates coefficient_of_variation" do
           @dv.coefficient_of_variation
+        end
+      end
+
+      context "#factor" do
+
+      end
+
+      context "#median_absolute_deviation" do
+        it "calculates median_absolute_deviation" do
+          @dv.median_absolute_deviation
+        end
+      end
+
+      context "#standard_error" do
+        it "calculates standard error" do
+          @dv.standard_error
         end
       end
     end

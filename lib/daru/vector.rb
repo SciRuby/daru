@@ -33,6 +33,7 @@ module Daru
     attr_reader :index
     attr_reader :size
     attr_reader :dtype
+    attr_reader :nm_dtype
 
     # Create a Vector object.
     # == Arguments
@@ -52,7 +53,7 @@ module Daru
     # 
     # * +:dtype+ - The underlying data type. Can be :array or :nmatrix. Default :array.
     # 
-    # * +:ntype+ - For NMatrix, the data type of the numbers. See the NMatrix docs for
+    # * +:nm_dtype+ - For NMatrix, the data type of the numbers. See the NMatrix docs for
     #     further information on supported data type.
     # 
     # == Usage
@@ -71,7 +72,7 @@ module Daru
       name   = opts[:name]
       set_name name
 
-      @vector = cast_vector_to(opts[:dtype], source, opts[:ntype])
+      @vector = cast_vector_to(opts[:dtype], source, opts[:nm_dtype])
       @index = Daru::Index.new(index || @vector.size)
       # TODO: Will need work for NMatrix/MDArray
       if @index.size > @vector.size
@@ -230,7 +231,7 @@ module Daru
     # 
     # * +:ascending+ - if false, will sort in descending order. Defaults to true.
     # 
-    # * +:quick_sort+
+    # * +:type+ - Specify the sorting algorithm. Only supports quick_sort for now.
     # == Usage
     # 
     #   v = Daru::Vector.new ["My first guitar", "jazz", "guitar"]
@@ -250,9 +251,18 @@ module Daru
       Daru::Vector.new(vector, index: index, name: @name, dtype: @dtype)
     end
 
+    # Just sort the data and get an Array in return using Enumerable#sort. Non-destructive.
+    def sorted_data &block
+      @vector.to_a.sort(&block)
+    end
+
     # Returns *true* if the value passed actually exists in the vector.
     def exists? value
       !self[index_of(value)].nil?
+    end
+
+    def n_valid
+      @size
     end
 
     # Returns *true* if an index exists
@@ -436,7 +446,7 @@ module Daru
 
     # Note: To maintain sanity, this _MUST_ be the _ONLY_ place in daru where the
     #   @dtype variable is set and the underlying data type of vector changed.
-    def cast_vector_to dtype, source=nil, ntype=nil
+    def cast_vector_to dtype, source=nil, nm_dtype=nil
       source = @vector if source.nil?
       return @vector if @dtype and @dtype == dtype
 
@@ -444,7 +454,7 @@ module Daru
       case dtype
       when :array   then Daru::Accessors::ArrayWrapper.new(source.to_a.dup, self)
       when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source.to_a.dup, 
-        self, ntype)
+        self, nm_dtype)
       when :mdarray then raise NotImplementedError, "MDArray not yet supported."
       else Daru::Accessors::ArrayWrapper.new(source.dup, self)
       end
