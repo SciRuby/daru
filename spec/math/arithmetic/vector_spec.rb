@@ -10,7 +10,7 @@ describe Daru::Vector do
 
   context "#+" do
     it "adds matching indexes of the other vector" do
-      expect(@dv1 + @dv2).to eq(Daru::Vector.new([5, 8], name: :boozy, index: [:kf, :corona]))
+      expect(@dv1 + @dv2).to eq(Daru::Vector.new([nil,8,nil,5,nil,nil], name: :boozy, index: [:bud,:corona,:henie,:kf,:obi,:wan]))
     end
 
     it "adds number to each element of the entire vector" do
@@ -22,13 +22,13 @@ describe Daru::Vector do
     end
 
     it "puts a nil when one of the operands is nil" do
-      expect(@with_md1 + @with_md2).to eq(Daru::Vector.new([nil,7,nil,nil,7,nil], name: :missing, index: [:a, :b, :c, :corona, :obi, :wan]))
+      expect(@with_md1 + @with_md2).to eq(Daru::Vector.new([nil,7,nil,nil,nil,7], name: :missing, index: [:a, :b, :c, :corona, :obi, :wan]))
     end
   end
 
   context "#-" do
     it "subtracts matching indexes of the other vector" do
-      expect(@dv1 - @dv2).to eq(Daru::Vector.new([-1,0], name: :boozy, index: [:kf, :corona]))
+      expect(@dv1 - @dv2).to eq(Daru::Vector.new([nil,0,nil,-1,nil,nil], name: :boozy, index: [:bud,:corona,:henie,:kf,:obi,:wan]))
     end
 
     it "subtracts number from each element of the entire vector" do
@@ -58,4 +58,8 @@ describe Daru::Vector do
 
   context "#%" do
 
+  end
+
+  context "#**" do
+    
   end

@@ -25,7 +25,7 @@ module Daru
       alias_method :recode, :map
       alias_method :recode!, :map!
 
-      attr_reader :size, :data, :missing_data, :nm_dtype
+      attr_reader :size, :data, :nm_dtype
       
       def initialize vector, context, nm_dtype=:int32
         @size = vector.size
@@ -45,10 +45,7 @@ module Daru
         resize     if index >= @data.size
         @size += 1 if index == @size
         
-        if value.nil?
-          @missing_data = true
-          @data = @data.cast(dtype: :object)
-        end
+        @data = @data.cast(dtype: :object) if value.nil?
         @data[index] = value
       end 
  

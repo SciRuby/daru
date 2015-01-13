@@ -14,7 +14,6 @@ module Daru
 
       attr_accessor :size
       attr_reader   :data
-      attr_reader   :has_missing_data
 
       def initialize vector, context
         @data = vector.to_a
@@ -63,11 +62,11 @@ module Daru
       end
 
       def mean
-        sum.quo(@size).to_f
+        sum.quo(@size - @context.nil_positions.size).to_f
       end
 
       def product
-        @data.inject(:*)
+        @data.inject(1) { |m,e| m*e unless e.nil? }
       end
 
       def max

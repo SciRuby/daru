@@ -53,3 +53,5 @@
 * Ability to change the index of Vector and DataFrame with #reindex/#reindex!.
 * Multi-level #sort! and #sort for DataFrames. Preserves indexing.
 * All vector statistics now work with NMatrix as the underlying data type.
+* Vectors keep a record of all positions with nils with #nil\_positions.
+* Know whether a position has nils or not with #is_nil?

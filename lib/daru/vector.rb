@@ -34,7 +34,7 @@ module Daru
     attr_reader :size
     attr_reader :dtype
     attr_reader :nm_dtype
-    attr_reader :nil_locations
+    attr_reader :nil_positions
 
     # Create a Vector object.
     # == Arguments
@@ -83,7 +83,7 @@ module Daru
         raise IndexError, "Expected index size >= vector size. Index size : #{@index.size}, vector size : #{@vector.size}"
       end
 
-      set_nil_locations
+      set_nil_positions
       set_size
     end
 
@@ -125,6 +125,7 @@ module Daru
       @vector[pos] = value
 
       set_size
+      set_nil_positions
     end
 
     # Two vectors are equal if the have the exact same index values corresponding
@@ -173,6 +174,7 @@ module Daru
       end
       @vector[@index[index]] = element
       set_size
+      set_nil_positions
     end
 
     # Cast a vector to a new data type.
@@ -205,6 +207,7 @@ module Daru
       end
 
       set_size
+      set_nil_positions
     end
 
     # Get index of element
@@ -261,6 +264,29 @@ module Daru
     # Returns *true* if the value passed actually exists in the vector.
     def exists? value
       !self[index_of(value)].nil?
+    end
+
+    # Returns a vector which has *true* in the position where the element in self
+    #   is nil, and false otherwise.
+    # 
+    # == Usage
+    # 
+    #   v = Daru::Vector.new([1,2,4,nil])
+    #   v.is_nil?
+    #   # => 
+    #   #<Daru::Vector:89421000 @name = nil @size = 4 >
+    #   #      nil
+    #   #  0  false
+    #   #  1  false
+    #   #  2  false
+    #   #  3  true
+    def is_nil?
+      nil_truth_vector = clone_structure
+      @index.each do |idx|
+        nil_truth_vector[idx] = self[idx].nil? ? true : false
+      end
+
+      nil_truth_vector
     end
 
     def n_valid
@@ -343,7 +369,6 @@ module Daru
     #   will reindex with sequential numbers from 0 to (n-1).
     def reindex new_index
       index = Daru::Index.new(new_index == :seq ? @size : new_index)
-
       Daru::Vector.new @vector.to_a, index: index, name: name, dtype: @dtype
     end
 
@@ -363,6 +388,12 @@ module Daru
     # Duplicate elements and indexes
     def dup 
       Daru::Vector.new @vector.dup, name: @name, index: @index.dup
+    end
+
+    # Copies the structure of the vector (i.e the index, size, etc.) and fills all
+    #   all values with nils.
+    def clone_structure
+      Daru::Vector.new(([nil]*@size), name: @name, index: @index.dup)
     end
 
     def daru_vector *name
@@ -497,11 +528,12 @@ module Daru
       end
     end
 
-    def set_nil_locations
-      @nil_locations = []
+    def set_nil_positions
+      @nil_positions = []
       @index.each do |e|
-        @nil_locations << e if(self[e].nil?)
+        @nil_positions << e if(self[e].nil?)
       end
+      @nil_positions.uniq!
     end
   end
 end

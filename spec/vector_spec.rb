@@ -250,17 +250,31 @@ describe Daru::Vector do
         end
 
         it "verifies missing data presence" do
-          expect(@with_md.is_nil?)   .to eq(Daru::Vector.new([false, false, true, false, false, true]))
+          expect(@with_md.is_nil?)   .to eq(Daru::Vector.new([false,false,true,false,false,true]))
           expect(@without_md.is_nil?).to eq(Daru::Vector.new([false,false,false,false,false,false]))
         end
       end
 
-      context "#nil_locations" do
-        it "returns the indexes of nils" do
-          with_md = Daru::Vector.new([1,2,nil,3,4,nil])
-          expect(with_md.nil_locations).to eq([2,5])
+      context "#clone_structure" do
+        it "clones a vector with its index and fills it with nils" do
+          vec = Daru::Vector.new([1,2,3,4,5], index: [:a,:b,:c,:d,:e])
+          expect(vec.clone_structure).to eq(Daru::Vector.new([nil,nil,nil,nil,nil], index: [:a,:b,:c,:d,:e]))
         end
       end
 
+      context "#nil_positions" do
+        before(:each) do
+          @with_md = Daru::Vector.new([1,2,nil,3,4,nil])
+        end
+
+        it "returns the indexes of nils" do
+          expect(@with_md.nil_positions).to eq([2,5])
+        end
+
+        it "updates after assingment" do
+          @with_md[3] = nil
+          expect(@with_md.nil_positions).to eq([2,3,5])
+        end
+      end
   end
 end if mri?

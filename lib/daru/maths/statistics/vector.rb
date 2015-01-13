@@ -40,11 +40,11 @@ module Daru
         end
 
         def standard_error
-          standard_deviation_sample/(Math::sqrt(@size))
+          standard_deviation_sample/(Math::sqrt((@size - @nil_positions.size)))
         end
 
         def sum_of_squared_deviation
-          (@vector.to_a.inject(0) { |a,x| x.square + a } - (sum.square.quo(@size))).to_f
+          (@vector.to_a.inject(0) { |a,x| x.square + a } - (sum.square.quo((@size - @nil_positions.size)))).to_f
         end
 
         # Maximum element of the vector.
@@ -115,15 +115,13 @@ module Daru
         # Sample variance with denominator (N-1)
         def variance_sample m=nil
           m ||= self.mean
-
-          sum_of_squares(m).quo(@size - 1)
+          sum_of_squares(m).quo((@size - @nil_positions.size) - 1)
         end
 
         # Population variance with denominator (N)
         def variance_population m=nil
           m ||= mean
-
-          sum_of_squares(m).quo(@size).to_f
+          sum_of_squares(m).quo((@size - @nil_positions.size)).to_f
         end
 
         def sum_of_squares(m=nil)
@@ -144,13 +142,13 @@ module Daru
         def skew m=nil
           m ||= mean
           th  = @vector.inject(0) { |memo, val| memo + ((val - m)**3) }
-          th.quo (@size * (standard_deviation_sample(m)**3))
+          th.quo ((@size - @nil_positions.size) * (standard_deviation_sample(m)**3))
         end
 
         def kurtosis m=nil
           m ||= mean
           fo  = @vector.inject(0){ |a, x| a + ((x - m) ** 4) }
-          fo.quo(@size * standard_deviation_sample(m) ** 4) - 3
+          fo.quo((@size - @nil_positions.size) * standard_deviation_sample(m) ** 4) - 3
         end
 
         def average_deviation_population m=nil

@@ -50,19 +50,23 @@ module Daru
         end
 
         def v2o_binary operation, other
-          Daru::Vector.new self.map { |e| e.send(operation, other) }, name: @name, index: @index
+          Daru::Vector.new self.map { |e| e.nil? ? nil : e.send(operation, other) }, name: @name, index: @index
         end
 
         def v2v_binary operation, other
           common_idxs = []
           elements    = []
+          index = (@index.to_a + other.index.to_a).uniq.sort
 
-          @index.each do |idx|
+          index.each do |idx|
             this = self[idx]
             that = other[idx]
 
             if this and that
               elements << this.send(operation ,that)
+              common_idxs << idx
+            else
+              elements << nil
               common_idxs << idx
             end
           end
