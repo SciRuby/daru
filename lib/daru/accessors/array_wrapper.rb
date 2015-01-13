@@ -28,7 +28,6 @@ module Daru
       end
 
       def []= index, value
-        has_missing_data = true if value.nil?
         @data[index] = value
         set_size
       end
@@ -63,10 +62,6 @@ module Daru
         ArrayWrapper.new @data.dup, @context
       end
 
-      def has_missing_data?
-        has_missing_data
-      end
-
       def mean
         sum.quo(@size).to_f
       end
@@ -84,7 +79,10 @@ module Daru
       end
 
       def sum
-        @data.inject(:+)
+        @data.inject(0) do |memo ,e|
+          memo += e unless e.nil? #TODO: Remove this conditional somehow!
+          memo
+        end
       end
 
      private

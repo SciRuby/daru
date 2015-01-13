@@ -52,3 +52,4 @@
 * Removes #re\_index and #to\_index from Daru::Index.
 * Ability to change the index of Vector and DataFrame with #reindex/#reindex!.
 * Multi-level #sort! and #sort for DataFrames. Preserves indexing.
+* All vector statistics now work with NMatrix as the underlying data type.

@@ -34,6 +34,7 @@ module Daru
     attr_reader :size
     attr_reader :dtype
     attr_reader :nm_dtype
+    attr_reader :nil_locations
 
     # Create a Vector object.
     # == Arguments
@@ -82,6 +83,7 @@ module Daru
         raise IndexError, "Expected index size >= vector size. Index size : #{@index.size}, vector size : #{@vector.size}"
       end
 
+      set_nil_locations
       set_size
     end
 
@@ -492,6 +494,13 @@ module Daru
         @name = name.to_sym
       else
         @name = nil
+      end
+    end
+
+    def set_nil_locations
+      @nil_locations = []
+      @index.each do |e|
+        @nil_locations << e if(self[e].nil?)
       end
     end
   end

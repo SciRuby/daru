@@ -21,10 +21,6 @@ module Daru
           @vector.min
         end
 
-        def has_missing_data?
-          @vector.has_missing_data?
-        end
-
         def range
           max - min
         end
@@ -176,14 +172,14 @@ module Daru
           end
         end
 
-        alias_method :sdp, :standard_deviation_population
-        alias_method :sds, :standard_deviation_sample
-        alias_method :adp, :average_deviation_population
-        alias_method :cov, :coefficient_of_variation
-        alias_method :variance, :variance_sample    
-        alias_method :sd, :standard_deviation_sample
-        alias_method :ss, :sum_of_squares
-        alias_method :percentil, :percentile
+        alias :sdp :standard_deviation_population
+        alias :sds :standard_deviation_sample
+        alias :adp :average_deviation_population
+        alias :cov :coefficient_of_variation
+        alias :variance :variance_sample    
+        alias :sd :standard_deviation_sample
+        alias :ss :sum_of_squares
+        alias :percentil :percentile
       end
     end
   end

@@ -85,18 +85,21 @@ describe Daru::Vector do
 
         it "assigns at the specified index" do
           @dv[:yoda] = 666
-
           expect(@dv[:yoda]).to eq(666)
         end
 
         it "assigns at the specified Integer index" do
           @dv[0] = 666
-
           expect(@dv[:yoda]).to eq(666)
+        end
+
+        it "sets dtype to Array if a nil is assigned" do
+          @dv[0] = nil
+          expect(@dv.dtype).to eq(:array)
         end
       end
 
-      context "#concat", focus: true do
+      context "#concat" do
         before :each do
           @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, 
             index: [:warwick, :thompson, :jackson, :fender, :esp], dtype: dtype
@@ -238,6 +241,26 @@ describe Daru::Vector do
           expect(a).to_not eq(@dv)
         end
       end
-    end
+
+      # works with arrays only
+      context "#is_nil?"
+        before(:each) do
+          @with_md    = Daru::Vector.new([1,2,nil,3,4,nil])
+          @without_md = Daru::Vector.new([1,2,3,4,5,6])
+        end
+
+        it "verifies missing data presence" do
+          expect(@with_md.is_nil?)   .to eq(Daru::Vector.new([false, false, true, false, false, true]))
+          expect(@without_md.is_nil?).to eq(Daru::Vector.new([false,false,false,false,false,false]))
+        end
+      end
+
+      context "#nil_locations" do
+        it "returns the indexes of nils" do
+          with_md = Daru::Vector.new([1,2,nil,3,4,nil])
+          expect(with_md.nil_locations).to eq([2,5])
+        end
+      end
+
   end
 end if mri?

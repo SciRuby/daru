@@ -432,9 +432,7 @@ module Daru
     #   # 1          2          3 
     #   # 2         -1          2 
     #   # 3          4          1 
-    #   df.sort([:a], by: { a: lambda { |a,b| a.abs <=> b.abs } })
-    #   
-    #   
+    #   df.sort([:a], by: { a: lambda { |a,b| a.abs <=> b.abs } })  
     def sort! vector_order, opts={}
       raise ArgumentError, "Required atleast one vector name" if vector_order.size < 1
       opts = {

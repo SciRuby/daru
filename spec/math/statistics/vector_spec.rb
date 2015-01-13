@@ -5,11 +5,13 @@ describe Daru::Vector do
     describe dtype do
       before :each do
         @dv = Daru::Vector.new [323, 11, 555, 666, 234, 21, 666, 343, 1, 2], dtype: dtype
+        @dv_with_md = Daru::Vector.new [323, 11, 555, nil, 666, 234, 21, 666, 343, nil, 1, 2]
       end
 
       context "#mean" do
         it "calculates mean" do
           expect(@dv.mean).to eq(282.2)
+          expect(@dv_with_md.mean).to eq(282.2)
         end
       end
 
