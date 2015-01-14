@@ -335,7 +335,7 @@ Head over to the tutorials and notebooks listed above for more examples.
 * Automate testing for both MRI and JRuby.
 * Enable creation of DataFrame by only specifying an NMatrix/MDArray in initialize. Vector naming happens automatically (alphabetic) or is specified in an Array.
 * Destructive map iterators for DataFrame.
-* Completely test all functionality for NMatrix and MDArray.
+* Completely test all functionality for MDArray.
 * Basic Data manipulation and analysis operations: 
     - Different kinds of join operations
     - Dataframe/vector merge (left, right, inner, outer)
@@ -364,7 +364,7 @@ Head over to the tutorials and notebooks listed above for more examples.
 * Cumulative sum.
 * Time series support.
 * Calculate percentage change.
-* Working with missing data - is\_null?, not\_null?, drop\_missing\_data, dropping rows with missing data, filling data in place of nils
+* Working with missing data - drop\_missing\_data, dropping rows with missing data.
 * Have some sample data sets for users to play around with. Should be able to load these from the code itself.
 * Sorting with missing data present.
 

@@ -47,7 +47,7 @@
 * Easy accessors for some methods
 * Faster CSV loading.
 * Changed vector #is\_valid? to #exists?
-* Revamped dtype specifiers for Vector. Now specify :array/:nmatrix for changing underlying data implementation.
+* Revamped dtype specifiers for Vector. Now specify :array/:nmatrix for changing underlying data implementation. Specigfy nm\_dtype for specifying the data type of the NMatrix object.
 * #sort for Vector. Quick sort algorithm with preservation of original indexes.
 * Removes #re\_index and #to\_index from Daru::Index.
 * Ability to change the index of Vector and DataFrame with #reindex/#reindex!.
@@ -55,3 +55,4 @@
 * All vector statistics now work with NMatrix as the underlying data type.
 * Vectors keep a record of all positions with nils with #nil\_positions.
 * Know whether a position has nils or not with #is_nil?
+* Added #clone_structure to Vector for cloning only the index and structure or a vector.

@@ -289,6 +289,35 @@ module Daru
       nil_truth_vector
     end
 
+    # Opposite of #is_nil?
+    def not_nil?
+      nil_truth_vector = clone_structure
+      @index.each do |idx|
+        nil_truth_vector[idx] = self[idx].nil? ? false : true
+      end
+
+      nil_truth_vector
+    end
+
+    # Replace all nils in the vector with the value passed as an argument. Destructive.
+    #   See #replace_nils for non-destructive version
+    # 
+    # == Arguments
+    # 
+    # * +replacement+ - The value which should replace all nils
+    def replace_nils! replacement
+      @index.each do |idx|
+        self[idx] = replacement if self[idx].nil?
+      end
+
+      self
+    end
+
+    # Non-destructive version of #replace_nils!
+    def replace_nils replacement
+      self.dup.replace_nils!(replacement)
+    end
+
     def n_valid
       @size
     end

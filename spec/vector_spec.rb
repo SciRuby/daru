@@ -276,5 +276,17 @@ describe Daru::Vector do
           expect(@with_md.nil_positions).to eq([2,3,5])
         end
       end
+
+      context "#replace_nils" do
+        it "replaces all nils with the specified value" do
+          vec = Daru::Vector.new([1,2,3,nil,nil,4])
+          expect(vec.replace_nils(2)).to eq(Daru::Vector.new([1,2,3,2,2,4]))
+        end
+
+        it "replaces all nils with the specified value (bang)" do
+          vec = Daru::Vector.new([1,2,3,nil,nil,4]).replace_nils!(2)
+          expect(vec).to eq(Daru::Vector.new([1,2,3,2,2,4]))
+        end
+      end
   end
 end if mri?
