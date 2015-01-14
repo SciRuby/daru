@@ -83,6 +83,7 @@ module Daru
         raise IndexError, "Expected index size >= vector size. Index size : #{@index.size}, vector size : #{@vector.size}"
       end
 
+      @possibly_changed_type = true
       set_nil_positions
       set_size
     end
@@ -121,6 +122,11 @@ module Daru
 
     def []=(index, value)
       cast(dtype: :array) if value.nil?
+
+      @possibly_changed_type = true if @type == :object  and value.is_a?(Numeric)
+      @possibly_changed_type = true if @type == :numeric and (value.nil? or
+        !value.is_a?(Numeric))
+
       pos = numeric_index_for index
       @vector[pos] = value
 
@@ -208,6 +214,29 @@ module Daru
 
       set_size
       set_nil_positions
+    end
+
+    # The type of data contained in the vector. Can be :object or :numeric. If
+    #   the underlying dtype is an NMatrix, this method will return the data type
+    #   of the NMatrix object.
+    #   
+    # Running through the data to figure out the kind of data is delayed to the
+    #   last possible moment.    
+    def type
+      return @vector.nm_dtype if dtype == :nmatrix
+
+      if @type.nil? or @possibly_changed_type
+        @type = :numeric
+        self.each do |e|
+          unless e.is_a?(Numeric)
+            @type = :object
+            break
+          end
+        end
+        @possibly_changed_type = false
+      end
+
+      @type
     end
 
     # Get index of element

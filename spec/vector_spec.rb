@@ -241,52 +241,86 @@ describe Daru::Vector do
           expect(a).to_not eq(@dv)
         end
       end
+    end
+  end # checking with ALL_DTYPES
 
-      # works with arrays only
-      context "#is_nil?"
-        before(:each) do
-          @with_md    = Daru::Vector.new([1,2,nil,3,4,nil])
-          @without_md = Daru::Vector.new([1,2,3,4,5,6])
-        end
+  # works with arrays only
+  context "#is_nil?" do
+    before(:each) do
+      @with_md    = Daru::Vector.new([1,2,nil,3,4,nil])
+      @without_md = Daru::Vector.new([1,2,3,4,5,6])
+    end
 
-        it "verifies missing data presence" do
-          expect(@with_md.is_nil?)   .to eq(Daru::Vector.new([false,false,true,false,false,true]))
-          expect(@without_md.is_nil?).to eq(Daru::Vector.new([false,false,false,false,false,false]))
-        end
-      end
-
-      context "#clone_structure" do
-        it "clones a vector with its index and fills it with nils" do
-          vec = Daru::Vector.new([1,2,3,4,5], index: [:a,:b,:c,:d,:e])
-          expect(vec.clone_structure).to eq(Daru::Vector.new([nil,nil,nil,nil,nil], index: [:a,:b,:c,:d,:e]))
-        end
-      end
-
-      context "#nil_positions" do
-        before(:each) do
-          @with_md = Daru::Vector.new([1,2,nil,3,4,nil])
-        end
-
-        it "returns the indexes of nils" do
-          expect(@with_md.nil_positions).to eq([2,5])
-        end
-
-        it "updates after assingment" do
-          @with_md[3] = nil
-          expect(@with_md.nil_positions).to eq([2,3,5])
-        end
-      end
-
-      context "#replace_nils" do
-        it "replaces all nils with the specified value" do
-          vec = Daru::Vector.new([1,2,3,nil,nil,4])
-          expect(vec.replace_nils(2)).to eq(Daru::Vector.new([1,2,3,2,2,4]))
-        end
-
-        it "replaces all nils with the specified value (bang)" do
-          vec = Daru::Vector.new([1,2,3,nil,nil,4]).replace_nils!(2)
-          expect(vec).to eq(Daru::Vector.new([1,2,3,2,2,4]))
-        end
-      end
+    it "verifies missing data presence" do
+      expect(@with_md.is_nil?)   .to eq(Daru::Vector.new([false,false,true,false,false,true]))
+      expect(@without_md.is_nil?).to eq(Daru::Vector.new([false,false,false,false,false,false]))
+    end
   end
+
+  context "#clone_structure" do
+    it "clones a vector with its index and fills it with nils" do
+      vec = Daru::Vector.new([1,2,3,4,5], index: [:a,:b,:c,:d,:e])
+      expect(vec.clone_structure).to eq(Daru::Vector.new([nil,nil,nil,nil,nil], index: [:a,:b,:c,:d,:e]))
+    end
+  end
+
+  context "#nil_positions" do
+    before(:each) do
+      @with_md = Daru::Vector.new([1,2,nil,3,4,nil])
+    end
+
+    it "returns the indexes of nils" do
+      expect(@with_md.nil_positions).to eq([2,5])
+    end
+
+    it "updates after assingment" do
+      @with_md[3] = nil
+      expect(@with_md.nil_positions).to eq([2,3,5])
+    end
+  end
+
+  context "#replace_nils" do
+    it "replaces all nils with the specified value" do
+      vec = Daru::Vector.new([1,2,3,nil,nil,4])
+      expect(vec.replace_nils(2)).to eq(Daru::Vector.new([1,2,3,2,2,4]))
+    end
+
+    it "replaces all nils with the specified value (bang)" do
+      vec = Daru::Vector.new([1,2,3,nil,nil,4]).replace_nils!(2)
+      expect(vec).to eq(Daru::Vector.new([1,2,3,2,2,4]))
+    end
+  end
+
+  context "#type" do
+    before(:each) do
+      @numeric = Daru::Vector.new([1,2,3,4,5])
+      @multi = Daru::Vector.new([1,2,3,'sameer','d'])
+    end
+
+    it "checks numeric data correctly" do
+      expect(@numeric.type).to eq(:numeric)
+    end
+
+    it "checks for multiple types of data" do
+      expect(@multi.type).to eq(:object)
+    end
+
+    it "tells NMatrix data type in case of NMatrix wrapper" do
+      nm = Daru::Vector.new([1,2,3,4,5], dtype: :nmatrix)
+      expect(nm.type).to eq(:int32)
+    end
+
+    it "changes type to object as per assignment" do
+      expect(@numeric.type).to eq(:numeric)
+      @numeric[2] = 'my string'
+      expect(@numeric.type).to eq(:object)
+    end
+
+    it "changes type to numeric as per assignment" do
+      expect(@multi.type).to eq(:object)
+      @multi[3] = 45
+      @multi[4] = 54
+      expect(@multi.type).to eq(:numeric) 
+    end
+  end 
 end if mri?

@@ -29,10 +29,9 @@ module Daru
       
       def initialize vector, context, nm_dtype=:int32
         @size = vector.size
-        @nm_dtype = nm_dtype
         @data = NMatrix.new [@size*2], vector.to_a, dtype: nm_dtype
-        @missing_data = false
         @context = context
+        @nm_dtype = @data.dtype
         # init with twice the storage for reducing the need to resize
       end
 

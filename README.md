@@ -367,6 +367,7 @@ Head over to the tutorials and notebooks listed above for more examples.
 * Working with missing data - drop\_missing\_data, dropping rows with missing data.
 * Have some sample data sets for users to play around with. Should be able to load these from the code itself.
 * Sorting with missing data present.
+* Make vectors aware of the data frame that they are a part of.
 
 ## Contributing
 
