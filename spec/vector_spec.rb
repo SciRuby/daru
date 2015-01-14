@@ -295,6 +295,7 @@ describe Daru::Vector do
     before(:each) do
       @numeric = Daru::Vector.new([1,2,3,4,5])
       @multi = Daru::Vector.new([1,2,3,'sameer','d'])
+      @with_nils = Daru::Vector.new([1,2,3,4,nil])
     end
 
     it "checks numeric data correctly" do
@@ -321,6 +322,20 @@ describe Daru::Vector do
       @multi[3] = 45
       @multi[4] = 54
       expect(@multi.type).to eq(:numeric) 
+    end
+
+    it "reports numeric if nils with number data" do
+      expect(@with_nils.type).to eq(:numeric)
+    end
+
+    it "stays numeric when nil is reassigned to a number" do
+      @with_nils[4] = 66
+      expect(@with_nils.type).to eq(:numeric)
+    end
+
+    it "changes to :object when nil is reassigned to anything but a number" do
+      @with_nils[4] = 'string'
+      expect(@with_nils.type).to eq(:object)
     end
   end 
 end if mri?

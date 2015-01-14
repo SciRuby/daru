@@ -121,11 +121,12 @@ module Daru
     end
 
     def []=(index, value)
-      cast(dtype: :array) if value.nil?
+      cast(dtype: :array) if value.nil? and dtype != :array
 
-      @possibly_changed_type = true if @type == :object  and value.is_a?(Numeric)
-      @possibly_changed_type = true if @type == :numeric and (value.nil? or
-        !value.is_a?(Numeric))
+      @possibly_changed_type = true if @type == :object  and (value.nil? or 
+        value.is_a?(Numeric))
+      @possibly_changed_type = true if @type == :numeric and (!value.is_a?(Numeric) and
+        !value.nil?)
 
       pos = numeric_index_for index
       @vector[pos] = value
@@ -228,9 +229,11 @@ module Daru
       if @type.nil? or @possibly_changed_type
         @type = :numeric
         self.each do |e|
-          unless e.is_a?(Numeric)
-            @type = :object
-            break
+          unless e.nil?
+            unless e.is_a?(Numeric)
+              @type = :object
+              break
+            end
           end
         end
         @possibly_changed_type = false

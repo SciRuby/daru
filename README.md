@@ -350,8 +350,6 @@ Head over to the tutorials and notebooks listed above for more examples.
 * Multiple value assignment for vectors with []=.
 * Load DataFrame from multiple sources (excel, SQL, etc.).
 * Deletion of elements from Vector should only modify the index and leave the vector as it is so that compacting is not needed and things are faster.
-* Add a #sync method which will sync the modified index with the unmodified vector.
-* Ability to reorder the index of a dataframe.
 * #find\_max function which will evaluate a block and return the row for the value of the block is max.
 * Function to check if a value of a row/vector is within a specified range.
 * Create a new vector in map_rows if any of the already present rows dont match the one assigned in the block.
@@ -368,6 +366,7 @@ Head over to the tutorials and notebooks listed above for more examples.
 * Have some sample data sets for users to play around with. Should be able to load these from the code itself.
 * Sorting with missing data present.
 * Make vectors aware of the data frame that they are a part of.
+* MultiIndex support.
 
 ## Contributing
 
