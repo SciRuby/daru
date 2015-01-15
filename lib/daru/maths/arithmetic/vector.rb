@@ -27,18 +27,26 @@ module Daru
         end
 
         def exp
-          # TODO
+          math_unary_op :exp
         end
 
         def sqrt
-          # TODO
+          math_unary_op :sqrt
         end
 
-        def round
-          # TODO
+        def abs
+          self.dup.map! { |e| e.abs unless e.nil? }
+        end
+
+        def round precision
+          self.dup.map! { |e| e.round(precision) unless e.nil? }
         end
 
        private
+
+        def math_unary_op operation
+          self.dup.map! { |e| Math.send(operation, e) unless e.nil? }
+        end
 
         def binary_op operation, other
           case other
@@ -56,7 +64,9 @@ module Daru
         def v2v_binary operation, other
           common_idxs = []
           elements    = []
+          puts (@index.to_a + other.index.to_a).uniq
           index = (@index.to_a + other.index.to_a).uniq.sort
+
 
           index.each do |idx|
             this = self[idx]

@@ -203,7 +203,7 @@ describe Daru::Vector do
           expect(@dv.sort).to eq(Daru::Vector.new([1,2,15,33,332], name: :dv, index: [:e, :b, :c, :a, :d]))
         end
 
-        it "sorts the vector in descending order", focus: true do
+        it "sorts the vector in descending order" do
           expect(@dv.sort(ascending: false)).to eq(Daru::Vector.new([332,33,15,2,1], name: :dv, index: [:d, :a, :c, :b, :e]))
         end
 

@@ -8,7 +8,7 @@ describe Daru::DataFrame do
 
   context "#+" do
     it "adds a number to all numeric vectors" do
-      expect(@df + 2).to eq(Daru::DataFrame.new({a: [2,4,5,6,7], b: ['a','e','i','o','u'], 
+      expect(@df + 2).to eq(Daru::DataFrame.new({a: [3,4,5,6,7], b: ['a','e','i','o','u'], 
       c: [12,22,32,42,52] }))
     end
   end

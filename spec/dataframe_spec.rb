@@ -492,6 +492,20 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#map_vectors!" do
+    it "maps vectors (bang)" do
+      ans = Daru::DataFrame.new({b: [21,22,23,24,25], a: [11,12,13,14,15], 
+        c: [21,32,43,54,65]}, order: [:a, :b, :c], 
+        index: [:one, :two, :three, :four, :five])
+
+      @data_frame.map_vectors! do |vector|
+        vector.map! { |e| e += 10}
+      end
+
+      expect(@data_frame).to eq(ans)
+    end
+  end
+
   context "#map_vectors_with_index" do
     it "iterates over vectors with index and returns a modified DataFrame" do
       ans = Daru::DataFrame.new({b: [21,22,23,24,25], a: [11,12,13,14,15], 
@@ -702,7 +716,7 @@ describe Daru::DataFrame do
         )
     end
 
-    it "sorts many vectors", focus: true do
+    it "sorts many vectors" do
       d = Daru::DataFrame.new({a: [1,1,1,222,44,5,5,544], b: [44,44,333,222,111,554,22,3], c: [3,2,5,3,3,1,5,5]})
       
       expect(d.sort!([:a, :b, :c], ascending: [false, true, false])).to eq(

@@ -36,7 +36,7 @@ describe Daru::Vector do
     end
   end
 
-  context "#*"
+  context "#*" do
     it "multiplies matching indexes of the other vector" do
 
     end
@@ -63,3 +63,25 @@ describe Daru::Vector do
   context "#**" do
     
   end
+
+  context "#exp", focus: true do
+    it "calculates exp of all numbers" do
+      expect(@with_md1.exp).to be_within(0.001).of(Daru::Vector.new([2.718281828459045, 
+        7.38905609893065, 20.085536923187668, nil, 148.4131591025766, nil], index: 
+        [:a, :b, :c, :obi, :wan, :corona], name: :missing))
+    end
+  end
+
+  context "#abs" do
+    it "calculates abs value" do
+      @with_md1.abs
+    end
+  end
+
+  context "#sqrt" do
+  end
+
+  context "#round" do
+
+  end
+end

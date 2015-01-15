@@ -259,16 +259,21 @@ module Daru
     end
 
     # Map each vector. Returns a DataFrame whose vectors are modified according
-    #   to the value returned by the block.
+    #   to the value returned by the block. As is the case with Enumerable#map,
+    #   the object returned by each block must be a Daru::Vector for the dataframe
+    #   to remain relevant.
     def map_vectors(&block)
-      df = self.dup
-      df.each_vector_with_index do |vector, name|
-        df[name, :vector] = yield(vector)
-      end
-
-      df
+      self.dup.map_vectors!(&block)
     end
 
+    # Destructive form of #map_vectors
+    def map_vectors!(&block)
+      @data.map!(&block)
+
+      self
+    end
+
+    # Map vectors alongwith the index.
     def map_vectors_with_index(&block)
       df = self.dup
       df.each_vector_with_index do |vector, name|
