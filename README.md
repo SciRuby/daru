@@ -367,6 +367,7 @@ Head over to the tutorials and notebooks listed above for more examples.
 * Sorting with missing data present.
 * Make vectors aware of the data frame that they are a part of.
 * MultiIndex support.
+* re_index should re establish previous index values in the newly supplied index.
 
 ## Contributing
 

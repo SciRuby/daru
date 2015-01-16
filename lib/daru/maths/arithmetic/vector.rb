@@ -38,7 +38,7 @@ module Daru
           self.dup.map! { |e| e.abs unless e.nil? }
         end
 
-        def round precision
+        def round precision=0
           self.dup.map! { |e| e.round(precision) unless e.nil? }
         end
 
@@ -64,9 +64,7 @@ module Daru
         def v2v_binary operation, other
           common_idxs = []
           elements    = []
-          puts (@index.to_a + other.index.to_a).uniq
           index = (@index.to_a + other.index.to_a).uniq.sort
-
 
           index.each do |idx|
             this = self[idx]

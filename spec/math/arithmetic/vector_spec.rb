@@ -66,9 +66,9 @@ describe Daru::Vector do
 
   context "#exp", focus: true do
     it "calculates exp of all numbers" do
-      expect(@with_md1.exp).to be_within(0.001).of(Daru::Vector.new([2.718281828459045, 
+      expect(@with_md1.exp.round(3)).to eq(Daru::Vector.new([2.718281828459045, 
         7.38905609893065, 20.085536923187668, nil, 148.4131591025766, nil], index: 
-        [:a, :b, :c, :obi, :wan, :corona], name: :missing))
+        [:a, :b, :c, :obi, :wan, :corona], name: :missing).round(3))
     end
   end
 
@@ -79,9 +79,14 @@ describe Daru::Vector do
   end
 
   context "#sqrt" do
+    it "calculates sqrt" do
+      @with_md1.sqrt
+    end
   end
 
   context "#round" do
-
+    it "rounds to given precision" do
+      @with_md1.round(2)
+    end 
   end
 end

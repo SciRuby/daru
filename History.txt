@@ -57,3 +57,5 @@
 * Know whether a position has nils or not with #is_nil?
 * Added #clone_structure to Vector for cloning only the index and structure or a vector.
 * Figure out the type of data using #type. Running thru the data to determine its type is delayed till the last possible moment.
+* Added arithmetic operations between data frame and scalars or other data frames.
+* Added #map_vectors!.
