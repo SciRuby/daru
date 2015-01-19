@@ -2,8 +2,6 @@ module Daru
   class Index
     include Enumerable
 
-    # needs to iterate over keys sorted by their values. Happens right now by 
-    # virtue of ordered Hashes (ruby).
     def each(&block)
       @relation_hash.each_key(&block)
     end
