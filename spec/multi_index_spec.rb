@@ -21,7 +21,7 @@ describe Daru::MultiIndex do
 
   context "#initialize" do
     it "creates 2 layer MultiIndex from tuples" do
-      tuples = [[:a, :one], [:a, :one], [:b, :one], [:b, :two], [:c, :one], [:c, :two]]
+      tuples = [[:a, :one], [:a, :two], [:b, :one], [:b, :two], [:c, :one], [:c, :two]]
       mi = Daru::MultiIndex.new(tuples)
       expect(mi.relation_hash).to eq({
         :a => {
@@ -54,11 +54,11 @@ describe Daru::MultiIndex do
         :b => {
           :one => {
             :bar => 4,
-            :foo => 5
+            :foo => 7
           },
           :two => {
-            :bar => 6,
-            :baz => 7
+            :bar => 5,
+            :baz => 6
           }
         },
         :c => {
@@ -67,8 +67,8 @@ describe Daru::MultiIndex do
             :baz => 9
           },
           :two => {
-            :bar => 10,
-            :foo => 11
+            :foo => 10,
+            :bar => 11,
           }
         }
       })
@@ -77,7 +77,7 @@ describe Daru::MultiIndex do
 
   context "#size" do
     it "returns size of MultiIndex" do
-      expect(@multi_mi.size).to eq(11)
+      expect(@multi_mi.size).to eq(12)
     end
   end
 
