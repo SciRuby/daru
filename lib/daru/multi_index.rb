@@ -26,22 +26,40 @@ module Daru
       @relation_hash = {}
       @size = source.size
       create_relation_hash source
+      @relation_hash.freeze
     end
 
     def [] *indexes
-      if indexes[1]
+      location = indexes[0]
+      if location.is_a?(Symbol)
+        result = read_relation_hash @relation_hash, indexes, 0
+        result.is_a?(Integer) ? result : Daru::MultiIndex.new(make_tuples(result))
       else
-        location = indexes[0]
-
         case location
-        when Symbol
         when Integer
           
+        when Range
+      
         end
       end
     end
 
+    def to_a
+      make_tuples @relation_hash
+    end
+
    private
+
+    def make_tuples relation_hash
+
+    end
+
+    def read_relation_hash relation_hash, indexes, index
+      identifier = indexes[index]
+      value      = relation_hash[identifier]
+
+      indexes[index+1].nil? ? value : read_relation_hash(value,indexes,index+1)
+    end
 
     def create_relation_hash source
       source.each_with_index do |tuple, number|
@@ -62,5 +80,6 @@ module Daru
         populate relation_hash[identifier], tuple, index+1, number
       end
     end
+
   end
 end

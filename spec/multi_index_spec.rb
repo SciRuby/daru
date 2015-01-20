@@ -83,7 +83,7 @@ describe Daru::MultiIndex do
 
   context "#[]" do
     it "returns the row number when specifying the complete tuple" do
-      expect(@multi_mi[:a, :one, :bar]).to eq(1)
+      expect(@multi_mi[:a, :one, :baz]).to eq(1)
     end
 
     it "returns a MultiIndex when specifying incomplete tuple" do
