@@ -6,6 +6,17 @@ describe Daru::Vector do
   ALL_DTYPES.each do |dtype|
     describe dtype do
       context "#initialize" do
+        before do
+          @tuples = [
+            [:a, :one, :foo], 
+            [:a, :two, :bar], 
+            [:b, :one, :bar], 
+            [:b, :two, :baz]
+          ]
+
+          @multi_index = Daru::MultiIndex.new(@tuples)
+        end
+
         it "initializes from an Array" do
           dv = Daru::Vector.new [1,2,3,4,5], name: :ravan, 
             index: [:ek, :don, :teen, :char, :pach], dtype: dtype
@@ -16,10 +27,16 @@ describe Daru::Vector do
 
         it "accepts Index object" do
           idx = Daru::Index.new [:yoda, :anakin, :obi, :padme, :r2d2]
-
           dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, index: idx, dtype: dtype
 
           expect(dv.name) .to eq(:yoga)
+          expect(dv.index).to eq(idx)
+        end
+
+        it "accepts a MultiIndex object" do
+          dv = Daru::Vector.new [1,2,3,4], name: :mi, index: idx, dtype: dtype
+
+          expect(dv.name).to eq(:mi)
           expect(dv.index).to eq(idx)
         end
 
@@ -34,6 +51,12 @@ describe Daru::Vector do
           }.to raise_error
         end
 
+        it "raises error for improper MultiIndex" do
+          expect {
+            dv = Daru::Vector.new [1,2,3,4,5], name: :mi, index: @multi_index
+          }.to raise_error
+        end
+
         it "initializes without specifying an index" do
           dv = Daru::Vector.new [1,2,3,4,5], name: :vishnu, dtype: dtype
 
@@ -41,61 +64,110 @@ describe Daru::Vector do
         end
 
         it "inserts nils for extra indices" do
-          dv = Daru::Vector.new [1,2,3], name: :yoga, index: [0,1,2,3,4], dtype: Array
+          dv = Daru::Vector.new [1,2,3], name: :yoga, index: [0,1,2,3,4], dtype: :array
 
           expect(dv).to eq([1,2,3,nil,nil].dv(:yoga,nil, Array))
+        end
+
+        it "inserts nils for extra indices (MultiIndex)" do
+          dv = Daru::Vector.new [1,2], name: :mi, index: @multi_index, dtype: :array
+          expect(dv).to eq(Daru::Vector.new([1,2,nil,nil], name: :mi, index: @multi_index, dtype: :array))
         end
       end
 
       context "#[]" do
-        before :each do
-          @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, 
-            index: [:yoda, :anakin, :obi, :padme, :r2d2], dtype: dtype
+        context Daru::Index do
+          before :each do
+            @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, 
+              index: [:yoda, :anakin, :obi, :padme, :r2d2], dtype: dtype
+          end
+
+          it "returns an element after passing an index" do
+            expect(@dv[:yoda]).to eq(1)
+          end
+
+          it "returns an element after passing a numeric index" do
+            expect(@dv[0]).to eq(1)
+          end
+
+          it "returns a vector with given indices for multiple indices" do
+            expect(@dv[:yoda, :anakin]).to eq(Daru::Vector.new([1,2], name: :yoda, 
+              index: [:yoda, :anakin], dtype: dtype))
+          end
+
+          it "returns a vector when specified symbol Range" do
+            expect(@dv[:yoda..:anakin]).to eq(Daru::Vector.new([1,2], 
+              index: [:yoda, :anakin], name: :yoga, dtype: dtype))
+          end
+
+          it "returns a vector when specified numeric Range" do
+            expect(@dv[3..4]).to eq(Daru::Vector.new([4,5], name: :yoga, 
+              index: [:padme, :r2d2], name: :yoga, dtype: dtype))
+          end
         end
 
-        it "returns an element after passing an index" do
-          expect(@dv[:yoda]).to eq(1)
-        end
+        context Daru::MultiIndex do
+          it "returns a single element when passed a row number" do
 
-        it "returns an element after passing a numeric index" do
-          expect(@dv[0]).to eq(1)
-        end
+          end
 
-        it "returns a vector with given indices for multiple indices" do
-          expect(@dv[:yoda, :anakin]).to eq(Daru::Vector.new([1,2], name: :yoda, 
-            index: [:yoda, :anakin], dtype: dtype))
-        end
+          it "returns a single element when passed the full tuple" do
 
-        it "returns a vector when specified symbol Range" do
-          expect(@dv[:yoda..:anakin]).to eq(Daru::Vector.new([1,2], 
-            index: [:yoda, :anakin], name: :yoga, dtype: dtype))
-        end
+          end
 
-        it "returns a vector when specified numeric Range" do
-          expect(@dv[3..4]).to eq(Daru::Vector.new([4,5], name: :yoga, 
-            index: [:padme, :r2d2], name: :yoga, dtype: dtype))
+          it "returns sub vector when passed first layer of tuple" do
+
+          end
+
+          it "returns sub vector when passed first and second layer of tuple" do
+
+          end
+
+          it "returns a vector with corresponding MultiIndex when specified numeric Range" do
+
+          end
         end
       end
 
       context "#[]=" do
-        before :each do
-          @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, 
-            index: [:yoda, :anakin, :obi, :padme, :r2d2], dtype: dtype
+        context Daru::Index do
+          before :each do
+            @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, 
+              index: [:yoda, :anakin, :obi, :padme, :r2d2], dtype: dtype
+          end
+
+          it "assigns at the specified index" do
+            @dv[:yoda] = 666
+            expect(@dv[:yoda]).to eq(666)
+          end
+
+          it "assigns at the specified Integer index" do
+            @dv[0] = 666
+            expect(@dv[:yoda]).to eq(666)
+          end
+
+          it "sets dtype to Array if a nil is assigned" do
+            @dv[0] = nil
+            expect(@dv.dtype).to eq(:array)
+          end
         end
 
-        it "assigns at the specified index" do
-          @dv[:yoda] = 666
-          expect(@dv[:yoda]).to eq(666)
-        end
+        context Daru::MultiIndex do
+          it "assigns all lower layer indices when specified a first layer index" do
 
-        it "assigns at the specified Integer index" do
-          @dv[0] = 666
-          expect(@dv[:yoda]).to eq(666)
-        end
+          end
 
-        it "sets dtype to Array if a nil is assigned" do
-          @dv[0] = nil
-          expect(@dv.dtype).to eq(:array)
+          it "assigns all lower indices when specified first and second layer index" do
+
+          end
+
+          it "assigns just the precise value when specified complete tuple" do
+
+          end
+
+          it "assigns correctly when numeric index" do
+
+          end
         end
       end
 
@@ -131,56 +203,85 @@ describe Daru::Vector do
       end
 
       context "#delete" do
-        it "deletes specified value in the vector" do
-          dv = Daru::Vector.new [1,2,3,4,5], name: :a, dtype: dtype
+        context Daru::Index do
+          it "deletes specified value in the vector" do
+            dv = Daru::Vector.new [1,2,3,4,5], name: :a, dtype: dtype
 
-          dv.delete 3
+            dv.delete 3
+            expect(dv).to eq(Daru::Vector.new [1,2,4,5], name: :a)
+          end
+        end
 
-          expect(dv).to eq(Daru::Vector.new [1,2,4,5], name: :a)
+        context Daru::MultiIndex do
+          it "deletes specified value in the vector and retains indexing of the others" do
+
+          end
         end
       end
 
       context "#delete_at" do
-        before :each do
-          @dv = Daru::Vector.new [1,2,3,4,5], name: :a, 
-            index: [:one, :two, :three, :four, :five], dtype: dtype
+        context Daru::Index do
+          before :each do
+            @dv = Daru::Vector.new [1,2,3,4,5], name: :a, 
+              index: [:one, :two, :three, :four, :five], dtype: dtype
+          end
+
+          it "deletes element of specified index" do
+            @dv.delete_at :one
+
+            expect(@dv).to eq(Daru::Vector.new [2,3,4,5], name: :a, 
+              index: [:two, :three, :four, :five]), dtype: dtype
+          end
+
+          it "deletes element of specified integer index" do
+            @dv.delete_at 2
+
+            expect(@dv).to eq(Daru::Vector.new [1,2,4,5], name: :a, 
+              index: [:one, :two, :four, :five]), dtype: dtype
+          end
         end
 
-        it "deletes element of specified index" do
-          @dv.delete_at :one
-
-          expect(@dv).to eq(Daru::Vector.new [2,3,4,5], name: :a, 
-            index: [:two, :three, :four, :five]), dtype: dtype
-        end
-
-        it "deletes element of specified integer index" do
-          @dv.delete_at 2
-
-          expect(@dv).to eq(Daru::Vector.new [1,2,4,5], name: :a, 
-            index: [:one, :two, :four, :five]), dtype: dtype
+        context Daru::MultiIndex do
+          pending "Possibly next release"
         end
       end
 
       context "#index_of" do
-        it "returns index of specified value" do
-          dv = Daru::Vector.new [1,2,3,4,5], name: :a, 
-            index: [:one, :two, :three, :four, :five], dtype: dtype
+        context Daru::Index do
+          it "returns index of specified value" do
+            dv = Daru::Vector.new [1,2,3,4,5], name: :a, 
+              index: [:one, :two, :three, :four, :five], dtype: dtype
 
-          expect(dv.index_of(1)).to eq(:one)
+            expect(dv.index_of(1)).to eq(:one)
+          end
+        end
+
+        context Daru::MultiIndex do
+          it "returns tuple of specified value" do
+
+          end
         end
       end
 
       context "#to_hash" do
-        it "returns the vector as a hash" do
-          dv = Daru::Vector.new [1,2,3,4,5], name: :a, 
-            index: [:one, :two, :three, :four, :five], dtype: dtype
+        context Daru::Index do
+          it "returns the vector as a hash" do
+            dv = Daru::Vector.new [1,2,3,4,5], name: :a, 
+              index: [:one, :two, :three, :four, :five], dtype: dtype
 
-          expect(dv.to_hash).to eq({one: 1, two: 2, three: 3, four: 4, five: 5})
+            expect(dv.to_hash).to eq({one: 1, two: 2, three: 3, four: 4, five: 5})
+          end
+        end
+
+        context Daru::MultiIndex do
+          it "returns vector as a Hash" do
+          end
         end
       end
 
       context "#uniq" do
         it "keeps only unique values" do
+
         end
       end
 
@@ -195,50 +296,72 @@ describe Daru::Vector do
       end
 
       context "#sort" do
-        before do
-          @dv = Daru::Vector.new [33,2,15,332,1], name: :dv, index: [:a, :b, :c, :d, :e]
+        context Daru::Index do
+          before do
+            @dv = Daru::Vector.new [33,2,15,332,1], name: :dv, index: [:a, :b, :c, :d, :e]
+          end
+
+          it "sorts the vector with defaults and returns a new vector, preserving indexing" do
+            expect(@dv.sort).to eq(Daru::Vector.new([1,2,15,33,332], name: :dv, index: [:e, :b, :c, :a, :d]))
+          end
+
+          it "sorts the vector in descending order" do
+            expect(@dv.sort(ascending: false)).to eq(Daru::Vector.new([332,33,15,2,1], name: :dv, index: [:d, :a, :c, :b, :e]))
+          end
+
+          it "accepts a block" do
+            str_dv = Daru::Vector.new ["My Jazz Guitar", "Jazz", "My", "Guitar"]
+
+            sorted = str_dv.sort { |a,b| a.length <=> b.length }
+            expect(sorted).to eq(Daru::Vector.new(["My", "Jazz", "Guitar", "My Jazz Guitar"], index: [2,1,3,0]))
+          end
+
+          it "places nils near the end of the vector" do
+            pending
+            with_nils = Daru::Vector.new [22,4,nil,111,nil,2]
+
+            expect(with_nils.sort).to eq(Daru::Vector.new([2,4,22,111,nil,nil], index: [5,1,0,3,2,4]))
+          end if dtype == :array
         end
 
-        it "sorts the vector with defaults and returns a new vector, preserving indexing" do
-          expect(@dv.sort).to eq(Daru::Vector.new([1,2,15,33,332], name: :dv, index: [:e, :b, :c, :a, :d]))
+        context Daru::MultiIndex do
+          it "sorts vector" do
+
+          end
+
+          it "sorts in descending" do
+
+          end
+
+          it "sorts using the supplied block" do
+
+          end
         end
-
-        it "sorts the vector in descending order" do
-          expect(@dv.sort(ascending: false)).to eq(Daru::Vector.new([332,33,15,2,1], name: :dv, index: [:d, :a, :c, :b, :e]))
-        end
-
-        it "accepts a block" do
-          str_dv = Daru::Vector.new ["My Jazz Guitar", "Jazz", "My", "Guitar"]
-
-          sorted = str_dv.sort { |a,b| a.length <=> b.length }
-          expect(sorted).to eq(Daru::Vector.new(["My", "Jazz", "Guitar", "My Jazz Guitar"], index: [2,1,3,0]))
-        end
-
-        it "places nils near the end of the vector" do
-          pending
-          with_nils = Daru::Vector.new [22,4,nil,111,nil,2]
-
-          expect(with_nils.sort).to eq(Daru::Vector.new([2,4,22,111,nil,nil], index: [5,1,0,3,2,4]))
-        end if dtype == :array
       end
 
       context "#reindex" do
-        before do 
-          @dv = Daru::Vector.new [1,2,3,4,5], name: :dv, index: [:a, :b, :c, :d, :e]
+        context Daru::Index do
+          before do 
+            @dv = Daru::Vector.new [1,2,3,4,5], name: :dv, index: [:a, :b, :c, :d, :e]
+          end
+
+          it "recreates index with sequential numbers" do
+            a  = @dv.reindex(:seq)
+
+            expect(a).to eq(Daru::Vector.new([1,2,3,4,5], name: :dv, index: [0,1,2,3,4]))
+            expect(a).to_not eq(@dv)
+          end
+
+          it "accepts a new non-numeric index" do
+            a = @dv.reindex([:hello, :my, :name, :is, :ted])
+
+            expect(a).to eq(Daru::Vector.new([1,2,3,4,5], name: :dv, index: [:hello, :my, :name, :is, :ted]))
+            expect(a).to_not eq(@dv)
+          end
         end
 
-        it "recreates index with sequential numbers" do
-          a  = @dv.reindex(:seq)
-
-          expect(a).to eq(Daru::Vector.new([1,2,3,4,5], name: :dv, index: [0,1,2,3,4]))
-          expect(a).to_not eq(@dv)
-        end
-
-        it "accepts a new non-numeric index" do
-          a = @dv.reindex([:hello, :my, :name, :is, :ted])
-
-          expect(a).to eq(Daru::Vector.new([1,2,3,4,5], name: :dv, index: [:hello, :my, :name, :is, :ted]))
-          expect(a).to_not eq(@dv)
+        context Daru::MultiIndex do
+          pending
         end
       end
     end
@@ -265,17 +388,23 @@ describe Daru::Vector do
   end
 
   context "#nil_positions" do
-    before(:each) do
-      @with_md = Daru::Vector.new([1,2,nil,3,4,nil])
+    context Daru::Index do
+      before(:each) do
+        @with_md = Daru::Vector.new([1,2,nil,3,4,nil])
+      end
+
+      it "returns the indexes of nils" do
+        expect(@with_md.nil_positions).to eq([2,5])
+      end
+
+      it "updates after assingment" do
+        @with_md[3] = nil
+        expect(@with_md.nil_positions).to eq([2,3,5])
+      end
     end
 
-    it "returns the indexes of nils" do
-      expect(@with_md.nil_positions).to eq([2,5])
-    end
-
-    it "updates after assingment" do
-      @with_md[3] = nil
-      expect(@with_md.nil_positions).to eq([2,3,5])
+    context Daru::MultiIndex do
+      pending
     end
   end
 
