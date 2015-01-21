@@ -7,7 +7,7 @@ DESCRIPTION = <<MSG
 Daru (Data Analysis in RUby) is a library for analysis, manipulation and visualization
 of data.
 
-Daru works with Ruby arrays, NMatrix and MDArray, thus working seamlessly accross
+Daru works with Ruby arrays and NMatrix, thus working seamlessly accross
 ruby interpreters, at the same time providing speed for those who need it, while 
 making working with data super simple and intuitive.
 MSG

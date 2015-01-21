@@ -89,25 +89,32 @@ describe Daru::MultiIndex do
     it "returns a MultiIndex when specifying incomplete tuple" do
       expect(@multi_mi[:b]).to eq(Daru::MultiIndex.new([
           [:one,:bar],
-          [:one,:foo],
           [:two,:bar],
           [:two,:baz],
+          [:one,:foo]
         ])
       )
+
+      expect(@multi_mi[:b, :one]).to eq(Daru::MultiIndex.new([
+          [:bar],
+          [:foo]
+        ])
+      )
+      # TODO: Return Daru::Index if a single layer of indexes is present.
     end
 
     it "returns a MultiIndex when specifying as an integer index" do
       expect(@multi_mi[1]).to eq(Daru::MultiIndex.new([
           [:one,:bar],
-          [:one,:foo],
           [:two,:bar],
           [:two,:baz],
+          [:one,:foo]
         ])
       )
     end
 
     it "supports numeric Ranges" do
-      expect(@multi_mi[0..1]).to eq(Daru::MultiIndex.new(      
+      expect(@multi_mi[0..1]).to eq(Daru::MultiIndex.new([        
         [:a,:one,:bar],
         [:a,:one,:baz],
         [:a,:two,:bar],
@@ -116,7 +123,7 @@ describe Daru::MultiIndex do
         [:b,:two,:bar],
         [:b,:two,:baz],
         [:b,:one,:foo]
-      ))
+      ]))
     end
   end
 
@@ -159,7 +166,26 @@ describe Daru::MultiIndex do
       duplicate = @multi_mi.dup
       
       expect(duplicate)          .to eq(@multi_mi)
-      expect(duplicate.object_id).to not_eq(@multi_mi.object_id)
+      expect(duplicate.object_id).to_not eq(@multi_mi.object_id)
+    end
+  end
+
+  context "#==" do
+    it "returns false for unequal MultiIndex comparisons" do
+      mi1 = Daru::MultiIndex.new([
+        [:a, :one, :bar],
+        [:a, :two, :baz],
+        [:b, :one, :foo],
+        [:b, :two, :bar]
+        ])
+      mi2 = Daru::MultiIndex.new([
+        [:a, :two, :bar],
+        [:b, :one, :foo],
+        [:a, :one, :baz],
+        [:b, :two, :baz]
+        ])
+
+      expect(mi1 == mi2).to eq(false)
     end
   end
 end
