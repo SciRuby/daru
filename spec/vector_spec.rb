@@ -34,10 +34,10 @@ describe Daru::Vector do
         end
 
         it "accepts a MultiIndex object" do
-          dv = Daru::Vector.new [1,2,3,4], name: :mi, index: idx, dtype: dtype
+          dv = Daru::Vector.new [1,2,3,4], name: :mi, index: @multi_index, dtype: dtype
 
           expect(dv.name).to eq(:mi)
-          expect(dv.index).to eq(idx)
+          expect(dv.index).to eq(@multi_index)
         end
 
         it "raises error for improper Index" do
@@ -100,7 +100,7 @@ describe Daru::Vector do
               index: [:yoda, :anakin], name: :yoga, dtype: dtype))
           end
 
-          it "returns a vector when specified numeric Range" do
+          it "returns a vector when specified numeric Range", focus: true  do
             expect(@dv[3..4]).to eq(Daru::Vector.new([4,5], name: :yoga, 
               index: [:padme, :r2d2], name: :yoga, dtype: dtype))
           end

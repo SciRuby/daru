@@ -6,19 +6,19 @@ module Daru
     module Statistics
       module Vector
         def mean
-          @vector.mean
+          @data.mean
         end
 
         def sum
-          @vector.sum
+          @data.sum
         end
 
         def product
-          @vector.product
+          @data.product
         end
 
         def min
-          @vector.min
+          @data.min
         end
 
         def range
@@ -31,7 +31,7 @@ module Daru
 
         def mode
           freqs = frequencies.values
-          @vector[freqs.index(freqs.max)]
+          @data[freqs.index(freqs.max)]
         end
 
         def median_absolute_deviation
@@ -44,7 +44,7 @@ module Daru
         end
 
         def sum_of_squared_deviation
-          (@vector.to_a.inject(0) { |a,x| x.square + a } - (sum.square.quo((@size - @nil_positions.size)))).to_f
+          (@data.to_a.inject(0) { |a,x| x.square + a } - (sum.square.quo((@size - @nil_positions.size)))).to_f
         end
 
         # Maximum element of the vector.
@@ -53,7 +53,7 @@ module Daru
         #   to returning only the maximum number but passing *:vector* will return
         #   a Daru::Vector with the index of the corresponding maximum value.
         def max return_type=:stored_type
-          max_value = @vector.max
+          max_value = @data.max
           if return_type == :vector
             Daru::Vector.new({index_of(max_value) => max_value}, name: @name, dtype: @dtype)
           else
@@ -68,7 +68,7 @@ module Daru
         end
 
         def frequencies
-          @vector.inject({}) do |hash, element|
+          @data.inject({}) do |hash, element|
             hash[element] ||= 0
             hash[element] += 1
             hash
@@ -88,7 +88,7 @@ module Daru
             memo
           end
 
-          Daru::Vector.new @vector.map { |e| r[e] }, index: self.index,
+          Daru::Vector.new @data.map { |e| r[e] }, index: self.index,
             name: self.name, dtype: self.dtype, nm_dtype: self.nm_dtype
         end
 
@@ -101,7 +101,7 @@ module Daru
         #   values given, retrieves the frequency for this value.
         def count value=false
           if block_given?
-            @vector.inject(0){ |memo, val| memo += 1 if yield val; memo}
+            @data.inject(0){ |memo, val| memo += 1 if yield val; memo}
           else
             val = frequencies[value]
             val.nil? ? 0 : val
@@ -126,7 +126,7 @@ module Daru
 
         def sum_of_squares(m=nil)
           m ||= mean
-          @vector.inject(0) { |memo, val| memo + (val - m)**2 }
+          @data.inject(0) { |memo, val| memo + (val - m)**2 }
         end
 
         def standard_deviation_population m=nil
@@ -141,27 +141,27 @@ module Daru
         # Calculate skewness using (sigma(xi - mean)^3)/((N)*std_dev_sample^3)
         def skew m=nil
           m ||= mean
-          th  = @vector.inject(0) { |memo, val| memo + ((val - m)**3) }
+          th  = @data.inject(0) { |memo, val| memo + ((val - m)**3) }
           th.quo ((@size - @nil_positions.size) * (standard_deviation_sample(m)**3))
         end
 
         def kurtosis m=nil
           m ||= mean
-          fo  = @vector.inject(0){ |a, x| a + ((x - m) ** 4) }
+          fo  = @data.inject(0){ |a, x| a + ((x - m) ** 4) }
           fo.quo((@size - @nil_positions.size) * standard_deviation_sample(m) ** 4) - 3
         end
 
         def average_deviation_population m=nil
           m ||= mean
-          (@vector.inject(0) {|memo, val| val + (val - m).abs }) / n_valid
+          (@data.inject(0) {|memo, val| val + (val - m).abs }) / n_valid
         end
 
         def recode!(&block)
-          @vector.recode!(&block)
+          @data.recode!(&block)
         end
 
         def percentile percent
-          sorted = @vector.sort
+          sorted = @data.sort
           v      = (n_valid * percent).quo(100)
           if v.to_i != v
             sorted[v.round]

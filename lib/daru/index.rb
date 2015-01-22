@@ -4,6 +4,11 @@ module Daru
 
     def each(&block)
       @relation_hash.each_key(&block)
+      self
+    end
+
+    def map(&block)
+      to_a.map(&block)
     end
 
     attr_reader :relation_hash
@@ -17,7 +22,8 @@ module Daru
 
       index = 0                         if index.nil?
       index = Array.new(index) { |i| i} if index.is_a? Integer
-
+      index = index.to_a                if index.is_a? Daru::Index
+      
       if values.nil?
         index.each_with_index do |n, idx|
           n = n.to_sym unless n.is_a?(Integer)
@@ -53,11 +59,15 @@ module Daru
     def [](key)
       case key
       when Range
-        first = @relation_hash[key.first]
-        last  = @relation_hash[key.last]
+        if key.first.is_a?(Integer) and key.last.is_a?(Integer)
+          first = key.first
+          last = key.last
+        else
+          first = @relation_hash[key.first]
+          last  = @relation_hash[key.last]
+        end
 
         indexes = []
-
         (first..last).each do |idx|
           indexes << @relation_hash.key(idx)
         end

@@ -14,17 +14,17 @@ module Daru
     include Daru::Plotting::Vector
 
     def each(&block)
-      @vector.each(&block)
+      @data.each(&block)
+      self
     end
 
     def map!(&block)
-      @vector.map!(&block)
-
+      @data.map!(&block)
       self
     end
 
     def map(&block)
-      Daru::Vector.new @vector.map(&block), name: @name, index: @index, dtype: @dtype
+      Daru::Vector.new @data.map(&block), name: @name, index: @index, dtype: @dtype
     end
 
     alias_method :recode, :map
@@ -73,14 +73,14 @@ module Daru
       name   = opts[:name]
       set_name name
 
-      @vector = cast_vector_to(opts[:dtype], source, opts[:nm_dtype])
-      @index = Daru::Index.new(index || @vector.size)
-      # TODO: Will need work for NMatrix/MDArray
-      if @index.size > @vector.size
+      @data = cast_vector_to(opts[:dtype], source, opts[:nm_dtype])
+      @index = Daru::Index.new(index || @data.size)
+      
+      if @index.size > @data.size
         cast(dtype: :array) # NM with nils seg faults
-        (@index.size - @vector.size).times { @vector << nil }
-      elsif @index.size < @vector.size
-        raise IndexError, "Expected index size >= vector size. Index size : #{@index.size}, vector size : #{@vector.size}"
+        (@index.size - @data.size).times { @data << nil }
+      elsif @index.size < @data.size
+        raise IndexError, "Expected index size >= vector size. Index size : #{@index.size}, vector size : #{@data.size}"
       end
 
       @possibly_changed_type = true
@@ -102,21 +102,20 @@ module Daru
           if index.first.is_a?(Numeric)
             index
           else
-            first = numeric_index_for index.first
-            last  = numeric_index_for index.last
+            first = index.first
+            last  = index.last
 
             (first..last)
           end
-
-          indexes = @index.to_a[range]
+          indexes = @index[range]
         else
           pos = numeric_index_for index
-          return (pos ? @vector[pos] : nil)
+          return (pos ? @data[pos] : nil)
         end
       else
         indexes.unshift index
       end
-      Daru::Vector.new indexes.map { |index| @vector[@index[index]] },name: @name, 
+      Daru::Vector.new indexes.map { |index| @data[@index[index]] },name: @name, 
         index: indexes
     end
 
@@ -129,7 +128,7 @@ module Daru
         !value.nil?)
 
       pos = numeric_index_for index
-      @vector[pos] = value
+      @data[pos] = value
 
       set_size
       set_nil_positions
@@ -179,7 +178,7 @@ module Daru
           raise e, "Expected valid index."
         end
       end
-      @vector[@index[index]] = element
+      @data[@index[index]] = element
       set_size
       set_nil_positions
     end
@@ -194,7 +193,7 @@ module Daru
       raise ArgumentError, "Unsupported dtype #{opts[:dtype]}" unless 
         dtype == :array or dtype == :nmatrix
 
-      @vector = cast_vector_to dtype
+      @data = cast_vector_to dtype
     end
 
     # Delete an element by value
@@ -205,7 +204,7 @@ module Daru
     # Delete element by index
     def delete_at index
       idx = named_index_for index
-      @vector.delete_at @index[idx]
+      @data.delete_at @index[idx]
 
       if @index.index_class == Integer
         @index = Daru::Index.new @size-1
@@ -224,7 +223,7 @@ module Daru
     # Running through the data to figure out the kind of data is delayed to the
     #   last possible moment.    
     def type
-      return @vector.nm_dtype if dtype == :nmatrix
+      return @data.nm_dtype if dtype == :nmatrix
 
       if @type.nil? or @possibly_changed_type
         @type = :numeric
@@ -244,12 +243,12 @@ module Daru
 
     # Get index of element
     def index_of element
-      @index.key @vector.index(element)
+      @index.key @data.index(element)
     end
 
     # Keep only unique elements of the vector alongwith their indexes.
     def uniq
-      uniq_vector = @vector.uniq
+      uniq_vector = @data.uniq
       new_index   = uniq_vector.inject([]) do |acc, element|  
         acc << index_of(element) 
         acc
@@ -273,7 +272,7 @@ module Daru
     # 
     #   v = Daru::Vector.new ["My first guitar", "jazz", "guitar"]
     #   # Say you want to sort these strings by length.
-    #   v.sort { |a,b| a.length < b.length }
+    #   v.sort { |a,b| a.length <=> b.length }
     def sort opts={}, &block
       opts = {
         ascending: true,
@@ -283,14 +282,14 @@ module Daru
       block = lambda { |a,b| a <=> b } unless block
     
       order = opts[:ascending] ? :ascending : :descending
-      vector, index = send(opts[:type], @vector.to_a.dup, @index.to_a, order, &block)
+      vector, index = send(opts[:type], @data.to_a.dup, @index.to_a, order, &block)
 
       Daru::Vector.new(vector, index: index, name: @name, dtype: @dtype)
     end
 
     # Just sort the data and get an Array in return using Enumerable#sort. Non-destructive.
     def sorted_data &block
-      @vector.to_a.sort(&block)
+      @data.to_a.sort(&block)
     end
 
     # Returns *true* if the value passed actually exists in the vector.
@@ -369,7 +368,7 @@ module Daru
 
     # Return an array
     def to_a
-      @vector.to_a
+      @data.to_a
     end
 
     # Convert the hash from to_hash to json
@@ -402,7 +401,7 @@ module Daru
     def inspect spacing=10, threshold=15
       longest = [@name.to_s.size,
                  @index.to_a.map(&:to_s).map(&:size).max, 
-                 @vector    .map(&:to_s).map(&:size).max,
+                 @data    .map(&:to_s).map(&:size).max,
                  'nil'.size].max
 
       content   = ""
@@ -430,12 +429,12 @@ module Daru
     #   will reindex with sequential numbers from 0 to (n-1).
     def reindex new_index
       index = Daru::Index.new(new_index == :seq ? @size : new_index)
-      Daru::Vector.new @vector.to_a, index: index, name: name, dtype: @dtype
+      Daru::Vector.new @data.to_a, index: index, name: name, dtype: @dtype
     end
 
     # def compact!
       # TODO: Compact and also take care of indexes
-      # @vector.compact!
+      # @data.compact!
       # set_size
     # end
 
@@ -448,7 +447,7 @@ module Daru
 
     # Duplicate elements and indexes
     def dup 
-      Daru::Vector.new @vector.dup, name: @name, index: @index.dup
+      Daru::Vector.new @data.dup, name: @name, index: @index.dup
     end
 
     # Copies the structure of the vector (i.e the index, size, etc.) and fills all
@@ -541,8 +540,8 @@ module Daru
     # Note: To maintain sanity, this _MUST_ be the _ONLY_ place in daru where the
     #   @dtype variable is set and the underlying data type of vector changed.
     def cast_vector_to dtype, source=nil, nm_dtype=nil
-      source = @vector if source.nil?
-      return @vector if @dtype and @dtype == dtype
+      source = @data if source.nil?
+      return @data if @dtype and @dtype == dtype
 
       new_vector = 
       case dtype
@@ -576,7 +575,7 @@ module Daru
     end
 
     def set_size
-      @size = @vector.size
+      @size = @data.size
     end
 
     def set_name name
