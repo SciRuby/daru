@@ -107,24 +107,64 @@ describe Daru::Vector do
         end
 
         context Daru::MultiIndex do
-          it "returns a single element when passed a row number" do
+          before do
+            @tuples = [
+              [:a,:one,:bar],
+              [:a,:one,:baz],
+              [:a,:two,:bar],
+              [:a,:two,:baz],
+              [:b,:one,:bar],
+              [:b,:two,:bar],
+              [:b,:two,:baz],
+              [:b,:one,:foo],
+              [:c,:one,:bar],
+              [:c,:one,:baz],
+              [:c,:two,:foo],
+              [:c,:two,:bar]
+            ]
+            @multi_index = Daru::MultiIndex.new(@tuples)
+            @vector = Daru::Vector.new Array.new(12) { |i| i }, index: @multi_index, 
+              dtype: dtype, name: :mi_vector
+          end
 
+          it "returns a single element when passed a row number" do
+            expect(@vector[1]).to eq(1)
           end
 
           it "returns a single element when passed the full tuple" do
-
+            expect(@vector[:a, :one, :baz]).to eq(1)
           end
 
           it "returns sub vector when passed first layer of tuple" do
-
+            mi = Daru::MultiIndex.new([
+              [:one,:bar],
+              [:one,:baz],
+              [:two,:bar],
+              [:two,:baz]])
+            expect(@vector[:a]).to eq(Daru::Vector.new([0,1,2,3], index: mi, 
+              dtype: dtype, name: :sub_vector))
           end
 
           it "returns sub vector when passed first and second layer of tuple" do
-
+            mi = Daru::MultiIndex.new([
+              [:foo],
+              [:bar]])
+            expect(@vector[:c,:two]).to eq(Daru::Vector.new([10,11], index: mi,
+              dtype: dtype, name: :sub_sub_vector))
           end
 
           it "returns a vector with corresponding MultiIndex when specified numeric Range" do
-
+            mi = Daru::MultiIndex.new([
+              [:a,:two,:baz],
+              [:b,:one,:bar],
+              [:b,:two,:bar],
+              [:b,:two,:baz],
+              [:b,:one,:foo],
+              [:c,:one,:bar],
+              [:c,:one,:baz]
+            ])
+            expect(@vector[3..9]).to eq(Daru::Vector.new([3,4,5,6,7,8,9], index: mi,
+              dtype: dtype, name: :slice))
           end
         end
       end
@@ -153,20 +193,49 @@ describe Daru::Vector do
         end
 
         context Daru::MultiIndex do
-          it "assigns all lower layer indices when specified a first layer index" do
+          before :each do
+            @tuples = [
+              [:a,:one,:bar],
+              [:a,:one,:baz],
+              [:a,:two,:bar],
+              [:a,:two,:baz],
+              [:b,:one,:bar],
+              [:b,:two,:bar],
+              [:b,:two,:baz],
+              [:b,:one,:foo],
+              [:c,:one,:bar],
+              [:c,:one,:baz],
+              [:c,:two,:foo],
+              [:c,:two,:bar]
+            ]
+            @multi_index = Daru::MultiIndex.new(@tuples)
+            @vector = Daru::Vector.new Array.new(12) { |i| i }, index: @multi_index, 
+              dtype: dtype, name: :mi_vector
+          end
 
+          it "assigns all lower layer indices when specified a first layer index" do
+            @vector[:b] = 69
+            expect(@vector).to eq(Daru::Vector.new([0,1,2,3,69,69,69,69,8,9,10,11],
+              index: @multi_index, name: :top_layer_assignment, dtype: dtype
+              ))
           end
 
           it "assigns all lower indices when specified first and second layer index" do
-
+            @vector[:b, :one] = 69
+            expect(@vector).to eq(Daru::Vector.new([0,1,2,3,69,5,6,69,8,9,10,11],
+              index: @multi_index, name: :second_layer_assignment, dtype: dtype))
           end
 
           it "assigns just the precise value when specified complete tuple" do
-
+            @vector[:b, :one, :foo] = 69
+            expect(@vector).to eq(Daru::Vector.new([0,1,2,3,4,5,6,69,8,9,10,11],
+              index: @multi_index, name: :precise_assignment, dtype: dtype))
           end
 
           it "assigns correctly when numeric index" do
-
+            @vector[7] = 69
+            expect(@vector).to eq(Daru::Vector.new([0,1,2,3,4,5,6,69,8,9,10,11],
+              index: @multi_index, name: :precise_assignment, dtype: dtype))
           end
         end
       end
@@ -214,7 +283,7 @@ describe Daru::Vector do
 
         context Daru::MultiIndex do
           it "deletes specified value in the vector and retains indexing of the others" do
-
+            pending
           end
         end
       end
@@ -258,7 +327,14 @@ describe Daru::Vector do
 
         context Daru::MultiIndex do
           it "returns tuple of specified value" do
-
+            mi = Daru::MultiIndex.new([
+              [:a,:two,:bar],
+              [:a,:two,:baz],
+              [:b,:one,:bar],
+              [:b,:two,:bar]
+            ])
+            vector = Daru::Vector.new([1,2,3,4], index: mi, dtype: dtype)
+            expect(vector.index_of(3)).to eq([:b,:one,:bar])
           end
         end
       end
@@ -275,13 +351,27 @@ describe Daru::Vector do
 
         context Daru::MultiIndex do
           it "returns vector as a Hash" do
+            pending
+            mi = Daru::MultiIndex.new([
+              [:a,:two,:bar],
+              [:a,:two,:baz],
+              [:b,:one,:bar],
+              [:b,:two,:bar]
+            ])
+            vector = Daru::Vector.new([1,2,3,4], index: mi, dtype: dtype)
+            expect(vector.to_hash).to eq({
+              [:a,:two,:bar] => 1,
+              [:a,:two,:baz] => 2,
+              [:b,:one,:bar] => 3,
+              [:b,:two,:bar] => 4
+            })
           end
         end
       end
 
       context "#uniq" do
         it "keeps only unique values" do
-
+          # TODO: fill this in
         end
       end
 
@@ -325,16 +415,52 @@ describe Daru::Vector do
         end
 
         context Daru::MultiIndex do
-          it "sorts vector" do
+          before do
+            mi = Daru::MultiIndex.new([
+              [:a, :one,   :foo], 
+              [:a, :two,   :bar], 
+              [:b, :one,   :bar], 
+              [:b, :two,   :baz],
+              [:b, :three, :bar]
+              ])
+            @vector = Daru::Vector.new([44,22,111,0,-56], index: mi, name: :unsorted,
+              dtype: dtype)
+          end
 
+          it "sorts vector" do
+            mi_asc = Daru::MultiIndex.new([
+              [:b, :three, :bar],
+              [:b, :two,   :baz],
+              [:a, :two,   :bar],
+              [:a, :one,   :foo],
+              [:b, :one,   :bar]
+            ])
+            expect(@vector.sort).to eq(Daru::Vector.new([-56,0,22,44,111], index: mi,
+              name: :ascending, dtype: dtype))
           end
 
           it "sorts in descending" do
-
+            mi_dsc = Daru::MultiIndex.new([
+              [:b, :one, :bar], 
+              [:a, :one, :foo], 
+              [:a, :two, :bar], 
+              [:b, :two, :baz], 
+              [:b, :three, :bar]
+            ])
+            expect(@vector.sort(ascending: false)).to eq(Daru::Vector.new(
+              [111,44,22,0,-56], index: mi_dsc, name: :descending, dtype: dtype))
           end
 
           it "sorts using the supplied block" do
-
+            mi_abs = Daru::MultiIndex.new([
+              [:b, :two,   :baz],
+              [:a, :two,   :bar],
+              [:a, :one,   :foo],
+              [:b, :three, :bar],
+              [:b, :one,   :bar]
+            ])
+            expect(@vector.sort { |a,b| a.abs <=> b.abs }).to eq(Daru::Vector.new(
+              [0,22,44,56,111], index: mi_abs, name: :sort_abs, dtype: dtype))
           end
         end
       end
@@ -381,9 +507,15 @@ describe Daru::Vector do
   end
 
   context "#clone_structure" do
-    it "clones a vector with its index and fills it with nils" do
-      vec = Daru::Vector.new([1,2,3,4,5], index: [:a,:b,:c,:d,:e])
-      expect(vec.clone_structure).to eq(Daru::Vector.new([nil,nil,nil,nil,nil], index: [:a,:b,:c,:d,:e]))
+    context Daru::Index do
+      it "clones a vector with its index and fills it with nils" do
+        vec = Daru::Vector.new([1,2,3,4,5], index: [:a,:b,:c,:d,:e])
+        expect(vec.clone_structure).to eq(Daru::Vector.new([nil,nil,nil,nil,nil], index: [:a,:b,:c,:d,:e]))
+      end
+    end
+    
+    context Daru::MultiIndex do
+      pending
     end
   end
 

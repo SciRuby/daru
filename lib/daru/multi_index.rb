@@ -1,14 +1,14 @@
 module Daru
-  # Class fir holding multi index on Vector and DataFrame.
+  # Class for holding multi index on Vector and DataFrame.
   class MultiIndex
     include Enumerable
-    
+
     def each(&block)
       to_a.each(&block)
       self
     end
 
-    def map
+    def map(&block)
       Daru::MultiIndex.new(to_a.map(&block))
     end
 
