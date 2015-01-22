@@ -435,7 +435,7 @@ describe Daru::Vector do
               [:a, :one,   :foo],
               [:b, :one,   :bar]
             ])
-            expect(@vector.sort).to eq(Daru::Vector.new([-56,0,22,44,111], index: mi,
+            expect(@vector.sort).to eq(Daru::Vector.new([-56,0,22,44,111], index: mi_asc,
               name: :ascending, dtype: dtype))
           end
 

@@ -40,7 +40,6 @@ module Daru
       end
 
       @relation_hash.freeze
-
       @size = @relation_hash.size
 
       if index[0].is_a?(Integer)

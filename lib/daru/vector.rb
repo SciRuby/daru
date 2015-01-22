@@ -73,8 +73,8 @@ module Daru
       name   = opts[:name]
       set_name name
 
-      @data = cast_vector_to(opts[:dtype], source, opts[:nm_dtype])
-      @index = Daru::Index.new(index || @data.size)
+      @data  = cast_vector_to(opts[:dtype], source, opts[:nm_dtype])
+      @index = create_index(index || @data.size)
       
       if @index.size > @data.size
         cast(dtype: :array) # NM with nils seg faults
@@ -94,29 +94,33 @@ module Daru
     #   v[:one, :two] # => Daru::Vector with indexes :one and :two
     #   v[:one]       # => Single element
     #   v[:one..:three] # => Daru::Vector with indexes :one, :two and :three
-    def [](index, *indexes)
-      if indexes.empty?
-        case index
-        when Range
-          range = 
-          if index.first.is_a?(Numeric)
-            index
-          else
-            first = index.first
-            last  = index.last
-
-            (first..last)
-          end
-          indexes = @index[range]
-        else
-          pos = numeric_index_for index
-          return (pos ? @data[pos] : nil)
-        end
+    def [](*indexes)
+      if @index.is_a?(MultiIndex)
+        
       else
-        indexes.unshift index
+        index = indexes[0]
+        unless indexes[1]
+          case index
+          when Range
+            range = 
+            if index.first.is_a?(Numeric)
+              index
+            else
+              first = index.first
+              last  = index.last
+
+              (first..last)
+            end
+            indexes = @index[range]
+          else
+            pos = numeric_index_for index
+            return (pos ? @data[pos] : nil)
+          end
+        end
+
+        Daru::Vector.new indexes.map { |index| @data[@index[index]] }, name: @name, 
+          index: indexes.to_a
       end
-      Daru::Vector.new indexes.map { |index| @data[@index[index]] },name: @name, 
-        index: indexes
     end
 
     def []=(index, value)
@@ -169,11 +173,11 @@ module Daru
       raise IndexError, "Expected new unique index" if @index.include? index
 
       if index.nil? and @index.index_class == Integer
-        @index = Daru::Index.new @size+1
+        @index = create_index(@size + 1)
         index  = @size
       else
         begin
-          @index = Daru::Index.new(@index + index)
+          @index = create_index(@index + index)
         rescue StandardError => e
           raise e, "Expected valid index."
         end
@@ -283,8 +287,9 @@ module Daru
     
       order = opts[:ascending] ? :ascending : :descending
       vector, index = send(opts[:type], @data.to_a.dup, @index.to_a, order, &block)
+      index = @index.is_a?(MultiIndex) ? Daru::MultiIndex.new(index) : index
 
-      Daru::Vector.new(vector, index: index, name: @name, dtype: @dtype)
+      Daru::Vector.new(vector, index: create_index(index), name: @name, dtype: @dtype)
     end
 
     # Just sort the data and get an Array in return using Enumerable#sort. Non-destructive.
@@ -428,7 +433,7 @@ module Daru
     # @param new_index [Symbol, Array, Daru::Index] The new index. Passing *:seq*
     #   will reindex with sequential numbers from 0 to (n-1).
     def reindex new_index
-      index = Daru::Index.new(new_index == :seq ? @size : new_index)
+      index = create_index(new_index == :seq ? @size : new_index)
       Daru::Vector.new @data.to_a, index: index, name: name, dtype: @dtype
     end
 
@@ -594,6 +599,14 @@ module Daru
         @nil_positions << e if(self[e].nil?)
       end
       @nil_positions.uniq!
+    end
+
+    def create_index potential_index
+      if potential_index.is_a?(Daru::MultiIndex) or potential_index.is_a?(Daru::Index)
+        potential_index
+      else
+        Daru::Index.new(potential_index)
+      end
     end
   end
 end
