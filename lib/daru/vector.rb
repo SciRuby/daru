@@ -91,39 +91,65 @@ module Daru
     # Get one or more elements with specified index or a range.
     # 
     # == Usage
+    #   # For vectors employing single layer Index
+    # 
     #   v[:one, :two] # => Daru::Vector with indexes :one and :two
     #   v[:one]       # => Single element
     #   v[:one..:three] # => Daru::Vector with indexes :one, :two and :three
+    # 
+    #   # For vectors employing hierarchial multi index
+    #   
     def [](*indexes)
+      location = indexes[0]
       if @index.is_a?(MultiIndex)
-        
+        result = 
+        if location.is_a?(Integer)
+          element_from_numeric_index(location)
+        elsif location.is_a?(Range)
+          arry = location.inject([]) do |memo, num|
+            memo << element_from_numeric_index(num)
+            memo
+          end
+          new_index = Daru::MultiIndex.new(@index.to_a[location])
+          Daru::Vector.new arry, index: new_index, name: @name, dtype: dtype
+        else
+          sub_index = @index[indexes]
+          if sub_index.is_a?(Integer)
+            element_from_numeric_index(sub_index)
+          else
+            elements = sub_index.map do |tuple|
+              @data[@index[(indexes + tuple)]]
+            end
+            Daru::Vector.new elements, index: sub_index, name: @name, dtype: @dtype
+          end
+        end
+
+        return result
       else
-        index = indexes[0]
         unless indexes[1]
-          case index
+          case location
           when Range
             range = 
-            if index.first.is_a?(Numeric)
-              index
+            if location.first.is_a?(Numeric)
+              location
             else
-              first = index.first
-              last  = index.last
+              first = location.first
+              last  = location.last
 
               (first..last)
             end
             indexes = @index[range]
           else
-            pos = numeric_index_for index
-            return (pos ? @data[pos] : nil)
+            return element_from_numeric_index(location)
           end
         end
 
-        Daru::Vector.new indexes.map { |index| @data[@index[index]] }, name: @name, 
-          index: indexes.to_a
+        Daru::Vector.new indexes.map { |loc| @data[@index[loc]] }, name: @name, 
+          index: indexes.to_a, dtype: @dtype
       end
     end
 
-    def []=(index, value)
+    def []=(*location, value)
       cast(dtype: :array) if value.nil? and dtype != :array
 
       @possibly_changed_type = true if @type == :object  and (value.nil? or 
@@ -131,9 +157,14 @@ module Daru
       @possibly_changed_type = true if @type == :numeric and (!value.is_a?(Numeric) and
         !value.nil?)
 
-      pos = numeric_index_for index
-      @data[pos] = value
+      pos =
+      if @index.is_a?(MultiIndex) and !location[0].is_a?(Integer)
+        numeric_index_for location
+      else
+        numeric_index_for location[0]
+      end
 
+      @data[pos] = value
       set_size
       set_nil_positions
     end
@@ -403,7 +434,7 @@ module Daru
     end
 
     # Over rides original inspect for pretty printing in irb
-    def inspect spacing=10, threshold=15
+    def inspect spacing=20, threshold=15
       longest = [@name.to_s.size,
                  @index.to_a.map(&:to_s).map(&:size).max, 
                  @data    .map(&:to_s).map(&:size).max,
@@ -417,7 +448,7 @@ module Daru
 
       content += sprintf formatter, "", name
       @index.each_with_index do |index, num|
-        content += sprintf formatter, index.to_s, (self[index] || 'nil').to_s
+        content += sprintf formatter, index.to_s, (self[*index] || 'nil').to_s
         if num > threshold
           content += sprintf formatter, '...', '...'
           break
@@ -436,12 +467,6 @@ module Daru
       index = create_index(new_index == :seq ? @size : new_index)
       Daru::Vector.new @data.to_a, index: index, name: name, dtype: @dtype
     end
-
-    # def compact!
-      # TODO: Compact and also take care of indexes
-      # @data.compact!
-      # set_size
-    # end
 
     # Give the vector a new name
     # 
@@ -465,7 +490,7 @@ module Daru
       self
     end
 
-    alias_method :dv, :daru_vector
+    alias :dv :daru_vector
 
     def method_missing(name, *args, &block)
       if name.match(/(.+)\=/)
@@ -572,7 +597,7 @@ module Daru
     end
 
     def numeric_index_for index
-      if @index.include?(index) 
+      if @index.include?(index)
         @index[index]
       elsif index.is_a?(Numeric)
         index
@@ -607,6 +632,11 @@ module Daru
       else
         Daru::Index.new(potential_index)
       end
+    end
+
+    def element_from_numeric_index location
+      pos = numeric_index_for location
+      pos ? @data[pos] : nil
     end
   end
 end

@@ -100,7 +100,7 @@ describe Daru::Vector do
               index: [:yoda, :anakin], name: :yoga, dtype: dtype))
           end
 
-          it "returns a vector when specified numeric Range", focus: true  do
+          it "returns a vector when specified numeric Range" do
             expect(@dv[3..4]).to eq(Daru::Vector.new([4,5], name: :yoga, 
               index: [:padme, :r2d2], name: :yoga, dtype: dtype))
           end
@@ -135,7 +135,7 @@ describe Daru::Vector do
             expect(@vector[:a, :one, :baz]).to eq(1)
           end
 
-          it "returns sub vector when passed first layer of tuple" do
+          it "returns sub vector when passed first layer of tuple", focus: true do
             mi = Daru::MultiIndex.new([
               [:one,:bar],
               [:one,:baz],
@@ -282,9 +282,7 @@ describe Daru::Vector do
         end
 
         context Daru::MultiIndex do
-          it "deletes specified value in the vector and retains indexing of the others" do
-            pending
-          end
+          pending
         end
       end
 
@@ -350,22 +348,23 @@ describe Daru::Vector do
         end
 
         context Daru::MultiIndex do
-          it "returns vector as a Hash" do
-            pending
-            mi = Daru::MultiIndex.new([
-              [:a,:two,:bar],
-              [:a,:two,:baz],
-              [:b,:one,:bar],
-              [:b,:two,:bar]
-            ])
-            vector = Daru::Vector.new([1,2,3,4], index: mi, dtype: dtype)
-            expect(vector.to_hash).to eq({
-              [:a,:two,:bar] => 1,
-              [:a,:two,:baz] => 2,
-              [:b,:one,:bar] => 3,
-              [:b,:two,:bar] => 4
-            })
-          end
+          pending
+          # it "returns vector as a Hash" do
+          #   pending
+          #   mi = Daru::MultiIndex.new([
+          #     [:a,:two,:bar],
+          #     [:a,:two,:baz],
+          #     [:b,:one,:bar],
+          #     [:b,:two,:bar]
+          #   ])
+          #   vector = Daru::Vector.new([1,2,3,4], index: mi, dtype: dtype)
+          #   expect(vector.to_hash).to eq({
+          #     [:a,:two,:bar] => 1,
+          #     [:a,:two,:baz] => 2,
+          #     [:b,:one,:bar] => 3,
+          #     [:b,:two,:bar] => 4
+          #   })
+          # end
         end
       end
 
@@ -460,7 +459,7 @@ describe Daru::Vector do
               [:b, :one,   :bar]
             ])
             expect(@vector.sort { |a,b| a.abs <=> b.abs }).to eq(Daru::Vector.new(
-              [0,22,44,56,111], index: mi_abs, name: :sort_abs, dtype: dtype))
+              [0,22,44,-56,111], index: mi_abs, name: :sort_abs, dtype: dtype))
           end
         end
       end

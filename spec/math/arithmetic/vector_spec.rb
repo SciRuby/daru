@@ -64,7 +64,7 @@ describe Daru::Vector do
     
   end
 
-  context "#exp", focus: true do
+  context "#exp" do
     it "calculates exp of all numbers" do
       expect(@with_md1.exp.round(3)).to eq(Daru::Vector.new([2.718281828459045, 
         7.38905609893065, 20.085536923187668, nil, 148.4131591025766, nil], index: 

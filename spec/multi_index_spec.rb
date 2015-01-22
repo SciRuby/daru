@@ -73,7 +73,19 @@ describe Daru::MultiIndex do
         }
       })
     end
-  end
+
+    it "accepts array index values externally" do
+      mi = Daru::MultiIndex.new([
+        [:a,:one,:bar],
+        [:a,:one,:baz],
+        [:a,:two,:bar],
+        [:a,:two,:baz],
+        [:b,:one,:bar]
+      ], [6,3,1,2,9])
+
+      expect(mi.values).to eq([6,3,1,2,9])
+    end
+  end 
 
   context "#size" do
     it "returns size of MultiIndex" do
@@ -186,6 +198,12 @@ describe Daru::MultiIndex do
         ])
 
       expect(mi1 == mi2).to eq(false)
+    end
+  end
+
+  context "#values" do
+    it "returns an array of indices in order" do
+      # TODO
     end
   end
 end

@@ -9,7 +9,7 @@ module Daru
     end
 
     def map(&block)
-      Daru::MultiIndex.new(to_a.map(&block))
+      to_a.map(&block)
     end
 
     attr_reader :relation_hash
@@ -32,7 +32,7 @@ module Daru
     #   tuples = [:a,:a,:b,:b].zip([:one,:two,:one,:two])
     #   #=> [[:a, :one], [:a, :two], [:b, :one], [:b, :two]]
     #   Daru::MultiIndex.new(tuples)
-    def initialize source, opts={}
+    def initialize source, values=nil
       @relation_hash = {}
       @size = source.size
       create_relation_hash source
@@ -40,7 +40,9 @@ module Daru
     end
 
     def [] *indexes
+      indexes.flatten!
       location = indexes[0]
+
       if location.is_a?(Symbol)
         result = read_relation_hash @relation_hash, indexes, 0
         result.is_a?(Integer) ? result : Daru::MultiIndex.new(make_tuples(result))
@@ -83,6 +85,7 @@ module Daru
     # Check whether a tuple exists in the multi index. The argument *tuple* can
     # either a complete or incomplete tuple.
     def include? tuple
+      tuple = [tuple] unless tuple.is_a?(Array)
       !!read_relation_hash(@relation_hash, tuple, 0)
     end
 
