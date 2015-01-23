@@ -135,7 +135,7 @@ describe Daru::Vector do
             expect(@vector[:a, :one, :baz]).to eq(1)
           end
 
-          it "returns sub vector when passed first layer of tuple", focus: true do
+          it "returns sub vector when passed first layer of tuple" do
             mi = Daru::MultiIndex.new([
               [:one,:bar],
               [:one,:baz],
@@ -220,7 +220,7 @@ describe Daru::Vector do
               ))
           end
 
-          it "assigns all lower indices when specified first and second layer index" do
+          it "assigns all lower indices when specified first and second layer index",focus: true do
             @vector[:b, :one] = 69
             expect(@vector).to eq(Daru::Vector.new([0,1,2,3,69,5,6,69,8,9,10,11],
               index: @multi_index, name: :second_layer_assignment, dtype: dtype))

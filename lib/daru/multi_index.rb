@@ -14,6 +14,7 @@ module Daru
 
     attr_reader :relation_hash
     attr_reader :size
+    attr_reader :values
     
     # Initialize a MultiIndex by passing a tuple of indexes. The order assigned
     #   to the multi index corresponds to the position of the tuple in the array
@@ -35,8 +36,10 @@ module Daru
     def initialize source, values=nil
       @relation_hash = {}
       @size = source.size
-      create_relation_hash source
+      values = Array.new(source.size) { |i| i } if values.nil?
+      create_relation_hash source, values
       @relation_hash.freeze
+      @values = values
     end
 
     def [] *indexes
@@ -45,7 +48,7 @@ module Daru
 
       if location.is_a?(Symbol)
         result = read_relation_hash @relation_hash, indexes, 0
-        result.is_a?(Integer) ? result : Daru::MultiIndex.new(make_tuples(result))
+        result.is_a?(Integer) ? result : Daru::MultiIndex.new(*make_tuples(result))
       else
         case location
         when Integer
@@ -59,7 +62,7 @@ module Daru
             key = @relation_hash.keys[index]
             hsh[key] = read_relation_hash(@relation_hash, [key], 0)
           end
-          Daru::MultiIndex.new(make_tuples(hsh))
+          Daru::MultiIndex.new(*make_tuples(hsh))
         end
       end
     end
@@ -74,7 +77,7 @@ module Daru
     # Convert a MultiIndex back to tuples (array of arrays). Will retain the 
     # order of creation.
     def to_a
-      make_tuples @relation_hash
+      make_tuples(@relation_hash)[0]
     end
 
     # Completely duplicate a MultiIndex object and its contents.
@@ -119,14 +122,19 @@ module Daru
     end
 
     # Create tuples out of the relation hash based on the order of the identifier
-    # numbers. Returns an array of arrays containing the tuples.
+    # numbers. Returns an array of arrays containing the tuples and another
+    # containing their corresponding index numbers.
     def make_tuples relation_hash
       tuples = []
-      0.upto(@size-1) do |number|
+      new_vals = []
+      values.each do |number|
         tuple = find_tuple_for(relation_hash, number)
-        tuples << tuple unless tuple.empty?
+        unless tuple.empty?
+          tuples << tuple
+          new_vals << number
+        end
       end
-      tuples
+      [tuples,new_vals]
     end
 
     # Finds and returns a single tuple for a particular identifier number
@@ -166,9 +174,9 @@ module Daru
     end
 
     # Create the relation hash from supplied tuples.
-    def create_relation_hash source
-      source.each_with_index do |tuple, number|
-        populate @relation_hash, tuple, 0, number
+    def create_relation_hash source, values
+      source.each_with_index do |tuple, idx|
+        populate @relation_hash, tuple, 0, values[idx]
       end   
     end
 

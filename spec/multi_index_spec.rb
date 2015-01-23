@@ -83,7 +83,7 @@ describe Daru::MultiIndex do
         [:b,:one,:bar]
       ], [6,3,1,2,9])
 
-      expect(mi.values).to eq([6,3,1,2,9])
+      expect(mi[:a,:two,:baz]).to eq(2)
     end
   end 
 
@@ -104,13 +104,13 @@ describe Daru::MultiIndex do
           [:two,:bar],
           [:two,:baz],
           [:one,:foo]
-        ])
+        ], [4,5,6,7])
       )
 
       expect(@multi_mi[:b, :one]).to eq(Daru::MultiIndex.new([
           [:bar],
           [:foo]
-        ])
+        ], [4,7])
       )
       # TODO: Return Daru::Index if a single layer of indexes is present.
     end
@@ -121,7 +121,7 @@ describe Daru::MultiIndex do
           [:two,:bar],
           [:two,:baz],
           [:one,:foo]
-        ])
+        ],[4,5,6,7])
       )
     end
 
@@ -203,7 +203,14 @@ describe Daru::MultiIndex do
 
   context "#values" do
     it "returns an array of indices in order" do
-      # TODO
+      mi = Daru::MultiIndex.new([
+        [:a, :one, :bar],
+        [:a, :two, :baz],
+        [:b, :one, :foo],
+        [:b, :two, :bar]
+        ], [3,5,1,6])
+
+      expect(mi.values).to eq([3,5,1,6])
     end
   end
 end

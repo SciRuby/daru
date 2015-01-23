@@ -110,17 +110,20 @@ module Daru
             memo << element_from_numeric_index(num)
             memo
           end
+
           new_index = Daru::MultiIndex.new(@index.to_a[location])
           Daru::Vector.new arry, index: new_index, name: @name, dtype: dtype
         else
           sub_index = @index[indexes]
+
           if sub_index.is_a?(Integer)
             element_from_numeric_index(sub_index)
           else
             elements = sub_index.map do |tuple|
               @data[@index[(indexes + tuple)]]
             end
-            Daru::Vector.new elements, index: sub_index, name: @name, dtype: @dtype
+            Daru::Vector.new elements, index: Daru::MultiIndex.new(sub_index.to_a),
+             name: @name, dtype: @dtype
           end
         end
 
@@ -159,12 +162,19 @@ module Daru
 
       pos =
       if @index.is_a?(MultiIndex) and !location[0].is_a?(Integer)
-        numeric_index_for location
+        index_for location
       else
-        numeric_index_for location[0]
+        index_for location[0]
       end
 
-      @data[pos] = value
+      if pos.is_a?(MultiIndex)
+        pos.each do |sub_tuple|
+          self[*(location + sub_tuple)] = value
+        end
+      else
+        @data[pos] = value
+      end
+
       set_size
       set_nil_positions
     end
@@ -596,7 +606,7 @@ module Daru
       end
     end
 
-    def numeric_index_for index
+    def index_for index
       if @index.include?(index)
         @index[index]
       elsif index.is_a?(Numeric)
@@ -635,7 +645,7 @@ module Daru
     end
 
     def element_from_numeric_index location
-      pos = numeric_index_for location
+      pos = index_for location
       pos ? @data[pos] : nil
     end
   end
