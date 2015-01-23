@@ -6,6 +6,21 @@ describe Daru::DataFrame do
       c: [11,22,33,44,55]}, 
       order: [:a, :b, :c], 
       index: [:one, :two, :three, :four, :five])
+    tuples = [
+      [:a,:one,:bar],
+      [:a,:one,:baz],
+      [:a,:two,:bar],
+      [:a,:two,:baz],
+      [:b,:one,:bar],
+      [:b,:two,:bar],
+      [:b,:two,:baz],
+      [:b,:one,:foo],
+      [:c,:one,:bar],
+      [:c,:one,:baz],
+      [:c,:two,:foo],
+      [:c,:two,:bar]
+    ]
+    @multi_index = Daru::MultiIndex.new(tuples)
   end
 
   context ".rows" do
@@ -18,174 +33,297 @@ describe Daru::DataFrame do
       ]
     end
 
-    it "creates a DataFrame from Array rows" do
-      df = Daru::DataFrame.rows @rows, order: [:a,:b,:c,:d,:e]
+    context Daru::Index do
+      it "creates a DataFrame from Array rows" do
+        df = Daru::DataFrame.rows @rows, order: [:a,:b,:c,:d,:e]
 
-      expect(df.index)      .to eq(Daru::Index.new [0,1,2,3])
-      expect(df.vectors)    .to eq(Daru::Index.new [:a,:b,:c,:d,:e])
-      expect(df.vector[:a]) .to eq(Daru::Vector.new [1,1,1,1])
+        expect(df.index)      .to eq(Daru::Index.new [0,1,2,3])
+        expect(df.vectors)    .to eq(Daru::Index.new [:a,:b,:c,:d,:e])
+        expect(df.vector[:a]) .to eq(Daru::Vector.new [1,1,1,1])
+      end
+
+      it "creates a DataFrame from Vector rows" do
+        rows = @rows.map { |r| Daru::Vector.new r, index: [:a,:b,:c,:d,:e] }
+
+        df = Daru::DataFrame.rows rows, order: [:a,:b,:c,:d,:e]
+
+        expect(df.index)      .to eq(Daru::Index.new [0,1,2,3])
+        expect(df.vectors)    .to eq(Daru::Index.new [:a,:b,:c,:d,:e])
+        expect(df.vector[:a]) .to eq(Daru::Vector.new [1,1,1,1])
+      end
     end
 
-    it "creates a DataFrame from Vector rows" do
-      rows = @rows.map { |r| Daru::Vector.new r, index: [:a,:b,:c,:d,:e] }
+    context Daru::MultiIndex do
+      it "creates a DataFrame from rows" do
+        df = Daru::DataFrame.new(@rows*3, index: @multi_index, order: [:a,:b,:c,:d,:e])
 
-      df = Daru::DataFrame.rows rows, order: [:a,:b,:c,:d,:e]
+        expect(df.index).to eq(@multi_index)
+        expect(df.vectors).to eq(Daru::Index.new([:a,:b,:c,:d,:e]))
+        expect(df.vector[:a]).to eq(Daru::Vector.new([1]*12, index: @multi_index))
+      end
 
-      expect(df.index)      .to eq(Daru::Index.new [0,1,2,3])
-      expect(df.vectors)    .to eq(Daru::Index.new [:a,:b,:c,:d,:e])
-      expect(df.vector[:a]) .to eq(Daru::Vector.new [1,1,1,1])
+      it "creates a DataFrame from Vector rows" do
+        rows = @rows*3
+        rows.map! { |r| Daru::Vector.new(r, index: @multi_index) }
+
+        df = Daru::DataFrame.rows rows, order: @multi_index
+
+        expect(df.index).to eq(Daru::Index.new(Array.new(rows.size) { |i| i }))
+        expect(df.vectors).to eq(@multi_index)
+        expect(df.vector[:a,:one,:bar]).to eq(Daru::Vector.new([1]*12))
+      end
     end
   end
 
   context "#initialize" do
-    it "initializes an empty DataFrame" do
-      df = Daru::DataFrame.new({}, order: [:a, :b])
+    context Daru::Index do
+      it "initializes an empty DataFrame" do
+        df = Daru::DataFrame.new({}, order: [:a, :b])
 
-      expect(df.vectors).to eq(Daru::Index.new [:a, :b])
-      expect(df.a.class).to eq(Daru::Vector)
-      expect(df.a)      .to eq([].dv(:a)) 
-    end
+        expect(df.vectors).to eq(Daru::Index.new [:a, :b])
+        expect(df.a.class).to eq(Daru::Vector)
+        expect(df.a)      .to eq([].dv(:a)) 
+      end
 
-    it "initializes from a Hash" do
-      df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, order: [:a, :b],
-        index: [:one, :two, :three, :four, :five])
+      it "initializes from a Hash" do
+        df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, order: [:a, :b],
+          index: [:one, :two, :three, :four, :five])
 
-      expect(df.index)  .to eq(Daru::Index.new [:one, :two, :three, :four, :five])
-      expect(df.vectors).to eq(Daru::Index.new [:a, :b])
-      expect(df.a.class).to eq(Daru::Vector)
-      expect(df.a)      .to eq([1,2,3,4,5].dv(:a, df.index)) 
-    end
+        expect(df.index)  .to eq(Daru::Index.new [:one, :two, :three, :four, :five])
+        expect(df.vectors).to eq(Daru::Index.new [:a, :b])
+        expect(df.a.class).to eq(Daru::Vector)
+        expect(df.a)      .to eq([1,2,3,4,5].dv(:a, df.index)) 
+      end
 
-    it "initializes from a Hash of Vectors" do
-      df = Daru::DataFrame.new({b: [11,12,13,14,15].dv(:b, [:one, :two, :three, :four, :five]), 
-        a: [1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five])}, order: [:a, :b],
-        index: [:one, :two, :three, :four, :five])
+      it "initializes from a Hash of Vectors" do
+        df = Daru::DataFrame.new({b: [11,12,13,14,15].dv(:b, [:one, :two, :three, :four, :five]), 
+          a: [1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five])}, order: [:a, :b],
+          index: [:one, :two, :three, :four, :five])
 
-      expect(df.index)  .to eq(Daru::Index.new [:one, :two, :three, :four, :five])
-      expect(df.vectors).to eq(Daru::Index.new [:a, :b])
-      expect(df.a.class).to eq(Daru::Vector)
-      expect(df.a)      .to eq([1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five])) 
-    end
+        expect(df.index)  .to eq(Daru::Index.new [:one, :two, :three, :four, :five])
+        expect(df.vectors).to eq(Daru::Index.new [:a, :b])
+        expect(df.a.class).to eq(Daru::Vector)
+        expect(df.a)      .to eq([1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five])) 
+      end
 
-    it "initializes from an Array of Hashes" do
-      df = Daru::DataFrame.new([{a: 1, b: 11}, {a: 2, b: 12}, {a: 3, b: 13},
-        {a: 4, b: 14}, {a: 5, b: 15}], order: [:b, :a], 
-        index: [:one, :two, :three, :four, :five])
+      it "initializes from an Array of Hashes" do
+        df = Daru::DataFrame.new([{a: 1, b: 11}, {a: 2, b: 12}, {a: 3, b: 13},
+          {a: 4, b: 14}, {a: 5, b: 15}], order: [:b, :a], 
+          index: [:one, :two, :three, :four, :five])
 
-      expect(df.index)  .to eq(Daru::Index.new [:one, :two, :three, :four, :five])
-      expect(df.vectors).to eq(Daru::Index.new [:b, :a])
-      expect(df.a.class).to eq(Daru::Vector)
-      expect(df.a)      .to eq([1,2,3,4,5].dv(:a,[:one, :two, :three, :four, :five])) 
-    end
+        expect(df.index)  .to eq(Daru::Index.new [:one, :two, :three, :four, :five])
+        expect(df.vectors).to eq(Daru::Index.new [:b, :a])
+        expect(df.a.class).to eq(Daru::Vector)
+        expect(df.a)      .to eq([1,2,3,4,5].dv(:a,[:one, :two, :three, :four, :five])) 
+      end
 
-    it "accepts Index objects for row/col" do
-      rows = Daru::Index.new [:one, :two, :three, :four, :five]
-      cols = Daru::Index.new [:a, :b]
+      it "initializes from Array of Arrays" do
+        df = Daru::DataFrame.new([[1]*5, [2]*5, [3]*5], order: [:b, :a, :c])
 
-      df  = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, order: cols, 
-        index: rows)
+        expect(df.index)  .to eq(Daru::Index.new(5))
+        expect(df.vectors).to eq(Daru::Index.new([:b, :a, :c]))
+        expect(df.a)      .to eq(Daru::Vector.new([2]*5))
+      end
 
-      expect(df.a)      .to eq(Daru::Vector.new([1,2,3,4,5], order: [:a], index: rows))
-      expect(df.b)      .to eq(Daru::Vector.new([11,12,13,14,15], name: :b, index: rows))
-      expect(df.index)  .to eq(Daru::Index.new [:one, :two, :three, :four, :five])
-      expect(df.vectors).to eq(Daru::Index.new [:a, :b])
-    end
+      it "accepts Index objects for row/col" do
+        rows = Daru::Index.new [:one, :two, :three, :four, :five]
+        cols = Daru::Index.new [:a, :b]
 
-    it "initializes without specifying row/col index" do
-      df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]})
+        df  = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, order: cols, 
+          index: rows)
 
-      expect(df.index)  .to eq(Daru::Index.new [0,1,2,3,4])
-      expect(df.vectors).to eq(Daru::Index.new [:a, :b])
-    end
+        expect(df.a)      .to eq(Daru::Vector.new([1,2,3,4,5], order: [:a], index: rows))
+        expect(df.b)      .to eq(Daru::Vector.new([11,12,13,14,15], name: :b, index: rows))
+        expect(df.index)  .to eq(Daru::Index.new [:one, :two, :three, :four, :five])
+        expect(df.vectors).to eq(Daru::Index.new [:a, :b])
+      end
 
-    it "aligns indexes properly" do
-      df = Daru::DataFrame.new({
-          b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
-          a:      [1,2,3,4,5].dv(:a, [:two,:one,:three, :four, :five])
-        }, 
-          order: [:a, :b]
+      it "initializes without specifying row/col index" do
+        df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]})
+
+        expect(df.index)  .to eq(Daru::Index.new [0,1,2,3,4])
+        expect(df.vectors).to eq(Daru::Index.new [:a, :b])
+      end
+
+      it "aligns indexes properly" do
+        df = Daru::DataFrame.new({
+            b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
+            a:      [1,2,3,4,5].dv(:a, [:two,:one,:three, :four, :five])
+          }, 
+            order: [:a, :b]
+          )
+
+        expect(df).to eq(Daru::DataFrame.new({
+            b: [14,13,12,15,11].dv(:b, [:five, :four, :one, :three, :two]), 
+            a:      [5,4,2,3,1].dv(:a, [:five, :four, :one, :three, :two])
+          }, order: [:a, :b])
         )
+      end
 
-      expect(df).to eq(Daru::DataFrame.new({
-          b: [14,13,12,15,11].dv(:b, [:five, :four, :one, :three, :two]), 
-          a:      [5,4,2,3,1].dv(:a, [:five, :four, :one, :three, :two])
-        }, order: [:a, :b])
-      )
-    end
+      it "adds nil values for missing indexes and aligns by index" do
+        df = Daru::DataFrame.new({
+                 b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
+                 a: [1,2,3]         .dv(:a, [:two,:one,:three])
+               }, 
+               order: [:a, :b]
+             )
 
-    it "adds nil values for missing indexes and aligns by index" do
-      df = Daru::DataFrame.new({
-               b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
-               a: [1,2,3]         .dv(:a, [:two,:one,:three])
-             }, 
-             order: [:a, :b]
-           )
-
-      expect(df).to eq(Daru::DataFrame.new({
-          b: [14,13,12,15,11].dv(:b, [:five, :four, :one, :three, :two]), 
-          a:  [nil,nil,2,3,1].dv(:a, [:five, :four, :one, :three, :two])
-        }, 
-        order: [:a, :b])
-      )
-    end
-
-    it "adds nils in first vector when other vectors have many extra indexes" do
-      df = Daru::DataFrame.new({
-          b: [11]                .dv(nil, [:one]), 
-          a: [1,2,3]             .dv(nil, [:one, :two, :three]), 
-          c: [11,22,33,44,55]    .dv(nil, [:one, :two, :three, :four, :five]),
-          d: [49,69,89,99,108,44].dv(nil, [:one, :two, :three, :four, :five, :six])
-        }, order: [:a, :b, :c, :d], 
-        index: [:one, :two, :three, :four, :five, :six])
-
-      expect(df).to eq(Daru::DataFrame.new({
-          b: [11,nil,nil,nil,nil,nil].dv(nil, [:one, :two, :three, :four, :five, :six]), 
-          a: [1,2,3,nil,nil,nil]     .dv(nil, [:one, :two, :three, :four, :five, :six]), 
-          c: [11,22,33,44,55,nil]    .dv(nil, [:one, :two, :three, :four, :five, :six]),
-          d: [49,69,89,99,108,44]    .dv(nil, [:one, :two, :three, :four, :five, :six])
-        }, order: [:a, :b, :c, :d], 
-        index: [:one, :two, :three, :four, :five, :six])
-      )
-    end
-
-    it "correctly matches the supplied DataFrame index with the individual vector indexes" do
-      df = Daru::DataFrame.new({
-          b: [11,12,13] .dv(nil, [:one, :bleh, :blah]), 
-          a: [1,2,3,4,5].dv(nil, [:one, :two, :booh, :baah, :three]), 
-          c: [11,22,33,44,55].dv(nil, [0,1,3,:three, :two])
-        }, order: [:a, :b, :c], index: [:one, :two, :three])
-
-      expect(df).to eq(Daru::DataFrame.new({
-          b: [11,nil,nil].dv(nil, [:one, :two, :three]),
-          a: [1,2,5]     .dv(nil, [:one, :two, :three]),
-          c: [nil,55,44] .dv(nil, [:one, :two, :three]),
-        },  
-        order: [:a, :b, :c], index: [:one, :two, :three]
+        expect(df).to eq(Daru::DataFrame.new({
+            b: [14,13,12,15,11].dv(:b, [:five, :four, :one, :three, :two]), 
+            a:  [nil,nil,2,3,1].dv(:a, [:five, :four, :one, :three, :two])
+          }, 
+          order: [:a, :b])
         )
-      )
-    end
+      end
 
-    it "completes incomplete vectors" do
-      df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
-        c: [11,22,33,44,55]}, order: [:a, :c])
+      it "adds nils in first vector when other vectors have many extra indexes" do
+        df = Daru::DataFrame.new({
+            b: [11]                .dv(nil, [:one]), 
+            a: [1,2,3]             .dv(nil, [:one, :two, :three]), 
+            c: [11,22,33,44,55]    .dv(nil, [:one, :two, :three, :four, :five]),
+            d: [49,69,89,99,108,44].dv(nil, [:one, :two, :three, :four, :five, :six])
+          }, order: [:a, :b, :c, :d], 
+          index: [:one, :two, :three, :four, :five, :six])
 
-      expect(df.vectors).to eq([:a,:c,:b].to_index)
-    end
+        expect(df).to eq(Daru::DataFrame.new({
+            b: [11,nil,nil,nil,nil,nil].dv(nil, [:one, :two, :three, :four, :five, :six]), 
+            a: [1,2,3,nil,nil,nil]     .dv(nil, [:one, :two, :three, :four, :five, :six]), 
+            c: [11,22,33,44,55,nil]    .dv(nil, [:one, :two, :three, :four, :five, :six]),
+            d: [49,69,89,99,108,44]    .dv(nil, [:one, :two, :three, :four, :five, :six])
+          }, order: [:a, :b, :c, :d], 
+          index: [:one, :two, :three, :four, :five, :six])
+        )
+      end
 
-    it "raises error for incomplete DataFrame index" do
-      expect {
+      it "correctly matches the supplied DataFrame index with the individual vector indexes" do
+        df = Daru::DataFrame.new({
+            b: [11,12,13] .dv(nil, [:one, :bleh, :blah]), 
+            a: [1,2,3,4,5].dv(nil, [:one, :two, :booh, :baah, :three]), 
+            c: [11,22,33,44,55].dv(nil, [0,1,3,:three, :two])
+          }, order: [:a, :b, :c], index: [:one, :two, :three])
+
+        expect(df).to eq(Daru::DataFrame.new({
+            b: [11,nil,nil].dv(nil, [:one, :two, :three]),
+            a: [1,2,5]     .dv(nil, [:one, :two, :three]),
+            c: [nil,55,44] .dv(nil, [:one, :two, :three]),
+          },  
+          order: [:a, :b, :c], index: [:one, :two, :three]
+          )
+        )
+      end
+
+      it "completes incomplete vectors" do
         df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
-          c: [11,22,33,44,55]}, order: [:a, :b, :c], 
-          index: [:one, :two, :three])
-      }.to raise_error
-    end
+          c: [11,22,33,44,55]}, order: [:a, :c])
 
-    it "raises error for unequal sized vectors/arrays" do
-      expect {
-        df = Daru::DataFrame.new({b: [11,12,13], a: [1,2,3,4,5], 
-          c: [11,22,33,44,55]}, order: [:a, :b, :c], 
-          index: [:one, :two, :three])
-      }.to raise_error
+        expect(df.vectors).to eq([:a,:c,:b].to_index)
+      end
+
+      it "raises error for incomplete DataFrame index" do
+        expect {
+          df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
+            c: [11,22,33,44,55]}, order: [:a, :b, :c], 
+            index: [:one, :two, :three])
+        }.to raise_error
+      end
+
+      it "raises error for unequal sized vectors/arrays" do
+        expect {
+          df = Daru::DataFrame.new({b: [11,12,13], a: [1,2,3,4,5], 
+            c: [11,22,33,44,55]}, order: [:a, :b, :c], 
+            index: [:one, :two, :three])
+        }.to raise_error
+      end
+    end
+    
+    context Daru::MultiIndex do
+      before do
+        @order_mi = Daru::MultiIndex.new([
+          [:a,:one,:bar],
+          [:a,:one,:baz],
+          [:b,:two,:foo],
+          [:b,:one,:foo]])
+        @vector_arry1 = [11,12,13,14,11,12,13,14,11,12,13,14]
+        @vector_arry2 = [1,2,3,4,1,2,3,4,1,2,3,4]    
+      end
+
+      it "creates empty DataFrame" do
+        df = Daru::DataFrame.new({}, order: @order_mi)
+
+        expect(df.vectors).to eq(@order_mi)
+        expect(df.vector[:a, :one, :bar]).to eq(Daru::Vector.new([]))
+      end
+
+      it "creates from Hash" do
+        df = Daru::DataFrame.new({
+          [:a,:one,:bar] => @vector_arry1, 
+          [:a,:one,:baz] => @vector_arry2, 
+          [:b,:one,:foo] => @vector_arry1, 
+          [:b,:two,:foo] => @vector_arry2
+          }, order: @order_mi, index: @multi_index)
+
+        expect(df.index)               .to eq(@multi_index)
+        expect(df.vectors)             .to eq(@order_mi)
+        expect(df.vector[:a,:one,:bar]).to eq(Daru::Vector.new(@vector_arry1, 
+          index: @multi_index))
+      end
+
+      it "creates from Array of Hashes" do
+        pending
+      end
+
+      it "creates from Array of Arrays" do
+        df = Daru::DataFrame.new([@vector_arry1, @vector_arry2, @vector_arry1, 
+          @vector_arry2], index: @multi_index, order: @order_mi)
+
+        expect(df.index)  .to eq(@multi_index)
+        expect(df.vectors).to eq(@order_mi)
+        expect(df.vector[:a, :one, :bar]).to eq(Daru::Vector.new(@vector_arry1, 
+          index: @multi_index))
+      end
+
+      it "raises error for order MultiIndex of different size than supplied Array" do
+        expect {
+          df = Daru::DataFrame.new([@vector_arry1, @vector_arry2], order: @order_mi,
+            index: @multi_index)
+        }.to raise_error
+      end
+
+      it "aligns MultiIndexes properly" do
+        mi_a = @order_mi
+        mi_b = Daru::MultiIndex.new([
+          [:b,:one,:foo],
+          [:a,:one,:bar],
+          [:b,:two,:foo],
+          [:a,:one,:baz]
+        ])
+        mi_sorted = Daru::MultiIndex.new([
+          [:a, :one, :bar], 
+          [:a, :one, :baz], 
+          [:b, :one, :foo], 
+          [:b, :two, :foo]
+        ])
+        order = Daru::MultiIndex.new([
+          [:pee, :que],
+          [:pee, :poo]
+        ])
+        a  = Daru::Vector.new([1,2,3,4], index: mi_a)
+        b  = Daru::Vector.new([11,12,13,14], index: mi_b)
+        df = Daru::DataFrame.new({b: b, a: a}, order: order)
+
+        expect(df).to eq(Daru::DataFrame.new({
+          [:pee, :que] => Daru::Vector.new([1,2,4,3], index: mi_sorted),
+          [:pee, :poo] => Daru::Vector.new([12,14,11,13], index: mi_sorted)
+          }, order: order_mi))
+      end
+
+      it "adds nils in case of missing values" do
+        pending
+      end
+
+      it "matches individual vector indexing with supplied DataFrame index" do
+        pending
+      end
     end
   end
 
@@ -611,6 +749,7 @@ describe Daru::DataFrame do
     end
 
     context Daru::MultiIndex do
+
     end
   end
 
@@ -853,8 +992,7 @@ describe Daru::DataFrame do
     end
 
     context Daru::MultiIndex do
-      
-    end
-    
+
+    end  
   end
 end if mri?
