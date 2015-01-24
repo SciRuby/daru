@@ -249,11 +249,6 @@ describe Daru::DataFrame do
     end
     
     context Daru::MultiIndex do
-      before do
-        @vector_arry1 = [11,12,13,14,11,12,13,14,11,12,13,14]
-        @vector_arry2 = [1,2,3,4,1,2,3,4,1,2,3,4]    
-      end
-
       it "creates empty DataFrame" do
         df = Daru::DataFrame.new({}, order: @order_mi)
 
@@ -261,10 +256,10 @@ describe Daru::DataFrame do
         expect(df.vector[:a, :one, :bar]).to eq(Daru::Vector.new([]))
       end
 
-      it "creates from Hash" do
+      it "creates from Hash", focus: true do
         df = Daru::DataFrame.new({
           [:a,:one,:bar] => @vector_arry1, 
-          [:a,:one,:baz] => @vector_arry2, 
+          [:a,:two,:baz] => @vector_arry2, 
           [:b,:one,:foo] => @vector_arry1, 
           [:b,:two,:foo] => @vector_arry2
           }, order: @order_mi, index: @multi_index)
@@ -830,7 +825,7 @@ describe Daru::DataFrame do
     end
 
     context Daru::MultiIndex do
-
+      pending
     end
   end
 
@@ -882,9 +877,8 @@ describe Daru::DataFrame do
     end
 
     context Daru::MultiIndex do
-
+      pending
     end
-
   end
 
   context "#filter_vectors" do
@@ -901,7 +895,7 @@ describe Daru::DataFrame do
     end
 
     context Daru::MultiIndex do
-
+      pending
     end
   end
 
@@ -969,7 +963,7 @@ describe Daru::DataFrame do
     end
     
     context Daru::MultiIndex do
-
+      pending
     end
   end
 
@@ -1021,7 +1015,7 @@ describe Daru::DataFrame do
     end
     
     context Daru::MultiIndex do
-
+      pending "do this ASAP"
     end
   end 
 
@@ -1073,7 +1067,7 @@ describe Daru::DataFrame do
     end
 
     context Daru::MultiIndex do
-
+      pending "do this ASAP"
     end  
   end
 end if mri?

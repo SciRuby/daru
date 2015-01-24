@@ -88,38 +88,45 @@ module Daru
       @data   = []
 
       if source.empty?
-        @vectors = Daru::Index.new vectors
-        @index   = Daru::Index.new index
+        @vectors = create_index vectors
+        @index   = create_index index
         create_empty_vectors
       else
         case source
         when Array
-          if vectors.nil?
-            @vectors = Daru::Index.new source[0].keys.map(&:to_sym)
-          else
-            @vectors = Daru::Index.new (vectors + (source[0].keys - vectors)).uniq.map(&:to_sym)
-          end
+          if source.all? { |s| s.is_a?(Array) } 
+            raise ArgumentError, "Number of vectors should equal order size" if 
+              source.size != vectors.size
 
-          if index.nil?
-            @index = Daru::Index.new source.size
-          else
-            @index = Daru::Index.new index
-          end
+            @index   = create_index(index || source[0].size)
+            @vectors = create_index(vectors)
 
-          @vectors.each do |name|
-            v = []
-            source.each do |hsh|
-              v << (hsh[name] || hsh[name.to_s])
+            @vectors.each_with_index do |vec,idx|
+              @data << Daru::Vector.new(source[idx], index: @index)
             end
+          else # array of hashes
+            if vectors.nil?
+              @vectors = Daru::Index.new source[0].keys.map(&:to_sym)
+            else
+              @vectors = Daru::Index.new (vectors + (source[0].keys - vectors)).uniq.map(&:to_sym)
+            end
+            @index = Daru::Index.new(index || source.size)
 
-            @data << Daru::Vector.new(v, name: name, index: @index)
+            @vectors.each do |name|
+              v = []
+              source.each do |hsh|
+                v << (hsh[name] || hsh[name.to_s])
+              end
+
+              @data << Daru::Vector.new(v, name: set_name(name), index: @index)
+            end
           end
         when Hash
           create_vectors_index_with vectors, source
           if all_daru_vectors_in_source? source
             if !index.nil?
-              @index = Daru::Index.new index
-            elsif all_vectors_have_equal_indexes? source
+              @index = create_index index
+            elsif all_vectors_have_equal_indexes?(source)
               @index = source.values[0].index.dup
             else
               all_indexes = []
@@ -138,16 +145,11 @@ module Daru
                 @data[@vectors[vector]][idx] = source[vector][idx]                   
               end
             end
-          else   
-            index = source.values[0].size if index.nil?
-            if index.is_a?(Daru::Index)
-              @index   = Daru::Index.new index
-            else
-              @index   = Daru::Index.new index     
-            end
+          else
+            @index = create_index(index || source.values[0].size)
 
             @vectors.each do |name|
-              @data << Daru::Vector.new(source[name].dup, name: name, index: @index)
+              @data << Daru::Vector.new(source[name].dup, name: set_name(name), index: @index)
             end
           end
         end
@@ -720,7 +722,7 @@ module Daru
             row << @data[@vectors[vector]][name]
           end
 
-          return Daru::Vector.new(row, index: @vectors, name: name)
+          return Daru::Vector.new(row, index: @vectors, name: set_name(name))
         end
       end
       # Access multiple rows
@@ -737,7 +739,7 @@ module Daru
       v        = nil
 
       if vector.is_a?(Daru::Vector)
-        v = Daru::Vector.new [], name: name, index: @index
+        v = Daru::Vector.new [], name: set_name(name), index: @index
         @index.each do |idx|
           v[idx] = vector[idx]
         end
@@ -745,7 +747,7 @@ module Daru
         raise Exception, "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}" if
           @size != vector.size
 
-        v = Daru::Vector.new(vector, name: name, index: @index)
+        v = Daru::Vector.new(vector, name: set_name(name), index: @index)
       end
 
       @data[@vectors[name]] = v
@@ -760,7 +762,7 @@ module Daru
         end
       else
         @index = reassign_index_as(@index + name)
-        v      = Daru::Vector.new(vector, name: name, index: @vectors)
+        v      = Daru::Vector.new(vector, name: set_name(name), index: @vectors)
 
         @vectors.each do |vector|
           @data[@vectors[vector]].concat v[vector], name
@@ -772,7 +774,7 @@ module Daru
 
     def create_empty_vectors
       @vectors.each do |name|
-        @data << Daru::Vector.new([],name: name, index: @index)
+        @data << Daru::Vector.new([], name: set_name(name), index: @index)
       end
     end
 
@@ -818,7 +820,7 @@ module Daru
     def create_vectors_index_with vectors, source
       vectors = source.keys.sort if vectors.nil?
 
-      unless vectors.is_a?(Daru::Index)
+      unless vectors.is_a?(Index) or vectors.is_a?(MultiIndex)
         @vectors = Daru::Index.new (vectors + (source.keys - vectors)).uniq.map(&:to_sym)
       else
         @vectors = vectors
@@ -835,6 +837,14 @@ module Daru
 
     def reassign_index_as new_index
       Daru::Index.new new_index
+    end
+
+    def create_index index
+      index.is_a?(MultiIndex) ? index : Daru::Index.new(index)
+    end
+
+    def set_name potential_name
+      potential_name.is_a?(Array) ? potential_name.join.to_sym : potential_name
     end
   end
 end
