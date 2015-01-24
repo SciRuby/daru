@@ -356,7 +356,6 @@ Head over to the tutorials and notebooks listed above for more examples.
 * Sort by index.
 * Convert DF to matrix.
 * Convert DF to Nmatrix.
-* Init DF from array of arrays.
 * Statistics on DataFrame over rows and columns.
 * Produce multiple summary statistics in one shot.
 * Cumulative sum.

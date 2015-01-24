@@ -137,6 +137,15 @@ describe Daru::DataFrame do
         expect(df.a)      .to eq(Daru::Vector.new([2]*5))
       end
 
+      it "initializes from Array of Vectors" do
+        df = Daru::DataFrame.new([Daru::Vector.new([1]*5), Daru::Vector.new([2]*5),
+         Daru::Vector.new([3]*5)], order: [:b, :a, :c])
+
+        expect(df.index)  .to eq(Daru::Index.new(5))
+        expect(df.vectors).to eq(Daru::Index.new([:b, :a, :c]))
+        expect(df.a)      .to eq(Daru::Vector.new([2]*5))
+      end
+
       it "accepts Index objects for row/col" do
         rows = Daru::Index.new [:one, :two, :three, :four, :five]
         cols = Daru::Index.new [:a, :b]
@@ -256,7 +265,7 @@ describe Daru::DataFrame do
         expect(df.vector[:a, :one, :bar]).to eq(Daru::Vector.new([]))
       end
 
-      it "creates from Hash", focus: true do
+      it "creates from Hash" do
         df = Daru::DataFrame.new({
           [:a,:one,:bar] => @vector_arry1, 
           [:a,:two,:baz] => @vector_arry2, 
@@ -271,7 +280,7 @@ describe Daru::DataFrame do
       end
 
       it "creates from Array of Hashes" do
-        pending
+        # TODO
       end
 
       it "creates from Array of Arrays" do
@@ -320,11 +329,11 @@ describe Daru::DataFrame do
       end
 
       it "adds nils in case of missing values" do
-        pending
+        # TODO
       end
 
       it "matches individual vector indexing with supplied DataFrame index" do
-        pending
+        # TODO
       end
     end
   end
@@ -440,7 +449,7 @@ describe Daru::DataFrame do
       end
 
       it "appends multiple vectors at a time" do
-        pending
+        # TODO
       end
     end
     
@@ -629,7 +638,7 @@ describe Daru::DataFrame do
           index: @multi_index))
       end
 
-      it "returns DataFrame when specified first layer of MultiIndex" do
+      it "returns DataFrame when specified first layer of MultiIndex", focus: true do
         sub_order = Daru::MultiIndex.new([
           [:one, :bar],
           [:two, :baz]

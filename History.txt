@@ -59,4 +59,4 @@
 * Figure out the type of data using #type. Running thru the data to determine its type is delayed till the last possible moment.
 * Added arithmetic operations between data frame and scalars or other data frames.
 * Added #map_vectors!.
-* 
+* Create a DataFrame from Array of Arrays and Array of Vectors.

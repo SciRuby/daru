@@ -89,6 +89,7 @@ module Daru
     # either a complete or incomplete tuple.
     def include? tuple
       tuple = [tuple] unless tuple.is_a?(Array)
+      tuple.flatten!
       !!read_relation_hash(@relation_hash, tuple, 0)
     end
 

@@ -619,12 +619,12 @@ module Daru
     end
 
     def set_name name
-      if name.is_a?(Numeric)
-        @name = name 
-      elsif name # anything but Numeric or nil
-        @name = name.to_sym
+      @name = 
+      if name.is_a?(Numeric)  then name 
+      elsif name.is_a?(Array) then name.join.to_sym # in case of MultiIndex tuple
+      elsif name              then name.to_sym # anything but Numeric or nil
       else
-        @name = nil
+        nil
       end
     end
 

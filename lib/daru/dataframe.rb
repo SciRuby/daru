@@ -94,7 +94,7 @@ module Daru
       else
         case source
         when Array
-          if source.all? { |s| s.is_a?(Array) } 
+          if source.all? { |s| s.is_a?(Array) }
             raise ArgumentError, "Number of vectors should equal order size" if 
               source.size != vectors.size
 
@@ -104,6 +104,12 @@ module Daru
             @vectors.each_with_index do |vec,idx|
               @data << Daru::Vector.new(source[idx], index: @index)
             end
+          elsif source.all? { |s| s.is_a?(Daru::Vector) }
+            hsh = {}
+            vectors.each_with_index do |name, idx|
+              hsh[name] = source[idx]
+            end
+            initialize(hsh, index: index, order: vectors, name: @name)
           else # array of hashes
             if vectors.nil?
               @vectors = Daru::Index.new source[0].keys.map(&:to_sym)
@@ -379,7 +385,7 @@ module Daru
 
     # Check if a vector is present
     def has_vector? name
-      !!@vectors[name]
+      !!@vectors[*name]
     end
 
     # The first ten elements of the DataFrame
@@ -678,24 +684,41 @@ module Daru
       end
     end
 
+    def vectors_index_for location
+      if @vectors.include?(location)
+        @vectors[location]
+      elsif location[0].is_a?(Integer)
+        location[0]
+      end
+    end
+
     def access_vector *names
-      unless names[1]
-        if @vectors.include? names[0]
-          return @data[@vectors[names[0]]]
-        elsif @vectors.key names[0]
-          return @data[names[0]]
-        else
-          raise IndexError, "Specified index #{names[0]} does not exist."
+      location = names[0]
+      if @vectors.is_a?(MultiIndex)
+        pos = vectors_index_for names
+
+        if pos.is_a?(Integer)
+          return @data[pos]
+        else # MultiIndex
+          new_vectors = pos.map do |tuple|
+            # puts "tups #{names + tuple} pos #{@vectors[names + tuple]}"
+            @data[vectors_index_for(names + tuple)]
+          end
+          Daru::DataFrame.new(new_vectors, index: @index, order: Daru::MultiIndex.new(pos.to_a))
         end
-      end
-      new_vcs = {}
+      else
+        unless names[1]
+          pos = vectors_index_for location
+          return @data[pos]
+        end
 
-      names.each do |name|
-        name = name.to_sym unless name.is_a?(Integer)
-
-        new_vcs[name] = @data[@vectors[name]]
+        new_vcs = {}
+        names.each do |name|
+          name = name.to_sym unless name.is_a?(Integer)
+          new_vcs[name] = @data[@vectors[name]]
+        end
+        Daru::DataFrame.new new_vcs, order: new_vcs.keys, index: @index, name: @name
       end
-      Daru::DataFrame.new new_vcs, order: new_vcs.keys, index: @index, name: @name
     end
 
     def access_row *names
