@@ -85,8 +85,8 @@ module Daru
       Daru::MultiIndex.new to_a
     end
     
-    # Check whether a tuple exists in the multi index. The argument *tuple* can
-    # either a complete or incomplete tuple.
+    # Check whether a tuple or identifier number exists in the multi index. 
+    # The argument *tuple* can either a complete or incomplete tuple, or a number.
     def include? tuple
       tuple = [tuple] unless tuple.is_a?(Array)
       tuple.flatten!

@@ -67,10 +67,10 @@ describe Daru::DataFrame do
 
     context Daru::MultiIndex do
       it "creates a DataFrame from rows" do
-        df = Daru::DataFrame.new(@rows*3, index: @multi_index, order: [:a,:b,:c,:d,:e])
+        df = Daru::DataFrame.rows(@rows*3, index: @multi_index, order: [:a,:b,:c,:d,:e])
 
-        expect(df.index).to eq(@multi_index)
-        expect(df.vectors).to eq(Daru::Index.new([:a,:b,:c,:d,:e]))
+        expect(df.index)     .to eq(@multi_index)
+        expect(df.vectors)   .to eq(Daru::Index.new([:a,:b,:c,:d,:e]))
         expect(df.vector[:a]).to eq(Daru::Vector.new([1]*12, index: @multi_index))
       end
 

@@ -60,3 +60,4 @@
 * Added arithmetic operations between data frame and scalars or other data frames.
 * Added #map_vectors!.
 * Create a DataFrame from Array of Arrays and Array of Vectors.
+* Refactored DataFrame.rows and the  DataFrame constructor.

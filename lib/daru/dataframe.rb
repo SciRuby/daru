@@ -26,25 +26,25 @@ module Daru
       # Create DataFrame by specifying rows as an Array of Arrays or Array of
       # Daru::Vector objects.
       def rows source, opts={}
+        df = nil
         if source.all? { |v| v.size == source[0].size }
           first = source[0]
           index = []
-          order =
-          unless opts[:order]
-            if first.is_a?(Daru::Vector) # assume that all are Vectors only
-              source.each { |vec| index << vec.name }
-              first.index.to_a
-            elsif first.is_a?(Array)
-              Array.new(first.size) { |i| i.to_s }
-            end
-          else
-            opts[:order]
+          opts[:order] ||=
+          if first.is_a?(Daru::Vector) # assume that all are Vectors
+            source.each { |vec| index << vec.name }
+            first.index.to_a
+          elsif first.is_a?(Array)
+            Array.new(first.size) { |i| i.to_s }
           end
 
-          opts[:order] = order
-          df           = Daru::DataFrame.new({}, opts)
-          source.each_with_index do |row,idx|
-            df[(index[idx] || idx), :row] = row
+          if source.all? { |s| s.is_a?(Array) }
+            df = Daru::DataFrame.new(source.transpose, opts)
+          else # array of Daru::Vectors
+            df = Daru::DataFrame.new({}, opts)
+            source.each_with_index do |row, idx|
+              df[(index[idx] || idx), :row] = row
+            end
           end
         else
           raise SizeError, "All vectors must have same length"
@@ -95,8 +95,8 @@ module Daru
         case source
         when Array
           if source.all? { |s| s.is_a?(Array) }
-            raise ArgumentError, "Number of vectors should equal order size" if 
-              source.size != vectors.size
+            raise ArgumentError, "Number of vectors (#{vectors.size}) should \
+              equal order size (#{source.size})" if source.size != vectors.size
 
             @index   = create_index(index || source[0].size)
             @vectors = create_index(vectors)
@@ -148,7 +148,7 @@ module Daru
               @data << Daru::Vector.new([], name: vector, index: @index)
 
               @index.each do |idx|
-                @data[@vectors[vector]][idx] = source[vector][idx]                   
+                @data[@vectors[vector]][idx] = source[vector][idx]
               end
             end
           else
@@ -722,39 +722,44 @@ module Daru
     end
 
     def access_row *names
-      if names[1].nil?
-        access_token = names[0]
-        if access_token.is_a?(Range)
-          index_arry = @index.to_a
+      location = names[0]
 
-          range = 
-          if access_token.first.is_a?(Numeric)
-            access_token
+      if @index.is_a?(MultiIndex)
+
+      else
+        if names[1].nil? 
+          if location.is_a?(Range)
+            index_arry = @index.to_a
+
+            range = 
+            if location.first.is_a?(Numeric)
+              location
+            else
+              first_index = index_arry.index location.first
+              last_index  = index_arry.index location.last
+
+              first_index..last_index
+            end
+
+            names = index_arry[range]
           else
-            first_index = index_arry.index access_token.first
-            last_index  = index_arry.index access_token.last
+            row  = []
+            name = named_index_for names[0]
+            @vectors.each do |vector|
+              row << @data[@vectors[vector]][name]
+            end
 
-            first_index..last_index
+            return Daru::Vector.new(row, index: @vectors, name: set_name(name))
           end
-
-          names = index_arry[range]
-        else
-          row  = []
-          name = named_index_for names[0]
-          @vectors.each do |vector|
-            row << @data[@vectors[vector]][name]
-          end
-
-          return Daru::Vector.new(row, index: @vectors, name: set_name(name))
         end
+        # Access multiple rows
+        rows = []
+        names.each do |name|
+          rows << self.row[name]
+        end
+        
+        Daru::DataFrame.rows rows, name: @name        
       end
-      # Access multiple rows
-      rows = []
-      names.each do |name|
-        rows << self.row[name]
-      end
-      
-      Daru::DataFrame.rows rows, name: @name
     end
 
     def insert_or_modify_vector name, vector
