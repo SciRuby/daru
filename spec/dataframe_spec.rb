@@ -21,6 +21,18 @@ describe Daru::DataFrame do
       [:c,:two,:bar]
     ]
     @multi_index = Daru::MultiIndex.new(tuples)
+    @vector_arry1 = [11,12,13,14,11,12,13,14,11,12,13,14]
+    @vector_arry2 = [1,2,3,4,1,2,3,4,1,2,3,4]
+    @order_mi = Daru::MultiIndex.new([
+      [:a,:one,:bar],
+      [:a,:two,:baz],
+      [:b,:two,:foo],
+      [:b,:one,:foo]])
+    @df_mi = Daru::DataFrame.new([
+      @vector_arry1, 
+      @vector_arry2, 
+      @vector_arry1, 
+      @vector_arry2], order: @order_mi, index: @multi_index)
   end
 
   context ".rows" do
@@ -238,11 +250,6 @@ describe Daru::DataFrame do
     
     context Daru::MultiIndex do
       before do
-        @order_mi = Daru::MultiIndex.new([
-          [:a,:one,:bar],
-          [:a,:one,:baz],
-          [:b,:two,:foo],
-          [:b,:one,:foo]])
         @vector_arry1 = [11,12,13,14,11,12,13,14,11,12,13,14]
         @vector_arry2 = [1,2,3,4,1,2,3,4,1,2,3,4]    
       end
@@ -352,7 +359,7 @@ describe Daru::DataFrame do
     end
 
     context Daru::MultiIndex do
-
+      # See #vector
     end
   end
 
@@ -382,7 +389,7 @@ describe Daru::DataFrame do
     end
 
     context Daru::MultiIndex do
-
+      # See #row
     end
   end
 
@@ -438,17 +445,12 @@ describe Daru::DataFrame do
       end
 
       it "appends multiple vectors at a time" do
-        pending "Implement after initialize with array of arrays is done with."
-
-        # Rudimentary example. Yet to think this out.
-
-        @df[:woo, :boo, :vector] = [[69,99,108,85,49].dv(nil, [:one, :two, :three, :four, :five]), 
-                           [69,99,108,85,49].dv(nil, [:one, :two, :three, :four, :five])]
+        pending
       end
     end
     
     context Daru::MultiIndex do
-
+      pending
     end
   end
 
@@ -518,9 +520,8 @@ describe Daru::DataFrame do
     end
 
     context Daru::MultiIndex do
-
+      pending
     end
-    
   end
 
   context "#row" do
@@ -557,7 +558,59 @@ describe Daru::DataFrame do
     end
 
     context Daru::MultiIndex do
+      it "returns a Vector when specifying integer index" do
+        expect(@df_mi.row[0]).to eq(Daru::Vector.new([11,1,11,1], index: @order_mi))
+      end
 
+      it "returns a DataFrame when specifying numeric range" do
+        sub_index = Daru::MultiIndex.new([
+          [:a,:one,:bar],
+          [:a,:one,:baz],
+          [:a,:two,:bar],
+          [:a,:two,:baz],
+          [:b,:one,:bar],
+          [:b,:two,:bar],
+          [:b,:two,:baz],
+          [:b,:one,:foo]
+        ])
+
+        expect(@df_mi.row[0..1]).to eq(Daru::DataFrame.new([
+          [11,12,13,14,11,12,13,14],
+          [1,2,3,4,1,2,3,4],
+          [11,12,13,14,11,12,13,14],
+          [1,2,3,4,1,2,3,4]
+        ], order: @order_mi, index: sub_index, name: :numeric_range))
+      end
+
+      it "returns a Vector when specifying complete tuple" do
+        expect(@df_mi.row[:c,:two,:foo]).to eq(Daru::Vector.new([13,3,13,3], index: @order_mi))
+      end
+
+      it "returns DataFrame when specifying first layer of MultiIndex" do
+        sub_index = Daru::MultiIndex.new([
+          [:one,:bar],
+          [:one,:baz],
+          [:two,:foo],
+          [:two,:bar]
+        ])
+        expect(@df_mi.row[:c]).to eq(Daru::DataFrame.new([
+          [11,12,13,14],
+          [1,2,3,4],
+          [11,12,13,14],
+          [1,2,3,4]
+          ], index: sub_index, order: @order_mi))
+      end
+
+      it "returns DataFrame when specifying first and layer of MultiIndex" do
+        sub_index = Daru::MultiIndex.new([
+          [:bar],
+          [:baz]
+        ])
+        expect(@df_mi.row[:c,:one]).to eq(Daru::DataFrame.new([
+          [11,12,13,14],
+          [1,2,3,4]
+        ], index: sub_index, order: @order_mi))
+      end
     end
   end
 
@@ -571,7 +624,35 @@ describe Daru::DataFrame do
     end
 
     context Daru::MultiIndex do
+      it "accesses vector with an integer index" do
+        expect(@df_mi.vector[0]).to eq(Daru::Vector.new(@vector_arry1,
+          index: @multi_index))
+      end
 
+      it "returns a vector when specifying full tuple" do
+        expect(@df_mi.vector[:a, :one, :bar]).to eq(Daru::Vector.new(@vector_arry1,
+          index: @multi_index))
+      end
+
+      it "returns DataFrame when specified first layer of MultiIndex" do
+        sub_order = Daru::MultiIndex.new([
+          [:one, :bar],
+          [:two, :baz]
+          ])
+        expect(@df_mi.vector[:a]).to eq(Daru::DataFrame.new([
+          @vector_arry1,
+          @vector_arry2
+        ], index: @multi_index, order: sub_order))
+      end
+
+      it "returns DataFrame when specified first and second layer of MultiIndex" do
+        sub_order = Daru::MultiIndex.new([
+          [:bar]
+        ])
+        expect(@df_mi.vector[:a, :one]).to eq(Daru::DataFrame.new([
+          @vector_arry1
+        ], index: @multi_index, order: sub_order))
+      end
     end
   end
 
