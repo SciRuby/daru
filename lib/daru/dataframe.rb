@@ -408,9 +408,9 @@ module Daru
     def reindex! new_index
       raise ArgumentError, "Index size must equal dataframe size" if new_index.is_a?(Array) and new_index.size != @size
 
-      @index = Daru::Index.new(new_index == :seq ? @size : new_index)
+      @index = possibly_multi_index?(new_index == :seq ? @size : new_index)
       @data.map! do |vector|
-        vector.reindex @index.to_a
+        vector.reindex possibly_multi_index?(@index.to_a)
       end
 
       self
@@ -582,6 +582,14 @@ module Daru
 
    private
 
+    def possibly_multi_index? index
+      if @index.is_a?(MultiIndex)
+        Daru::MultiIndex.new(index)
+      else
+        Daru::Index.new(index)
+      end
+    end
+
     def quick_sort vector_order, index, by, ascending
       recursive_quick_sort vector_order, index, by, ascending, 0, @size-1
     end
@@ -701,7 +709,6 @@ module Daru
           return @data[pos]
         else # MultiIndex
           new_vectors = pos.map do |tuple|
-            # puts "tups #{names + tuple} pos #{@vectors[names + tuple]}"
             @data[vectors_index_for(names + tuple)]
           end
           Daru::DataFrame.new(new_vectors, index: @index, order: Daru::MultiIndex.new(pos.to_a))
@@ -725,7 +732,20 @@ module Daru
       location = names[0]
 
       if @index.is_a?(MultiIndex)
-
+        pos = row_index_for names
+        if pos.is_a?(Integer)
+          return Daru::Vector.new(populate_row_for(pos), index: @vectors, name: pos)
+        else
+          new_rows =
+          if location.is_a?(Range)
+            pos.map { |tuple| populate_row_for(tuple) }
+          else
+            pos.map { |tuple| populate_row_for(names + tuple) }
+          end
+          
+          Daru::DataFrame.rows(new_rows, order: @vectors, name: @name, 
+            index: Daru::MultiIndex.new(pos.to_a))
+        end
       else
         if names[1].nil? 
           if location.is_a?(Range)
@@ -759,6 +779,20 @@ module Daru
         end
         
         Daru::DataFrame.rows rows, name: @name        
+      end
+    end
+
+    def row_index_for location
+      if @index.include?(location) or location[0].is_a?(Range)
+        @index[location]
+      elsif location[0].is_a?(Integer)
+        location[0]
+      end
+    end
+
+    def populate_row_for pos
+      @vectors.map do |vector|
+        @data[@vectors[vector]][pos]
       end
     end
 

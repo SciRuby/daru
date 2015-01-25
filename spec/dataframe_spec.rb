@@ -74,6 +74,27 @@ describe Daru::DataFrame do
         expect(df.vector[:a]).to eq(Daru::Vector.new([1]*12, index: @multi_index))
       end
 
+      it "crates a DataFrame from rows (MultiIndex order)" do
+        rows = [
+          [11, 1, 11, 1], 
+          [12, 2, 12, 2], 
+          [13, 3, 13, 3], 
+          [14, 4, 14, 4]
+        ]
+        index = Daru::MultiIndex.new([
+          [:one,:bar],
+          [:one,:baz],
+          [:two,:foo],
+          [:two,:bar]
+        ])
+
+        df = Daru::DataFrame.rows(rows, index: index, order: @order_mi)
+        expect(df.index)  .to eq(index)
+        expect(df.vectors).to eq(@order_mi)
+        expect(df.vector[:a, :one, :bar]).to eq(Daru::Vector.new([11,12,13,14],
+          index: index))
+      end
+
       it "creates a DataFrame from Vector rows" do
         rows = @rows*3
         rows.map! { |r| Daru::Vector.new(r, index: @multi_index) }
@@ -301,6 +322,7 @@ describe Daru::DataFrame do
       end
 
       it "aligns MultiIndexes properly" do
+        pending
         mi_a = @order_mi
         mi_b = Daru::MultiIndex.new([
           [:b,:one,:foo],
@@ -320,7 +342,7 @@ describe Daru::DataFrame do
         ])
         a  = Daru::Vector.new([1,2,3,4], index: mi_a)
         b  = Daru::Vector.new([11,12,13,14], index: mi_b)
-        df = Daru::DataFrame.new({b: b, a: a}, order: order)
+        df = Daru::DataFrame.new([b,a], order: order)
 
         expect(df).to eq(Daru::DataFrame.new({
           [:pee, :que] => Daru::Vector.new([1,2,4,3], index: mi_sorted),
@@ -605,14 +627,16 @@ describe Daru::DataFrame do
           ], index: sub_index, order: @order_mi))
       end
 
-      it "returns DataFrame when specifying first and layer of MultiIndex" do
+      it "returns DataFrame when specifying first and second layer of MultiIndex" do
         sub_index = Daru::MultiIndex.new([
           [:bar],
           [:baz]
         ])
         expect(@df_mi.row[:c,:one]).to eq(Daru::DataFrame.new([
-          [11,12,13,14],
-          [1,2,3,4]
+          [11,12],
+          [1,2],
+          [11,12],
+          [1,2]
         ], index: sub_index, order: @order_mi))
       end
     end
@@ -979,17 +1003,17 @@ describe Daru::DataFrame do
   context "#sort!" do
     context Daru::Index do
       before :each do
-        @df = Daru::DataFrame.new({a: [5,1,-6,7,5,5], b: [-2,-1,5,3,9,1], c: ['a','aa','aaa','aaaa','aaaaa','aaaaaa']})
+        @df = Daru::DataFrame.new({a: [5,1,-6,7,5,5], b: [-2,-1,5,3,9,1], 
+          c: ['a','aa','aaa','aaaa','aaaaa','aaaaaa']})
       end
 
       it "sorts according to given vector order (bang)" do
         a_sorter = lambda { |a,b| a <=> b }
 
         expect(@df.sort!([:a], by: { a: a_sorter })).to eq(
-          Daru::DataFrame.new({a: [-6,1,5,5,5,7], b: [5,-1,9,1,-2,3], c: ['aaa','aa','aaaaa','aaaaaa','a','aaaa']}, 
-            index: [2,1,4,5,0,3])
+          Daru::DataFrame.new({a: [-6,1,5,5,5,7], b: [5,-1,9,1,-2,3], 
+            c: ['aaa','aa','aaaaa','aaaaaa','a','aaaa']}, index: [2,1,4,5,0,3])
           )
-
       end
 
       it "sorts according to vector order using default lambdas (index re ordered according to the last vector) (bang)" do
@@ -1024,7 +1048,10 @@ describe Daru::DataFrame do
     end
     
     context Daru::MultiIndex do
-      pending "do this ASAP"
+      pending
+      it "sorts the DataFrame when specified full tuple" do
+        @df_mi.sort([[:a,:one,:bar]])
+      end
     end
   end 
 
@@ -1076,7 +1103,7 @@ describe Daru::DataFrame do
     end
 
     context Daru::MultiIndex do
-      pending "do this ASAP"
+      pending "feature manually tested. write tests"
     end  
   end
 end if mri?
