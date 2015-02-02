@@ -61,3 +61,4 @@
 * Added #map_vectors!.
 * Create a DataFrame from Array of Arrays and Array of Vectors.
 * Refactored DataFrame.rows and the  DataFrame constructor.
+* Added hierarchial indexing to Vector and DataFrame with MultiIndex.

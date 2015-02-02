@@ -402,6 +402,12 @@ module Daru
       self[(@size - quantity)..(@size-1), :row]
     end
 
+    # Group elements by vector to perform operations on them.
+    def group_by vectors
+      vectors = [vectors] if vectors.is_a?(Symbol)
+      Daru::Core::GroupBy.new(self, vectors)
+    end
+
     # Change the index of the DataFrame and its underlying vectors. Destructive.
     # 
     # @param [Symbol, Array] new_index Specify an Array if 
