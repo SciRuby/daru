@@ -662,7 +662,7 @@ describe Daru::DataFrame do
           index: @multi_index))
       end
 
-      it "returns DataFrame when specified first layer of MultiIndex", focus: true do
+      it "returns DataFrame when specified first layer of MultiIndex" do
         sub_order = Daru::MultiIndex.new([
           [:one, :bar],
           [:two, :baz]

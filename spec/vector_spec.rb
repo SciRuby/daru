@@ -95,6 +95,11 @@ describe Daru::Vector do
               index: [:yoda, :anakin], dtype: dtype))
           end
 
+          it "returns a vector with given indices for multiple numeric indices" do
+            expect(@dv[0,1]).to eq(Daru::Vector.new([1,2], name: :yoda, 
+              index: [:yoda, :anakin], dtype: dtype))
+          end
+
           it "returns a vector when specified symbol Range" do
             expect(@dv[:yoda..:anakin]).to eq(Daru::Vector.new([1,2], 
               index: [:yoda, :anakin], name: :yoga, dtype: dtype))

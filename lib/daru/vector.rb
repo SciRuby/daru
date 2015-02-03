@@ -112,7 +112,7 @@ module Daru
           end
 
           new_index = Daru::MultiIndex.new(@index.to_a[location])
-          Daru::Vector.new arry, index: new_index, name: @name, dtype: dtype
+          Daru::Vector.new(arry, index: new_index, name: @name, dtype: dtype)
         else
           sub_index = @index[indexes]
 
@@ -122,8 +122,8 @@ module Daru
             elements = sub_index.map do |tuple|
               @data[@index[(indexes + tuple)]]
             end
-            Daru::Vector.new elements, index: Daru::MultiIndex.new(sub_index.to_a),
-             name: @name, dtype: @dtype
+            Daru::Vector.new(elements, index: Daru::MultiIndex.new(sub_index.to_a),
+              name: @name, dtype: @dtype)
           end
         end
 
@@ -147,8 +147,8 @@ module Daru
           end
         end
 
-        Daru::Vector.new indexes.map { |loc| @data[@index[loc]] }, name: @name, 
-          index: indexes.to_a, dtype: @dtype
+        Daru::Vector.new indexes.map { |loc| @data[index_for(loc)] }, name: @name, 
+          index: indexes.map { |e| named_index_for(e) }, dtype: @dtype
       end
     end
 

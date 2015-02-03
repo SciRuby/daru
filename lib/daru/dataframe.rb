@@ -405,6 +405,9 @@ module Daru
     # Group elements by vector to perform operations on them.
     def group_by vectors
       vectors = [vectors] if vectors.is_a?(Symbol)
+      vectors.each { |v| raise(ArgumentError, "Vector #{v} does not exist") unless
+        has_vector?(v) }
+        
       Daru::Core::GroupBy.new(self, vectors)
     end
 
