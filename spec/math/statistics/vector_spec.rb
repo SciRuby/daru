@@ -144,8 +144,12 @@ describe Daru::Vector do
       end
 
       context "#count" do
-        it "counts" do
+        it "counts specified element" do
           @dv.count(323)
+        end
+
+        it "counts total number of elements" do
+          expect(@dv.count).to eq(10)
         end
       end
 

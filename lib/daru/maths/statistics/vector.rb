@@ -98,13 +98,16 @@ module Daru
 
         # Retrieves number of cases which comply condition. If block given, 
         #   retrieves number of instances where block returns true. If other 
-        #   values given, retrieves the frequency for this value.
+        #   values given, retrieves the frequency for this value. If no value
+        #   given, counts the number of elements in the Vector.
         def count value=false
           if block_given?
             @data.inject(0){ |memo, val| memo += 1 if yield val; memo}
-          else
+          elsif value
             val = frequencies[value]
             val.nil? ? 0 : val
+          else
+            size
           end
         end
 

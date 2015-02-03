@@ -21,7 +21,31 @@ module Daru
         
       end
 
+      # Calculate mean of numeric groups, excluding missing values.
       def mean
+        apply_method :numeric, :mean
+      end
+
+      # Calculate sum of numeric groups, exclusing missing values.
+      def sum
+        apply_method :numeric, :sum
+      end
+
+      # def count
+      #   apply_method :nonumeric, :count
+      # end
+
+      def std
+        apply_method :numeric, :std
+      end
+
+      def get_group
+        
+      end
+
+     private 
+
+      def apply_method method_type, method
         multi_index = @groups.keys[0][1] ? true : false
         rows, order = [], []
 
@@ -29,10 +53,15 @@ module Daru
           single_row = []
           @non_group_vectors.each do |ngvector|
             vector = @context.vector[ngvector]
-            if vector.type == :numeric
+            if method_type == :numeric and vector.type == :numeric
               slice = vector[*indexes]
 
-              single_row << (slice.is_a?(Numeric) ? slice : slice.mean)
+              single_row << (slice.is_a?(Numeric) ? slice : slice.send(method))
+              order << ngvector
+            elsif method_type == :nonumeric
+              slice = vector[*indexes]
+
+              single_row << (slice.is_a?(Numeric) ? slice : slice.send(method))
               order << ngvector
             end
           end 
@@ -52,16 +81,6 @@ module Daru
 
         Daru::DataFrame.new(rows.transpose, index: index, order: order)
       end
-
-      def sum
-        
-      end
-
-      def get_group
-        
-      end
-
-     private 
 
       def all_indices_for arry, element
         found, index, indexes = -1, -1, []

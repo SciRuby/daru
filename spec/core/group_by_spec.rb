@@ -13,6 +13,7 @@ describe Daru::Core::GroupBy do
     @dl_group = @df.group_by([:a, :b])
     @tl_group = @df.group_by([:a,:b,:c])
 
+    @sl_index = Daru::Index.new([:bar, :foo])
     @dl_multi_index = Daru::MultiIndex.new([
       [:bar, :one],
       [:bar, :three],
@@ -21,7 +22,6 @@ describe Daru::Core::GroupBy do
       [:foo, :three],
       [:foo, :two]
     ])
-
     @tl_multi_index = Daru::MultiIndex.new([
       [:bar, :one  , 2],
       [:bar, :three, 1],
@@ -72,13 +72,48 @@ describe Daru::Core::GroupBy do
   end
 
   context "#size" do
-    it "returns the size of each group" do
-      # TODO
+    it "returns a vector containing the size of each group" do
+      expect(@dl_group.size).to eq(Daru::Vector.new([1,1,1,2,1,2], 
+        index: @dl_multi_index))
     end
   end
 
   context "#get_group" do
+    it "returns the whole sub-group for single layer grouping" do
+      expect(@sl_group.get_group(['bar'])).to eq(Daru::DataFrame.new({
+        b: ['one', 'three', 'two'],
+        c: [2,1,6],
+        d: [22,44,66]
+        }, index: [1,3,5]
+      ))
+    end
 
+    it "returns the whole sub-group for double layer grouping" do
+      expect(@dl_group.get_group(['bar', 'one'])).to eq(Daru::DataFrame.new({
+        c: [2],
+        d: [22]
+        }, index: [1]
+      ))
+    end
+
+    it "returns the whole sub-group for triple layer grouping" do
+      expect(@tl_group.get_group(['foo','two',3])).to eq(Daru::DataFrame.new({
+        d: [33,55]
+        }, index: [2,4]
+      ))
+    end
+
+    it "raises error for incomplete specification" do
+      expect {
+        @tl_group.get_group(['foo'])
+      }.to raise_error
+    end
+
+    it "raises error for over specification" do
+      expect {
+        @sl_group.get_group(['bar', 'one'])
+      }.to raise_error
+    end
   end
 
   context "#aggregate" do
@@ -90,7 +125,7 @@ describe Daru::Core::GroupBy do
       expect(@sl_group.mean).to eq(Daru::DataFrame.new({
         :c => [3.0, 3.6],
         :d => [44.0, 52.8]
-        }, index: [:bar, :foo]
+        }, index: @sl_index
       ))
     end
 
@@ -111,27 +146,158 @@ describe Daru::Core::GroupBy do
 
   context "#sum" do
     it "calculates the sum of the numeric columns of a single layer group" do
+      expect(@sl_group.sum).to eq(Daru::DataFrame.new({
+        c: [9, 18],
+        d: [132, 264]
+        }, index: @sl_index
+      ))
     end
 
     it "calculates the sum of the numeric columns of a double layer group" do
+      expect(@dl_group.sum).to eq(Daru::DataFrame.new({
+        c: [2,1,6,4,8,6],
+        d: [22,44,66,88,88,88]
+        }, index: @dl_multi_index))
     end
 
     it "calculates the sum of the numeric columns of a triple layer group" do
+      expect(@tl_group.sum).to eq(Daru::DataFrame.new({
+        d: [22,44,66,11,77,88,88]
+        }, index: @tl_multi_index))
+    end
+  end
+
+  context "#product" do
+    it "calculates product for single layer groups" do
+      # TODO
+    end
+
+    it "calculates product for double layer groups" do
+      # TODO
+    end
+
+    it "calculates product for triple layer groups" do
+      # TODO
     end
   end
 
   context "#count" do
     it "counts the number of elements in a single layer group" do
+      expect(@sl_group.count).to eq(Daru::DataFrame.new({
+        b: [3,5],
+        c: [3,5],
+        d: [3,5]
+        }, index: @sl_index))
     end
 
     it "counts the number of elements in a double layer group" do
+      expect(@dl_group.count).to eq(Daru::DataFrame.new({
+        c: [1,1,1,2,1,2],
+        d: [1,1,1,2,1,2]
+        }, index: @dl_multi_index))
     end
 
     it "counts the number of elements in a triple layer group" do
+      expect(@tl_group.count).to eq(Daru::DataFrame.new({
+        d: [1,1,1,1,1,1,2]
+        }, index: @tl_multi_index))
+    end
+  end
+
+  context "#std" do
+    it "calculates sample standard deviation for single layer groups" do
+      # TODO
+    end
+
+    it "calculates sample standard deviation for double layer groups" do
+      # TODO
+    end
+
+    it "calculates sample standard deviation for triple layer groups" do
+      # TODO
+    end
+  end
+
+  context "#max" do
+    it "calculates max value for single layer groups" do
+      # TODO
+    end
+
+    it "calculates max value for double layer groups" do
+      # TODO
+    end
+
+    it "calculates max value for triple layer groups" do
+      # TODO
+    end
+  end
+
+  context "#min" do
+    it "calculates min value for single layer groups" do
+      # TODO
+    end
+
+    it "calculates min value for double layer groups" do
+      # TODO
+    end
+
+    it "calculates min value for triple layer groups" do
+      # TODO
+    end
+  end
+
+  context "#median" do
+    it "calculates median for single layer groups" do
+      # TODO
+    end
+
+    it "calculates median for double layer groups" do
+      # TODO
+    end
+
+    it "calculates median for triple layer groups" do
+      # TODO
+    end
+  end
+
+  context "#head" do
+    it "returns first n rows of each single layer group" do
+      expect(@sl_group.head(2)).to eq(Daru::DataFrame.new({
+        b: ['one', 'one', 'two', 'three'],
+        c: [1, 2, 3, 1],
+        d: [11, 22, 33, 44]
+      }, index: [0,1,2,3]))
+    end
+
+    it "returns first n rows of each double layer group" do
+      expect(@dl_group.head(2)).to eq(Daru::DataFrame.new({
+        c: [1,2,3,1,6,8],
+        d: [11,22,33,44,66,88]
+      }, index: [0,1,2,3,5,7]))
+    end
+
+    it "returns first n rows of each triple layer group" do
+      expect(@tl_group.head(1)).to eq(Daru::DataFrame.new({
+        d: [11,22,33,44,66,77,88]
+        }, index: [0,1,2,3,5,6,7]))
+    end
+  end
+
+  context "#tail" do
+    it "returns last n rows of each single layer group" do
+      
+    end
+
+    it "returns last n rows of each double layer group" do
+
+    end
+
+    it "returns last n rows of each triple layer group" do
+
     end
   end
 
   context "#[]" do
-
+    pending
   end
 end
