@@ -474,6 +474,25 @@ module Daru
     def sort vector_order, opts={}
       self.dup.sort! vector_order, opts
     end
+
+    def to_matrix
+      numerics_as_arrays = []
+      each_vector do |vector|
+        numerics_as_arrays << vector.to_a if(vector.type == :numeric)
+      end
+
+      Matrix.columns numerics_as_arrays
+    end
+
+    def to_nmatrix
+      numerics_as_arrays = []
+      each_vector do |vector|
+        numerics_as_arrays << vector.to_a if(vector.type == :numeric and 
+          vector.nil_positions.size == 0)
+      end
+
+      numerics_as_arrays.transpose.to_nm
+    end
     
     # Converts the DataFrame into an array of hashes where key is vector name
     #   and value is the corresponding element. The 0th index of the array contains 

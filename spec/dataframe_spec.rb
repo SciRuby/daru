@@ -21,13 +21,16 @@ describe Daru::DataFrame do
       [:c,:two,:bar]
     ]
     @multi_index = Daru::MultiIndex.new(tuples)
+
     @vector_arry1 = [11,12,13,14,11,12,13,14,11,12,13,14]
     @vector_arry2 = [1,2,3,4,1,2,3,4,1,2,3,4]
+
     @order_mi = Daru::MultiIndex.new([
       [:a,:one,:bar],
       [:a,:two,:baz],
       [:b,:two,:foo],
       [:b,:one,:foo]])
+
     @df_mi = Daru::DataFrame.new([
       @vector_arry1, 
       @vector_arry2, 
@@ -1105,5 +1108,43 @@ describe Daru::DataFrame do
     context Daru::MultiIndex do
       pending "feature manually tested. write tests"
     end  
+  end
+
+  context "#to_matrix" do
+    before do
+      @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
+        c: [11,22,33,44,55], d: [5,4,nil,2,1], e: ['this', 'has', 'string','data','too']}, 
+        order: [:a, :b, :c,:d,:e], 
+        index: [:one, :two, :three, :four, :five])
+    end
+
+    it "concats numeric non-nil vectors to Matrix" do
+      expect(@df.to_matrix).to eq(Matrix[
+        [1,11,11,5],
+        [2,12,22,4],
+        [3,13,33,nil],
+        [4,14,44,2],
+        [5,15,55,1]
+      ])
+    end
+  end
+
+  context "#to_nmatrix" do
+    before do
+      @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
+        c: [11,22,33,44,55], d: [5,4,nil,2,1], e: ['this', 'has', 'string','data','too']}, 
+        order: [:a, :b, :c,:d,:e], 
+        index: [:one, :two, :three, :four, :five])
+    end
+
+    it "concats numeric non-nil vectors to NMatrix" do
+      expect(@df.to_nmatrix).to eq(NMatrix.new([5,3],
+        [1,11,11,
+         2,12,22,
+         3,13,33,
+         4,14,44,
+         5,15,55] 
+      ))
+    end
   end
 end if mri?
