@@ -475,6 +475,7 @@ module Daru
       self.dup.sort! vector_order, opts
     end
 
+    # Convert all vectors of type *:numeric* into a Matrix.
     def to_matrix
       numerics_as_arrays = []
       each_vector do |vector|
@@ -484,6 +485,7 @@ module Daru
       Matrix.columns numerics_as_arrays
     end
 
+    # Convert all vectors of type *:numeric* and not containing nils into an NMatrix.
     def to_nmatrix
       numerics_as_arrays = []
       each_vector do |vector|

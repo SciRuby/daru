@@ -26,17 +26,34 @@ module Daru
         apply_method :numeric, :mean
       end
 
-      # Calculate sum of numeric groups, exclusing missing values.
+      # Calculate the median of numeric groups, excluding missing values.
+      def median
+        apply_method :numeric, :median
+      end
+
+      # Calculate sum of numeric groups, excluding missing values.
       def sum
         apply_method :numeric, :sum
       end
 
-      # def count
-      #   apply_method :nonumeric, :count
-      # end
+      def count
 
+      end
+
+      # Calculate sample standard deviation of numeric vector groups, excluding 
+      # missing values.
       def std
         apply_method :numeric, :std
+      end
+
+      # Find the max element of each numeric vector group.
+      def max
+        apply_method :numeric, :max
+      end
+
+      # Find the min element of each numeric vector group.
+      def min
+        apply_method :numeric, :min
       end
 
       def get_group

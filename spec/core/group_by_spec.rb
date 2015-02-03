@@ -117,7 +117,7 @@ describe Daru::Core::GroupBy do
   end
 
   context "#aggregate" do
-
+    pending
   end
 
   context "#mean" do
@@ -285,15 +285,24 @@ describe Daru::Core::GroupBy do
 
   context "#tail" do
     it "returns last n rows of each single layer group" do
-      
+      expect(@sl_group.tail(1)).to eq(Daru::DataFrame.new({
+        b: ['two', 'three'],
+        c: [6,8],
+        d: [66,88]
+      }, index: [5,7]))
     end
 
     it "returns last n rows of each double layer group" do
-
+      expect(@dl_group.tail(2)).to eq(Daru::DataFrame.new({
+        c: [2,1,3,6,3,8],
+        d: [22,44,55,66,77,88]
+        }, index: [1,3,4,5,6,7]))
     end
 
     it "returns last n rows of each triple layer group" do
-
+      expect(@tl_group.tail(1)).to eq(Daru::DataFrame.new({
+        d: [11,22,44,55,66,77,88]
+        }, index: [0,1,3,4,5,6,7]))
     end
   end
 

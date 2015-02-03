@@ -62,3 +62,4 @@
 * Create a DataFrame from Array of Arrays and Array of Vectors.
 * Refactored DataFrame.rows and the  DataFrame constructor.
 * Added hierarchial indexing to Vector and DataFrame with MultiIndex.
+* Convert DataFrame to ruby Matrix or NMatrix with #to\_matrix and #to\_nmatrix.
