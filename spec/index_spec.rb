@@ -34,10 +34,18 @@ describe Daru::Index do
   end
 
   context "#[]" do
-    it "works with ranges" do
-      id = Daru::Index.new [:one, :two, :three, :four, :five, :six, :seven]
+    before do
+      @id = Daru::Index.new [:one, :two, :three, :four, :five, :six, :seven]
+    end
 
-      expect(id[:two..:five]).to eq(Daru::Index.new([:two, :three, :four, :five]))
+    it "works with ranges" do
+      expect(@id[:two..:five]).to eq(Daru::Index.new([:two, :three, :four, :five], 
+        [1,2,3,4]))
+    end
+
+    it "returns multiple keys if specified multiple indices", focus: true do
+      expect(@id[[0,1,3,4]]).to eq(Daru::Index.new([:one, :two, :four, :five], 
+        [0,1,3,4]))
     end
   end
 end

@@ -52,7 +52,7 @@ module Daru
     def ==(other)
       return false if other.size != @size
 
-      @relation_hash.keys == other.to_a
+      @relation_hash.keys == other.to_a and @relation_hash.values == other.relation_hash.values
     end
 
     def [](key)
@@ -72,6 +72,9 @@ module Daru
         end
 
         Daru::Index.new indexes, (first..last).to_a
+      when Array # works only with numeric indices
+        puts "#{key.map { |k| @relation_hash[k] }}"
+        Daru::Index.new key.map { |k| @relation_hash.key(k) }, key
       else
         @relation_hash[key]
       end

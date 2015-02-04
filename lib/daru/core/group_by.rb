@@ -21,6 +21,14 @@ module Daru
         
       end
 
+      def head quantity
+        
+      end
+
+      def tail quantity
+        
+      end
+
       # Calculate mean of numeric groups, excluding missing values.
       def mean
         apply_method :numeric, :mean
@@ -56,8 +64,26 @@ module Daru
         apply_method :numeric, :min
       end
 
-      def get_group
-        
+      # Returns one of the selected groups as a DataFrame.
+      def get_group group
+        selection = @context.vector[*@non_group_vectors]
+        indexes   = @groups[group]
+        elements  = []
+
+        if selection.is_a?(Vector)
+          elements << selection.to_a
+        else
+          selection.each_vector do |vector|
+            elements << vector.to_a
+          end
+        end
+        rows = []
+        transpose = elements.transpose
+
+        indexes.each do |idx|
+          rows << transpose[idx]
+        end
+        Daru::DataFrame.rows(rows, index: @context.index[indexes], order: @non_group_vectors)
       end
 
      private 
@@ -71,11 +97,6 @@ module Daru
           @non_group_vectors.each do |ngvector|
             vector = @context.vector[ngvector]
             if method_type == :numeric and vector.type == :numeric
-              slice = vector[*indexes]
-
-              single_row << (slice.is_a?(Numeric) ? slice : slice.send(method))
-              order << ngvector
-            elsif method_type == :nonumeric
               slice = vector[*indexes]
 
               single_row << (slice.is_a?(Numeric) ? slice : slice.send(method))
