@@ -1147,4 +1147,30 @@ describe Daru::DataFrame do
       ))
     end
   end
+
+  context "#transpose" do
+    context Daru::Index do
+      it "transposes a DataFrame including row and column indexing" do
+        expect(@data_frame.transpose).to eq(Daru::DataFrame.new({
+          one: [1,11,11], 
+          two: [2,12,22], 
+          three: [3,13,33], 
+          four: [4,14,44], 
+          five: [5,15,55]
+          }, index: [:a, :b, :c],
+          order: [:one, :two, :three, :four, :five])
+        )
+      end
+    end
+
+    context Daru::MultiIndex, focus: true do
+      it "transposes a DataFrame including row and column indexing" do
+        expect(@df_mi.transpose).to eq(Daru::DataFrame.new([
+          @vector_arry1, 
+          @vector_arry2, 
+          @vector_arry1, 
+          @vector_arry2].transpose, index: @order_mi, order: @multi_index))
+      end
+    end
+  end
 end if mri?

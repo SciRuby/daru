@@ -43,7 +43,7 @@ describe Daru::Index do
         [1,2,3,4]))
     end
 
-    it "returns multiple keys if specified multiple indices", focus: true do
+    it "returns multiple keys if specified multiple indices" do
       expect(@id[[0,1,3,4]]).to eq(Daru::Index.new([:one, :two, :four, :five], 
         [0,1,3,4]))
     end

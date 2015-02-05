@@ -48,6 +48,7 @@ module Daru
 
       if location.is_a?(Symbol)
         result = read_relation_hash @relation_hash, indexes, 0
+        return nil if result.nil?
         result.is_a?(Integer) ? result : Daru::MultiIndex.new(*make_tuples(result))
       else
         case location

@@ -384,8 +384,8 @@ module Daru
     end
 
     # Check if a vector is present
-    def has_vector? name
-      !!@vectors[*name]
+    def has_vector? vector
+      !!@vectors[*vector]
     end
 
     # The first ten elements of the DataFrame
@@ -561,7 +561,17 @@ module Daru
       end
     end
 
-    # Pretty print in a nice table format for the command line (irb)
+    # Transpose a DataFrame, tranposing elements and row, column indexing.
+    def transpose
+      arrys = []
+      each_vector do |vec|
+        arrys << vec.to_a
+      end
+
+      Daru::DataFrame.new(arrys.transpose, index: @vectors, order: @index, dtype: @dtype, name: @name)
+    end
+
+    # Pretty print in a nice table format for the command line (irb/pry/iruby)
     def inspect spacing=10, threshold=15
       longest = [@name.to_s.size,
                  @vectors.map(&:to_s).map(&:size).max, 

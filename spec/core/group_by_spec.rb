@@ -275,7 +275,7 @@ describe Daru::Core::GroupBy do
       }, index: [1,3,5,0,6,7,2,4]))
     end
 
-    it "returns first n rows of each triple layer group", focus: true do
+    it "returns first n rows of each triple layer group" do
       expect(@tl_group.head(1)).to eq(Daru::DataFrame.new({
         d: [22,44,66,11,77,88,33]
         }, index: [1,3,5,0,6,7,2]))
