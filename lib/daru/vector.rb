@@ -404,6 +404,21 @@ module Daru
       @index.include? index
     end
 
+    # Convert Vector to a horizontal or vertical Ruby Matrix.
+    # 
+    # == Arguments
+    # 
+    # * +axis+ - Specify whether you want a *:horizontal* or a *:vertical* matrix.
+    def to_matrix axis=:horizontal
+      if axis == :horizontal
+        Matrix[to_a]
+      elsif axis == :vertical
+        Matrix.columns([to_a])
+      else
+        raise ArgumentError, "axis should be either :horizontal or :vertical, not #{axis}"
+      end
+    end
+
     # Convert to hash. Hash keys are indexes and values are the correspoding elements
     def to_hash
       @index.inject({}) do |hsh, index|

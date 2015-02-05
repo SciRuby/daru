@@ -602,5 +602,19 @@ describe Daru::Vector do
       @with_nils[4] = 'string'
       expect(@with_nils.type).to eq(:object)
     end
-  end 
+  end
+
+  context "#to_matrix" do
+    before do
+      @vector = Daru::Vector.new [1,2,3,4,5,6]
+    end
+
+    it "converts Daru::Vector to a horizontal Ruby Matrix" do
+      expect(@vector.to_matrix).to eq(Matrix[[1,2,3,4,5,6]])
+    end
+
+    it "converts Daru::Vector to a vertical Ruby Matrix" do
+      expect(@vector.to_matrix(:vertical)).to eq(Matrix.columns([[1,2,3,4,5,6]]))
+    end
+  end
 end if mri?
