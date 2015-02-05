@@ -73,7 +73,6 @@ module Daru
 
         Daru::Index.new indexes, (first..last).to_a
       when Array # works only with numeric indices
-        puts "#{key.map { |k| @relation_hash[k] }}"
         Daru::Index.new key.map { |k| @relation_hash.key(k) }, key
       else
         @relation_hash[key]

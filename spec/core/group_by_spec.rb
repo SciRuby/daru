@@ -73,8 +73,7 @@ describe Daru::Core::GroupBy do
 
   context "#size" do
     it "returns a vector containing the size of each group" do
-      expect(@dl_group.size).to eq(Daru::Vector.new([1,1,1,2,1,2], 
-        index: @dl_multi_index))
+      expect(@dl_group.size).to eq(Daru::Vector.new([1,1,1,2,1,2], index: @dl_multi_index))
     end
   end
 
@@ -263,23 +262,23 @@ describe Daru::Core::GroupBy do
   context "#head" do
     it "returns first n rows of each single layer group" do
       expect(@sl_group.head(2)).to eq(Daru::DataFrame.new({
-        b: ['one', 'one', 'two', 'three'],
-        c: [1, 2, 3, 1],
-        d: [11, 22, 33, 44]
-      }, index: [0,1,2,3]))
+        b: ['one', 'three','one', 'two'],
+        c: [2, 1, 1, 3],
+        d: [22, 44, 11, 33]
+      }, index: [1,3,0,2]))
     end
 
     it "returns first n rows of each double layer group" do
       expect(@dl_group.head(2)).to eq(Daru::DataFrame.new({
-        c: [1,2,3,1,6,8],
-        d: [11,22,33,44,66,88]
-      }, index: [0,1,2,3,5,7]))
+        c: [2,1,6,1,3,8,3,3],
+        d: [22,44,66,11,77,88,33,55]
+      }, index: [1,3,5,0,6,7,2,4]))
     end
 
-    it "returns first n rows of each triple layer group" do
+    it "returns first n rows of each triple layer group", focus: true do
       expect(@tl_group.head(1)).to eq(Daru::DataFrame.new({
-        d: [11,22,33,44,66,77,88]
-        }, index: [0,1,2,3,5,6,7]))
+        d: [22,44,66,11,77,88,33]
+        }, index: [1,3,5,0,6,7,2]))
     end
   end
 
@@ -294,15 +293,15 @@ describe Daru::Core::GroupBy do
 
     it "returns last n rows of each double layer group" do
       expect(@dl_group.tail(2)).to eq(Daru::DataFrame.new({
-        c: [2,1,3,6,3,8],
-        d: [22,44,55,66,77,88]
-        }, index: [1,3,4,5,6,7]))
+        c: [2,1,6,1,3,8,3,3],
+        d: [22,44,66,11,77,88,33,55]
+        }, index: [1,3,5,0,6,7,2,4]))
     end
 
     it "returns last n rows of each triple layer group" do
       expect(@tl_group.tail(1)).to eq(Daru::DataFrame.new({
-        d: [11,22,44,55,66,77,88]
-        }, index: [0,1,3,4,5,6,7]))
+        d: [22,44,66,11,77,88,55]
+        }, index: [1,3,5,0,6,7,4]))
     end
   end
 

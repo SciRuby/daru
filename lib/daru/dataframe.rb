@@ -96,7 +96,7 @@ module Daru
         when Array
           if source.all? { |s| s.is_a?(Array) }
             raise ArgumentError, "Number of vectors (#{vectors.size}) should \
-              equal order size (#{source.size})" if source.size != vectors.size
+              \ equal order size (#{source.size})" if source.size != vectors.size
 
             @index   = create_index(index || source[0].size)
             @vectors = create_index(vectors)

@@ -15,18 +15,28 @@ module Daru
         keys.each do |key|
           @groups[key] = all_indices_for(tuples, key)
         end
+        @groups.freeze
       end
 
       def size
-        
+        index = 
+        if multi_indexed_grouping?
+          Daru::MultiIndex.new symbolize(@groups.keys)
+        else
+          Daru::Index.new symbolize(@groups.keys.flatten)
+        end
+
+        values = @groups.values.map { |e| e.size }
+        Daru::Vector.new(values, index: index, name: :size)
       end
 
-      def head quantity
-        
+      def head quantity=5
+        select_groups_from :first, quantity
+
       end
 
-      def tail quantity
-        
+      def tail quantity=5
+        select_groups_from :last, quantity
       end
 
       # Calculate mean of numeric groups, excluding missing values.
@@ -45,7 +55,8 @@ module Daru
       end
 
       def count
-
+        width = @non_group_vectors.size
+        Daru::DataFrame.new([size]*width, order: @non_group_vectors)
       end
 
       # Calculate sample standard deviation of numeric vector groups, excluding 
@@ -88,8 +99,25 @@ module Daru
 
      private 
 
+      def select_groups_from method, quantity
+        selection     = @context.vector[*@non_group_vectors]
+        rows, indexes = [], []
+
+        @groups.each_value do |index|
+          index.send(method, quantity).each do |idx|
+            rows << selection.row[idx].to_a if selection.is_a?(DataFrame)
+            indexes << idx
+          end
+        end
+        indexes.flatten!
+        return Daru::DataFrame.new([selection[*indexes]], order: @non_group_vectors) if
+          selection.is_a?(Vector)
+
+        Daru::DataFrame.rows(rows, order: @non_group_vectors, index: indexes)
+      end
+
       def apply_method method_type, method
-        multi_index = @groups.keys[0][1] ? true : false
+        multi_index = multi_indexed_grouping?
         rows, order = [], []
 
         @groups.each do |group, indexes|
@@ -142,6 +170,10 @@ module Daru
         else
           arry.map! { |e| e.is_a?(Numeric) ? e : e.to_sym }
         end
+      end
+
+      def multi_indexed_grouping?
+        @groups.keys[0][1] ? true : false
       end
     end
   end
