@@ -66,4 +66,5 @@
 * Added #group_by to DataFrame for grouping rows according to elements in a given column. Works similar to SQL GROUP BY, only much simpler.
 * Added new class Daru::Core::GroupBy for supporting various grouping methods like #head, #tail, #get\_group, #size, #count, #mean, #std, #min, #max.
 * Tranpose indexed/multi-indexed DataFrame with #transpose.
-* Convert Daru::Vector to horizontal or vertical Ruby Matrix with #to_matrix
+* Convert Daru::Vector to horizontal or vertical Ruby Matrix with #to_matrix.
+* Added shortcut to DataFrame to allow access of vectors by using only #[] instead of calling #vector or *[vector_names, :vector]*.

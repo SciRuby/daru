@@ -375,6 +375,11 @@ describe Daru::DataFrame do
         expect(@df[:a, :vector]).to eq([1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five]))
       end
 
+      it "returns a Vector by default" do
+        expect(@df[:a]).to eq(Daru::Vector.new([1,2,3,4,5], name: :a, 
+          index: [:one, :two, :three, :four, :five]))
+      end
+
       it "returns a DataFrame" do
         temp = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, 
           order: [:a, :b], index: [:one, :two, :three, :four, :five])

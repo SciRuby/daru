@@ -166,10 +166,17 @@ module Daru
     end
 
     # Access row or vector. Specify name of row/vector followed by axis(:row, :vector).
-    #   Use of this method is not recommended for accessing rows or vectors.
-    #   Use df.row[:a] for accessing row with index ':a' or df.vector[:vec] for
-    #   accessing vector with index ':vec'
-    def [](*names, axis)
+    # Defaults to *:vector*. Use of this method is not recommended for accessing 
+    # rows or vectors. Use df.row[:a] for accessing row with index ':a' or 
+    # df.vector[:vec] for accessing vector with index *:vec*.
+    def [](*names)
+      if names[-1] == :vector or names[-1] == :row
+        axis = names[-1]
+        names = names[0..-2]
+      else
+        axis = :vector
+      end
+
       if axis == :vector
         access_vector *names
       elsif axis == :row
