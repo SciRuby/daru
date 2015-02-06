@@ -8,32 +8,31 @@ module Daru
   module Plotting
     module Vector
 
-      # Plots a Vector with Nyaplot on IRuby using the given options.
+      # Plots a Vector with Nyaplot on IRuby using the given options. Yields the
+      # plot object (Nyaplot::Plot) and the diagram object (Nyaplot::Diagram) 
+      # to the block, which can be used for setting various options as per the 
+      # Nyaplot API.
+      # 
       # == Options
       #   type (:scatter, :bar, :histogram), title, x_label, y_label, color(true/false)
       # 
       # == Usage
       #   vector = Daru::Vector.new [10,20,30,40], [:one, :two, :three, :four]
-      #   vector.plot type: :bar, title: "My first plot", color: true
-      def plot opts={}
+      #   vector.plot(type: :bar) do |plot|
+      #     plot.title "My first plot"
+      #     plot.width 1200
+      #   end
+      def plot opts={}, &block
         options = {
-          type: :scatter,
-          title: "#{@name}",
-          x_label: '',
-          y_label: '',
-          color: false
+          type: :scatter
         }.merge(opts)
 
         x_axis = options[:type] == :scatter ? Array.new(@size) { |i| i } : @index.to_a
         plot   = Nyaplot::Plot.new
-        plot.width(options[:width])   if options[:width]
-        plot.height(options[:height]) if options[:height]
-        
-        p      = plot.add( options[:type], x_axis, @vector.to_a )
-        plot.x_label( options[:x_label] )  if options[:x_label]
-        plot.y_label( options[:y_label] )  if options[:y_label]
-        p.color( Nyaplot::Colors.qual )    if options[:color]
+        diagram = plot.add( options[:type], x_axis, @data.to_a )
 
+        yield plot, diagram if block_given?
+        
         plot.show
       end
     end

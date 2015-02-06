@@ -342,7 +342,6 @@ Head over to the tutorials and notebooks listed above for more examples.
     - Creation of correlation, covariance matrices
     - Verification of data in a vector
     - DF concat
-* Transpose a dataframe.
 * Option to express a DataFrame as an NMatrix or MDArray so as to use more efficient storage techniques.
 * Assignment of a column to a single number should set the entire column to that number.
 * == between daru_vector and string/number.
@@ -354,8 +353,6 @@ Head over to the tutorials and notebooks listed above for more examples.
 * Function to check if a value of a row/vector is within a specified range.
 * Create a new vector in map_rows if any of the already present rows dont match the one assigned in the block.
 * Sort by index.
-* Convert DF to matrix.
-* Convert DF to Nmatrix.
 * Statistics on DataFrame over rows and columns.
 * Produce multiple summary statistics in one shot.
 * Cumulative sum.
@@ -366,6 +363,7 @@ Head over to the tutorials and notebooks listed above for more examples.
 * Sorting with missing data present.
 * Make vectors aware of the data frame that they are a part of.
 * re_index should re establish previous index values in the newly supplied index.
+* Reset index.
 
 ## Contributing
 

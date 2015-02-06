@@ -77,16 +77,11 @@ module Daru
 
       # Returns one of the selected groups as a DataFrame.
       def get_group group
-        selection = @context.vector[*@non_group_vectors]
         indexes   = @groups[group]
         elements  = []
 
-        if selection.is_a?(Vector)
-          elements << selection.to_a
-        else
-          selection.each_vector do |vector|
-            elements << vector.to_a
-          end
+        @context.each_vector do |vector|
+          elements << vector.to_a
         end
         rows = []
         transpose = elements.transpose
@@ -94,26 +89,26 @@ module Daru
         indexes.each do |idx|
           rows << transpose[idx]
         end
-        Daru::DataFrame.rows(rows, index: @context.index[indexes], order: @non_group_vectors)
+        Daru::DataFrame.rows(rows, index: @context.index[indexes], order: @context.vectors)
       end
 
      private 
 
       def select_groups_from method, quantity
-        selection     = @context.vector[*@non_group_vectors]
+        selection     = @context#.vector[*@non_group_vectors]
         rows, indexes = [], []
 
         @groups.each_value do |index|
           index.send(method, quantity).each do |idx|
-            rows << selection.row[idx].to_a if selection.is_a?(DataFrame)
+            rows << selection.row[idx].to_a #if selection.is_a?(DataFrame)
             indexes << idx
           end
         end
         indexes.flatten!
-        return Daru::DataFrame.new([selection[*indexes]], order: @non_group_vectors) if
-          selection.is_a?(Vector)
+        # return Daru::DataFrame.new([selection[*indexes]], order: @non_group_vectors) if
+        #   selection.is_a?(Vector)
 
-        Daru::DataFrame.rows(rows, order: @non_group_vectors, index: indexes)
+        Daru::DataFrame.rows(rows, order: @context.vectors, index: indexes)
       end
 
       def apply_method method_type, method

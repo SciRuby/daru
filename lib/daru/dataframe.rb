@@ -325,8 +325,11 @@ module Daru
       else
         raise IndexError, "Vector #{vector} does not exist."
       end
+
+      self
     end
 
+    # Delete a row
     def delete_row index
       idx = named_index_for index
 
@@ -613,8 +616,8 @@ module Daru
     end
 
     def == other
-      @index == other.index and @size == other.size and @vectors.all? { |vector|
-                            self[vector, :vector] == other[vector, :vector] }
+      @index == other.index and @size == other.size and @vectors == other.vectors and 
+      @vectors.all? { |vector| self[vector, :vector] == other[vector, :vector] }
     end
 
     def method_missing(name, *args, &block)

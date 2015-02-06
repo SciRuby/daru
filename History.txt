@@ -68,3 +68,4 @@
 * Tranpose indexed/multi-indexed DataFrame with #transpose.
 * Convert Daru::Vector to horizontal or vertical Ruby Matrix with #to_matrix.
 * Added shortcut to DataFrame to allow access of vectors by using only #[] instead of calling #vector or *[vector_names, :vector]*.
+* Added DSL for Vector and DataFrame plotting with nyaplot. Can now grab the underlying Nyaplot::Plot and Nyaplot::Diagram object for performing different operations. Only need to supply parameters for the initial creation of the diagram.

@@ -80,6 +80,7 @@ describe Daru::Core::GroupBy do
   context "#get_group" do
     it "returns the whole sub-group for single layer grouping" do
       expect(@sl_group.get_group(['bar'])).to eq(Daru::DataFrame.new({
+        a: ['bar', 'bar', 'bar'],
         b: ['one', 'three', 'two'],
         c: [2,1,6],
         d: [22,44,66]
@@ -89,6 +90,8 @@ describe Daru::Core::GroupBy do
 
     it "returns the whole sub-group for double layer grouping" do
       expect(@dl_group.get_group(['bar', 'one'])).to eq(Daru::DataFrame.new({
+        a: ['bar'],
+        b: ['one'],
         c: [2],
         d: [22]
         }, index: [1]
@@ -97,6 +100,9 @@ describe Daru::Core::GroupBy do
 
     it "returns the whole sub-group for triple layer grouping" do
       expect(@tl_group.get_group(['foo','two',3])).to eq(Daru::DataFrame.new({
+        a: ['foo', 'foo'],
+        b: ['two', 'two'],
+        c: [3,3],
         d: [33,55]
         }, index: [2,4]
       ))
@@ -262,6 +268,7 @@ describe Daru::Core::GroupBy do
   context "#head" do
     it "returns first n rows of each single layer group" do
       expect(@sl_group.head(2)).to eq(Daru::DataFrame.new({
+        a: ['bar', 'bar','foo','foo'],
         b: ['one', 'three','one', 'two'],
         c: [2, 1, 1, 3],
         d: [22, 44, 11, 33]
@@ -270,6 +277,8 @@ describe Daru::Core::GroupBy do
 
     it "returns first n rows of each double layer group" do
       expect(@dl_group.head(2)).to eq(Daru::DataFrame.new({
+        a: ['bar','bar','bar','foo','foo','foo','foo','foo'],
+        b: ['one','three','two','one','one','three','two','two'],
         c: [2,1,6,1,3,8,3,3],
         d: [22,44,66,11,77,88,33,55]
       }, index: [1,3,5,0,6,7,2,4]))
@@ -277,6 +286,9 @@ describe Daru::Core::GroupBy do
 
     it "returns first n rows of each triple layer group" do
       expect(@tl_group.head(1)).to eq(Daru::DataFrame.new({
+        a: ['bar','bar','bar','foo','foo','foo','foo'],
+        b: ['one','three','two','one','one','three','two'],
+        c: [2,1,6,1,3,8,3],
         d: [22,44,66,11,77,88,33]
         }, index: [1,3,5,0,6,7,2]))
     end
@@ -285,6 +297,7 @@ describe Daru::Core::GroupBy do
   context "#tail" do
     it "returns last n rows of each single layer group" do
       expect(@sl_group.tail(1)).to eq(Daru::DataFrame.new({
+        a: ['bar','foo'],
         b: ['two', 'three'],
         c: [6,8],
         d: [66,88]
@@ -293,6 +306,8 @@ describe Daru::Core::GroupBy do
 
     it "returns last n rows of each double layer group" do
       expect(@dl_group.tail(2)).to eq(Daru::DataFrame.new({
+        a: ['bar','bar','bar','foo','foo','foo','foo','foo'],
+        b: ['one','three','two','one','one','three','two','two'],
         c: [2,1,6,1,3,8,3,3],
         d: [22,44,66,11,77,88,33,55]
         }, index: [1,3,5,0,6,7,2,4]))
@@ -300,6 +315,9 @@ describe Daru::Core::GroupBy do
 
     it "returns last n rows of each triple layer group" do
       expect(@tl_group.tail(1)).to eq(Daru::DataFrame.new({
+        a: ['bar','bar','bar','foo','foo','foo','foo'],
+        b: ['one','three','two','one','one','three','two'],
+        c: [2,1,6,1,3,8,3],
         d: [22,44,66,11,77,88,55]
         }, index: [1,3,5,0,6,7,4]))
     end
