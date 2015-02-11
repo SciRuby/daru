@@ -94,7 +94,7 @@ module Daru
     end
 
     def key(value)
-      @relation_hash.key value
+      @relation_hash.keys[value]
     end
 
     def include? index

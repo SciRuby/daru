@@ -1178,4 +1178,140 @@ describe Daru::DataFrame do
       end
     end
   end
+
+  context "#pivot_table" do
+    before do
+      @df = Daru::DataFrame.new({
+        a: ['foo'  ,  'foo',  'foo',  'foo',  'foo',  'bar',  'bar',  'bar',  'bar'], 
+        b: ['one'  ,  'one',  'one',  'two',  'two',  'one',  'one',  'two',  'two'],
+        c: ['small','large','large','small','small','large','small','large','small'],
+        d: [1,2,2,3,3,4,5,6,7],
+        e: [2,4,4,6,6,8,10,12,14]
+      })
+    end
+
+    it "creates row index as per (single) index argument and default aggregates to mean" do
+      expect(@df.pivot_table(index: [:a])).to eq(Daru::DataFrame.new({
+        d: [5.5,2.2],
+        e: [11.0,4.4]
+      }, index: [:bar, :foo]))
+    end
+
+    it "creates row index as per (double) index argument and default aggregates to mean" do
+      agg_mi = Daru::MultiIndex.new(
+        [:bar, :large],
+        [:bar, :small],
+        [:foo, :large],
+        [:foo, :small]
+      )
+      expect(@df.pivot_table(index: [:a, :c])).to eq(Daru::DataFrame.new({
+        d: [5.0 ,  6.0, 2.0, 2.33],
+        e: [10.0, 12.0, 4.0, 4.66]
+      }, index: agg_mi))
+    end
+ 
+    it "creates row and vector index as per (single) index and (single) vectors args" do
+      agg_vectors = Daru::MultiIndex.new([
+        [:d, :one, :two],
+        [:d, :one, :two],
+        [:e, :one, :two],
+        [:e, :one, :two]
+      ])
+      expect(@df.pivot_table(index: [:a], vectors: [:b])).to eq(Daru::DataFrame.new({
+        [4.5, 1.66],
+        [6.5,  3.0],
+        [9.0, 3.33],
+        [13,     6]
+      }, order: agg_vectors, index: [:bar, :foo]))
+    end
+
+    it "creates row and vector index as per (single) index and (double) vector args" do
+      agg_vectors = Daru::MultiIndex.new(
+        [
+          [:d, :one, :large],
+          [:d, :one, :small],
+          [:d, :two, :large],
+          [:d, :two, :small],
+          [:e, :one, :large],
+          [:e, :one, :small],
+          [:e, :two, :large],
+          [:e, :two, :small]
+        ]
+      )
+      expect(@df.pivot_table(index: [:a], vectors: [:b, :c])).to eq(Daru::DataFrame.new(
+        [
+          [4,2],
+          [5,1],
+          [6,nil],
+          [7,3],
+          [8,4],
+          [10,2],
+          [12,nil],
+          [14,6]
+        ], order: agg_vectors, index: [:bar, :foo]
+      ))
+    end
+
+    it "creates row and vector index with (double) index and (double) vector args" do
+      agg_index = Daru::MultiIndex.new([
+        [:bar, 4],
+        [:bar, 5],
+        [:bar, 6],
+        [:bar, 7],
+        [:foo, 1],
+        [:foo, 2],
+        [:foo, 3]
+      ])
+
+      agg_vectors = Daru::MultiIndex.new([
+        [:e, :one, :large],
+        [:e, :one, :small],
+        [:e, :two, :large],
+        [:e, :two, :small]
+      ])
+
+      expect(@df.pivot_table(index: [:a, :d], vectors: [:b, :c])).to eq(
+        Daru::DataFrame.new(
+          [
+            [8  ,nil,nil,nil,nil,  4,nil],
+            [nil, 10,nil,nil,  2,nil,nil],
+            [nil,nil, 12,nil,nil,nil,nil],
+            [nil,nil,nil, 14,nil,nil,  6],
+          ], index: agg_index, order: agg_vectors)
+      )
+    end
+
+    it "only aggregates over the vector specified in the values argument" do
+      agg_vectors = Daru::MultiIndex.new(
+        [
+          [:one, :large],
+          [:one, :small],
+          [:two, :large],
+          [:two, :small]
+        ]
+      )
+      expect(@df.pivot_table(index: [:a], vectors: [:b, :c], values: :e)).to eq(
+        Daru::DataFrame.new(
+          [
+            [8,   4],
+            [10,  2],
+            [12,nil],
+            [14,  6]
+          ], order: agg_vectors, index: [:bar, :foo]
+        )
+      )
+    end
+
+    it "performs an aggregation other than mean" do
+      pending
+    end
+
+    it "raises error if no non-numeric vectors are present" do
+
+    end
+ 
+    it "raises error if atleast a row index is not specified" do
+      
+    end
+  end
 end if mri?

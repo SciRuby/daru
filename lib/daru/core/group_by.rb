@@ -32,7 +32,6 @@ module Daru
 
       def head quantity=5
         select_groups_from :first, quantity
-
       end
 
       def tail quantity=5
@@ -105,8 +104,6 @@ module Daru
           end
         end
         indexes.flatten!
-        # return Daru::DataFrame.new([selection[*indexes]], order: @non_group_vectors) if
-        #   selection.is_a?(Vector)
 
         Daru::DataFrame.rows(rows, order: @context.vectors, index: indexes)
       end
