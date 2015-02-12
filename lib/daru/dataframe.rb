@@ -501,33 +501,36 @@ module Daru
 
       index   = opts[:index]
       vectors = opts[:vectors]
-      agg     = opts[:agg] || :mean
+      aggregate_function = opts[:agg] || :mean
       values  = opts[:values] || numeric_vectors
       grouped  = group_by(index)
-
       build_up = (vectors || []) + index
-      agg_vectors = (@vectors.to_a - build_up) & values
 
       if vectors
-        hsh = {}
+        super_hash = {}
         values.each do |value|
-          grouped.groups.each_value do |row_numbers|
+          grouped.groups.each do |group_name, row_numbers|
+            super_hash[group_name] ||= {}
+
             row_numbers.each do |num|
               arry = []
               arry << value
               vectors.each { |v| arry << self[v][num] }
+              sub_hash = super_hash[group_name]
+              sub_hash[arry] ||= []
 
-              unless hsh.has_key?(arry)
-                vectors_for_aggregation = []
-                agg_vectors.size.times { vectors_for_aggregation << [] }
-                hsh[arry] = vectors_for_aggregation
-              end
-              agg_vectors.each_with_index { |v,i| hsh[arry][i] << self[v][num] }
+              sub_hash[arry] << self[value][num]
             end
           end
         end
+
+        super_hash.each_value do |sub_hash|
+          sub_hash.each do |group_name, aggregates|
+            sub_hash[group_name] = Daru::Vector.new(aggregates).send(aggregate_function)
+          end
+        end
       else
-        groups.send(agg)
+        grouped.send(aggregate_function)
       end
     end
 

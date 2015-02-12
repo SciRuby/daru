@@ -1212,7 +1212,7 @@ describe Daru::DataFrame do
       }, index: agg_mi))
     end
  
-    it "creates row and vector index as per (single) index and (single) vectors args",focus: true do
+    it "creates row and vector index as per (single) index and (single) vectors args" do
       agg_vectors = Daru::MultiIndex.new([
         [:d, :one],
         [:d, :two],
@@ -1229,7 +1229,7 @@ describe Daru::DataFrame do
         ], order: agg_vectors, index: [:bar, :foo]))
     end
 
-    it "creates row and vector index as per (single) index and (double) vector args" do
+    it "creates row and vector index as per (single) index and (double) vector args", focus: true do
       agg_vectors = Daru::MultiIndex.new(
         [
           [:d, :one, :large],
@@ -1294,7 +1294,7 @@ describe Daru::DataFrame do
           [:two, :small]
         ]
       )
-      expect(@df.pivot_table(index: [:a], vectors: [:b, :c], values: :e)).to eq(
+      expect(@df.pivot_table(index: [:a], vectors: [:b, :c], values: [:e])).to eq(
         Daru::DataFrame.new(
           [
             [8,   4],
