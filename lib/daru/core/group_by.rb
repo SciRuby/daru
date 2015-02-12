@@ -94,12 +94,12 @@ module Daru
      private 
 
       def select_groups_from method, quantity
-        selection     = @context#.vector[*@non_group_vectors]
+        selection     = @context
         rows, indexes = [], []
 
         @groups.each_value do |index|
           index.send(method, quantity).each do |idx|
-            rows << selection.row[idx].to_a #if selection.is_a?(DataFrame)
+            rows << selection.row[idx].to_a
             indexes << idx
           end
         end

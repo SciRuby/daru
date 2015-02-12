@@ -1168,7 +1168,7 @@ describe Daru::DataFrame do
       end
     end
 
-    context Daru::MultiIndex, focus: true do
+    context Daru::MultiIndex do
       it "transposes a DataFrame including row and column indexing" do
         expect(@df_mi.transpose).to eq(Daru::DataFrame.new([
           @vector_arry1, 
@@ -1199,30 +1199,34 @@ describe Daru::DataFrame do
 
     it "creates row index as per (double) index argument and default aggregates to mean" do
       agg_mi = Daru::MultiIndex.new(
-        [:bar, :large],
-        [:bar, :small],
-        [:foo, :large],
-        [:foo, :small]
+        [        
+          [:bar, :large],
+          [:bar, :small],
+          [:foo, :large],
+          [:foo, :small]
+        ]
       )
-      expect(@df.pivot_table(index: [:a, :c])).to eq(Daru::DataFrame.new({
+      expect(@df.pivot_table(index: [:a, :c]).round(2)).to eq(Daru::DataFrame.new({
         d: [5.0 ,  6.0, 2.0, 2.33],
-        e: [10.0, 12.0, 4.0, 4.66]
+        e: [10.0, 12.0, 4.0, 4.67]
       }, index: agg_mi))
     end
  
-    it "creates row and vector index as per (single) index and (single) vectors args" do
+    it "creates row and vector index as per (single) index and (single) vectors args",focus: true do
       agg_vectors = Daru::MultiIndex.new([
-        [:d, :one, :two],
-        [:d, :one, :two],
-        [:e, :one, :two],
-        [:e, :one, :two]
+        [:d, :one],
+        [:d, :two],
+        [:e, :one],
+        [:e, :two]
       ])
-      expect(@df.pivot_table(index: [:a], vectors: [:b])).to eq(Daru::DataFrame.new({
-        [4.5, 1.66],
-        [6.5,  3.0],
-        [9.0, 3.33],
-        [13,     6]
-      }, order: agg_vectors, index: [:bar, :foo]))
+
+      expect(@df.pivot_table(index: [:a], vectors: [:b])).to eq(Daru::DataFrame.new(
+        [
+          [4.5, 1.66],
+          [6.5,  3.0],
+          [9.0, 3.33],
+          [13,     6]
+        ], order: agg_vectors, index: [:bar, :foo]))
     end
 
     it "creates row and vector index as per (single) index and (double) vector args" do
@@ -1307,11 +1311,16 @@ describe Daru::DataFrame do
     end
 
     it "raises error if no non-numeric vectors are present" do
-
+      df = Daru::DataFrame.new({a: ['a', 'b', 'c'], b: ['b', 'e', 'd']})
+      expect {
+        df.pivot_table(index: [:a])
+      }.to raise_error
     end
  
     it "raises error if atleast a row index is not specified" do
-      
+      expect {
+        @df.pivot_table
+      }.to raise_error
     end
   end
 end if mri?

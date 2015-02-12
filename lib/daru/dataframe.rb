@@ -96,7 +96,7 @@ module Daru
         when Array
           if source.all? { |s| s.is_a?(Array) }
             raise ArgumentError, "Number of vectors (#{vectors.size}) should \
-              \ equal order size (#{source.size})" if source.size != vectors.size
+              equal order size (#{source.size})" if source.size != vectors.size
 
             @index   = create_index(index || source[0].size)
             @vectors = create_index(vectors)
@@ -440,6 +440,17 @@ module Daru
       self.dup.reindex! new_index
     end
 
+    # Return the names of all the numeric vectors. Will include vectors with nils
+    # alongwith numbers.
+    def numeric_vectors
+      numerics = []
+
+      each_vector do |vec|
+        numerics << vec.name if(vec.type == :numeric)
+      end
+      numerics
+    end
+
     # Sorts a dataframe (ascending/descending)according to the given sequence of 
     #   vectors, using the attributes provided in the blocks. Works for 2 LEVELS ONLY.
     # 
@@ -483,6 +494,41 @@ module Daru
     # Non-destructive version of #sort!
     def sort vector_order, opts={}
       self.dup.sort! vector_order, opts
+    end
+
+    def pivot_table opts={}
+      raise ArgumentError, "Specify grouping index" if !opts[:index] or opts[:index].empty?
+
+      index   = opts[:index]
+      vectors = opts[:vectors]
+      agg     = opts[:agg] || :mean
+      values  = opts[:values] || numeric_vectors
+      grouped  = group_by(index)
+
+      build_up = (vectors || []) + index
+      agg_vectors = (@vectors.to_a - build_up) & values
+
+      if vectors
+        hsh = {}
+        values.each do |value|
+          grouped.groups.each_value do |row_numbers|
+            row_numbers.each do |num|
+              arry = []
+              arry << value
+              vectors.each { |v| arry << self[v][num] }
+
+              unless hsh.has_key?(arry)
+                vectors_for_aggregation = []
+                agg_vectors.size.times { vectors_for_aggregation << [] }
+                hsh[arry] = vectors_for_aggregation
+              end
+              agg_vectors.each_with_index { |v,i| hsh[arry][i] << self[v][num] }
+            end
+          end
+        end
+      else
+        groups.send(agg)
+      end
     end
 
     # Convert all vectors of type *:numeric* into a Matrix.
@@ -891,7 +937,7 @@ module Daru
     end
 
     def validate_labels
-      raise IndexError, "Expected equal number of vectors for number of Hash pairs" if 
+      raise IndexError, "Expected equal number of vector names (#{@vectors.size}) for number of vectors (#{@data.size})." if 
         @vectors and @vectors.size != @data.size
 
       raise IndexError, "Expected number of indexes same as number of rows" if
