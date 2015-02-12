@@ -9,20 +9,23 @@ Data Analysis in RUby
 
 daru (Data Analysis in RUby) is a library for storage, analysis and manipulation of data.
 
-Development of daru was started to address the fragmentation of Dataframe-like classes which were created in many ruby gems as per their own needs. daru offers a uniform interface for all sorts of data analysis and manipulation operations and aims to be compatible with all ruby gems involved in any way with data.
-
 daru is inspired by `Statsample::Dataset` and pandas, a very mature solution in Python.
 
-daru works with CRuby (1.9.3+) and JRuby.
+Written in pure Ruby so should work with all ruby implementations.
 
 ## Features
 
 * Data structures:
     - Vector - A basic 1-D vector.
-    - DataFrame - A 2-D matrix-like structure which is internally composed of named `Vector` classes.
-* Compatible with IRuby notebook.
-* Indexed and named data structures.
+    - DataFrame - A 2-D matrix-like structure which is internally composed of named `Vectors`.
+* Compatible with [IRuby notebook](https://github.com/minad/iruby) and [statsample](https://github.com/clbustos/statsample).
+* Singly and hierarchially indexed data structures.
 * Flexible and intuitive API for manipulation and analysis of data.
+* Easy plotting, statistics and arithmetic.
+* Plentiful iterators.
+* Speed up on MRI with [NMatrix](https://github.com/SciRuby/nmatrix).
+* Easy splitting, aggregation and grouping of data.
+* Quickly reducing data with pivot tables for quick data summary.
 
 ## Notebooks
 
@@ -36,15 +39,13 @@ daru works with CRuby (1.9.3+) and JRuby.
 
 Docs can be found [here](https://rubygems.org/gems/daru).
 
+## Overview
+
+Coming soon.
+
 ## Basic Usage
 
-daru has been created with keeping extreme ease of use in mind.
-
-The gem consists of two data structures, Vector and DataFrame. Any data in a serial format is a Vector and a table is a DataFrame.
-
 #### Initialization of DataFrame
-
-The DataFrame constructor takes 4 arguments: source, vectors, indexes and name in that order. The last 3 are optional while the first is mandatory.
 
 A basic DataFrame can be initialized like this:
 
@@ -373,5 +374,5 @@ Pick a feature from the Roadmap above or think of your own and send me a Pull Re
 
 * Thank you [last.fm](http://www.last.fm/) for making user data accessible to the public.
 
-Copyright (c) 2014, Sameer Deshmukh
+Copyright (c) 2015, Sameer Deshmukh
 All rights reserved
