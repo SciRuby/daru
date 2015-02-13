@@ -1366,4 +1366,9 @@ describe Daru::DataFrame do
       }.to raise_error
     end
   end
+
+  context "#shape" do
+    it "returns an array containing number of rows and columns" do
+    end
+  end
 end if mri?

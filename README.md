@@ -23,7 +23,7 @@ Written in pure Ruby so should work with all ruby implementations.
 * Flexible and intuitive API for manipulation and analysis of data.
 * Easy plotting, statistics and arithmetic.
 * Plentiful iterators.
-* Speed up on MRI with [NMatrix](https://github.com/SciRuby/nmatrix).
+* Optional speed and space optimization on MRI with [NMatrix](https://github.com/SciRuby/nmatrix).
 * Easy splitting, aggregation and grouping of data.
 * Quickly reducing data with pivot tables for quick data summary.
 

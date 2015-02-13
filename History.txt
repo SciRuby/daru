@@ -49,7 +49,7 @@
 * Changed vector #is\_valid? to #exists?
 * Revamped dtype specifiers for Vector. Now specify :array/:nmatrix for changing underlying data implementation. Specigfy nm\_dtype for specifying the data type of the NMatrix object.
 * #sort for Vector. Quick sort algorithm with preservation of original indexes.
-* Removes #re\_index and #to\_index from Daru::Index.
+* Removed #re\_index and #to\_index from Daru::Index.
 * Ability to change the index of Vector and DataFrame with #reindex/#reindex!.
 * Multi-level #sort! and #sort for DataFrames. Preserves indexing.
 * All vector statistics now work with NMatrix as the underlying data type.
@@ -69,3 +69,4 @@
 * Convert Daru::Vector to horizontal or vertical Ruby Matrix with #to_matrix.
 * Added shortcut to DataFrame to allow access of vectors by using only #[] instead of calling #vector or *[vector_names, :vector]*.
 * Added DSL for Vector and DataFrame plotting with nyaplot. Can now grab the underlying Nyaplot::Plot and Nyaplot::Diagram object for performing different operations. Only need to supply parameters for the initial creation of the diagram.
+* Added #pivot\_table to DataFrame for reducing and aggregating data to generate a quick summary.
