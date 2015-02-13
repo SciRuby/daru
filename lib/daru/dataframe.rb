@@ -496,17 +496,20 @@ module Daru
       self.dup.sort! vector_order, opts
     end
 
+    # Pivots a data frame on specified vectors and applies an aggregate function
+    # to quickly generate a summary.
     def pivot_table opts={}
       raise ArgumentError, "Specify grouping index" if !opts[:index] or opts[:index].empty?
 
       index   = opts[:index]
-      vectors = opts[:vectors]
+      vectors = opts[:vectors] || []
       aggregate_function = opts[:agg] || :mean
-      values  = opts[:values] || numeric_vectors
-      grouped  = group_by(index)
-      build_up = (vectors || []) + index
+      values  = opts[:values] ? [opts[:values]] : ((@vectors.to_a - (index | vectors)) & numeric_vectors)
+      raise IndexError, "No numeric vectors to aggregate" if values.empty?
 
-      if vectors
+      grouped  = group_by(index)
+
+      unless vectors.empty?
         super_hash = {}
         values.each do |value|
           grouped.groups.each do |group_name, row_numbers|
@@ -529,6 +532,22 @@ module Daru
             sub_hash[group_name] = Daru::Vector.new(aggregates).send(aggregate_function)
           end
         end
+
+        df_index = Daru::MultiIndex.new(symbolize(super_hash.keys))
+
+        vector_indexes = []
+        super_hash.each_value do |sub_hash|
+          vector_indexes.concat sub_hash.keys
+        end
+        df_vectors = Daru::MultiIndex.new symbolize(vector_indexes.uniq)
+        pivoted_dataframe = Daru::DataFrame.new({}, index: df_index, order: df_vectors)
+
+        super_hash.each do |row_index, sub_h|
+          sub_h.each do |vector_index, val|
+            pivoted_dataframe[symbolize(vector_index)][symbolize(row_index)] = val
+          end
+        end
+        return pivoted_dataframe
       else
         grouped.send(aggregate_function)
       end
@@ -1006,6 +1025,21 @@ module Daru
 
     def set_name potential_name
       potential_name.is_a?(Array) ? potential_name.join.to_sym : potential_name
+    end
+
+    def symbolize arry
+      symbolized_arry = 
+      if arry.all? { |e| e.is_a?(Array) }
+        arry.map do |sub_arry|
+          sub_arry.map do |e|
+            e.is_a?(Numeric) ? e : e.to_sym
+          end
+        end
+      else
+        arry.map { |e| e.is_a?(Numeric) ? e : e.to_sym }
+      end
+
+      symbolized_arry
     end
   end
 end
