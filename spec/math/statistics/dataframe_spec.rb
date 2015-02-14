@@ -14,13 +14,13 @@ describe Daru::DataFrame do
 
   context "#mean" do
     it "calculates mean of single level numeric only vectors and returns values in a Vector" do
-      expect(@df.mean).to eq(Daru::Vector.new([3.66, 7.33, 36.66], 
+      expect(@df.mean.round(2)).to eq(Daru::Vector.new([3.67, 7.33, 36.67], 
         index: [:d, :e, :f]
       ))
     end
 
     it "calculates mean of multi level numeric only vectors and returns values in a DataFrame" do
-      pending "next release"
+      # TODO - pending
     end
   end
 
@@ -32,7 +32,7 @@ describe Daru::DataFrame do
 
   context "#sum" do
     it "calculates sum of single level numeric only vectors and returns values in a Vector" do
-      # TODO
+      # TODO - write tests
     end
   end
 
@@ -62,10 +62,10 @@ describe Daru::DataFrame do
 
   context "#describe" do
     it "generates mean, std, max, min and count of numeric vectors in one shot" do
-      expect(@df.describe).to eq(Daru::DataFrame.new({
-        d: [9.00, 3.66 ,2.00 , 1.00,  7.00],
+      expect(@df.describe.round(2)).to eq(Daru::DataFrame.new({
+        d: [9.00, 3.67 ,2.00 , 1.00,  7.00],
         e: [9.00, 7.33 ,4.00 , 2.00, 14.00],
-        f: [9.00, 36.66,20.00,10.00, 70.00]
+        f: [9.00, 36.67,20.00,10.00, 70.00]
         }, index: [:count, :mean, :std, :min, :max]
       ))
     end
@@ -82,7 +82,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#corr" do
+  context "#corr", focus: true do
     it "calculates the correlation between the numeric vectors of DataFrame" do
       expect(@df.corr).to eq(Daru::DataFrame.new({
         d: [1,1,1],

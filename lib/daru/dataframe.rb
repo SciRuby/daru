@@ -393,6 +393,21 @@ module Daru
       df
     end
 
+    # Return the number of rows and columns of the DataFrame in an Array.
+    def shape
+      [@index.size, @vectors.size]
+    end
+
+    # The number of rows
+    def rows
+      shape[0]
+    end
+
+    # The number of vectors
+    def cols
+      shape[1]
+    end
+
     # Check if a vector is present
     def has_vector? vector
       !!@vectors[*vector]

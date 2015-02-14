@@ -97,9 +97,9 @@ module Daru
         end
 
         # Retrieves number of cases which comply condition. If block given, 
-        #   retrieves number of instances where block returns true. If other 
-        #   values given, retrieves the frequency for this value. If no value
-        #   given, counts the number of elements in the Vector.
+        # retrieves number of instances where block returns true. If other 
+        # values given, retrieves the frequency for this value. If no value
+        # given, counts the number of non-nil elements in the Vector.
         def count value=false
           if block_given?
             @data.inject(0){ |memo, val| memo += 1 if yield val; memo}
@@ -107,7 +107,7 @@ module Daru
             val = frequencies[value]
             val.nil? ? 0 : val
           else
-            size
+            size - @nil_positions.size
           end
         end
 
@@ -175,6 +175,7 @@ module Daru
 
         alias :sdp :standard_deviation_population
         alias :sds :standard_deviation_sample
+        alias :std :sds
         alias :adp :average_deviation_population
         alias :cov :coefficient_of_variation
         alias :variance :variance_sample    

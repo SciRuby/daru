@@ -51,3 +51,11 @@ class Numeric
     self * self
   end
 end
+
+class Matrix
+  def elementwise_division other
+    self.map.with_index do |e, index|
+      e / other.to_a.flatten[index]
+    end
+  end
+end

@@ -70,3 +70,8 @@
 * Added shortcut to DataFrame to allow access of vectors by using only #[] instead of calling #vector or *[vector_names, :vector]*.
 * Added DSL for Vector and DataFrame plotting with nyaplot. Can now grab the underlying Nyaplot::Plot and Nyaplot::Diagram object for performing different operations. Only need to supply parameters for the initial creation of the diagram.
 * Added #pivot\_table to DataFrame for reducing and aggregating data to generate a quick summary.
+* Added #shape to DataFrame for knowing the numbers of rows and columns in a DataFrame.
+* Added statistics methods #mean, #std, #max, #min, #count, #product, #sum to DataFrame.
+* Added #describe to DataFrame for producing multiple statistics data of numerical vectors in one shot.
+* Monkey patched Ruby Matrix to include #elementwise_division.
+* Added #covariance to calculate the covariance between numbers of a DataFrame and #correlation to calculate correlation. 
