@@ -340,7 +340,6 @@ Head over to the tutorials and notebooks listed above for more examples.
 * Basic Data manipulation and analysis operations: 
     - Different kinds of join operations
     - Dataframe/vector merge (left, right, inner, outer)
-    - Creation of correlation, covariance matrices
     - Verification of data in a vector
     - DF concat
 * Option to express a DataFrame as an NMatrix or MDArray so as to use more efficient storage techniques.

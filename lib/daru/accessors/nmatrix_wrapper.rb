@@ -1,4 +1,8 @@
-require 'nmatrix' unless jruby?
+begin
+  require 'nmatrix' unless jruby?
+rescue LoadError => e
+  puts "Please install the nmatrix gem for fast and efficient data storage."
+end
 
 module Daru
   module Accessors

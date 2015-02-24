@@ -1,0 +1,18 @@
+Account,Name,Rep,Manager,Product,Quantity,Price,Status
+714466,Trantow-Barrows,Craig Booker,Debra Henley,CPU,1,30000,presented
+714466,Trantow-Barrows,Craig Booker,Debra Henley,Software,1,10000,presented
+714466,Trantow-Barrows,Craig Booker,Debra Henley,Maintenance,2,5000,pending
+737550,"Fritsch, Russel and Anderson",Craig Booker,Debra Henley,CPU,1,35000,declined
+146832,Kiehn-Spinka,Daniel Hilton,Debra Henley,CPU,2,65000,won
+218895,Kulas Inc,Daniel Hilton,Debra Henley,CPU,2,40000,pending
+218895,Kulas Inc,Daniel Hilton,Debra Henley,Software,1,10000,presented
+412290,Jerde-Hilpert,John Smith,Debra Henley,Maintenance,2,5000,pending
+740150,Barton LLC,John Smith,Debra Henley,CPU,1,35000,declined
+141962,Herman LLC,Cedric Moss,Fred Anderson,CPU,2,65000,won
+163416,Purdy-Kunde,Cedric Moss,Fred Anderson,CPU,1,30000,presented
+239344,Stokes LLC,Cedric Moss,Fred Anderson,Maintenance,1,5000,pending
+239344,Stokes LLC,Cedric Moss,Fred Anderson,Software,1,10000,presented
+307599,"Kassulke, Ondricka and Metz",Wendy Yule,Fred Anderson,Maintenance,3,7000,won
+688981,Keeling LLC,Wendy Yule,Fred Anderson,CPU,5,100000,won
+729833,Koepp Ltd,Wendy Yule,Fred Anderson,CPU,2,65000,declined
+729833,Koepp Ltd,Wendy Yule,Fred Anderson,Monitor,2,5000,presented

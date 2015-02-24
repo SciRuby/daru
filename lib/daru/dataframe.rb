@@ -513,13 +513,53 @@ module Daru
 
     # Pivots a data frame on specified vectors and applies an aggregate function
     # to quickly generate a summary.
+    # 
+    # == Options
+    # 
+    # +:index+ - Keys to group by on the pivot table row index. Pass vector names
+    # contained in an Array.
+    # 
+    # +:vectors+ - Keys to group by on the pivot table column index. Pass vector
+    # names contained in an Array.
+    # 
+    # +:agg+ - Function to aggregate the grouped values. Default to *:mean*. Can
+    # use any of the statistics functions applicable on Vectors that can be found in 
+    # the Daru::Statistics::Vector module.
+    # 
+    # +:values+ - Columns to aggregate. Will consider all numeric columns not 
+    # specified in *:index* or *:vectors*. Optional.
+    # 
+    # == Usage
+    # 
+    #   df = Daru::DataFrame.new({
+    #     a: ['foo'  ,  'foo',  'foo',  'foo',  'foo',  'bar',  'bar',  'bar',  'bar'], 
+    #     b: ['one'  ,  'one',  'one',  'two',  'two',  'one',  'one',  'two',  'two'],
+    #     c: ['small','large','large','small','small','large','small','large','small'],
+    #     d: [1,2,2,3,3,4,5,6,7],
+    #     e: [2,4,4,6,6,8,10,12,14]
+    #   })
+    #   df.pivot_table(index: [:a], vectors: [:b], agg: :sum, values: :e)
+    # 
+    #   #=> 
+    #   # #<Daru::DataFrame:88342020 @name = 08cdaf4e-b154-4186-9084-e76dd191b2c9 @size = 2>
+    #   #            [:e, :one] [:e, :two] 
+    #   #     [:bar]         18         26 
+    #   #     [:foo]         10         12 
     def pivot_table opts={}
       raise ArgumentError, "Specify grouping index" if !opts[:index] or opts[:index].empty?
 
       index   = opts[:index]
       vectors = opts[:vectors] || []
       aggregate_function = opts[:agg] || :mean
-      values  = opts[:values] ? [opts[:values]] : ((@vectors.to_a - (index | vectors)) & numeric_vectors)
+      values = 
+      if opts[:values].is_a?(Symbol)
+        [opts[:values]]
+      elsif opts[:values].is_a?(Array)
+        opts[:values]
+      else # nil
+        (@vectors.to_a - (index | vectors)) & numeric_vectors
+      end
+      
       raise IndexError, "No numeric vectors to aggregate" if values.empty?
 
       grouped  = group_by(index)

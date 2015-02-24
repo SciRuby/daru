@@ -3,6 +3,7 @@ def jruby?
 end
 
 require 'csv'
+require 'matrix'
 require 'securerandom'
 
 require 'daru/index.rb'
@@ -12,4 +13,3 @@ require 'daru/dataframe.rb'
 require 'daru/monkeys.rb'
 
 require 'daru/core/group_by.rb'
-

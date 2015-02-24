@@ -30,6 +30,14 @@ module Daru
         Daru::Vector.new(values, index: index, name: :size)
       end
 
+      def first
+        head(1)
+      end
+
+      def last
+        tail(1)
+      end
+
       def head quantity=5
         select_groups_from :first, quantity
       end
