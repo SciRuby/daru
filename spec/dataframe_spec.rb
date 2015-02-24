@@ -488,6 +488,23 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#[]=" do
+    context Daru::Index do
+      it "assigns directly with the []= operator" do
+        @data_frame[:a] = [100,200,300,400,500]
+        expect(@data_frame).to eq(Daru::DataFrame.new({
+          b: [11,12,13,14,15], 
+          a: [100,200,300,400,500], 
+          c: [11,22,33,44,55]}, order: [:a, :b, :c], 
+          index: [:one, :two, :three, :four, :five]))
+      end
+    end
+
+    context Daru::MultiIndex do
+      pending
+    end
+  end
+
   context "#[:row]=" do
     context Daru::Index do
       before :each do

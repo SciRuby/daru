@@ -383,8 +383,8 @@ module Daru
     # 
     # * +replacement+ - The value which should replace all nils
     def replace_nils! replacement
-      @index.each do |idx|
-        self[idx] = replacement if self[idx].nil?
+      nil_positions.each do |idx|
+        self[idx] = replacement
       end
 
       self

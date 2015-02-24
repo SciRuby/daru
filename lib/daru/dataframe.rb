@@ -187,13 +187,18 @@ module Daru
     end
 
     # Insert a new row/vector of the specified name or modify a previous row.
-    #   Instead of using this method directly, use df.row[:a] = [1,2,3] to set/create
-    #   a row ':a' to [1,2,3], or df.vector[:vec] = [1,2,3] for vectors.
+    # Instead of using this method directly, use df.row[:a] = [1,2,3] to set/create
+    # a row ':a' to [1,2,3], or df.vector[:vec] = [1,2,3] for vectors.
     # 
     # In case a Daru::Vector is specified after the equality the sign, the indexes
-    #   of the vector will be matched against the row/vector indexes of the DataFrame
-    #   before an insertion is performed. Unmatched indexes will be set to nil.
-    def []=(name, axis ,vector)
+    # of the vector will be matched against the row/vector indexes of the DataFrame
+    # before an insertion is performed. Unmatched indexes will be set to nil.
+    def []=(*args)
+      name   = args[0]
+      axis   = args[1]
+      vector = args[-1]
+
+      axis = (!axis.is_a?(Symbol) and (axis != :vector or axis != :row)) ? :vector : axis
       if axis == :vector
         insert_or_modify_vector name, vector
       elsif axis == :row        
