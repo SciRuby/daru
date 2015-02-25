@@ -75,3 +75,4 @@
 * Added #describe to DataFrame for producing multiple statistics data of numerical vectors in one shot.
 * Monkey patched Ruby Matrix to include #elementwise_division.
 * Added #covariance to calculate the covariance between numbers of a DataFrame and #correlation to calculate correlation. 
+* Enumerators return Enumerator objects if there is no block.

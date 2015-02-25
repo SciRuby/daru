@@ -243,6 +243,8 @@ module Daru
 
     # Iterate over each vector
     def each_vector(&block)
+      return to_enum(:each_vector) unless block_given?
+
       @data.each(&block)
 
       self
@@ -252,6 +254,8 @@ module Daru
 
     # Iterate over each vector alongwith the name of the vector
     def each_vector_with_index(&block)
+      return to_enum(:each_vector_with_index) unless block_given?
+
       @vectors.each do |vector|
         yield @data[@vectors[vector]], vector
       end 
@@ -263,6 +267,8 @@ module Daru
 
     # Iterate over each row
     def each_row(&block)
+      return to_enum(:each_row) unless block_given?
+
       @index.each do |index|
         yield access_row(index)
       end
@@ -271,6 +277,8 @@ module Daru
     end
 
     def each_row_with_index(&block)
+      return to_enum(:each_row_with_index) unless block_given?
+
       @index.each do |index|
         yield access_row(index), index
       end
@@ -279,22 +287,27 @@ module Daru
     end
 
     # Map each vector. Returns a DataFrame whose vectors are modified according
-    #   to the value returned by the block. As is the case with Enumerable#map,
-    #   the object returned by each block must be a Daru::Vector for the dataframe
-    #   to remain relevant.
+    # to the value returned by the block. As is the case with Enumerable#map,
+    # the object returned by each block must be a Daru::Vector for the dataframe
+    # to remain relevant.
     def map_vectors(&block)
+      return to_enum(:map_vectors) unless block_given?
+
       self.dup.map_vectors!(&block)
     end
 
     # Destructive form of #map_vectors
     def map_vectors!(&block)
-      @data.map!(&block)
+      return to_enum(:map_vectors!) unless block_given?
 
+      @data.map!(&block)
       self
     end
 
     # Map vectors alongwith the index.
     def map_vectors_with_index(&block)
+      return to_enum(:map_vectors_with_index) unless block_given?
+
       df = self.dup
       df.each_vector_with_index do |vector, name|
         df[name, :vector] = yield(vector, name)
@@ -305,6 +318,8 @@ module Daru
 
     # Map each row
     def map_rows(&block)
+      return to_enum(:map_rows) unless block_given?
+
       df = self.dup
       df.each_row_with_index do |row, index|
         df[index, :row] = yield(row)
@@ -314,6 +329,8 @@ module Daru
     end
 
     def map_rows_with_index(&block)
+      return to_enum(:map_rows_with_index) unless block_given?
+
       df = self.dup
       df.each_row_with_index do |row, index|
         df[index, :row] = yield(row, index)
@@ -374,6 +391,8 @@ module Daru
     # Iterates over each row and retains it in a new DataFrame if the block returns
     # true for that row.
     def filter_rows &block
+      return to_enum(:filter_rows) unless block_given?
+
       df = Daru::DataFrame.new({}, order: @vectors.to_a)
       marked = []
 
@@ -392,6 +411,8 @@ module Daru
     # Iterates over each vector and retains it in a new DataFrame if the block returns
     # true for that vector.
     def filter_vectors &block
+      return to_enum(:filter_vectors) unless block_given?
+      
       df = self.dup
       df.keep_vector_if &block
 

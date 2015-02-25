@@ -745,6 +745,11 @@ describe Daru::DataFrame do
 
         expect(ret).to eq(@data_frame)
       end
+
+      it "returns Enumerable if no block specified" do
+        ret = @data_frame.each_vector
+        expect(ret.is_a?(Enumerator)).to eq(true) 
+      end
     end
 
     context Daru::MultiIndex do
