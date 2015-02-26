@@ -161,15 +161,18 @@ module Daru
       end
 
       def symbolize arry
+        symbolized_arry =
         if arry.all? { |e| e.is_a?(Array) }
-          arry.map! do |sub_arry|
-            sub_arry.map! do |e|
+          arry.map do |sub_arry|
+            sub_arry.map do |e|
               e.is_a?(Numeric) ? e : e.to_sym
             end
           end
         else
-          arry.map! { |e| e.is_a?(Numeric) ? e : e.to_sym }
+          arry.map { |e| e.is_a?(Numeric) ? e : e.to_sym }
         end
+
+        symbolized_arry
       end
 
       def multi_indexed_grouping?

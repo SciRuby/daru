@@ -29,11 +29,12 @@ Written in pure Ruby so should work with all ruby implementations.
 
 ## Notebooks
 
-* [Analysis and plotting of a data set comprising of music listening habits of a last.fm user(iruby notebook)](http://nbviewer.ipython.org/github/v0dro/daru/blob/master/notebooks/intro_with_music_data_.ipynb)
+* [Analysis and plotting of a data set comprising of music listening habits of a last.fm user](http://nbviewer.ipython.org/github/v0dro/daru/blob/master/notebooks/intro_with_music_data_.ipynb)
 
 ## Blog Posts
 
 * [Data Analysis in RUby: Basic data manipulation and plotting](http://v0dro.github.io/blog/2014/11/25/data-analysis-in-ruby-basic-data-manipulation-and-plotting/)
+* [Data Analysis in RUby: Splitting, sorting, aggregating data and data types]()
 
 ## Documentation
 
@@ -275,8 +276,6 @@ Keep/remove row according to a specified condition:
 ```
 The same can be applied to vectors using `filter_vectors`.
 
-To iterate over a DataFrame and perform operations on rows or vectors, use `#each_row` or `#each_vector`.
-
 To change the values of a row/vector while iterating through the DataFrame, use `map_rows` or `map_vectors`:
 
 ```ruby
@@ -298,8 +297,6 @@ To change the values of a row/vector while iterating through the DataFrame, use 
 
 ```
 
-Rows/vectors can be deleted using `delete_row` or `delete_vector`.
-
 #### Basic Maths Operations
 
 Performing a binary arithmetic operation on two `Daru::Vector` objects will return a `Vector` object in which the operation will be performed on elements of the same index.
@@ -320,6 +317,10 @@ Performing a binary arithmetic operation on two `Daru::Vector` objects will retu
 ```
 
 Arithmetic operators applied on a single Numeric will perform the operation with that number against the entire vector.
+
+#### Splitting and aggregation of data
+
+`Daru::DataFrame` provides the `#group_by` method to split or aggregate data. Its very similar to SQL GROUP BY. Check the [blog post]() for details.
 
 #### Statistics Operations
 
@@ -354,7 +355,6 @@ Head over to the tutorials and notebooks listed above for more examples.
 * Create a new vector in map_rows if any of the already present rows dont match the one assigned in the block.
 * Sort by index.
 * Statistics on DataFrame over rows and columns.
-* Produce multiple summary statistics in one shot.
 * Cumulative sum.
 * Time series support.
 * Calculate percentage change.
