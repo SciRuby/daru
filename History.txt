@@ -64,12 +64,12 @@
 * Added hierarchial indexing to Vector and DataFrame with MultiIndex.
 * Convert DataFrame to ruby Matrix or NMatrix with #to\_matrix and #to\_nmatrix.
 * Added #group_by to DataFrame for grouping rows according to elements in a given column. Works similar to SQL GROUP BY, only much simpler.
-* Added new class Daru::Core::GroupBy for supporting various grouping methods like #head, #tail, #get\_group, #size, #count, #mean, #std, #min, #max.
+* Added new class Daru::Core::GroupBy for supporting various grouping methods like #head, #tail, #get_group, #size, #count, #mean, #std, #min, #max.
 * Tranpose indexed/multi-indexed DataFrame with #transpose.
 * Convert Daru::Vector to horizontal or vertical Ruby Matrix with #to_matrix.
 * Added shortcut to DataFrame to allow access of vectors by using only #[] instead of calling #vector or *[vector_names, :vector]*.
 * Added DSL for Vector and DataFrame plotting with nyaplot. Can now grab the underlying Nyaplot::Plot and Nyaplot::Diagram object for performing different operations. Only need to supply parameters for the initial creation of the diagram.
-* Added #pivot\_table to DataFrame for reducing and aggregating data to generate a quick summary.
+* Added #pivot_table to DataFrame for reducing and aggregating data to generate a quick summary.
 * Added #shape to DataFrame for knowing the numbers of rows and columns in a DataFrame.
 * Added statistics methods #mean, #std, #max, #min, #count, #product, #sum to DataFrame.
 * Added #describe to DataFrame for producing multiple statistics data of numerical vectors in one shot.

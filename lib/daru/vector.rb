@@ -14,16 +14,22 @@ module Daru
     include Daru::Plotting::Vector
 
     def each(&block)
+      return to_enum(:each) unless block_given?
+      
       @data.each(&block)
       self
     end
 
     def map!(&block)
+      return to_enum(:map!) unless block_given?
+
       @data.map!(&block)
       self
     end
 
     def map(&block)
+      return to_enum(:map) unless block_given?
+
       Daru::Vector.new @data.map(&block), name: @name, index: @index, dtype: @dtype
     end
 
@@ -262,11 +268,11 @@ module Daru
     end
 
     # The type of data contained in the vector. Can be :object or :numeric. If
-    #   the underlying dtype is an NMatrix, this method will return the data type
-    #   of the NMatrix object.
+    # the underlying dtype is an NMatrix, this method will return the data type
+    # of the NMatrix object.
     #   
     # Running through the data to figure out the kind of data is delayed to the
-    #   last possible moment.    
+    # last possible moment.    
     def type
       return @data.nm_dtype if dtype == :nmatrix
 
