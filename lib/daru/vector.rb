@@ -43,14 +43,15 @@ module Daru
     attr_reader :nil_positions
 
     # Create a Vector object.
+    # 
     # == Arguments
     # 
-    # @param source[Array,Hash] - Supply elements in the form of an Array or a Hash. If Array, a
-    #   numeric index will be created if not supplied in the options. Specifying more
-    #   index elements than actual values in *source* will insert *nil* into the 
-    #   surplus index elements. When a Hash is specified, the keys of the Hash are 
-    #   taken as the index elements and the corresponding values as the values that
-    #   populate the vector.
+    # @param source[Array,Hash] - Supply elements in the form of an Array or a 
+    # Hash. If Array, a numeric index will be created if not supplied in the 
+    # options. Specifying more index elements than actual values in *source* 
+    # will insert *nil* into the surplus index elements. When a Hash is specified, 
+    # the keys of the Hash are taken as the index elements and the corresponding 
+    # values as the values that populate the vector.
     # 
     # == Options
     # 
@@ -58,10 +59,11 @@ module Daru
     # 
     # * +:index+ - Index of the vector
     # 
-    # * +:dtype+ - The underlying data type. Can be :array or :nmatrix. Default :array.
+    # * +:dtype+ - The underlying data type. Can be :array or :nmatrix. 
+    # Default :array.
     # 
     # * +:nm_dtype+ - For NMatrix, the data type of the numbers. See the NMatrix docs for
-    #     further information on supported data type.
+    # further information on supported data type.
     # 
     # == Usage
     # 
@@ -309,10 +311,10 @@ module Daru
     end
 
     # Sorts a vector according to its values. If a block is specified, the contents
-    #   will be evaluated and data will be swapped whenever the block evaluates 
-    #   to *true*. Defaults to ascending order sorting. Any missing values will be
-    #   put at the end of the vector. Preserves indexing. Default sort algorithm is
-    #   quick sort.
+    # will be evaluated and data will be swapped whenever the block evaluates 
+    # to *true*. Defaults to ascending order sorting. Any missing values will be
+    # put at the end of the vector. Preserves indexing. Default sort algorithm is
+    # quick sort.
     # 
     # == Options
     # 
@@ -323,7 +325,7 @@ module Daru
     # 
     #   v = Daru::Vector.new ["My first guitar", "jazz", "guitar"]
     #   # Say you want to sort these strings by length.
-    #   v.sort { |a,b| a.length <=> b.length }
+    #   v.sort(ascending: false) { |a,b| a.length <=> b.length }
     def sort opts={}, &block
       opts = {
         ascending: true,
@@ -350,7 +352,7 @@ module Daru
     end
 
     # Returns a vector which has *true* in the position where the element in self
-    #   is nil, and false otherwise.
+    # is nil, and false otherwise.
     # 
     # == Usage
     # 
@@ -383,7 +385,7 @@ module Daru
     end
 
     # Replace all nils in the vector with the value passed as an argument. Destructive.
-    #   See #replace_nils for non-destructive version
+    # See #replace_nils for non-destructive version
     # 
     # == Arguments
     # 
@@ -512,7 +514,7 @@ module Daru
     end
 
     # Copies the structure of the vector (i.e the index, size, etc.) and fills all
-    #   all values with nils.
+    # all values with nils.
     def clone_structure
       Daru::Vector.new(([nil]*@size), name: @name, index: @index.dup)
     end

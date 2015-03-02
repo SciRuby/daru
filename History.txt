@@ -76,3 +76,8 @@
 * Monkey patched Ruby Matrix to include #elementwise_division.
 * Added #covariance to calculate the covariance between numbers of a DataFrame and #correlation to calculate correlation. 
 * Enumerators return Enumerator objects if there is no block.
+
+== 0.0.6
+
+* Fixes
+    - Update documentation and fix it in other places.

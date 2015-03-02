@@ -15,10 +15,17 @@ module Daru
     include Daru::Plotting::DataFrame
 
     class << self
-      # Load data from a CSV file. 
-      #   Arguments - path, options, block(optional)
+      # Load data from a CSV file. Specify an optional block to grab the CSV 
+      # object and pre-condition it.
       # 
-      # Accepts a block for pre-conditioning of CSV data if any.
+      # == Arguments
+      # 
+      # * path - Path of the file to load specified as a String.
+      # 
+      # == Options
+      # 
+      # Accepts the same options as the Daru::DataFrame constructor and uses those
+      # to eventually construct the resulting DataFrame.
       def from_csv path, opts={}, &block
         Daru::IO.from_csv path, opts, &block      
       end
@@ -67,8 +74,23 @@ module Daru
     attr_reader :size
 
     # DataFrame basically consists of an Array of Vector objects.
-    #   These objects are indexed by row and column by vectors and index Index objects.
-    #   Arguments - source, vectors, index, name.
+    # These objects are indexed by row and column by vectors and index Index objects.
+    #
+    # == Arguments
+    # 
+    # * source - Source from the DataFrame is to be initialized. Can be a Hash
+    # of names and vectors (array or Daru::Vector), an array of arrays or
+    # array of Daru::Vectors.
+    # 
+    # == Options
+    # 
+    # +:order+ - An *Array*/*Daru::Index*/*Daru::MultiIndex* containing the order in 
+    # which Vectors should appear in the DataFrame.
+    # 
+    # +:index+ - An *Array*/*Daru::Index*/*Daru::MultiIndex* containing the order
+    # in which rows of the DataFrame will be named.
+    # 
+    # +:name+  - A name for the DataFrame.
     # 
     # == Usage
     #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [6,7,8,9]}, order: [:b, :a], 
@@ -453,7 +475,30 @@ module Daru
       self[(@size - quantity)..(@size-1), :row]
     end
 
-    # Group elements by vector to perform operations on them.
+    # Group elements by vector to perform operations on them. Returns a 
+    # Daru::Core::GroupBy object.See the Daru::Core::GroupBy docs for a detailed
+    # list of possible operations.
+    # 
+    # == Arguments
+    # 
+    # * vectors - An Array contatining names of vectors to group by.
+    # 
+    # == Usage
+    # 
+    #   df = Daru::DataFrame.new({
+    #     a: %w{foo bar foo bar   foo bar foo foo},
+    #     b: %w{one one two three two two one three},
+    #     c:   [1  ,2  ,3  ,1    ,3  ,6  ,3  ,8],
+    #     d:   [11 ,22 ,33 ,44   ,55 ,66 ,77 ,88]
+    #   })
+    #   df.group_by([:a,:b,:c]).groups
+    #   #=> {["bar", "one", 2]=>[1],
+    #   # ["bar", "three", 1]=>[3],
+    #   # ["bar", "two", 6]=>[5],
+    #   # ["foo", "one", 1]=>[0],
+    #   # ["foo", "one", 3]=>[6],
+    #   # ["foo", "three", 8]=>[7],
+    #   # ["foo", "two", 3]=>[2, 4]}
     def group_by vectors
       vectors = [vectors] if vectors.is_a?(Symbol)
       vectors.each { |v| raise(ArgumentError, "Vector #{v} does not exist") unless
@@ -493,7 +538,7 @@ module Daru
     end
 
     # Sorts a dataframe (ascending/descending)according to the given sequence of 
-    #   vectors, using the attributes provided in the blocks. Works for 2 LEVELS ONLY.
+    # vectors, using the attributes provided in the blocks.
     # 
     # @param order [Array] The order of vector names in which the DataFrame
     #   should be sorted.
@@ -656,10 +701,10 @@ module Daru
     end
     
     # Converts the DataFrame into an array of hashes where key is vector name
-    #   and value is the corresponding element. The 0th index of the array contains 
-    #   the array of hashes while the 1th index contains the indexes of each row 
-    #   of the dataframe. Each element in the index array corresponds to its row 
-    #   in the array of hashes, which has the same index.
+    # and value is the corresponding element. The 0th index of the array contains 
+    # the array of hashes while the 1th index contains the indexes of each row 
+    # of the dataframe. Each element in the index array corresponds to its row 
+    # in the array of hashes, which has the same index.
     def to_a
       arry = [[],[]]
       self.each_row do |row|
