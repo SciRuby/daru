@@ -115,7 +115,11 @@ describe Daru::Vector do
 
       context "#frequencies" do
         it "calculates frequencies" do
-          @dv.frequencies
+          vector = Daru::Vector.new([5,5,5,5,5,6,6,7,8,9,10,1,2,3,4,nil,-99,-99])
+          expect(vector.frequencies).to eq({ 
+            1=>1, 2=>1, 3=>1, 4=>1, 5=>5, 
+            6=>2, 7=>1, 8=>1, 9=>1,10=>1, -99=>2
+          })
         end
       end
 
@@ -139,7 +143,8 @@ describe Daru::Vector do
 
       context "#ranked" do
         it "curates by rank" do
-          @dv.ranked
+          vector = Daru::Vector.new([nil, 0.8, 1.2, 1.2, 2.3, 18, nil])
+          expect(vector.ranked).to eq(Daru::Vector.new([nil,1,2.5,2.5,4,5,nil]))
         end
       end
 
@@ -197,6 +202,15 @@ describe Daru::Vector do
           expect(vector.standardize.round(2)).to eq(
             Daru::Vector.new([-1.11, 1.57, 0.23, -0.26,nil, -0.44], dtype: dtype)
             )
+        end
+      end
+
+      context "#vector_percentile" do
+        it "replaces each non-nil value with its percentile value" do
+          vector = Daru::Vector.new([1,nil,nil,2,2,3,4,nil,nil,5,5,5,6,10])
+          expect(vector.vector_percentile).to eq(Daru::Vector.new(
+            [10,nil,nil,25,25,40,50,nil,nil,70,70,70,90,100])
+          )
         end
       end
     end

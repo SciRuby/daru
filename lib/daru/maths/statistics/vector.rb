@@ -69,8 +69,10 @@ module Daru
 
         def frequencies
           @data.inject({}) do |hash, element|
-            hash[element] ||= 0
-            hash[element] += 1
+            unless element.nil?
+              hash[element] ||= 0
+              hash[element] += 1
+            end
             hash
           end
         end
@@ -83,7 +85,7 @@ module Daru
         def ranked
           sum = 0
           r = frequencies.sort.inject( {} ) do |memo, val|
-            memo[val[0]] = ((sum + 1) + (sum + val[1])) / 2
+            memo[val[0]] = ((sum + 1) + (sum + val[1])).quo(2)
             sum += val[1]
             memo
           end
@@ -163,6 +165,7 @@ module Daru
           @data.recode!(&block)
         end
 
+        # Return the percentile of a vector.
         def percentile percent
           sorted = @data.sort
           v      = (n_valid * percent).quo(100)
@@ -182,6 +185,12 @@ module Daru
         # with the sample standard deviation
         def standardize
           (self - mean) / standard_deviation_sample
+        end
+
+        # Replace each non-nil value in the vector with its percentile.
+        def vector_percentile
+          c = size - nil_positions.size
+          ranked.map! { |i| i.nil? ? nil : (i.quo(c)*100).to_f }
         end
 
         alias :sdp :standard_deviation_population
