@@ -96,8 +96,6 @@ describe Daru::Core::GroupBy do
         d: [22]
         }, index: [1]
       ))
-
-      puts @dl_group.get_group(["foo", "one"]).inspect
     end
 
     it "returns the whole sub-group for triple layer grouping" do

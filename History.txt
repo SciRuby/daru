@@ -81,3 +81,7 @@
 
 * Fixes
     - Update documentation and fix it in other places.
+    - Fix Vector#sum\_of\_squares to accomodate nil values.
+* Enhancements
+    - Added Vector#center for centering data.
+    - Added Vector#standardize for standardizing data.

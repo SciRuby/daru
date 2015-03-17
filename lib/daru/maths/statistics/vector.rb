@@ -129,7 +129,7 @@ module Daru
 
         def sum_of_squares(m=nil)
           m ||= mean
-          @data.inject(0) { |memo, val| memo + (val - m)**2 }
+          @data.inject(0) { |memo, val| val.nil? ? memo : (memo + (val - m)**2) }
         end
 
         def standard_deviation_population m=nil
@@ -171,6 +171,17 @@ module Daru
           else
             (sorted[(v - 0.5).round].to_f + sorted[(v + 0.5).round]).quo(2)
           end
+        end
+
+        # Center data by subtracting the mean from each non-nil value.
+        def center
+          self - mean
+        end
+
+        # Standardize data by subtracting the mean and then dividing the result
+        # with the sample standard deviation
+        def standardize
+          (self - mean) / standard_deviation_sample
         end
 
         alias :sdp :standard_deviation_population

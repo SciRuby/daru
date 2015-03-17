@@ -1292,7 +1292,7 @@ describe Daru::DataFrame do
       ))
     end
 
-    it "creates row and vector index with (double) index and (double) vector args", focus: true do
+    it "creates row and vector index with (double) index and (double) vector args" do
       agg_index = Daru::MultiIndex.new([
         [:bar, 4],
         [:bar, 5],

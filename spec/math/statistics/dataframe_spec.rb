@@ -82,7 +82,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#corr", focus: true do
+  context "#corr" do
     it "calculates the correlation between the numeric vectors of DataFrame" do
       expect(@df.corr).to eq(Daru::DataFrame.new({
         d: [1,1,1],
