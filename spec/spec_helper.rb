@@ -1,6 +1,7 @@
 require 'rspec'
-require 'awesome_print'
 require 'matrix'
+require 'awesome_print'
+
 
 def mri?
   RUBY_ENGINE == 'ruby'

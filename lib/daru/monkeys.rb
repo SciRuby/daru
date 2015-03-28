@@ -24,7 +24,7 @@ end
 
 class Hash
   def daru_vector index=nil, dtype=Array
-    Daru::Vector.new self.values[0], name: self.keys[0], index: index, dtype: Array
+    Daru::Vector.new self.values[0], name: self.keys[0], index: index, dtype: :array
   end
 
   alias_method :dv, :daru_vector
@@ -32,7 +32,7 @@ end
 
 class NMatrix
   def daru_vector name=nil, index=nil, dtype=NMatrix
-    Daru::Vector.new self, name: name, index: index, dtype: NMatrix
+    Daru::Vector.new self, name: name, index: index, dtype: :nmatrix
   end
 
   alias_method :dv, :daru_vector
@@ -40,7 +40,7 @@ end
 
 class MDArray
   def daru_vector name=nil, index=nil, dtype=MDArray
-    Daru::Vector.new self, name: name, index: index, dtype: MDArray
+    Daru::Vector.new self, name: name, index: index, dtype: :mdarray
   end
 
   alias_method :dv, :daru_vector

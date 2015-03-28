@@ -217,6 +217,11 @@ module Daru
       self[-q..-1]
     end
 
+    # Reports whether missing data is present in the Vector.
+    def has_missing_data?
+      nil_positions.empty?
+    end
+
     # Append an element to the vector by specifying the element and index
     def concat element, index=nil
       raise IndexError, "Expected new unique index" if @index.include? index
