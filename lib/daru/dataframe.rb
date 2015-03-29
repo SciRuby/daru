@@ -268,9 +268,15 @@ module Daru
     # 
     # == Arguments
     # 
-    # 
+    # +vectors_to_clone+ - Names of vectors to clone. Optional
     def clone *vectors_to_clone
-      
+      return super if vectors_to_clone.empty?
+      df = Daru::DataFrame.new({}, index: index)
+      vectors_to_clone.each do |vec|
+        df[vec.to_sym] = @data[@vectors[vec]]
+      end
+
+      df
     end
 
     # Creates a new duplicate dataframe containing only rows 
@@ -1067,9 +1073,13 @@ module Daru
       v        = nil
 
       if vector.is_a?(Daru::Vector)
-        v = Daru::Vector.new [], name: set_name(name), index: @index
-        @index.each do |idx|
-          v[idx] = vector[idx]
+        if vector.index == self.index
+          v = vector
+        else
+          v = Daru::Vector.new [], name: set_name(name), index: @index
+          @index.each do |idx|
+            v[idx] = vector[idx]
+          end
         end
       else
         raise Exception, "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}" if

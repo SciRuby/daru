@@ -674,6 +674,13 @@ describe Daru::DataFrame do
 
         expect(@data_frame.d.class).to eq(Daru::Vector)
       end
+
+      it "does not duplicate Daru::Vector if index with DataFrame is identical" do
+        d = Daru::Vector.new([1,2,3,4,5], index: [:one, :two, :three, :four, :five])
+        @data_frame[:d] = d
+
+        expect(@data_frame[:d].object_id).to eq(d.object_id)
+      end
     end
 
     context Daru::MultiIndex do
@@ -758,6 +765,13 @@ describe Daru::DataFrame do
       expect(@data_frame[:a].object_id).to eq(cloned[:a].object_id)
       expect(@data_frame[:b].object_id).to eq(cloned[:b].object_id)
       expect(@data_frame[:c].object_id).to eq(cloned[:c].object_id)
+    end
+
+    it "returns a view of selected vectors" do
+      cloned = @data_frame.clone(:a, :b)
+      expect(cloned.object_id).to_not eq(@data_frame.object_id)
+      expect(cloned[:a].object_id).to eq(@data_frame[:a].object_id)
+      expect(cloned[:b].object_id).to eq(@data_frame[:b].object_id)
     end
   end
 

@@ -83,5 +83,11 @@
     - Update documentation and fix it in other places.
     - Fix Vector#sum_of_squares and #ranked.
 * Enhancements
-    - Added Vector#center, #standardize, #vector_percentile
-    - Added DataFrame#dup_only_valid
+    - Vector methods
+        - #center
+        - #standardize
+        - #vector_percentile
+    - DataFrame methods
+        - #dup_only_valid
+        - #clone
+        - #[]= does not clone the vector if it has the same index as the DataFrame.
