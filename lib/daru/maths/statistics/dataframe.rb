@@ -68,9 +68,9 @@ module Daru
             to_nmatrix.cov(for_sample_data).to_a
           else
             df_as_matrix = to_matrix
-            denominator  = for_sample_data ? rows - 1 : rows
-            ones         = Matrix.column_vector [1]*rows
-            deviation_scores = df_as_matrix - (ones * ones.transpose * df_as_matrix) / rows
+            denominator  = for_sample_data ? nrows - 1 : nrows
+            ones         = Matrix.column_vector [1]*nrows
+            deviation_scores = df_as_matrix - (ones * ones.transpose * df_as_matrix) / nrows
             ((deviation_scores.transpose * deviation_scores) / denominator).to_a
           end
 

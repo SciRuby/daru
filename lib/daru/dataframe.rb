@@ -263,6 +263,28 @@ module Daru
       Daru::DataFrame.new src, order: @vectors.dup, index: @index.dup, name: @name
     end
 
+    # Returns a 'view' of the DataFrame, i.e the object ID's of vectors are
+    # preserved.
+    # 
+    # == Arguments
+    # 
+    # 
+    def clone *vectors_to_clone
+      
+    end
+
+    # Creates a new duplicate dataframe containing only rows 
+    # without a single missing value.
+    def dup_only_valid
+      rows_with_nil = @data.inject([]) do |memo, vector|
+        memo.concat vector.nil_positions
+        memo
+      end.uniq
+
+      row_indexes = Array.new(nrows) { |i| i }
+      self.row[*(row_indexes - rows_with_nil)]
+    end
+
     # Iterate over each vector
     def each_vector(&block)
       return to_enum(:each_vector) unless block_given?
@@ -447,12 +469,12 @@ module Daru
     end
 
     # The number of rows
-    def rows
+    def nrows
       shape[0]
     end
 
     # The number of vectors
-    def cols
+    def ncols
       shape[1]
     end
 

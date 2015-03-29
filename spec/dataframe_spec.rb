@@ -735,6 +735,32 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#dup_only_valid" do
+    it "dups rows with non-missing data only" do
+      missing_data_df = Daru::DataFrame.new({
+        a: [1  , 2, 3, nil, 4, nil, 5],
+        b: [nil, 2, 3, nil, 4, nil, 5],
+        c: [1,   2, 3, 43 , 4, nil, 5]
+      })
+      df = Daru::DataFrame.new({
+        a: [2, 3, 4, 5],
+        b: [2, 3, 4, 5],
+        c: [2, 3, 4, 5]
+      }, index: [1,2,4,6]) 
+      expect(missing_data_df.dup_only_valid).to eq(df)
+    end
+  end
+
+  context "#clone" do
+    it "returns a view of the whole dataframe" do
+      cloned = @data_frame.clone
+      expect(@data_frame.object_id).to_not eq(cloned.object_id)
+      expect(@data_frame[:a].object_id).to eq(cloned[:a].object_id)
+      expect(@data_frame[:b].object_id).to eq(cloned[:b].object_id)
+      expect(@data_frame[:c].object_id).to eq(cloned[:c].object_id)
+    end
+  end
+
   context "#each_vector" do
     context Daru::Index do
       it "iterates over all vectors" do

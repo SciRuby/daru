@@ -84,3 +84,4 @@
     - Fix Vector#sum_of_squares and #ranked.
 * Enhancements
     - Added Vector#center, #standardize, #vector_percentile
+    - Added DataFrame#dup_only_valid
