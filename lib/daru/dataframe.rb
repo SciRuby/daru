@@ -91,6 +91,11 @@ module Daru
     # in which rows of the DataFrame will be named.
     # 
     # +:name+  - A name for the DataFrame.
+    #
+    # +:clone+ - Specify as *true* or *false*. When set to false, and Vector
+    # objects are passed for the source, the Vector objects will not duplicated
+    # when creating the DataFrame. Will have no effect if Array is passed in 
+    # the source. Default to *true*.
     # 
     # == Usage
     #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [6,7,8,9]}, order: [:b, :a], 
@@ -106,6 +111,7 @@ module Daru
     def initialize source, opts={}
       vectors = opts[:order]
       index   = opts[:index]
+      clone   = opts[:clone] || true
       @name   = (opts[:name] || SecureRandom.uuid).to_sym
       @data   = []
 
@@ -271,12 +277,6 @@ module Daru
     # +vectors_to_clone+ - Names of vectors to clone. Optional
     def clone *vectors_to_clone
       return super if vectors_to_clone.empty?
-      df = Daru::DataFrame.new({}, index: index)
-      vectors_to_clone.each do |vec|
-        df[vec.to_sym] = @data[@vectors[vec]]
-      end
-
-      df
     end
 
     # Creates a new duplicate dataframe containing only rows 
@@ -387,6 +387,17 @@ module Daru
       end
 
       df
+    end
+
+    # Retrieves a Daru::Vector, based on the result of calculation 
+    # performed on each case.
+    def collect_rows
+      data = []
+      each_row do |row|
+        data.push yield(row)
+      end
+
+      Daru::Vector.new(data)
     end
 
     # Delete a vector
@@ -1073,13 +1084,9 @@ module Daru
       v        = nil
 
       if vector.is_a?(Daru::Vector)
-        if vector.index == self.index
-          v = vector
-        else
-          v = Daru::Vector.new [], name: set_name(name), index: @index
-          @index.each do |idx|
-            v[idx] = vector[idx]
-          end
+        v = Daru::Vector.new [], name: set_name(name), index: @index
+        @index.each do |idx|
+          v[idx] = vector[idx]
         end
       else
         raise Exception, "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}" if

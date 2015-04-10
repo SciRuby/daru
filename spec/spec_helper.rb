@@ -1,7 +1,7 @@
 require 'rspec'
 require 'matrix'
 require 'awesome_print'
-
+require 'narray'
 
 def mri?
   RUBY_ENGINE == 'ruby'

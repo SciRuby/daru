@@ -264,6 +264,17 @@ describe Daru::DataFrame do
         expect(df.vectors).to eq([:a,:c,:b].to_index)
       end
 
+      it "does not copy vectors when clone: false" do
+        a = Daru::Vector.new([1,2,3,4,5])
+        b = Daru::Vector.new([1,2,3,4,5])
+        c = Daru::Vector.new([1,2,3,4,5])
+        df = Daru::DataFrame.new({a: a, b: b, c: c}, clone: false)
+        
+        expect(df[:a].object_id).to eq(a.object_id)
+        expect(df[:b].object_id).to eq(b.object_id)
+        expect(df[:c].object_id).to eq(c.object_id)
+      end
+
       it "raises error for incomplete DataFrame index" do
         expect {
           df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
@@ -673,13 +684,6 @@ describe Daru::DataFrame do
         @data_frame[:d, :vector] = [69,99,108,85,49]
 
         expect(@data_frame.d.class).to eq(Daru::Vector)
-      end
-
-      it "does not duplicate Daru::Vector if index with DataFrame is identical" do
-        d = Daru::Vector.new([1,2,3,4,5], index: [:one, :two, :three, :four, :five])
-        @data_frame[:d] = d
-
-        expect(@data_frame[:d].object_id).to eq(d.object_id)
       end
     end
 

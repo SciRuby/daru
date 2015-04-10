@@ -2,16 +2,12 @@
 # to make them compatible with statsample.
 module Daru
   class DataFrame
+    alias :correlation_matrix :corr
+    alias :fields :vectors
   end
 
   class Vector
     alias :flawed? :has_missing_data?
     alias :is_valid? :exists?
-
-    module GSL_
-      def gsl
-        @gsl ||= GSL::Vector.alloc(@data.to_a) if nil_positions.size > 0
-      end
-    end
   end
 end
