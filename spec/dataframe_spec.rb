@@ -1032,6 +1032,21 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#to_hash" do
+    it "converts to a hash" do
+      expect(@data_frame.to_hash).to eq( 
+        {
+          a: Daru::Vector.new([1,2,3,4,5], 
+            index: [:one, :two, :three, :four, :five]), 
+          b: Daru::Vector.new([11,12,13,14,15], 
+            index: [:one, :two, :three, :four, :five]),
+          c: Daru::Vector.new([11,22,33,44,55], 
+            index: [:one, :two, :three, :four, :five])
+        }
+      )
+    end
+  end
+
   context "#recast" do
     it "recasts underlying vectors" do
       @data_frame.recast a: :nmatrix, c: :nmatrix

@@ -762,6 +762,17 @@ module Daru
       end
     end
 
+    # Converts DataFrame to a hash with keys as vector names and values as
+    # the corresponding vectors.
+    def to_hash
+      hsh = {}
+      @vectors.each_with_index do |vec_name, idx|
+        hsh[vec_name] = @data[idx]
+      end
+
+      hsh
+    end
+
     # Convert to html for IRuby.
     def to_html threshold=30
       html  = '<table><tr><th></th>'

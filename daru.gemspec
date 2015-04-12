@@ -33,9 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'awesome_print'
   spec.add_development_dependency 'nyaplot'
   spec.add_development_dependency 'nmatrix', '~> 0.1.0'
-
-  # spec.add_development_dependency 'narray'
-  spec.add_development_dependency '/home/sameer/github_repos/daru/spec/adapters/statsample/lib/statsample'
+  spec.add_development_dependency '/home/sameer/github_repos/statsample/lib/statsample'
   # if RUBY_ENGINE != 'jruby'
   # end
 end

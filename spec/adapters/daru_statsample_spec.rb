@@ -1,6 +1,6 @@
 require 'spec_helper'
 require 'daru/adapters/statsample'
-require 'adapters/statsample/lib/statsample'
+require '/home/sameer/github_repos/statsample/lib/statsample'
 
 describe "daru statsample adapter", focus: true do
   context Statsample::Bivariate do
