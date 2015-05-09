@@ -4,6 +4,7 @@ daru
 Data Analysis in RUby
 
 [![Gem Version](https://badge.fury.io/rb/daru.svg)](http://badge.fury.io/rb/daru)
+[![Build Status](https://travis-ci.org/v0dro/daru.svg)](https://travis-ci.org/v0dro/daru)
 
 ## Introduction
 

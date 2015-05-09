@@ -95,7 +95,8 @@ module Daru
     # +:clone+ - Specify as *true* or *false*. When set to false, and Vector
     # objects are passed for the source, the Vector objects will not duplicated
     # when creating the DataFrame. Will have no effect if Array is passed in 
-    # the source. Default to *true*.
+    # the source, or if the passed Daru::Vectors have different indexes. 
+    # Default to *true*.
     # 
     # == Usage
     #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [6,7,8,9]}, order: [:b, :a], 
@@ -111,7 +112,7 @@ module Daru
     def initialize source, opts={}
       vectors = opts[:order]
       index   = opts[:index]
-      clone   = opts[:clone] || true
+      clone   = true unless opts[:clone] == false
       @name   = (opts[:name] || SecureRandom.uuid).to_sym
       @data   = []
 
@@ -171,13 +172,19 @@ module Daru
               all_indexes.flatten!.uniq!.sort!
 
               @index = Daru::Index.new all_indexes
+              clone = true
             end
-            @vectors.each do |vector|
-              @data << Daru::Vector.new([], name: vector, index: @index)
 
-              @index.each do |idx|
-                @data[@vectors[vector]][idx] = source[vector][idx]
+            if clone
+              @vectors.each do |vector|
+                @data << Daru::Vector.new([], name: vector, index: @index)
+
+                @index.each do |idx|
+                  @data[@vectors[vector]][idx] = source[vector][idx]
+                end
               end
+            else
+              @data.concat source.values
             end
           else
             @index = create_index(index || source.values[0].size)
@@ -274,9 +281,16 @@ module Daru
     # 
     # == Arguments
     # 
-    # +vectors_to_clone+ - Names of vectors to clone. Optional
+    # +vectors_to_clone+ - Names of vectors to clone. Optional. Will return
+    # a view of the whole data frame otherwise.
     def clone *vectors_to_clone
       return super if vectors_to_clone.empty?
+
+      h = vectors_to_clone.inject({}) do |hsh, vec|
+        hsh[vec] = self[vec]
+        hsh
+      end
+      Daru::DataFrame.new(h, clone: false)
     end
 
     # Creates a new duplicate dataframe containing only rows 
@@ -1184,10 +1198,10 @@ module Daru
     end
 
     def all_vectors_have_equal_indexes? source
-      index = source.values[0].index
+      idx = source.values[0].index
 
       source.all? do |name, vector|
-        index == vector.index
+        idx == vector.index
       end
     end
 

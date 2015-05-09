@@ -264,7 +264,7 @@ describe Daru::DataFrame do
         expect(df.vectors).to eq([:a,:c,:b].to_index)
       end
 
-      it "does not copy vectors when clone: false" do
+      it "does not copy vectors when clone: false", focus: true do
         a = Daru::Vector.new([1,2,3,4,5])
         b = Daru::Vector.new([1,2,3,4,5])
         c = Daru::Vector.new([1,2,3,4,5])
