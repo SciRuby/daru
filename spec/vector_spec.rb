@@ -4,7 +4,7 @@ describe Daru::Vector do
   ALL_DTYPES = [:array, :nmatrix]
 
   ALL_DTYPES.each do |dtype|
-    describe dtype do
+    describe dtype.to_s do
       context "#initialize" do
         before do
           @tuples = [
@@ -107,7 +107,7 @@ describe Daru::Vector do
 
           it "returns a vector when specified numeric Range" do
             expect(@dv[3..4]).to eq(Daru::Vector.new([4,5], name: :yoga, 
-              index: [:padme, :r2d2], name: :yoga, dtype: dtype))
+              index: [:padme, :r2d2], dtype: dtype))
           end
         end
 
@@ -291,7 +291,7 @@ describe Daru::Vector do
         end
       end
 
-      context "#delete_at" do
+      context "#delete_at",focus: true do
         context Daru::Index do
           before :each do
             @dv = Daru::Vector.new [1,2,3,4,5], name: :a, 
@@ -302,14 +302,14 @@ describe Daru::Vector do
             @dv.delete_at :one
 
             expect(@dv).to eq(Daru::Vector.new [2,3,4,5], name: :a, 
-              index: [:two, :three, :four, :five]), dtype: dtype
+              index: [:two, :three, :four, :five], dtype: dtype)
           end
 
           it "deletes element of specified integer index" do
             @dv.delete_at 2
 
             expect(@dv).to eq(Daru::Vector.new [1,2,4,5], name: :a, 
-              index: [:one, :two, :four, :five]), dtype: dtype
+              index: [:one, :two, :four, :five], dtype: dtype)
           end
         end
 

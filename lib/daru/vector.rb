@@ -346,7 +346,8 @@ module Daru
       Daru::Vector.new(vector, index: create_index(index), name: @name, dtype: @dtype)
     end
 
-    # Just sort the data and get an Array in return using Enumerable#sort. Non-destructive.
+    # Just sort the data and get an Array in return using Enumerable#sort. 
+    # Non-destructive.
     def sorted_data &block
       @data.to_a.sort(&block)
     end
@@ -606,7 +607,7 @@ module Daru
     end
 
     # Note: To maintain sanity, this _MUST_ be the _ONLY_ place in daru where the
-    #   @dtype variable is set and the underlying data type of vector changed.
+    # @dtype variable is set and the underlying data type of vector changed.
     def cast_vector_to dtype, source=nil, nm_dtype=nil
       source = @data if source.nil?
       return @data if @dtype and @dtype == dtype
