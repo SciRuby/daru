@@ -64,9 +64,9 @@ describe Daru::Vector do
         end
 
         it "inserts nils for extra indices" do
-          dv = Daru::Vector.new [1,2,3], name: :yoga, index: [0,1,2,3,4], dtype: :array
+          dv = Daru::Vector.new [1,2,3], name: :yoga, index: [0,1,2,3,4], dtype: dtype
 
-          expect(dv).to eq([1,2,3,nil,nil].dv(:yoga,nil, Array))
+          expect(dv).to eq([1,2,3,nil,nil].dv(:yoga,nil, :array))
         end
 
         it "inserts nils for extra indices (MultiIndex)" do
@@ -615,6 +615,15 @@ describe Daru::Vector do
 
     it "converts Daru::Vector to a vertical Ruby Matrix" do
       expect(@vector.to_matrix(:vertical)).to eq(Matrix.columns([[1,2,3,4,5,6]]))
+    end
+  end
+
+  context "#only_valid" do
+    it "returns a Vector of only non-nil data" do
+      vector = Daru::Vector.new [1,2,3,4,nil,3,nil], 
+        index: [:a, :b, :c, :d, :e, :f, :g]
+      expect(vector.only_valid).to eq(Daru::Vector.new([1,2,3,4,3], 
+        index: [:a, :b, :c, :d, :f]))
     end
   end
 end if mri?

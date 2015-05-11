@@ -82,7 +82,7 @@ module Daru
       name   = opts[:name]
       set_name name
 
-      @data  = cast_vector_to(opts[:dtype], source, opts[:nm_dtype])
+      @data  = cast_vector_to(opts[:dtype] || :array, source, opts[:nm_dtype])
       @index = create_index(index || @data.size)
       
       if @index.size > @data.size
@@ -610,11 +610,10 @@ module Daru
       new_vector = 
       case dtype
       when :array   then Daru::Accessors::ArrayWrapper.new(source, self)
-      when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source, self, 
-        nm_dtype)
+      when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source, self, nm_dtype)
       when :gsl then Daru::Accessors::GSLWrapper.new(source, self)
       when :mdarray then raise NotImplementedError, "MDArray not yet supported."
-      else Daru::Accessors::ArrayWrapper.new(source.dup, self)
+      else raise "Unknown dtype #{dtype}"
       end
 
       @dtype = dtype || :array

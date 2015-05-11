@@ -13,6 +13,7 @@
         - #vector_percentile
         - Added a new wrapper class Daru::Accessors::GSLWrapper for wrapping around GSL::Vector, which works similarly to NMatrixWrapper or ArrayWrapper.
         - Added a host of statistical methods to GSLWrapper that call the relevant GSL::Vector functions for super-fast C level computations.
+        - More stats functions - #vector_standarized_compute, #vector_centered_compute, #sample_with_replacement, #sample_without_replacement
     - DataFrame
         - #dup_only_valid
         - #clone

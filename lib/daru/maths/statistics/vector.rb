@@ -26,7 +26,7 @@ module Daru
         end
 
         def median
-          percentile 50
+          @data.respond_to?(:median) ? @data.median : percentile(50)
         end
 
         def mode
@@ -120,13 +120,21 @@ module Daru
         # Sample variance with denominator (N-1)
         def variance_sample m=nil
           m ||= self.mean
-          sum_of_squares(m).quo((@size - @nil_positions.size) - 1)
+          if @data.respond_to? :variance_sample 
+            @data.variance_sample m
+          else
+            sum_of_squares(m).quo((@size - @nil_positions.size) - 1)
+          end
         end
 
         # Population variance with denominator (N)
         def variance_population m=nil
           m ||= mean
-          sum_of_squares(m).quo((@size - @nil_positions.size)).to_f
+          if @data.respond_to? :variance_population
+            @data.variance_population m
+          else
+            sum_of_squares(m).quo((@size - @nil_positions.size)).to_f            
+          end
         end
 
         def sum_of_squares(m=nil)
@@ -136,24 +144,41 @@ module Daru
 
         def standard_deviation_population m=nil
           m ||= mean
-          Math::sqrt(variance_population(m))
+          if @data.respond_to? :standard_deviation_population
+            @data.standard_deviation_population(m)
+          else
+            Math::sqrt(variance_population(m))
+          end
         end
 
         def standard_deviation_sample m=nil
-          Math::sqrt(variance_sample(m))
+          m ||= mean
+          if @data.respond_to? :standard_deviation_sample
+            @data.standard_deviation_sample m
+          else
+            Math::sqrt(variance_sample(m))
+          end
         end
 
         # Calculate skewness using (sigma(xi - mean)^3)/((N)*std_dev_sample^3)
         def skew m=nil
-          m ||= mean
-          th  = @data.inject(0) { |memo, val| memo + ((val - m)**3) }
-          th.quo ((@size - @nil_positions.size) * (standard_deviation_sample(m)**3))
+          if @data.respond_to? :skew
+            @data.skew
+          else
+            m ||= mean
+            th  = @data.inject(0) { |memo, val| memo + ((val - m)**3) }
+            th.quo ((@size - @nil_positions.size) * (standard_deviation_sample(m)**3))
+          end
         end
 
         def kurtosis m=nil
-          m ||= mean
-          fo  = @data.inject(0){ |a, x| a + ((x - m) ** 4) }
-          fo.quo((@size - @nil_positions.size) * standard_deviation_sample(m) ** 4) - 3
+          if @data.respond_to? :kurtosis
+            @data.kurtosis
+          else
+            m ||= mean
+            fo  = @data.inject(0){ |a, x| a + ((x - m) ** 4) }
+            fo.quo((@size - @nil_positions.size) * standard_deviation_sample(m) ** 4) - 3
+          end
         end
 
         def average_deviation_population m=nil
@@ -191,6 +216,52 @@ module Daru
         def vector_percentile
           c = size - nil_positions.size
           ranked.map! { |i| i.nil? ? nil : (i.quo(c)*100).to_f }
+        end
+
+        def vector_standarized_compute(m,sd)
+          if @data.respond_to? :vector_standarized_compute
+            @data.vector_standarized_compute(m,sd)
+          else
+            Daru::Vector.new @data.collect { |x| x.nil? ? nil : (x.to_f - m).quo(sd) },
+              index: index, name: name, dtype: dtype
+          end
+        end
+        
+        def vector_centered_compute(m)
+          if @data.respond_to? :vector_centered_compute
+            @data.vector_centered_compute(m)
+          else
+            Daru::Vector.new @data.collect { |x| x.nil? ? nil : x.to_f-m },
+              index: index, name: name, dtype: dtype
+          end
+        end
+
+        # Returns an random sample of size n, with replacement,
+        # only with non-nil data.
+        #
+        # In all the trails, every item have the same probability
+        # of been selected. Might lead to infinite loop if too
+        # many missing data are present due to random number
+        # generation not hitting the right mark. Use with caution.
+        def sample_with_replacement(sample=1)
+          if @data.respond_to? :sample_with_replacement
+            @data.sample_with_replacement sample
+          else
+            # TODO
+          end
+        end
+        
+        # Returns an random sample of size n, without replacement,
+        # only with valid data.
+        #
+        # Every element could only be selected once.
+        #
+        # A sample of the same size of the vector is the vector itself.
+        def sample_without_replacement(sample=1)
+          if @data.respond_to? :sample_without_replacement
+            @data.sample_without_replacement sample
+          else
+          end
         end
 
         alias :sdp :standard_deviation_population

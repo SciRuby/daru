@@ -42,7 +42,7 @@ describe Daru::Vector do
 
       context "#variance_population" do
         it "calculates population variance" do
-          expect(@dv.variance_population).to eq(67606.95999999999)
+          expect(@dv.variance_population).to be_within(0.001).of(67606.95999999999)
         end
       end
 
@@ -214,45 +214,34 @@ describe Daru::Vector do
           )
         end
       end
+
+      context "#vector_standarized_compute" do
+        it "calculates vector_standarized_compute" do
+          @dv.vector_standarized_compute(@dv.mean, @dv.sd)
+          @dv_with_nils.vector_standarized_compute(@dv.mean, @dv.sd)
+        end
+      end
+
+      context "#vector_centered_compute" do
+        it "calculates vector_centered_compute" do
+          @dv.vector_centered_compute(@dv.mean)
+          @dv_with_nils.vector_centered_compute(@dv.mean)
+        end
+      end
+      
+      context "#sample_with_replacement" do
+        it "calculates sample_with_replacement" do
+          @dv.sample_with_replacement
+          @dv_with_nils.sample_with_replacement
+        end
+      end
+
+      context "#sample_without_replacement" do
+        it "calculates sample_without_replacement" do
+          @dv.sample_without_replacement
+          @dv_with_nils.sample_without_replacement
+        end
+      end
     end
   end
-end
-
-describe Daru::Accessors::GSLWrapper::GSLStatistics do
-  context "#vector_standarized_compute" do
-  end
-
-  context "#vector_centered_compute" do
-  end
-  
-  context "#sample_with_replacement" do
-  end
-
-  context "#sample_without_replacement" do
-  end
-
-  context "#median" do
-  end
-
-  context "#variance_sample" do
-  end
-  
-  context "#standard_deviation_sample" do
-  end
-  
-  context "#variance_population" do
-  end
-
-  context "#standard_deviation_population" do
-  end
-
-  context "#skew" do
-  end
-
-  context "#kurtosis" do
-  end
-end
-
-describe "Test calling stats methods before and after changing data types (to and from GSL)" do
-
 end

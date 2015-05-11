@@ -1,9 +1,60 @@
 module Daru
   module Accessors
+    module GSLStatistics
+      def vector_standarized_compute(m,sd)
+        Daru::Vector.new @data.collect { |x| (x.to_f - m).quo(sd) }, dtype: :gsl,
+          index: @context.index, name: @context.name
+      end
+      
+      def vector_centered_compute(m)
+        Daru::Vector.new @data.collect {|x| (x.to_f - m)}, dtype: :gsl,
+          index: @context.index, name: @context.name
+      end
+
+      def sample_with_replacement(sample=1)
+        r = GSL::Rng.alloc(GSL::Rng::MT19937,rand(10000))
+        Daru::Vector.new(r.sample(@data, sample).to_a, dtype: :gsl, 
+          index: @context.index, name: @context.name)
+      end
+      
+      def sample_without_replacement(sample=1)
+        r = GSL::Rng.alloc(GSL::Rng::MT19937,rand(10000))
+        r.choose(@data, sample).to_a
+      end
+
+      def median
+        GSL::Stats::median_from_sorted_data(@data.sort)
+      end
+      
+      def variance_sample(m)
+        @data.variance_m
+      end
+      
+      def standard_deviation_sample(m)
+        @data.sd(m)
+      end
+
+      def variance_population(m)
+        @data.variance_with_fixed_mean(m)
+      end
+
+      def standard_deviation_population m
+        @data.sd_with_fixed_mean(m)
+      end
+
+      def skew
+        @data.skew
+      end
+
+      def kurtosis
+        @data.kurtosis
+      end
+    end
+
     class GSLWrapper
       include Enumerable
       extend Forwardable
-      include GSLStatistics
+      include Daru::Accessors::GSLStatistics
 
       def_delegators :@data, :[], :size, :to_a, :each, :mean, 
         :sum, :prod, :max, :min
@@ -51,59 +102,6 @@ module Daru
 
       def == other
         @data == other.data
-      end
-    end
-
-    module GSLStatistics
-      def vector_standarized_compute(m,sd)
-        Daru::Vector.new @data.collect { |x| (x.to_f - m).quo(sd) }
-      end
-      
-      def vector_centered_compute(m)
-        @data.collect {|x| (x.to_f - m)}.to_scale
-      end
-
-      def sample_with_replacement(sample=1)
-        r = GSL::Rng.alloc(GSL::Rng::MT19937,rand(10000))
-        Statsample::Vector.new(r.sample(@data, sample).to_a,:scale)
-      end
-      
-      def sample_without_replacement(sample=1)
-        r = GSL::Rng.alloc(GSL::Rng::MT19937,rand(10000))
-        r.choose(gsl, sample).to_a
-      end
-
-      def median
-        sorted=GSL::Vector.alloc(@scale_data.sort)
-        GSL::Stats::median_from_sorted_data(sorted)
-      end
-      
-      def variance_sample(m=nil)
-        m ||= mean
-        @data.variance_m
-      end
-      
-      def standard_deviation_sample(m=nil)
-        m ||= mean
-        @data.sd(m)
-      end
-
-      def variance_population(m=nil)
-        m ||= mean
-        @data.variance_with_fixed_mean(m)
-      end
-
-      def standard_deviation_population(m=nil)
-        m ||= mean
-        @data.sd_with_fixed_mean(m)
-      end
-
-      def skew
-        @data.skew
-      end
-
-      def kurtosis
-        @data.kurtosis
       end
     end
   end
