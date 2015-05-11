@@ -1,3 +1,2 @@
 *.gem
 Gemfile.lock
-spec/adapters/statsample/
