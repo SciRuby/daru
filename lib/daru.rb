@@ -19,6 +19,8 @@ module Daru
   end
   
   create_has_library :gsl
+  create_has_library :nmatrix
+  create_has_library :nyaplot
 end
 
 require 'csv'

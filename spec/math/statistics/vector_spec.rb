@@ -1,9 +1,9 @@
 require 'spec_helper.rb'
 
 describe Daru::Vector do
-  [:array].each do |dtype| #nmatrix still unstable
+  [:array, :gsl].each do |dtype| #nmatrix still unstable
     describe dtype do
-      before :each do
+      before do
         @dv = Daru::Vector.new [323, 11, 555, 666, 234, 21, 666, 343, 1, 2], dtype: dtype
         @dv_with_nils = Daru::Vector.new [323, 11, 555, nil, 666, 234, 21, 666, 343, nil, 1, 2]
       end
@@ -17,6 +17,7 @@ describe Daru::Vector do
 
       context "#sum_of_squares" do
         it "calcs sum of squares, omits nil values" do
+          @dv.sum_of_squares
           @dv_with_nils.sum_of_squares
         end
       end
@@ -182,25 +183,25 @@ describe Daru::Vector do
       
       context "#round" do
         it "rounds non-nil values" do
-          vector = Daru::Vector.new([1.44,55.32,nil,4], dtype: dtype)
-          expect(vector.round(1)).to eq(Daru::Vector.new([1.4,55.3,nil,4], dtype: dtype))
+          vector = Daru::Vector.new([1.44,55.32,nil,4])
+          expect(vector.round(1)).to eq(Daru::Vector.new([1.4,55.3,nil,4]))
         end
       end
 
       context "#center" do
         it "returns a centered vector" do
-          vector = Daru::Vector.new([11,55,33,25,22,nil], dtype: dtype)
+          vector = Daru::Vector.new([11,55,33,25,22,nil])
           expect(vector.center.round(1)).to eq(
-            Daru::Vector.new([-18.2, 25.8, 3.8, -4.2, -7.2, nil], dtype: dtype)
+            Daru::Vector.new([-18.2, 25.8, 3.8, -4.2, -7.2, nil])
             )
         end
       end
 
       context "#standardize" do
         it "returns a standardized vector" do
-          vector = Daru::Vector.new([11,55,33,25,nil,22], dtype: dtype)
+          vector = Daru::Vector.new([11,55,33,25,nil,22])
           expect(vector.standardize.round(2)).to eq(
-            Daru::Vector.new([-1.11, 1.57, 0.23, -0.26,nil, -0.44], dtype: dtype)
+            Daru::Vector.new([-1.11, 1.57, 0.23, -0.26,nil, -0.44])
             )
         end
       end

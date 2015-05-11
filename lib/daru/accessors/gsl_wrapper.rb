@@ -1,5 +1,3 @@
-require 'gsl' if Daru.has_gsl?
-
 module Daru
   module Accessors
     class GSLWrapper
@@ -47,4 +45,4 @@ module Daru
       end
     end
   end
-end
+end if Daru.has_gsl?

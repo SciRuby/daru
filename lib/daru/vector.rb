@@ -202,14 +202,6 @@ module Daru
       end
     end
 
-    def << element
-      concat element
-    end
-
-    def push element
-      concat element  
-    end
-
     def head q=10
       self[0..q]
     end
@@ -241,6 +233,8 @@ module Daru
       set_size
       set_nil_positions
     end
+    alias :push :concat 
+    alias :<< :concat
 
     # Cast a vector to a new data type.
     # 
@@ -250,7 +244,7 @@ module Daru
     def cast opts={}
       dtype = opts[:dtype]
       raise ArgumentError, "Unsupported dtype #{opts[:dtype]}" unless 
-        dtype == :array or dtype == :nmatrix
+        dtype == :array or dtype == :nmatrix or dtype == :gsl
 
       @data = cast_vector_to dtype
     end
@@ -618,6 +612,7 @@ module Daru
       when :array   then Daru::Accessors::ArrayWrapper.new(source.to_a.dup, self)
       when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source.to_a.dup, 
         self, nm_dtype)
+      when :gsl then Daru::Accessors::GSLWrapper.new(source.to_a, self)
       when :mdarray then raise NotImplementedError, "MDArray not yet supported."
       else Daru::Accessors::ArrayWrapper.new(source.dup, self)
       end

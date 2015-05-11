@@ -1,9 +1,3 @@
-begin
-  require 'nmatrix' unless jruby?
-rescue LoadError => e
-  puts "Please install the nmatrix gem for fast and efficient data storage."
-end
-
 module Daru
   module Accessors
     # Internal class for wrapping NMatrix
@@ -109,4 +103,4 @@ module Daru
       end
     end
   end
-end
+end if Daru.has_nmatrix?
