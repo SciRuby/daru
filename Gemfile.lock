@@ -4,6 +4,12 @@ PATH
     daru (0.0.5)
 
 PATH
+  remote: /home/sameer/gitrepos/gsl-nmatrix
+  specs:
+    gsl-nmatrix (1.17)
+      nmatrix (>= 0.1.0)
+
+PATH
   remote: /home/sameer/gitrepos/statsample
   specs:
     statsample (1.4.3)
@@ -76,6 +82,7 @@ DEPENDENCIES
   awesome_print
   bundler
   daru!
+  gsl-nmatrix!
   nmatrix (~> 0.1.0)
   nyaplot
   rake

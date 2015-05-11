@@ -5,6 +5,7 @@ require 'maths/statistics/vector.rb'
 require 'plotting/vector.rb'
 require 'accessors/array_wrapper.rb'
 require 'accessors/nmatrix_wrapper.rb'
+require 'accessors/gsl_wrapper.rb'
 
 module Daru
   class Vector

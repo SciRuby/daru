@@ -34,3 +34,30 @@ end
 describe Daru::Accessors::ArrayWrapper do
   
 end
+
+describe Daru::Accessors::GSLWrapper do
+  before :each do
+    stub_context = Object.new
+    @gsl_wrapper = Daru::Accessors::GSLWrapper.new([1,2,3,4,5,6], stub_context)
+  end
+
+  context ".new" do
+    it "actually creates a GSL Vector" do
+      expect(@gsl_wrapper.data.class).to eq(GSL::Vector)
+    end
+  end
+
+  context "#mean" do
+    it "computes mean" do
+      expect(@gsl_wrapper.mean).to eq(10.5)
+    end
+  end
+
+  context "#map!" do
+    it "destructively maps" do
+      expect(@gsl_wrapper.map! { |a| a += 1 }).to eq(
+        Daru::Accessors::GSLWrapper.new([2,3,4,5,6,7], stub_context)
+      )
+    end
+  end
+end
