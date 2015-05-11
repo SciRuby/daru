@@ -1,46 +1,23 @@
-== 0.0.1
-* Added classes for DataFrame and Vector alongwith some super-basic functions to get off the ground
+== 0.0.6
 
-== 0.0.2
-* Added iterators for dataframe and vector alongwith printing functions (to_html) to interface properly with iRuby notebook.
-
-== 0.0.2.1
-* Fixed bugs with previous code and more iterators
-
-== 0.0.2.2
-* Added test cases and multiple column access through the [] operator on DataFrames
-
-== 0.0.2.3
-* Added #filter\_rows and #delete_row to DataFrame and changed #row to return a row containing a Hash of column name and value.
-* Vector objects passed into a DataFrame are now duplicated so that any changes dont affect the original vector.
-* Added an optional opts argument to DataFrame.
-* Sending more fields than vectors in DataFrame will cause addition of nil vectors.
-* Init a DataFrame without having to convert explicitly to vectors.
-
-== 0.0.2.4
-* Initialize dataframe from an array which looks like [{a: 10, b: 20}, {a: 11, b: 12}]. Works for parsed JSON.
-* Over-riding vectors in DataFrame will still preserve order.
-* Any re-assignment of rows in #each_row and #each_row_with_index will reflect in the DataFrame.
-* Added #to_a and #to_json to DataFrame.
-
-== 0.0.3
-* This release is a complete rewrite of the entire gem to accomodate index values.
-
-== 0.0.3.1
-* Added aritmetic methods for vector aritmetic by taking the index of values into account.
-
-== 0.0.4
-* Added wrappers for Array, NMatrix and MDArray such that the external implementation is completely transparent of the data type being used internally.
-* Added statistics methods for vectors for ArrayWrapper. These are compatible with statsample methods.
-* Added plotting functions for DataFrame and Vector using Nyaplot.
-* Create a DataFrame by specifying the rows with the ".rows" class method.
-* Create a Vector from a Hash.
-* Call a Vector element by specfying the index name as a method call (method_missing logic).
-* Retrive multiple rows of a DataFrame by specfying a Range or an Array with multiple index names.
-* #head and #tail for DataFrame.
-* #uniq for Vector.
-* #max for Vector can return a Vector object with the index set to the index of the max value.
-* Tonnes of documentation for most methods.
+* Fixes
+    - Update documentation and fix it in other places.
+    - Fix Vector#sum_of_squares and #ranked.
+    - Fixed some tests that were giving RSpec warnings
+* Enhancements
+    - Wrote a proper .travis.yml
+    - Added optional GSL dependency gsl-nmatrix
+    - Vector
+        - #center
+        - #standardize
+        - #vector_percentile
+        - Added a new wrapper class Daru::Accessors::GSLWrapper for wrapping around GSL::Vector, which works similarly to NMatrixWrapper or ArrayWrapper.
+        - Added a host of statistical methods to GSLWrapper that call the relevant GSL::Vector functions for super-fast C level computations.
+    - DataFrame
+        - #dup_only_valid
+        - #clone
+        - #[]= does not clone the vector if it has the same index as the DataFrame.
+        - Added a :clone option to initialize that will not clone Daru::Vectors passed into the constructor.
 
 == 0.0.5
 
@@ -77,17 +54,46 @@
 * Added #covariance to calculate the covariance between numbers of a DataFrame and #correlation to calculate correlation. 
 * Enumerators return Enumerator objects if there is no block.
 
-== 0.0.6
+== 0.0.4
+* Added wrappers for Array, NMatrix and MDArray such that the external implementation is completely transparent of the data type being used internally.
+* Added statistics methods for vectors for ArrayWrapper. These are compatible with statsample methods.
+* Added plotting functions for DataFrame and Vector using Nyaplot.
+* Create a DataFrame by specifying the rows with the ".rows" class method.
+* Create a Vector from a Hash.
+* Call a Vector element by specfying the index name as a method call (method_missing logic).
+* Retrive multiple rows of a DataFrame by specfying a Range or an Array with multiple index names.
+* #head and #tail for DataFrame.
+* #uniq for Vector.
+* #max for Vector can return a Vector object with the index set to the index of the max value.
+* Tonnes of documentation for most methods.
 
-* Fixes
-    - Update documentation and fix it in other places.
-    - Fix Vector#sum_of_squares and #ranked.
-* Enhancements
-    - Vector methods
-        - #center
-        - #standardize
-        - #vector_percentile
-    - DataFrame methods
-        - #dup_only_valid
-        - #clone
-        - #[]= does not clone the vector if it has the same index as the DataFrame.
+== 0.0.3.1
+* Added aritmetic methods for vector aritmetic by taking the index of values into account.
+
+== 0.0.3
+* This release is a complete rewrite of the entire gem to accomodate index values.
+
+== 0.0.2.4
+* Initialize dataframe from an array which looks like [{a: 10, b: 20}, {a: 11, b: 12}]. Works for parsed JSON.
+* Over-riding vectors in DataFrame will still preserve order.
+* Any re-assignment of rows in #each_row and #each_row_with_index will reflect in the DataFrame.
+* Added #to_a and #to_json to DataFrame.
+
+== 0.0.2.3
+* Added #filter\_rows and #delete_row to DataFrame and changed #row to return a row containing a Hash of column name and value.
+* Vector objects passed into a DataFrame are now duplicated so that any changes dont affect the original vector.
+* Added an optional opts argument to DataFrame.
+* Sending more fields than vectors in DataFrame will cause addition of nil vectors.
+* Init a DataFrame without having to convert explicitly to vectors.
+
+== 0.0.2.2
+* Added test cases and multiple column access through the [] operator on DataFrames
+
+== 0.0.2.1
+* Fixed bugs with previous code and more iterators
+
+== 0.0.2
+* Added iterators for dataframe and vector alongwith printing functions (to_html) to interface properly with iRuby notebook.
+
+== 0.0.1
+* Added classes for DataFrame and Vector alongwith some super-basic functions to get off the ground

@@ -114,7 +114,7 @@ module Daru
         end
 
         def proportion value=1
-          frequencies[value] / n_valid
+          frequencies[value].quo(n_valid).to_f
         end
 
         # Sample variance with denominator (N-1)

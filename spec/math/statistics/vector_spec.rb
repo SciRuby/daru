@@ -132,7 +132,7 @@ describe Daru::Vector do
 
       context "#proportion" do
         it "calculates proportion" do
-          @dv.proportion
+          expect(@dv.proportion(dtype == :gsl ? 1.0 : 1)).to eq(0.1)
         end
       end
 
@@ -216,4 +216,43 @@ describe Daru::Vector do
       end
     end
   end
+end
+
+describe Daru::Accessors::GSLWrapper::GSLStatistics do
+  context "#vector_standarized_compute" do
+  end
+
+  context "#vector_centered_compute" do
+  end
+  
+  context "#sample_with_replacement" do
+  end
+
+  context "#sample_without_replacement" do
+  end
+
+  context "#median" do
+  end
+
+  context "#variance_sample" do
+  end
+  
+  context "#standard_deviation_sample" do
+  end
+  
+  context "#variance_population" do
+  end
+
+  context "#standard_deviation_population" do
+  end
+
+  context "#skew" do
+  end
+
+  context "#kurtosis" do
+  end
+end
+
+describe "Test calling stats methods before and after changing data types (to and from GSL)" do
+
 end

@@ -604,15 +604,15 @@ module Daru
     # Note: To maintain sanity, this _MUST_ be the _ONLY_ place in daru where the
     # @dtype variable is set and the underlying data type of vector changed.
     def cast_vector_to dtype, source=nil, nm_dtype=nil
-      source = @data if source.nil?
+      source = @data.to_a if source.nil?
       return @data if @dtype and @dtype == dtype
 
       new_vector = 
       case dtype
-      when :array   then Daru::Accessors::ArrayWrapper.new(source.to_a.dup, self)
-      when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source.to_a.dup, 
-        self, nm_dtype)
-      when :gsl then Daru::Accessors::GSLWrapper.new(source.to_a, self)
+      when :array   then Daru::Accessors::ArrayWrapper.new(source, self)
+      when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source, self, 
+        nm_dtype)
+      when :gsl then Daru::Accessors::GSLWrapper.new(source, self)
       when :mdarray then raise NotImplementedError, "MDArray not yet supported."
       else Daru::Accessors::ArrayWrapper.new(source.dup, self)
       end
