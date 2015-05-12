@@ -247,7 +247,9 @@ module Daru
           if @data.respond_to? :sample_with_replacement
             @data.sample_with_replacement sample
           else
-            # TODO
+            valid = nil_positions.empty? ? self : self.only_valid
+            vds = valid.size
+            (0...sample).collect{ valid[rand(vds)] }
           end
         end
         
@@ -261,6 +263,16 @@ module Daru
           if @data.respond_to? :sample_without_replacement
             @data.sample_without_replacement sample
           else
+            valid = nil_positions.empty? ? self : self.only_valid 
+            raise ArgumentError, "Sample size couldn't be greater than n" if sample > valid.size
+            out  = []
+            size = valid.size
+            while out.size < sample
+              value = rand(size)
+              out.push(value) if !out.include? value
+            end
+
+            out.collect{|i| valid[i]}
           end
         end
 
