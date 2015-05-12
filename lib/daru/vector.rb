@@ -514,6 +514,16 @@ module Daru
       Daru::Vector.new @data.dup, name: @name, index: @index.dup
     end
 
+    # Creates a new vector consisting only of non-nil data
+    def only_valid
+      new_index = @index.to_a - nil_positions
+      new_vector = new_index.map do |idx|
+        self[idx]
+      end
+
+      Daru::Vector.new new_vector, index: new_index, name: @name, dtype: dtype
+    end
+
     # Copies the structure of the vector (i.e the index, size, etc.) and fills all
     # all values with nils.
     def clone_structure
@@ -657,7 +667,6 @@ module Daru
       @index.each do |e|
         @nil_positions << e if(self[e].nil?)
       end
-      @nil_positions.uniq!
     end
 
     def create_index potential_index
