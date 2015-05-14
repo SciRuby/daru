@@ -159,6 +159,32 @@ describe Daru::Vector do
           v = Daru::Vector.new [0.8, 1.2, 1.2, 2.3, 18]
           expect(v.ranked).to eq(Daru::Vector.new [1, 2.5, 2.5, 4, 5])
         end
+
+        it "tests paired ties" do
+          a = Daru::Vector.new [0, 0, 0, 1, 1, 2, 3, 3, 4, 4, 4]
+          expected = Daru::Vector.new [2, 2, 2, 4.5, 4.5, 6, 7.5, 7.5, 10, 10, 10]
+          expect(a.ranked).to eq(expected)
+        end
+      end
+
+      context "#dictomize" do
+        it "dictomizes" do
+          a = Daru::Vector.new [0, 0, 0, 1, 2, 3, nil]
+          exp = Daru::Vector.new [0, 0, 0, 1, 1, 1, nil]
+          expect(a.dichotomize).to eq(exp)
+
+          a = Daru::Vector.new [1, 1, 1, 2, 2, 2, 3]
+          exp = Daru::Vector.new [0, 0, 0, 1, 1, 1, 1]
+          expect(a.dichotomize).to eq(exp)
+
+          a = Daru::Vector.new [0, 0, 0, 1, 2, 3, nil]
+          exp = Daru::Vector.new [0, 0, 0, 0, 1, 1, nil]
+          expect(a.dichotomize(1)).to eq(exp)
+
+          a = Daru::Vector.new %w(a a a b c d)
+          exp = Daru::Vector.new [0, 0, 0, 1, 1, 1]
+          expect(a.dichotomize).to eq(exp)
+        end
       end
 
       context "#count" do
@@ -250,15 +276,31 @@ describe Daru::Vector do
       
       context "#sample_with_replacement" do
         it "calculates sample_with_replacement" do
-          @dv.sample_with_replacement
-          @dv_with_nils.sample_with_replacement
+          vec =  Daru::Vector.new(
+            [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99], 
+            dtype: dtype, name: :common_all_dtypes)
+          srand(1)
+          expect(vec.sample_with_replacement(100).size).to eq(100)
+    
+          srand(1)
+          expect(vec.sample_with_replacement(100).size).to eq(100)
         end
       end
 
       context "#sample_without_replacement" do
         it "calculates sample_without_replacement" do
-          @dv.sample_without_replacement
-          @dv_with_nils.sample_without_replacement
+          vec =  Daru::Vector.new(
+            [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99], 
+            dtype: dtype, name: :common_all_dtypes)
+
+          srand(1)
+          expect(vec.only_valid.to_a.sort, vec.sample_without_replacement(15).sort)
+          expect {
+            @c.sample_without_replacement(20)
+          }.to raise_error(ArgumentError)
+
+          srand(1)
+          assert_equal(vec.only_valid.to_a.sort, vec.sample_without_replacement(15).sort)
         end
       end
     end

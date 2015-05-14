@@ -7,7 +7,8 @@ describe Daru::Vector do
     describe dtype.to_s do
       before do
         @common_all_dtypes =  Daru::Vector.new(
-          [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99], dtype: dtype)
+          [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99], 
+          dtype: dtype, name: :common_all_dtypes)
       end
       context "#initialize" do
         before do
@@ -76,6 +77,27 @@ describe Daru::Vector do
         it "inserts nils for extra indices (MultiIndex)" do
           dv = Daru::Vector.new [1,2], name: :mi, index: @multi_index, dtype: :array
           expect(dv).to eq(Daru::Vector.new([1,2,nil,nil], name: :mi, index: @multi_index, dtype: :array))
+        end
+      end
+
+      context ".new_with_size" do
+        it "creates new vector from only size" do
+          v1 = Daru::Vector.new 10.times.map { |i| i }
+          v2 = Daru::Vector.new_with_size 10
+          expect(v1).to eq(v2)
+        end
+
+        it "creates new vector from only size and value" do
+          a = rand
+          v1 = Daru::Vector.new 10.times.map { a }
+          v2 = Daru::Vector.new_with_size(10, a)
+          expect(v1).to eq(v2)
+        end
+
+        it "accepts block" do
+          v1 = 10.times.map {|i| i * 2 }
+          v2 = Daru::Vector.new_with_size(10) { |i| i * 2 }
+          expect(v1).to eq(v2)
         end
       end
 
@@ -529,49 +551,78 @@ describe Daru::Vector do
     end
 
     context "#map" do
-      it "returns a Vector of the same dtype" do
-
+      it "maps" do
+        a = @common_all_dtypes.map { |v| v }
+        expect(a).to eq([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99])
       end
     end
 
     context "#map!" do
-      it "destructively maps and preserves dtype" do
+      it "destructively maps" do
+        @common_all_dtypes.map! { |v| v }
+        expect(@common_all_dtypes).to eq([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99])
       end
     end
 
     context "#recode" do
       it "changes dtype of the returned vector according to argument passed" do
+        a = @common_all_dtypes.recode { |v| v == -99 ? 1 : 0 }
+        exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
+        expect(a).to eq(exp)
       end
     end
 
     context "#recode!" do
       it "destructively changes dtype of the returned vector according to argument passed" do
+        @common_all_dtypes.recode! { |v| v == -99 ? 1 : 0 }
+        exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
+        expect(@common_all_dtypes).to eq(exp)
       end
     end
 
     context "#verify" do
       it "verifies data correctly" do
+        h = @common_all_dtypes.verify { |d| !d.nil? and d > 0 }
+        e = { 15 => nil, 16 => -99, 17 => -99 }
+        expect(e).to eq(h)
       end
     end
 
     context "#summary" do
       it "has name in the summary" do
+        expect(@common_all_dtypes.summary.match(/#{common_all_dtypes.name}/)).to eq(true)
       end
     end
 
     context "#jackknife" do
       it "jack knife correctly with named method" do
+        a = Daru::Vector.new [1, 2, 3, 4]
+        df = a.jackknife(:mean)
+        expect(a.mean).to eq (df[:mean].mean)
+
+        df = a.jackknife([:mean, :sd])
+        expect(a.mean).to eq (df[:mean].mean)
+        expect(a.sd).to eq (df[:mean].sd)
       end
 
       it "jack knife correctly with custom method" do
+        a   = Daru::Vector.new [17.23, 18.71, 13.93, 18.81, 15.78, 11.29, 14.91, 13.39, 18.21, 11.57, 14.28, 10.94, 18.83, 15.52, 13.45, 15.25]
+        ds  = a.jackknife(log_s2: ->(v) {  Math.log(v.variance) })
+        exp = Daru::Vector.new [1.605, 2.972, 1.151, 3.097, 0.998, 3.308, 0.942, 1.393, 2.416, 2.951, 1.043, 3.806, 3.122, 0.958, 1.362, 0.937]
+
+        expect(exp).to eq(ds[:log_s2])
+        expect(ds[:log_s2].mean).to be_within(0.00001).of(2.00389)
+        expect(ds[:log_s2].variance).to be_within(0.001).of(1.091)
       end
 
       it "jack knife correctly with k > 1" do
+        # TODO
       end
     end
 
     context "#bootstrap" do
       it "returns a vector with mean=mu and sd=se" do
+        # TODO
       end
     end
   end # checking with ALL_DTYPES
@@ -586,30 +637,31 @@ describe Daru::Vector do
 
   context "#missing_values" do
     before do
-      common = Daru::Vector.new([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99])
+      @common = Daru::Vector.new([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99])
     end
+
     it "allows setting the value to be treated as missing" do
-      common.missing_values = [10]
-      expect(common.only_valid.to_a.sort).to eq(
+      @common.missing_values = [10]
+      expect(@common.only_valid.to_a.sort).to eq(
         [-99, -99, 1, 2, 3, 4, 5, 5, 5, 5, 5, 6, 6, 7, 8, 9]
       )
       expect(common.data_with_nils).to eq(
         [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, nil, 1, 2, 3, 4, nil, -99, -99]
       )
 
-      common.missing_values = [-99]
-      expect(common.only_valid.to_a.sort).to eq(
+      @common.missing_values = [-99]
+      expect(@common.only_valid.to_a.sort).to eq(
         [1, 2, 3, 4, 5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10]
       )
-      expect(common.data_with_nils).to eq(
+      expect(@common.data_with_nils).to eq(
         [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, nil, nil]
       )
 
-      common.missing_values = []
-      expect(common.only_valid.to_a.sort).to eq(
+      @common.missing_values = []
+      expect(@common.only_valid.to_a.sort).to eq(
         [-99, -99, 1, 2, 3, 4, 5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10]
       )
-      expect(common.data_with_nils).to eq(
+      expect(@common.data_with_nils).to eq(
         [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99]  
       )
     end
