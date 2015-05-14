@@ -1453,4 +1453,138 @@ describe Daru::DataFrame do
       expect(@data_frame.shape).to eq([5,3])
     end
   end
+
+  context "#nest" do
+    it "nests in a hash" do
+      df = Daru::DataFrame.new({
+        :a => Daru::Vector.new %w(a a a b b b),
+        :b => Daru::Vector.new %w(c c d d e e),
+        :c => Daru::Vector.new %w(f g h i j k)
+      })
+      nest = df.nest :a, :b
+      expect(nest[:a][:c]).to eq([{ :c => :f }, { :c => :g }])
+      expect(nest[:a][:d]).to eq([{ :c => :h }])
+      expect(nest[:b][:e]).to eq([{ :c => :j }, { :c => :k }])
+    end
+  end
+
+  context "#summary" do
+    it "produces a summary of data frame" do
+      expect(@data_frame.summary.size > 0).to eq(true)
+      expect(@df_mi.summary.size > 0).to eq(true)
+    end
+  end
+
+  context "#save" do
+    it "saves df to a file" do
+      outfile = Tempfile.new('dataframe.df')
+      @data_frame.save(outfile.path)
+      a = Daru.load(outfile.path)
+      expect(a).to eq(@data_frame)
+
+      outfile = Tempfile.new('df_with_mi.df')
+      @df_with_mi.save(outfile.path)
+      b = Daru.load(outfile.path)
+      expect(b).to eq(@df_with_mi)
+    end
+  end
+
+  context "#to_gsl" do
+    it "converts to GSL::Matrix" do
+      mat = GSL::Matrix.columns([11,12,13,14,15],[1,2,3,4,5],[11,22,33,44,55])
+      expect(@data_frame.to_gsl).to eq(mat)
+    end
+  end
+
+  context "#merge" do
+    it "merges one dataframe with another" do
+      a = Daru::Vector.new [1, 2, 3]
+      b = Daru::Vector.new [3, 4, 5]
+      c = Daru::Vector.new [4, 5, 6]
+      d = Daru::Vector.new [7, 8, 9]
+      e = Daru::Vector.new [10, 20, 30]
+      ds1 = Daru::DataFrame.new({ :a => a, :b => b })
+      ds2 = Daru::DataFrame.new({ :c => c, :d => d })
+      exp = Daru::DataFrame.new({ :a => a, :b => b, :c => c, :d => d })
+
+      expect(ds1.merge(ds2)).to eq(exp)
+      expect(ds2.merge(ds1)).to eq(exp)
+
+      ds3 = Daru::DataFrame.new { :a => e }
+      exp = Daru::DataFrame.new { :a_1 => a, :b => b, :a_2 => e }
+
+      expect(ds1.merge(ds3)).to eq(exp)
+    end
+  end
+
+  context "#vector_by_calculation" do
+
+  end
+
+  context "#vector_sum" do
+    before do
+      @a1 = Daru::Vector.new [1, 2, 3, 4, 5, nil]
+      @a2 = Daru::Vector.new [10, 10, 20, 20, 20, 30]
+      @b1 = Daru::Vector.new [nil, 1, 1, 1, 1, 2]
+      @b2 = Daru::Vector.new [2, 2, 2, nil, 2, 3]
+      @df = Daru::DataFrame.new({ :a1 => a1, :a2 => a2, :b1 => b1, :b2 => b2 })
+    end
+
+    it "calculates complete vector sum" do
+      expect(@df.vector_sum).to eq(Daru::Vector.new [nil, 15, 26, nil, 28, nil])
+    end
+
+    it "calculates partial vector sum" do
+      a = @df.vector_sum([:a1, :a2])
+      b = @df.vector_sum([:b1, :b2])
+
+      expect(a).to eq(Daru::Vector.new [11, 12, 23, 24, 25, nil])
+      expect(b).to eq(Daru::Vector.new [nil, 3, 3, nil, 3, 5])
+    end
+  end
+
+  context "#missing_values_rows" do
+    it "returns number of missing values in each row" do
+      a1 = Daru::Vector.new [1, nil, 3, 4, 5, nil]
+      a2 = Daru::Vector.new [10, nil, 20, 20, 20, 30]
+      b1 = Daru::Vector.new [nil, nil, 1, 1, 1, 2]
+      b2 = Daru::Vector.new [2, 2, 2, nil, 2, 3]
+      c  = Daru::Vector.new [nil, 2, 4, 2, 2, 2]
+      df = Daru::DataFrame.new({ 
+        :a1 => a1, :a2 => a2, :b1 => b1, :b2 => b2, :c => c })
+
+      expect(df.missing_values_rows).to eq(Daru::Vector.new [2, 3, 0, 1, 0, 1])
+    end
+  end
+
+  context "has_missing_data?" do
+  end
+
+  context "#vector_mean" do
+  end
+
+  context "#recode" do
+  end
+
+  context "#add_vectors_by_split_recode" do
+    # TODO
+  end
+
+  context "#add_vectors_by_split" do
+  end
+
+  context "#from_to" do
+  end
+
+  context "#verify" do
+  end
+
+  context "#compute" do
+  end
+
+  context ".crosstab_by_assignation" do
+  end
+
+  context "#one_to_many" do
+  end
 end if mri?
