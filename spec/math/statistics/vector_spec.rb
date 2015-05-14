@@ -105,14 +105,22 @@ describe Daru::Vector do
         it "calculates percentile" do
           expect(@dv.percentile(50)).to eq(333.0)
         end
-      end
 
-      context "#recode" do
+        it "tests linear percentile strategy" do
+          values = Daru::Vector.new [102, 104, 105, 107, 108, 109, 110, 112, 115, 116].shuffle
+          expect(values.percentil(0, :linear)).to eq(102)
+          expect(values.percentil(25, :linear)).to eq(104.75)
+          expect(values.percentil(50, :linear)).to eq(108.5)
+          expect(values.percentil(75, :linear)).to eq(112.75)
+          expect(values.percentil(100, :linear)).to eq(116)
 
-      end
-
-      context "#recode!" do
-
+          values = Daru::Vector.new [102, 104, 105, 107, 108, 109, 110, 112, 115, 116, 118].shuffle
+          expect(values.percentil(0, :linear)).to eq(102)
+          expect(values.percentil(25, :linear)).to eq(105)
+          expect(values.percentil(50, :linear)).to eq(109)
+          expect(values.percentil(75, :linear)).to eq(115)
+          expect(values.percentil(100, :linear)).to eq(118)
+        end
       end
 
       context "#frequencies" do
@@ -147,6 +155,9 @@ describe Daru::Vector do
         it "curates by rank" do
           vector = Daru::Vector.new([nil, 0.8, 1.2, 1.2, 2.3, 18, nil])
           expect(vector.ranked).to eq(Daru::Vector.new([nil,1,2.5,2.5,4,5,nil]))
+
+          v = Daru::Vector.new [0.8, 1.2, 1.2, 2.3, 18]
+          expect(v.ranked).to eq(Daru::Vector.new [1, 2.5, 2.5, 4, 5])
         end
       end
 
@@ -205,6 +216,12 @@ describe Daru::Vector do
           expect(vector.standardize.round(2)).to eq(
             Daru::Vector.new([-1.11, 1.57, 0.23, -0.26,nil, -0.44])
             )
+        end
+
+        it "tests for vector standardized with zero variance" do
+          v1 = Daru::Vector.new 100.times.map { |_i| 1 }
+          exp = Daru::Vector.new 100.times.map { nil }
+          expect(v1.standardized).to eq(exp)
         end
       end
 

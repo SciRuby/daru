@@ -5,10 +5,10 @@ describe Daru::Vector do
 
   ALL_DTYPES.each do |dtype|
     describe dtype.to_s do
-      before do 
-        @common = Daru::Vector.new([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99], dtype: dtype)
+      before do
+        @common_all_dtypes =  Daru::Vector.new(
+          [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99], dtype: dtype)
       end
-
       context "#initialize" do
         before do
           @tuples = [
@@ -515,7 +515,7 @@ describe Daru::Vector do
     context "#save" do
       it "saves to a file and returns the same Vector" do
         outfile = Tempfile.new('vector.vec')
-        @common.save(outfile.path)
+        @common_all_dtypes.save(outfile.path)
         a = Daru.load outfile.path
         expect(a).to eq(c)
       end
@@ -523,8 +523,8 @@ describe Daru::Vector do
 
     context "#collect" do
       it "returns an Array" do
-        a = @common.collect { |v| v }
-        expect(a).to eq([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99])
+        a = @common_all_dtypes.collect { |v| v }
+        expect(a).to eq([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99])
       end
     end
 
@@ -585,28 +585,31 @@ describe Daru::Vector do
   end
 
   context "#missing_values" do
+    before do
+      common = Daru::Vector.new([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99])
+    end
     it "allows setting the value to be treated as missing" do
-      @common.missing_values = [10]
-      expect(@common.only_valid.to_a.sort).to eq(
+      common.missing_values = [10]
+      expect(common.only_valid.to_a.sort).to eq(
         [-99, -99, 1, 2, 3, 4, 5, 5, 5, 5, 5, 6, 6, 7, 8, 9]
       )
-      expect(@common.data_with_nils).to eq(
+      expect(common.data_with_nils).to eq(
         [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, nil, 1, 2, 3, 4, nil, -99, -99]
       )
 
-      @common.missing_values = [-99]
-      expect(@common.only_valid.to_a.sort).to eq(
+      common.missing_values = [-99]
+      expect(common.only_valid.to_a.sort).to eq(
         [1, 2, 3, 4, 5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10]
       )
-      expect(@common.data_with_nils).to eq(
+      expect(common.data_with_nils).to eq(
         [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, nil, nil]
       )
 
-      @common.missing_values = []
-      expect(@common.only_valid.to_a.sort).to eq(
+      common.missing_values = []
+      expect(common.only_valid.to_a.sort).to eq(
         [-99, -99, 1, 2, 3, 4, 5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10]
       )
-      expect(@common.data_with_nils).to eq(
+      expect(common.data_with_nils).to eq(
         [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99]  
       )
     end
