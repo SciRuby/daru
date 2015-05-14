@@ -78,7 +78,8 @@ describe Daru::Vector do
 
       context "#product" do
         it "returns the product" do
-          @dv.product
+          v = Daru::Vector.new [1, 2, 3, 4, 5], dtype: dtype
+          expect(v.product).to eq(120)
         end
       end
 
@@ -171,7 +172,8 @@ describe Daru::Vector do
 
       context "#median_absolute_deviation" do
         it "calculates median_absolute_deviation" do
-          @dv.median_absolute_deviation
+          a = Daru::Vector.new [1, 1, 2, 2, 4, 6, 9]
+          expect(a.median_absolute_deviation).to eq(1)
         end
       end
 

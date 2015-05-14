@@ -2,6 +2,9 @@ require 'spec_helper'
 require 'statsample'
 
 describe "daru statsample adapter", focus: true do
+  context Statsample::Analysis do
+
+  end
   context Statsample::Bivariate do
     it ".sum_of_squares" do
       v1 = Daru::Vector.new([1,2,3,4,5,6])
@@ -16,6 +19,13 @@ describe "daru statsample adapter", focus: true do
 
       expect(Statsample::Bivariate.covariance(v1,v2)).to be_within(0.001).of(
         Statsample::Bivariate.covariance_slow(v1,v2))
+    end
+
+    it ".correlation" do
+      v1 = Daru::Vector.new 20.times.collect { |_a| rand }
+      v2 = Daru::Vector.new 20.times.collect { |_a| rand }
+
+      assert_in_delta(GSL::Stats.correlation(v1.to_gsl, v2.to_gsl), Statsample::Bivariate.pearson_slow(v1, v2), 1e-10)
     end
   end
 

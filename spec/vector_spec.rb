@@ -5,6 +5,10 @@ describe Daru::Vector do
 
   ALL_DTYPES.each do |dtype|
     describe dtype.to_s do
+      before do 
+        @common = Daru::Vector.new([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99], dtype: dtype)
+      end
+
       context "#initialize" do
         before do
           @tuples = [
@@ -495,9 +499,126 @@ describe Daru::Vector do
         end
       end
     end
+
+    context "#histogram" do
+      it "returns correct histogram" do
+        a = Daru::Vector.new 10.times.map { |v| v }, dtype: dtype
+
+        hist = a.histogram(2)
+        expect(hist.bin).to eq([5, 5])
+        3.times do |i|
+          expect(hist.get_range(i)[0]).to be_within(1e-9).of(i * 4.5)
+        end
+      end
+    end
+
+    context "#save" do
+      it "saves to a file and returns the same Vector" do
+        outfile = Tempfile.new('vector.vec')
+        @common.save(outfile.path)
+        a = Daru.load outfile.path
+        expect(a).to eq(c)
+      end
+    end
+
+    context "#collect" do
+      it "returns an Array" do
+        a = @common.collect { |v| v }
+        expect(a).to eq([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99])
+      end
+    end
+
+    context "#map" do
+      it "returns a Vector of the same dtype" do
+
+      end
+    end
+
+    context "#map!" do
+      it "destructively maps and preserves dtype" do
+      end
+    end
+
+    context "#recode" do
+      it "changes dtype of the returned vector according to argument passed" do
+      end
+    end
+
+    context "#recode!" do
+      it "destructively changes dtype of the returned vector according to argument passed" do
+      end
+    end
+
+    context "#verify" do
+      it "verifies data correctly" do
+      end
+    end
+
+    context "#summary" do
+      it "has name in the summary" do
+      end
+    end
+
+    context "#jackknife" do
+      it "jack knife correctly with named method" do
+      end
+
+      it "jack knife correctly with custom method" do
+      end
+
+      it "jack knife correctly with k > 1" do
+      end
+    end
+
+    context "#bootstrap" do
+      it "returns a vector with mean=mu and sd=se" do
+      end
+    end
   end # checking with ALL_DTYPES
 
   # works with arrays only
+  context "#splitted" do
+    it "splits correctly" do
+      a = Daru::Vector.new ['a', 'a,b', 'c,d', 'a,d', 'd', 10, nil]
+      expect(a.splitted).to eq([%w(a), %w(a b), %w(c d), %w(a d), %w(d), [10], nil])
+    end
+  end
+
+  context "#missing_values" do
+    it "allows setting the value to be treated as missing" do
+      @common.missing_values = [10]
+      expect(@common.only_valid.to_a.sort).to eq(
+        [-99, -99, 1, 2, 3, 4, 5, 5, 5, 5, 5, 6, 6, 7, 8, 9]
+      )
+      expect(@common.data_with_nils).to eq(
+        [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, nil, 1, 2, 3, 4, nil, -99, -99]
+      )
+
+      @common.missing_values = [-99]
+      expect(@common.only_valid.to_a.sort).to eq(
+        [1, 2, 3, 4, 5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10]
+      )
+      expect(@common.data_with_nils).to eq(
+        [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, nil, nil]
+      )
+
+      @common.missing_values = []
+      expect(@common.only_valid.to_a.sort).to eq(
+        [-99, -99, 1, 2, 3, 4, 5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10]
+      )
+      expect(@common.data_with_nils).to eq(
+        [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99]  
+      )
+    end
+
+    it "responds to has_missing_data? with explicit missing_values" do
+      a = Daru::Vector.new [1,2,3,4,10]
+      a.missing_values = [10]
+
+      expect(a.has_missing_data?).to eq(true)
+    end
+  end
+
   context "#is_nil?" do
     before(:each) do
       @with_md    = Daru::Vector.new([1,2,nil,3,4,nil])
@@ -624,6 +745,62 @@ describe Daru::Vector do
         index: [:a, :b, :c, :d, :e, :f, :g]
       expect(vector.only_valid).to eq(Daru::Vector.new([1,2,3,4,3], 
         index: [:a, :b, :c, :d, :f]))
+    end
+  end
+
+  context "#to_gsl" do
+    it "returns a GSL::Vector of non-nil data" do
+      vector = Daru::Vector.new [1,2,3,4,nil,6,nil]
+      expect(vector.to_gsl).to eq(GSL::Vector.alloc(1,2,3,4,6))
+
+      gsl_vec = Daru::Vector.new [1,2,3,4,5], dtype: :gsl
+      expect(gsl_vec.to_gsl).to eq(GSL::Vector.alloc(1,2,3,4,5))
+    end
+  end
+
+  context "#split_by_separator" do
+    def expect_correct_tokens hash
+      expect(b[:a].to_a).to eq([1, 1, 0, 1, 0, nil])
+      expect(b[:b].to_a).to eq([0, 1, 0, 0, 0, nil])
+      expect(b[:c].to_a).to eq([0, 0, 1, 0, 0, nil])
+      expect(b[:d].to_a).to eq([0, 0, 1, 1, 0, nil])
+      expect(b[10].to_a).to eq([0, 0, 0, 0, 1, nil])
+    end
+
+    before do
+      @a = Daru::Vector.new ['a', 'a,b', 'c,d', 'a,d', 10, nil]
+      @b = @a.split_by_separator(',')
+    end
+
+    it "returns a Hash" do
+      expect(@b.class).to eq(Hash)
+    end
+
+    it "returned Hash has keys with with different values of @a" do
+      expect(@b.keys).to eq(['a', 'b', 'c', 'd', 10])
+    end
+
+    it "returns a Hash, whose values are Daru::Vector" do
+      @b.each_key do |key|
+        expect(@b[key].class).to eq(Daru::Vector)
+      end
+    end
+
+    it "ensures that hash values are n times the tokens appears" do
+      expect_correct_tokens @b
+    end
+
+    it "gives the same values using a different separator" do
+      a = Daru::Vector.new ['a', 'a*b', 'c*d', 'a*d', 10, nil]
+      b = split_by_separator '*'
+      expect_correct_tokens b
+    end
+  end
+
+  context "#split_by_separator_freq" do
+    it "#split_by_separator_freq returns the number of ocurrences of tokens" do
+      a = Daru::Vector.new ['a', 'a,b', 'c,d', 'a,d', 10, nil]
+      expect(@a.split_by_separator_freq).to eq(a) 
     end
   end
 end if mri?

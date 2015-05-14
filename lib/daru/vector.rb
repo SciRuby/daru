@@ -60,7 +60,7 @@ module Daru
     # 
     # * +:index+ - Index of the vector
     # 
-    # * +:dtype+ - The underlying data type. Can be :array or :nmatrix. 
+    # * +:dtype+ - The underlying data type. Can be :array, :nmatrix or :gsl. 
     # Default :array.
     # 
     # * +:nm_dtype+ - For NMatrix, the data type of the numbers. See the NMatrix docs for
@@ -427,6 +427,20 @@ module Daru
         Matrix.columns([to_a])
       else
         raise ArgumentError, "axis should be either :horizontal or :vertical, not #{axis}"
+      end
+    end
+
+    # If dtype != gsl, will convert data to GSL::Vector with to_a. Otherwise returns
+    # the stored GSL::Vector object.
+    def to_gsl
+      if Daru.has_gsl?
+        if dtype == :gsl
+          return @data.data
+        else
+          GSL::Vector.alloc @data.to_a
+        end
+      else
+        raise NoMethodError, "Install gsl-nmatrix for access to this functionality."
       end
     end
 
