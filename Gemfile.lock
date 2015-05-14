@@ -15,8 +15,8 @@ PATH
     statsample (1.4.3)
       awesome_print (~> 1.6)
       dirty-memoize (~> 0.0.4)
-      distribution
-      extendmatrix
+      distribution (~> 0.7)
+      extendmatrix (~> 0.3)
       minimization (~> 0.2)
       reportbuilder (~> 1.4)
       rserve-client (~> 0.3)

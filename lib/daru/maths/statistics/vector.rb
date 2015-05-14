@@ -1,8 +1,8 @@
 module Daru
   module Maths
     # Encapsulates statistics methods for vectors. Most basic stuff like mean, etc.
-    #   is done inside the wrapper, so that native methods can be used for most of 
-    #   the computationally intensive tasks.
+    # is done inside the wrapper, so that native methods can be used for most of 
+    # the computationally intensive tasks.
     module Statistics
       module Vector
         def mean

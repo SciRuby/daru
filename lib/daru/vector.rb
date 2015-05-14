@@ -212,8 +212,10 @@ module Daru
 
     # Reports whether missing data is present in the Vector.
     def has_missing_data?
-      nil_positions.empty?
+      !nil_positions.empty?
     end
+    alias :flawed? :has_missing_data?
+
 
     # Append an element to the vector by specifying the element and index
     def concat element, index=nil
