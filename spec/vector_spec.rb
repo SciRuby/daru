@@ -10,6 +10,7 @@ describe Daru::Vector do
           [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99], 
           dtype: dtype, name: :common_all_dtypes)
       end
+
       context "#initialize" do
         before do
           @tuples = [
@@ -520,113 +521,114 @@ describe Daru::Vector do
           pending
         end
       end
-    end
 
-    context "#histogram" do
-      it "returns correct histogram" do
-        a = Daru::Vector.new 10.times.map { |v| v }, dtype: dtype
+      context "#save" do
+        it "saves to a file and returns the same Vector" do
+          outfile = Tempfile.new('vector.vec')
+          @common_all_dtypes.save(outfile.path)
+          a = Daru.load outfile.path
+          expect(a).to eq(c)
+        end
+      end
 
-        hist = a.histogram(2)
-        expect(hist.bin).to eq([5, 5])
-        3.times do |i|
-          expect(hist.get_range(i)[0]).to be_within(1e-9).of(i * 4.5)
+      context "#collect" do
+        it "returns an Array" do
+          a = @common_all_dtypes.collect { |v| v }
+          expect(a).to eq([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99])
+        end
+      end
+
+      context "#map" do
+        it "maps" do
+          a = @common_all_dtypes.map { |v| v }
+          expect(a.to_a).to eq([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99])
+        end
+      end
+
+      context "#map!" do
+        it "destructively maps" do
+          @common_all_dtypes.map! { |v| v }
+          expect(@common_all_dtypes).to eq([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99])
+        end
+      end
+
+      context "#recode" do
+        it "maps and returns a vector" do
+          a = @common_all_dtypes.recode { |v| v == -99 ? 1 : 0 }
+          exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
+          expect(a).to eq(exp)
+        end
+      end
+
+      context "#recode!" do
+        it "destructively maps and returns a vector" do
+          @common_all_dtypes.recode! { |v| v == -99 ? 1 : 0 }
+          exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
+          expect(@common_all_dtypes).to eq(exp)
+        end
+      end
+
+      context "#verify" do
+        it "verifies data correctly" do
+          h = @common_all_dtypes.verify { |d| !d.nil? and d > 0 }
+          e = { 15 => nil, 16 => -99, 17 => -99 }
+          expect(e).to eq(h)
+        end
+      end
+
+      context "#summary" do
+        it "has name in the summary" do
+          expect(@common_all_dtypes.summary.match(/#{common_all_dtypes.name}/)).to eq(true)
+        end
+      end
+
+      context "#histogram" do
+        it "returns correct histogram" do
+          a = Daru::Vector.new 10.times.map { |v| v }, dtype: dtype
+
+          hist = a.histogram(2)
+          expect(hist.bin).to eq([5, 5])
+          3.times do |i|
+            expect(hist.get_range(i)[0]).to be_within(1e-9).of(i * 4.5)
+          end
+        end
+      end
+
+      context "#jackknife" do
+        it "jack knife correctly with named method" do
+          a = Daru::Vector.new [1, 2, 3, 4]
+          df = a.jackknife(:mean)
+          expect(a.mean).to eq (df[:mean].mean)
+
+          df = a.jackknife([:mean, :sd])
+          expect(a.mean).to eq (df[:mean].mean)
+          expect(a.sd).to eq (df[:mean].sd)
+        end
+
+        it "jack knife correctly with custom method" do
+          a   = Daru::Vector.new [17.23, 18.71, 13.93, 18.81, 15.78, 11.29, 14.91, 13.39, 18.21, 11.57, 14.28, 10.94, 18.83, 15.52, 13.45, 15.25]
+          ds  = a.jackknife(log_s2: ->(v) {  Math.log(v.variance) })
+          exp = Daru::Vector.new [1.605, 2.972, 1.151, 3.097, 0.998, 3.308, 0.942, 1.393, 2.416, 2.951, 1.043, 3.806, 3.122, 0.958, 1.362, 0.937]
+
+          expect(exp).to eq(ds[:log_s2])
+          expect(ds[:log_s2].mean).to be_within(0.00001).of(2.00389)
+          expect(ds[:log_s2].variance).to be_within(0.001).of(1.091)
+        end
+
+        it "jack knife correctly with k > 1" do
+          # TODO
+        end
+      end
+
+      context "#bootstrap" do
+        it "returns a vector with mean=mu and sd=se" do
+          # TODO
         end
       end
     end
+  end # describe ALL_DTYPES.each
 
-    context "#save" do
-      it "saves to a file and returns the same Vector" do
-        outfile = Tempfile.new('vector.vec')
-        @common_all_dtypes.save(outfile.path)
-        a = Daru.load outfile.path
-        expect(a).to eq(c)
-      end
-    end
-
-    context "#collect" do
-      it "returns an Array" do
-        a = @common_all_dtypes.collect { |v| v }
-        expect(a).to eq([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99])
-      end
-    end
-
-    context "#map" do
-      it "maps" do
-        a = @common_all_dtypes.map { |v| v }
-        expect(a).to eq([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99])
-      end
-    end
-
-    context "#map!" do
-      it "destructively maps" do
-        @common_all_dtypes.map! { |v| v }
-        expect(@common_all_dtypes).to eq([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99])
-      end
-    end
-
-    context "#recode" do
-      it "maps and returns a vector" do
-        a = @common_all_dtypes.recode { |v| v == -99 ? 1 : 0 }
-        exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
-        expect(a).to eq(exp)
-      end
-    end
-
-    context "#recode!" do
-      it "destructively maps and returns a vector" do
-        @common_all_dtypes.recode! { |v| v == -99 ? 1 : 0 }
-        exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
-        expect(@common_all_dtypes).to eq(exp)
-      end
-    end
-
-    context "#verify" do
-      it "verifies data correctly" do
-        h = @common_all_dtypes.verify { |d| !d.nil? and d > 0 }
-        e = { 15 => nil, 16 => -99, 17 => -99 }
-        expect(e).to eq(h)
-      end
-    end
-
-    context "#summary" do
-      it "has name in the summary" do
-        expect(@common_all_dtypes.summary.match(/#{common_all_dtypes.name}/)).to eq(true)
-      end
-    end
-
-    context "#jackknife" do
-      it "jack knife correctly with named method" do
-        a = Daru::Vector.new [1, 2, 3, 4]
-        df = a.jackknife(:mean)
-        expect(a.mean).to eq (df[:mean].mean)
-
-        df = a.jackknife([:mean, :sd])
-        expect(a.mean).to eq (df[:mean].mean)
-        expect(a.sd).to eq (df[:mean].sd)
-      end
-
-      it "jack knife correctly with custom method" do
-        a   = Daru::Vector.new [17.23, 18.71, 13.93, 18.81, 15.78, 11.29, 14.91, 13.39, 18.21, 11.57, 14.28, 10.94, 18.83, 15.52, 13.45, 15.25]
-        ds  = a.jackknife(log_s2: ->(v) {  Math.log(v.variance) })
-        exp = Daru::Vector.new [1.605, 2.972, 1.151, 3.097, 0.998, 3.308, 0.942, 1.393, 2.416, 2.951, 1.043, 3.806, 3.122, 0.958, 1.362, 0.937]
-
-        expect(exp).to eq(ds[:log_s2])
-        expect(ds[:log_s2].mean).to be_within(0.00001).of(2.00389)
-        expect(ds[:log_s2].variance).to be_within(0.001).of(1.091)
-      end
-
-      it "jack knife correctly with k > 1" do
-        # TODO
-      end
-    end
-
-    context "#bootstrap" do
-      it "returns a vector with mean=mu and sd=se" do
-        # TODO
-      end
-    end
-  end # checking with ALL_DTYPES
-
+  # -----------------------------------------------------------------------
   # works with arrays only
   context "#splitted" do
     it "splits correctly" do

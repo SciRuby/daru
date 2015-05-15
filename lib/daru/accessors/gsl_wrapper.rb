@@ -63,9 +63,12 @@ module Daru
 
       attr_reader :data
 
+      def map(&block)
+        @data.map(&block)  
+      end
+
       def map!(&block)
         @data.map!(&block)
-        self
       end
 
       def initialize data, context

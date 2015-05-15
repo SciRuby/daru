@@ -20,9 +20,6 @@ module Daru
         @data[0...@size].inject(*args, &block)
       end
 
-      alias_method :recode, :map
-      alias_method :recode!, :map!
-
       attr_reader :size, :data, :nm_dtype
       
       def initialize vector, context, nm_dtype=:int32
