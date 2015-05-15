@@ -24,11 +24,7 @@ module Daru
     def map!(&block)
       return to_enum(:map!) unless block_given?
       @data.map!(&block)
-    end
-
-    def map(&block)
-      return to_enum(:map) unless block_given?
-      @data.map(&block)
+      self
     end
 
     attr_reader :name
@@ -90,6 +86,23 @@ module Daru
       @possibly_changed_type = true
       set_missing_positions
       set_size
+    end
+
+    # Create a new vector by specifying the size and an optional value
+    # and block to generate values.
+    # 
+    # == Options
+    # :value
+    # All the rest like .new
+    def self.new_with_size n, opts={}, &block
+      value = opts[:value]
+      opts.delete :value
+      if block
+        vector = Daru::Vector.new n.times.map { |i| block.call(i) }, opts
+      else
+        vector = Daru::Vector.new n.times.map { value }, opts
+      end
+      vector
     end
 
     # Get one or more elements with specified index or a range.
@@ -447,7 +460,7 @@ module Daru
         if dtype == :gsl
           return @data.data
         else
-          GSL::Vector.alloc @data.to_a
+          GSL::Vector.alloc only_valid(:array).to_a
         end
       else
         raise NoMethodError, "Install gsl-nmatrix for access to this functionality."

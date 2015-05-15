@@ -83,22 +83,22 @@ describe Daru::Vector do
 
       context ".new_with_size" do
         it "creates new vector from only size" do
-          v1 = Daru::Vector.new 10.times.map { |i| i }
-          v2 = Daru::Vector.new_with_size 10
-          expect(v1).to eq(v2)
-        end
+          v1 = Daru::Vector.new 10.times.map { nil }, dtype: dtype
+          v2 = Daru::Vector.new_with_size 10, dtype: dtype
+          expect(v2).to eq(v1)
+        end if [:array, :nmatrix].include?(dtype)
 
         it "creates new vector from only size and value" do
           a = rand
-          v1 = Daru::Vector.new 10.times.map { a }
-          v2 = Daru::Vector.new_with_size(10, a)
-          expect(v1).to eq(v2)
+          v1 = Daru::Vector.new 10.times.map { a }, dtype: dtype
+          v2 = Daru::Vector.new_with_size(10, value: a, dtype: dtype)
+          expect(v2).to eq(v1)
         end
 
         it "accepts block" do
-          v1 = 10.times.map {|i| i * 2 }
-          v2 = Daru::Vector.new_with_size(10) { |i| i * 2 }
-          expect(v1).to eq(v2)
+          v1 = Daru::Vector.new 10.times.map {|i| i * 2 }
+          v2 = Daru::Vector.new_with_size(10, dtype: dtype) { |i| i * 2 }
+          expect(v2).to eq(v1)
         end
       end
 
@@ -541,30 +541,68 @@ describe Daru::Vector do
       context "#map" do
         it "maps" do
           a = @common_all_dtypes.map { |v| v }
-          expect(a.to_a).to eq([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99])
+          expect(a).to eq([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99])
         end
       end
 
       context "#map!" do
         it "destructively maps" do
-          @common_all_dtypes.map! { |v| v }
-          expect(@common_all_dtypes).to eq([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99])
+          @common_all_dtypes.map! { |v| v + 1 }
+          expect(@common_all_dtypes).to eq(Daru::Vector.new(
+            [6, 6, 6, 6, 6, 7, 7, 8, 9, 10, 11, 2, 3, 4, 5, 12, -98, -98], 
+            dtype: dtype))
         end
       end
 
       context "#recode" do
-        it "maps and returns a vector" do
+        it "maps and returns a vector of dtype of self by default" do
           a = @common_all_dtypes.recode { |v| v == -99 ? 1 : 0 }
           exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
           expect(a).to eq(exp)
+          expect(a.dtype).to eq(:array)
+        end
+
+        it "maps and returns a vector of dtype gsl" do
+          a = @common_all_dtypes.recode(:gsl) { |v| v == -99 ? 1 : 0 }
+          exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], dtype: :gsl
+          expect(a).to eq(exp)
+          expect(a.dtype).to eq(:gsl)
+        end
+
+        it "maps and returns a vector of dtype nmatrix" do
+          a = @common_all_dtypes.recode(:nmatrix) { |v| v == -99 ? 1 : 0 }
+          exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], dtype: :nmatrix
+          expect(a).to eq(exp)
+          expect(a.dtype).to eq(:nmatrix)
         end
       end
 
       context "#recode!" do
-        it "destructively maps and returns a vector" do
-          @common_all_dtypes.recode! { |v| v == -99 ? 1 : 0 }
+        before :each do
+          @vector =  Daru::Vector.new(
+            [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99], 
+            dtype: dtype, name: :common_all_dtypes)
+        end
+
+        it "destructively maps and returns a vector of dtype of self by default" do
+          @vector.recode! { |v| v == -99 ? 1 : 0 }
           exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
-          expect(@common_all_dtypes).to eq(exp)
+          expect(@vector).to eq(exp)
+          expect(@vector.dtype).to eq(:array) 
+        end
+
+        it "destructively maps and returns a vector of dtype gsl" do
+          @vector.recode!(:gsl) { |v| v == -99 ? 1 : 0 }
+          exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], dtype: :gsl
+          expect(@vector).to eq(exp)
+          expect(@vector.dtype).to eq(:gsl)
+        end
+
+        it "destructively maps and returns a vector of dtype nmatrix" do
+          @vector.recode!(:nmatrix) { |v| v == -99 ? 1 : 0 }
+          exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], dtype: :nmatrix
+          expect(@vector).to eq(exp)
+          expect(@vector.dtype).to eq(:nmatrix)
         end
       end
 
