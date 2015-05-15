@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'statsample'
 
-describe "daru statsample adapter", focus: true do
+describe "daru statsample adapter" do
   context Statsample::Analysis do
 
   end

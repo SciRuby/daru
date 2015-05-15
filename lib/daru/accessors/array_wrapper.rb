@@ -62,7 +62,7 @@ module Daru
       end
 
       def mean
-        sum.quo(@size - @context.nil_positions.size).to_f
+        sum.quo(@size - @context.missing_positions.size).to_f
       end
 
       def product

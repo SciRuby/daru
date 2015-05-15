@@ -297,7 +297,7 @@ module Daru
     # without a single missing value.
     def dup_only_valid
       rows_with_nil = @data.inject([]) do |memo, vector|
-        memo.concat vector.nil_positions
+        memo.concat vector.missing_positions
         memo
       end.uniq
 
@@ -747,7 +747,7 @@ module Daru
       numerics_as_arrays = []
       each_vector do |vector|
         numerics_as_arrays << vector.to_a if(vector.type == :numeric and 
-          vector.nil_positions.size == 0)
+          vector.missing_positions.size == 0)
       end
 
       numerics_as_arrays.transpose.to_nm

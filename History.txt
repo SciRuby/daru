@@ -15,11 +15,15 @@
         - Added a host of statistical methods to GSLWrapper in Daru::Accessors::GSLStatistics that call the relevant GSL::Vector functions for super-fast C level computations.
         - More stats functions - #vector_standarized_compute, #vector_centered_compute, #sample_with_replacement, #sample_without_replacement
         - #only_valid for creating a Vector with only non-nil data
+        - Ported many Statsample::Vector stat methods to Daru::Vector. These are: #percentile, #factors, etc.
     - DataFrame
         - #dup_only_valid
         - #clone
         - #[]= does not clone the vector if it has the same index as the DataFrame.
         - Added a :clone option to initialize that will not clone Daru::Vectors passed into the constructor.
+* Changes
+    - Changes Vector#nil_positions to Vector#missing_positions so that future changes for accomodating different values for missing data can be made easily.
+
 
 == 0.0.5
 

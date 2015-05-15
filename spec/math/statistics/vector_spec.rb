@@ -1,6 +1,6 @@
 require 'spec_helper.rb'
 
-describe Daru::Vector do
+describe Daru::Vector, focus: true do
   [:array, :gsl].each do |dtype| #nmatrix still unstable
     describe dtype do
       before do
@@ -101,35 +101,25 @@ describe Daru::Vector do
         end
       end
 
-      context "#percentile" do
-        it "calculates percentile" do
-          expect(@dv.percentile(50)).to eq(333.0)
+      context "#count" do
+        it "counts specified element" do
+          @dv.count(323)
         end
 
-        it "tests linear percentile strategy" do
-          values = Daru::Vector.new [102, 104, 105, 107, 108, 109, 110, 112, 115, 116].shuffle
-          expect(values.percentil(0, :linear)).to eq(102)
-          expect(values.percentil(25, :linear)).to eq(104.75)
-          expect(values.percentil(50, :linear)).to eq(108.5)
-          expect(values.percentil(75, :linear)).to eq(112.75)
-          expect(values.percentil(100, :linear)).to eq(116)
-
-          values = Daru::Vector.new [102, 104, 105, 107, 108, 109, 110, 112, 115, 116, 118].shuffle
-          expect(values.percentil(0, :linear)).to eq(102)
-          expect(values.percentil(25, :linear)).to eq(105)
-          expect(values.percentil(50, :linear)).to eq(109)
-          expect(values.percentil(75, :linear)).to eq(115)
-          expect(values.percentil(100, :linear)).to eq(118)
+        it "counts total number of elements" do
+          expect(@dv.count).to eq(10)
         end
       end
 
-      context "#frequencies" do
-        it "calculates frequencies" do
-          vector = Daru::Vector.new([5,5,5,5,5,6,6,7,8,9,10,1,2,3,4,nil,-99,-99])
-          expect(vector.frequencies).to eq({ 
-            1=>1, 2=>1, 3=>1, 4=>1, 5=>5, 
-            6=>2, 7=>1, 8=>1, 9=>1,10=>1, -99=>2
-          })
+      context "#coefficient_of_variation" do
+        it "calculates coefficient_of_variation" do
+          @dv.coefficient_of_variation
+        end
+      end
+
+      context "#percentile" do
+        it "calculates mid point percentile" do
+          expect(@dv.percentile(50)).to eq(278.5)
         end
       end
 
@@ -151,112 +141,9 @@ describe Daru::Vector do
         end
       end
 
-      context "#ranked" do
-        it "curates by rank" do
-          vector = Daru::Vector.new([nil, 0.8, 1.2, 1.2, 2.3, 18, nil])
-          expect(vector.ranked).to eq(Daru::Vector.new([nil,1,2.5,2.5,4,5,nil]))
-
-          v = Daru::Vector.new [0.8, 1.2, 1.2, 2.3, 18]
-          expect(v.ranked).to eq(Daru::Vector.new [1, 2.5, 2.5, 4, 5])
-        end
-
-        it "tests paired ties" do
-          a = Daru::Vector.new [0, 0, 0, 1, 1, 2, 3, 3, 4, 4, 4]
-          expected = Daru::Vector.new [2, 2, 2, 4.5, 4.5, 6, 7.5, 7.5, 10, 10, 10]
-          expect(a.ranked).to eq(expected)
-        end
-      end
-
-      context "#dictomize" do
-        it "dictomizes" do
-          a = Daru::Vector.new [0, 0, 0, 1, 2, 3, nil]
-          exp = Daru::Vector.new [0, 0, 0, 1, 1, 1, nil]
-          expect(a.dichotomize).to eq(exp)
-
-          a = Daru::Vector.new [1, 1, 1, 2, 2, 2, 3]
-          exp = Daru::Vector.new [0, 0, 0, 1, 1, 1, 1]
-          expect(a.dichotomize).to eq(exp)
-
-          a = Daru::Vector.new [0, 0, 0, 1, 2, 3, nil]
-          exp = Daru::Vector.new [0, 0, 0, 0, 1, 1, nil]
-          expect(a.dichotomize(1)).to eq(exp)
-
-          a = Daru::Vector.new %w(a a a b c d)
-          exp = Daru::Vector.new [0, 0, 0, 1, 1, 1]
-          expect(a.dichotomize).to eq(exp)
-        end
-      end
-
-      context "#count" do
-        it "counts specified element" do
-          @dv.count(323)
-        end
-
-        it "counts total number of elements" do
-          expect(@dv.count).to eq(10)
-        end
-      end
-
-      context "#coefficient_of_variation" do
-        it "calculates coefficient_of_variation" do
-          @dv.coefficient_of_variation
-        end
-      end
-
-      context "#factor" do
-
-      end
-
-      context "#median_absolute_deviation" do
-        it "calculates median_absolute_deviation" do
-          a = Daru::Vector.new [1, 1, 2, 2, 4, 6, 9]
-          expect(a.median_absolute_deviation).to eq(1)
-        end
-      end
-
       context "#standard_error" do
         it "calculates standard error" do
           @dv.standard_error
-        end
-      end
-      
-      context "#round" do
-        it "rounds non-nil values" do
-          vector = Daru::Vector.new([1.44,55.32,nil,4])
-          expect(vector.round(1)).to eq(Daru::Vector.new([1.4,55.3,nil,4]))
-        end
-      end
-
-      context "#center" do
-        it "returns a centered vector" do
-          vector = Daru::Vector.new([11,55,33,25,22,nil])
-          expect(vector.center.round(1)).to eq(
-            Daru::Vector.new([-18.2, 25.8, 3.8, -4.2, -7.2, nil])
-            )
-        end
-      end
-
-      context "#standardize" do
-        it "returns a standardized vector" do
-          vector = Daru::Vector.new([11,55,33,25,nil,22])
-          expect(vector.standardize.round(2)).to eq(
-            Daru::Vector.new([-1.11, 1.57, 0.23, -0.26,nil, -0.44])
-            )
-        end
-
-        it "tests for vector standardized with zero variance" do
-          v1 = Daru::Vector.new 100.times.map { |_i| 1 }
-          exp = Daru::Vector.new 100.times.map { nil }
-          expect(v1.standardized).to eq(exp)
-        end
-      end
-
-      context "#vector_percentile" do
-        it "replaces each non-nil value with its percentile value" do
-          vector = Daru::Vector.new([1,nil,nil,2,2,3,4,nil,nil,5,5,5,6,10])
-          expect(vector.vector_percentile).to eq(Daru::Vector.new(
-            [10,nil,nil,25,25,40,50,nil,nil,70,70,70,90,100])
-          )
         end
       end
 
@@ -273,36 +160,150 @@ describe Daru::Vector do
           @dv_with_nils.vector_centered_compute(@dv.mean)
         end
       end
-      
-      context "#sample_with_replacement" do
-        it "calculates sample_with_replacement" do
-          vec =  Daru::Vector.new(
-            [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99], 
-            dtype: dtype, name: :common_all_dtypes)
-          srand(1)
-          expect(vec.sample_with_replacement(100).size).to eq(100)
-    
-          srand(1)
-          expect(vec.sample_with_replacement(100).size).to eq(100)
-        end
-      end
+    end
+  end # ALL DTYPE tests
 
-      context "#sample_without_replacement" do
-        it "calculates sample_without_replacement" do
-          vec =  Daru::Vector.new(
-            [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99], 
-            dtype: dtype, name: :common_all_dtypes)
+  # Only Array tests 
+  context "#percentile" do
+    it "tests linear percentile strategy" do
+      values = Daru::Vector.new [102, 104, 105, 107, 108, 109, 110, 112, 115, 116].shuffle
+      expect(values.percentil(0, :linear)).to eq(102)
+      expect(values.percentil(25, :linear)).to eq(104.75)
+      expect(values.percentil(50, :linear)).to eq(108.5)
+      expect(values.percentil(75, :linear)).to eq(112.75)
+      expect(values.percentil(100, :linear)).to eq(116)
 
-          srand(1)
-          expect(vec.only_valid.to_a.sort, vec.sample_without_replacement(15).sort)
-          expect {
-            @c.sample_without_replacement(20)
-          }.to raise_error(ArgumentError)
+      values = Daru::Vector.new [102, 104, 105, 107, 108, 109, 110, 112, 115, 116, 118].shuffle
+      expect(values.percentil(0, :linear)).to eq(102)
+      expect(values.percentil(25, :linear)).to eq(105)
+      expect(values.percentil(50, :linear)).to eq(109)
+      expect(values.percentil(75, :linear)).to eq(115)
+      expect(values.percentil(100, :linear)).to eq(118)
+    end
+  end
 
-          srand(1)
-          assert_equal(vec.only_valid.to_a.sort, vec.sample_without_replacement(15).sort)
-        end
-      end
+  context "#frequencies" do
+    it "calculates frequencies" do
+      vector = Daru::Vector.new([5,5,5,5,5,6,6,7,8,9,10,1,2,3,4,nil,-99,-99])
+      expect(vector.frequencies).to eq({ 
+        1=>1, 2=>1, 3=>1, 4=>1, 5=>5, 
+        6=>2, 7=>1, 8=>1, 9=>1,10=>1, -99=>2
+      })
+    end
+  end
+
+  context "#ranked" do
+    it "curates by rank" do
+      vector = Daru::Vector.new([nil, 0.8, 1.2, 1.2, 2.3, 18, nil])
+      expect(vector.ranked).to eq(Daru::Vector.new([nil,1,2.5,2.5,4,5,nil]))
+
+      v = Daru::Vector.new [0.8, 1.2, 1.2, 2.3, 18]
+      expect(v.ranked).to eq(Daru::Vector.new [1, 2.5, 2.5, 4, 5])
+    end
+
+    it "tests paired ties" do
+      a = Daru::Vector.new [0, 0, 0, 1, 1, 2, 3, 3, 4, 4, 4]
+      expected = Daru::Vector.new [2, 2, 2, 4.5, 4.5, 6, 7.5, 7.5, 10, 10, 10]
+      expect(a.ranked).to eq(expected)
+    end
+  end
+
+  context "#dichotomize" do
+    it "dichotomizes" do
+      a = Daru::Vector.new [0, 0, 0, 1, 2, 3, nil]
+      exp = Daru::Vector.new [0, 0, 0, 1, 1, 1, nil]
+      expect(a.dichotomize).to eq(exp)
+
+      a = Daru::Vector.new [1, 1, 1, 2, 2, 2, 3]
+      exp = Daru::Vector.new [0, 0, 0, 1, 1, 1, 1]
+      expect(a.dichotomize).to eq(exp)
+
+      a = Daru::Vector.new [0, 0, 0, 1, 2, 3, nil]
+      exp = Daru::Vector.new [0, 0, 0, 0, 1, 1, nil]
+      expect(a.dichotomize(1)).to eq(exp)
+
+      a = Daru::Vector.new %w(a a a b c d)
+      exp = Daru::Vector.new [0, 0, 0, 1, 1, 1]
+      expect(a.dichotomize).to eq(exp)
+    end
+  end
+
+  context "#median_absolute_deviation" do
+    it "calculates median_absolute_deviation" do
+      a = Daru::Vector.new [1, 1, 2, 2, 4, 6, 9]
+      expect(a.median_absolute_deviation).to eq(1)
+    end
+  end
+
+  context "#round" do
+    it "rounds non-nil values" do
+      vector = Daru::Vector.new([1.44,55.32,nil,4])
+      expect(vector.round(1)).to eq(Daru::Vector.new([1.4,55.3,nil,4]))
+    end
+  end
+
+  context "#center" do
+    it "returns a centered vector" do
+      vector = Daru::Vector.new([11,55,33,25,22,nil])
+      expect(vector.center.round(1)).to eq(
+        Daru::Vector.new([-18.2, 25.8, 3.8, -4.2, -7.2, nil])
+        )
+    end
+  end
+
+  context "#standardize" do
+    it "returns a standardized vector" do
+      vector = Daru::Vector.new([11,55,33,25,nil,22])
+      expect(vector.standardize.round(2)).to eq(
+        Daru::Vector.new([-1.11, 1.57, 0.23, -0.26,nil, -0.44])
+        )
+    end
+
+    it "tests for vector standardized with zero variance" do
+      v1 = Daru::Vector.new 100.times.map { |_i| 1 }
+      exp = Daru::Vector.new 100.times.map { nil }
+      expect(v1.standardize).to eq(exp)
+    end
+  end
+
+  context "#vector_percentile" do
+    it "replaces each non-nil value with its percentile value" do
+      vector = Daru::Vector.new([1,nil,nil,2,2,3,4,nil,nil,5,5,5,6,10])
+      expect(vector.vector_percentile).to eq(Daru::Vector.new(
+        [10,nil,nil,25,25,40,50,nil,nil,70,70,70,90,100])
+      )
+    end
+  end
+  
+  context "#sample_with_replacement" do
+    it "calculates sample_with_replacement" do
+      vec =  Daru::Vector.new(
+        [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99], 
+        name: :common_all_dtypes)
+      srand(1)
+      expect(vec.sample_with_replacement(100).size).to eq(100)
+
+      srand(1)
+      expect(vec.sample_with_replacement(100).size).to eq(100)
+    end
+  end
+
+  context "#sample_without_replacement" do
+    it "calculates sample_without_replacement" do
+      vec =  Daru::Vector.new(
+        [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99], 
+        name: :common_all_dtypes)
+
+      srand(1)
+      expect(vec.sample_without_replacement(17).sort).to eq(
+        vec.only_valid.to_a.sort)
+      expect {
+        vec.sample_without_replacement(20)
+      }.to raise_error(ArgumentError)
+
+      srand(1)
+      expect(vec.sample_without_replacement(17).sort).to eq(
+        vec.only_valid.to_a.sort)
     end
   end
 end

@@ -23,25 +23,20 @@ module Daru
 
     def map!(&block)
       return to_enum(:map!) unless block_given?
-
       @data.map!(&block)
-      self
     end
 
     def map(&block)
       return to_enum(:map) unless block_given?
-
-      Daru::Vector.new @data.map(&block), name: @name, index: @index, dtype: @dtype
+      @data.map(&block)
     end
-
-    alias_method :recode, :map
 
     attr_reader :name
     attr_reader :index
     attr_reader :size
     attr_reader :dtype
     attr_reader :nm_dtype
-    attr_reader :nil_positions
+    attr_reader :missing_positions
 
     # Create a Vector object.
     # 
@@ -93,7 +88,7 @@ module Daru
       end
 
       @possibly_changed_type = true
-      set_nil_positions
+      set_missing_positions
       set_size
     end
 
@@ -185,7 +180,7 @@ module Daru
       end
 
       set_size
-      set_nil_positions
+      set_missing_positions
     end
 
     # Two vectors are equal if the have the exact same index values corresponding
@@ -212,7 +207,7 @@ module Daru
 
     # Reports whether missing data is present in the Vector.
     def has_missing_data?
-      !nil_positions.empty?
+      !missing_positions.empty?
     end
     alias :flawed? :has_missing_data?
 
@@ -233,7 +228,7 @@ module Daru
       end
       @data[@index[index]] = element
       set_size
-      set_nil_positions
+      set_missing_positions
     end
     alias :push :concat 
     alias :<< :concat
@@ -268,7 +263,7 @@ module Daru
       end
 
       set_size
-      set_nil_positions
+      set_missing_positions
     end
 
     # The type of data contained in the vector. Can be :object or :numeric. If
@@ -354,6 +349,20 @@ module Daru
       !self[index_of(value)].nil?
     end
 
+    # Like map, but returns a Daru::Vector with the returned values.
+    def recode &block
+      return to_enum(:recode) unless block_given?
+
+      Daru::Vector.new @data.map(&block), name: @name, index: @index, dtype: @dtype
+    end
+
+    # Destructive version of recode!
+    def recode! &block
+      return to_enum(:recode!) unless block_given?
+
+      Daru::Vector.new @data.map!(&block), name: @name, index: @index, dtype: @dtype
+    end
+
     # Returns a vector which has *true* in the position where the element in self
     # is nil, and false otherwise.
     # 
@@ -394,7 +403,7 @@ module Daru
     # 
     # * +replacement+ - The value which should replace all nils
     def replace_nils! replacement
-      nil_positions.each do |idx|
+      missing_positions.each do |idx|
         self[idx] = replacement
       end
 
@@ -406,8 +415,9 @@ module Daru
       self.dup.replace_nils!(replacement)
     end
 
+    # number of non-missing elements
     def n_valid
-      @size
+      @size - missing_positions.size
     end
 
     # Returns *true* if an index exists
@@ -531,12 +541,19 @@ module Daru
     end
 
     # Creates a new vector consisting only of non-nil data
-    def only_valid
-      new_index = @index.to_a - nil_positions
+    # 
+    # == Arguments
+    # 
+    # @as_a [Symbol] Passing :array will return only the elements
+    # as an Array. Otherwise will return a Daru::Vector.
+    def only_valid as_a=:vector
+      new_index = @index.to_a - missing_positions
       new_vector = new_index.map do |idx|
         self[idx]
       end
 
+      return new_vector if as_a != :vector
+      
       Daru::Vector.new new_vector, index: new_index, name: @name, dtype: dtype
     end
 
@@ -678,10 +695,10 @@ module Daru
       end
     end
 
-    def set_nil_positions
-      @nil_positions = []
+    def set_missing_positions
+      @missing_positions = []
       @index.each do |e|
-        @nil_positions << e if(self[e].nil?)
+        @missing_positions << e if(self[e].nil?)
       end
     end
 

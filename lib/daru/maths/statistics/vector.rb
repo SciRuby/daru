@@ -36,15 +36,21 @@ module Daru
 
         def median_absolute_deviation
           m = median
-          map {|val| (val - m).abs }.median
+          recode {|val| (val - m).abs }.median
         end
+        alias :mad :median_absolute_deviation
 
         def standard_error
-          standard_deviation_sample/(Math::sqrt((@size - @nil_positions.size)))
+          standard_deviation_sample/(Math::sqrt((@size - @missing_positions.size)))
         end
 
         def sum_of_squared_deviation
-          (@data.to_a.inject(0) { |a,x| x.square + a } - (sum.square.quo((@size - @nil_positions.size)))).to_f
+          (@data.to_a.inject(0) { |a,x| x.square + a } - (sum.square.quo((@size - @missing_positions.size)))).to_f
+        end
+
+        # Retrieve unique values of non-nil data
+        def factors
+          only_valid.uniq
         end
 
         # Maximum element of the vector.
@@ -90,8 +96,7 @@ module Daru
             memo
           end
 
-          Daru::Vector.new @data.map { |e| r[e] }, index: self.index,
-            name: self.name, dtype: self.dtype, nm_dtype: self.nm_dtype
+          recode { |e| r[e] }
         end
 
         def coefficient_of_variation
@@ -109,7 +114,7 @@ module Daru
             val = frequencies[value]
             val.nil? ? 0 : val
           else
-            size - @nil_positions.size
+            size - @missing_positions.size
           end
         end
 
@@ -123,7 +128,7 @@ module Daru
           if @data.respond_to? :variance_sample 
             @data.variance_sample m
           else
-            sum_of_squares(m).quo((@size - @nil_positions.size) - 1)
+            sum_of_squares(m).quo((@size - @missing_positions.size) - 1)
           end
         end
 
@@ -133,7 +138,7 @@ module Daru
           if @data.respond_to? :variance_population
             @data.variance_population m
           else
-            sum_of_squares(m).quo((@size - @nil_positions.size)).to_f            
+            sum_of_squares(m).quo((@size - @missing_positions.size)).to_f            
           end
         end
 
@@ -167,7 +172,7 @@ module Daru
           else
             m ||= mean
             th  = @data.inject(0) { |memo, val| memo + ((val - m)**3) }
-            th.quo ((@size - @nil_positions.size) * (standard_deviation_sample(m)**3))
+            th.quo ((@size - @missing_positions.size) * (standard_deviation_sample(m)**3))
           end
         end
 
@@ -177,7 +182,7 @@ module Daru
           else
             m ||= mean
             fo  = @data.inject(0){ |a, x| a + ((x - m) ** 4) }
-            fo.quo((@size - @nil_positions.size) * standard_deviation_sample(m) ** 4) - 3
+            fo.quo((@size - @missing_positions.size) * standard_deviation_sample(m) ** 4) - 3
           end
         end
 
@@ -190,14 +195,59 @@ module Daru
           @data.recode!(&block)
         end
 
-        # Return the percentile of a vector.
-        def percentile percent
-          sorted = @data.sort
-          v      = (n_valid * percent).quo(100)
-          if v.to_i != v
-            sorted[v.round]
+        # Returns the value of the percentile q
+        #
+        # Accepts an optional second argument specifying the strategy to interpolate
+        # when the requested percentile lies between two data points a and b
+        # Valid strategies are:
+        # * :midpoint (Default): (a + b) / 2
+        # * :linear : a + (b - a) * d where d is the decimal part of the index between a and b.
+        # == References
+        # 
+        # This is the NIST recommended method (http://en.wikipedia.org/wiki/Percentile#NIST_method)
+        def percentile(q, strategy = :midpoint)
+          sorted = only_valid(:array).sort
+
+          case strategy
+          when :midpoint
+            v = (n_valid * q).quo(100)
+            if(v.to_i!=v)
+              sorted[v.to_i]
+            else
+              (sorted[(v-0.5).to_i].to_f + sorted[(v+0.5).to_i]).quo(2)
+            end
+          when :linear
+            index = (q / 100.0) * (n_valid + 1)
+
+            k = index.truncate
+            d = index % 1
+
+            if k == 0
+              sorted[0]
+            elsif k >= sorted.size
+              sorted[-1]
+            else
+              sorted[k - 1] + d * (sorted[k] - sorted[k - 1])
+            end
           else
-            (sorted[(v - 0.5).round].to_f + sorted[(v + 0.5).round]).quo(2)
+            raise NotImplementedError.new "Unknown strategy #{strategy.to_s}"
+          end
+        end
+
+        # Dichotomize the vector with 0 and 1, based on lowest value.
+        # If parameter is defined, this value and lower will be 0 
+        # and higher, 1.
+        def dichotomize(low = nil)
+          low ||= factors.min
+
+          self.recode do |x|
+            if x.nil? 
+              nil
+            elsif x > low
+              1
+            else
+              0
+            end
           end
         end
 
@@ -206,16 +256,24 @@ module Daru
           self - mean
         end
 
-        # Standardize data by subtracting the mean and then dividing the result
-        # with the sample standard deviation
-        def standardize
-          (self - mean) / standard_deviation_sample
+        # Standardize data.
+        # 
+        # == Arguments
+        # 
+        # * use_population - Pass as *true* if you want to use population
+        # standard deviation instead of sample standard deviation.
+        def standardize use_population=false
+          m ||= mean
+          sd = use_population ? sdp : sds
+          return Daru::Vector.new([nil]*@size) if m.nil? or sd == 0.0
+
+          vector_standarized_compute m, sd
         end
 
         # Replace each non-nil value in the vector with its percentile.
         def vector_percentile
-          c = size - nil_positions.size
-          ranked.map! { |i| i.nil? ? nil : (i.quo(c)*100).to_f }
+          c = size - missing_positions.size
+          ranked.recode! { |i| i.nil? ? nil : (i.quo(c)*100).to_f }
         end
 
         def vector_standarized_compute(m,sd)
@@ -240,14 +298,12 @@ module Daru
         # only with non-nil data.
         #
         # In all the trails, every item have the same probability
-        # of been selected. Might lead to infinite loop if too
-        # many missing data are present due to random number
-        # generation not hitting the right mark. Use with caution.
+        # of been selected.
         def sample_with_replacement(sample=1)
           if @data.respond_to? :sample_with_replacement
             @data.sample_with_replacement sample
           else
-            valid = nil_positions.empty? ? self : self.only_valid
+            valid = missing_positions.empty? ? self : self.only_valid
             vds = valid.size
             (0...sample).collect{ valid[rand(vds)] }
           end
@@ -263,13 +319,14 @@ module Daru
           if @data.respond_to? :sample_without_replacement
             @data.sample_without_replacement sample
           else
-            valid = nil_positions.empty? ? self : self.only_valid 
-            raise ArgumentError, "Sample size couldn't be greater than n" if sample > valid.size
+            valid = missing_positions.empty? ? self : self.only_valid 
+            raise ArgumentError, "Sample size couldn't be greater than n" if 
+              sample > valid.size
             out  = []
             size = valid.size
             while out.size < sample
               value = rand(size)
-              out.push(value) if !out.include? value
+              out.push(value) if !out.include?(value)
             end
 
             out.collect{|i| valid[i]}

@@ -565,7 +565,7 @@ describe Daru::Vector do
     end
 
     context "#recode" do
-      it "changes dtype of the returned vector according to argument passed" do
+      it "maps and returns a vector" do
         a = @common_all_dtypes.recode { |v| v == -99 ? 1 : 0 }
         exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
         expect(a).to eq(exp)
@@ -573,7 +573,7 @@ describe Daru::Vector do
     end
 
     context "#recode!" do
-      it "destructively changes dtype of the returned vector according to argument passed" do
+      it "destructively maps and returns a vector" do
         @common_all_dtypes.recode! { |v| v == -99 ? 1 : 0 }
         exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
         expect(@common_all_dtypes).to eq(exp)
@@ -699,19 +699,19 @@ describe Daru::Vector do
     end
   end
 
-  context "#nil_positions" do
+  context "#missing_positions" do
     context Daru::Index do
       before(:each) do
         @with_md = Daru::Vector.new([1,2,nil,3,4,nil])
       end
 
       it "returns the indexes of nils" do
-        expect(@with_md.nil_positions).to eq([2,5])
+        expect(@with_md.missing_positions).to eq([2,5])
       end
 
       it "updates after assingment" do
         @with_md[3] = nil
-        expect(@with_md.nil_positions).to eq([2,3,5])
+        expect(@with_md.missing_positions).to eq([2,3,5])
       end
     end
 
@@ -856,6 +856,13 @@ describe Daru::Vector do
     it "#split_by_separator_freq returns the number of ocurrences of tokens" do
       a = Daru::Vector.new ['a', 'a,b', 'c,d', 'a,d', 10, nil]
       expect(@a.split_by_separator_freq).to eq(a) 
+    end
+  end
+
+  context "#n_valid" do
+    it "returns number of non-missing positions" do
+      v = Daru::Vector.new [1,2,3,4,nil,nil,3,5]
+      expect(v.n_valid).to eq(6)
     end
   end
 end if mri?

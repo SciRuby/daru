@@ -35,17 +35,17 @@ module Daru
         end
 
         def abs
-          self.dup.map! { |e| e.abs unless e.nil? }
+          self.recode { |e| e.abs unless e.nil? }
         end
 
         def round precision=0
-          self.dup.map! { |e| e.round(precision) unless e.nil? }
+          self.recode { |e| e.round(precision) unless e.nil? }
         end
 
        private
 
         def math_unary_op operation
-          self.dup.map! { |e| Math.send(operation, e) unless e.nil? }
+          self.recode { |e| Math.send(operation, e) unless e.nil? }
         end
 
         def binary_op operation, other
