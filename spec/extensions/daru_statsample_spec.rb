@@ -50,5 +50,5 @@ describe "daru statsample adapter", focus: true do
   #       expect((reg.ssr+reg.sse).to_f).to be_within(0.001).of(reg.sst)
   #     end
   #   end
-  end
+  # end
 end

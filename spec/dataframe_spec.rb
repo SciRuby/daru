@@ -1457,9 +1457,9 @@ describe Daru::DataFrame do
   context "#nest" do
     it "nests in a hash" do
       df = Daru::DataFrame.new({
-        :a => Daru::Vector.new %w(a a a b b b),
-        :b => Daru::Vector.new %w(c c d d e e),
-        :c => Daru::Vector.new %w(f g h i j k)
+        :a => Daru::Vector.new(%w(a a a b b b)),
+        :b => Daru::Vector.new(%w(c c d d e e)),
+        :c => Daru::Vector.new(%w(f g h i j k))
       })
       nest = df.nest :a, :b
       expect(nest[:a][:c]).to eq([{ :c => :f }, { :c => :g }])
@@ -1510,8 +1510,8 @@ describe Daru::DataFrame do
       expect(ds1.merge(ds2)).to eq(exp)
       expect(ds2.merge(ds1)).to eq(exp)
 
-      ds3 = Daru::DataFrame.new { :a => e }
-      exp = Daru::DataFrame.new { :a_1 => a, :b => b, :a_2 => e }
+      ds3 = Daru::DataFrame.new({ :a => e })
+      exp = Daru::DataFrame.new({ :a_1 => a, :b => b, :a_2 => e })
 
       expect(ds1.merge(ds3)).to eq(exp)
     end
@@ -1558,12 +1558,65 @@ describe Daru::DataFrame do
   end
 
   context "has_missing_data?" do
+    before do
+      @a1 = Daru::Vector.new [1, nil, 3, 4, 5, nil]
+      @a2 = Daru::Vector.new [10, nil, 20, 20, 20, 30]
+      @b1 = Daru::Vector.new [nil, nil, 1, 1, 1, 2]
+      @b2 = Daru::Vector.new [2, 2, 2, nil, 2, 3]
+      @c  = Daru::Vector.new [nil, 2, 4, 2, 2, 2]
+      @df = Daru::DataFrame.new({ :a1 => a1, :a2 => a2, :b1 => b1, :b2 => b2, :c => c })
+    end
+
+    it "returns true when missing data present" do
+      expect(@df.has_missing_data?).to eq(true)
+    end
+
+    it "returns false when no missing data prensent" do
+      a = @df.dup_only_valid
+      expect(a.has_missing_data?).to eq(false)
+    end
   end
 
   context "#vector_mean" do
+    before do
+      @a1 = Daru::Vector.new [1, 2, 3, 4, 5, nil]
+      @a2 = Daru::Vector.new [10, 10, 20, 20, 20, 30]
+      @b1 = Daru::Vector.new [nil, 1, 1, 1, 1, 2]
+      @b2 = Daru::Vector.new [2, 2, 2, nil, 2, 3]
+      @c  = Daru::Vector.new [nil, 2, 4, 2, 2, 2]
+      @df = Daru::DataFrame.new({
+        :a1 => a1, :a2 => a2, :b1 => b1, :b2 => b2, :c => c })
+    end
+
+    it "calculates partial vector mean" do
+      expect(@df.vector_mean([:a1, :a2], 1)).to eq(
+        Daru::Vector.new [5.5, 6, 11.5, 12, 12.5, 30])
+      expect(@df.vector_mean([:b1, :b2], 1)).to eq(
+        Daru::Vector.new [2, 1.5, 1.5, 1, 1.5, 2.5])
+      expect(@df.vector_mean([:b1, :b2, :c], 1)).to eq(
+        Daru::Vector.new [nil, 5.0 / 3, 7.0 / 3, 1.5, 5.0 / 3, 7.0 / 3])
+    end
+
+    it "calculates complete vector mean" do
+      expect(@df.vector_mean).to eq(
+        Daru::Vector.new [nil, 3.4, 6, nil, 6.0, nil])
+    end
   end
 
-  context "#recode" do
+  context "#recode!" do
+    it "recodes a given Vector" do
+      @df = Daru::DataFrame.new({ 
+        :id   => Daru::Vector.new([1, 2, 3, 4, 5]), 
+        :name => Daru::Vector.new(%w(Alex Claude Peter Franz George)), 
+        :age  => Daru::Vector.new([20, 23, 25, 27, 5]),
+        :city => Daru::Vector.new(['New York', 'London', 'London', 'Paris', 'Tome']),
+        :a1   => Daru::Vector.new(['a,b', 'b,c', 'a', nil, 'a,b,c']) 
+        }, order: [:id, :name, :age, :city, :a1]
+      )
+
+      @df.recode!(:age) { |c| c[:id] * 2 }
+      expect(@df[:age]).to eq(Daru::Vector.new [2, 4, 6, 8, 10])
+    end
   end
 
   context "#add_vectors_by_split_recode" do
@@ -1571,20 +1624,106 @@ describe Daru::DataFrame do
   end
 
   context "#add_vectors_by_split" do
-  end
-
-  context "#from_to" do
+    # TODO
   end
 
   context "#verify" do
+    def create_test(*args, &_proc)
+      description = args.shift
+      fields = args
+      [description, fields, Proc.new]
+    end
+
+    before do
+      name = Daru::Vector.new %w(r1 r2 r3 r4)
+      v1   = Daru::Vector.new [1, 2, 3, 4]
+      v2   = Daru::Vector.new [4, 3, 2, 1]
+      v3   = Daru::Vector.new [10, 20, 30, 40]
+      v4   = Daru::Vector.new %w(a b a b)
+      @df = Daru::DataFrame.new({ 
+        :v1 => v1, :v2 => v2, :v3 => v3, :v4 => v4, :id => name 
+        }, order: [:v1, :v2, :v3, :v4, :id])
+    end
+
+    it "correctly verifies data as per the block" do
+      # Correct
+      t1 = create_test('If v4=a, v1 odd') do |r| 
+        r[:v4] == 'b' or (r[:v4] == 'a' and r[:v1].odd?)
+      end
+      t2 = create_test('v3=v1*10')  { |r| r[:v3] == r[:v1] * 10 }
+      # Fail!
+      t3 = create_test("v4='b'") { |r| r[:v4] == 'b' }
+      exp1 = ["1 [1]: v4='b'", "3 [3]: v4='b'"]
+      exp2 = ["1 [r1]: v4='b'", "3 [r3]: v4='b'"]
+
+      dataf = @df.verify(t3, t1, t2)
+      expect(dataf).to eq(exp1)
+
+      dataf = @df.verify(:id, t1, t2, t3)
+      expect(dataf).to eq(exp2)
+    end
   end
 
   context "#compute" do
+    it "performs a computation when supplied in a string" do
+      v1       = Daru::Vector.new [1, 2, 3, 4]
+      v2       = Daru::Vector.new [4, 3, 2, 1]
+      v3       = Daru::Vector.new [10, 20, 30, 40]
+      vnumeric = Daru::Vector.new [1.quo(2), 1, 3.quo(2), 2]
+      vsum     = Daru::Vector.new [1 + 4 + 10.0, 2 + 3 + 20.0, 3 + 2 + 30.0, 4 + 1 + 40.0]
+      vmult    = Daru::Vector.new [1 * 4, 2 * 3, 3 * 2, 4 * 1]
+
+      df = Daru::DataFrame.new({:v1 => v1, :v2 => v2, :v3 => v3})
+
+      expect(df.compute("v1/v2")).to eq(vnumeric)
+      expect(df.compute("v1+v2+v3")).to eq(vsum)
+      expect(df.compute("v1*v2")).to eq(vmult)
+    end
   end
 
   context ".crosstab_by_assignation" do
+    it "" do
+      v1 = Daru::Vector.new %w(a a a b b b c c c)
+      v2 = Daru::Vector.new %w(a b c a b c a b c)
+      v3 = Daru::Vector.new [0, 1, 0, 0, 1, 1, 0, 0, 1]
+      df = Daru::DataFrame.crosstab_by_assignation(v1, v2, v3)
+
+      expect(df[:_id].type).to eq(:object)
+      expect(df[:a]).to eq(:numeric)
+      expect(df[:b]).to eq(:numeric)
+
+      ev_id = Daru::Vector.new %w(a b c)
+      ev_a  = Daru::Vector.new %w(0 0 0) 
+      ev_b  = Daru::Vector.new %w(1 1 0) 
+      ev_c  = Daru::Vector.new %w(0 1 1) 
+      df2 = Daru::DataFrame.new({ 
+        :_id => ev_id, :a => ev_a, :b => ev_b, :c => ev_c })
+
+      expect(df2).to eq(df)
+    end
   end
 
   context "#one_to_many" do
+    it "" do
+      rows = [
+        ['1', 'george', 'red', 10, 'blue', 20, nil, nil],
+        ['2', 'fred', 'green', 15, 'orange', 30, 'white', 20],
+        ['3', 'alfred', nil, nil, nil, nil, nil, nil]
+      ]
+      df = Daru::DataFrame.rows(rows, 
+        order: [:id, :name, :car_color1, :car_value1, :car_color2, 
+          :car_value2, :car_color3, :car_value3])
+
+      ids     = Daru::Vector.new %w(1 1 2 2 2)
+      colors  = Daru::Vector.new %w(red blue green orange white)
+      values  = Daru::Vector.new [10, 20, 15, 30, 20]
+      col_ids = Daru::Vector.new [1, 2, 1, 2, 3]
+      df_expected = Daru::DataFrame.new({
+        :id => ids, :_col_id => col_ids, :color => colors, :value => values
+        }, order: [:id, :_col_id, :color, :value])
+
+      expect(df.one_to_many([:id],[:car_color1, :car_value1, :car_color2, 
+          :car_value2, :car_color3, :car_value3])).to eq(df)
+    end
   end
 end if mri?
