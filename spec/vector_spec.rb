@@ -588,29 +588,30 @@ describe Daru::Vector do
           @vector.recode! { |v| v == -99 ? 1 : 0 }
           exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
           expect(@vector).to eq(exp)
-          expect(@vector.dtype).to eq(:array) 
+          expect(@vector.dtype).to eq(dtype) 
         end
 
         it "destructively maps and returns a vector of dtype gsl" do
           @vector.recode!(:gsl) { |v| v == -99 ? 1 : 0 }
           exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], dtype: :gsl
           expect(@vector).to eq(exp)
-          expect(@vector.dtype).to eq(:gsl)
+          expect(@vector.dtype).to eq(exp.dtype)
         end
 
         it "destructively maps and returns a vector of dtype nmatrix" do
           @vector.recode!(:nmatrix) { |v| v == -99 ? 1 : 0 }
           exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], dtype: :nmatrix
           expect(@vector).to eq(exp)
-          expect(@vector.dtype).to eq(:nmatrix)
+          expect(@vector.dtype).to eq(exp.dtype)
         end
       end
 
       context "#verify" do
-        it "verifies data correctly" do
-          h = @common_all_dtypes.verify { |d| !d.nil? and d > 0 }
-          e = { 15 => nil, 16 => -99, 17 => -99 }
-          expect(e).to eq(h)
+        it "returns a hash of invalid data and index of data" do
+          v = Daru::Vector.new [1,2,3,4,5,6,-99,35,-100], dtype: dtype
+          h = v.verify { |d| d > 0 }
+          e = { 6 => -99, 8 => -100 }
+          expect(h).to eq(e)
         end
       end
 

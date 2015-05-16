@@ -363,17 +363,32 @@ module Daru
     end
 
     # Like map, but returns a Daru::Vector with the returned values.
-    def recode &block
+    def recode dt=nil, &block
       return to_enum(:recode) unless block_given?
 
-      Daru::Vector.new @data.map(&block), name: @name, index: @index, dtype: @dtype
+      dup.recode! dt, &block
     end
 
     # Destructive version of recode!
-    def recode! &block
+    def recode! dt=nil, &block
       return to_enum(:recode!) unless block_given?
 
-      Daru::Vector.new @data.map!(&block), name: @name, index: @index, dtype: @dtype
+      @data.map!(&block).data
+      @data = cast_vector_to(dt || @dtype)
+      self
+    end
+
+    # Reports all values that doesn't comply with a condition.
+    # Returns a hash with the index of data and the invalid data.
+    def verify &block
+      h = {}
+      (0...size).each do |i|
+        if !(yield @data[i])
+          h[i] = @data[i]
+        end
+      end
+
+      h
     end
 
     # Returns a vector which has *true* in the position where the element in self

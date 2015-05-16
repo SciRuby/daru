@@ -6,14 +6,12 @@ module Daru
 
       def each(&block)
         @data[0...@size].each(&block)
-      end
-
-      def map(&block)
-        @data[0...@size].map(&block)
+        self
       end
 
       def map!(&block)
         @data = NMatrix.new [@size*2], map(&block).to_a, dtype: nm_dtype
+        self
       end
 
       def inject(*args, &block)
@@ -70,7 +68,7 @@ module Daru
       end
  
       def dup
-        NMatrixWrapper.new @data.to_a, @context, @nm_dtype
+        NMatrixWrapper.new @data[0...@size].to_a, @context, @nm_dtype
       end
 
       def resize size = @size*2
