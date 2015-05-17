@@ -36,15 +36,15 @@ module Daru
 
         # Calculate exponenential of all vectors with numeric values.
         def exp
-          self.dup.map_vectors! { |v| v.exp if v.type == :numeric }
+          only_numerics(clone: false).recode { |v| v.exp }
         end
 
         def sqrt
-          self.dup.map_vectors! { |v| v.sqrt if v.type == :numeric }
+          only_numerics(clone: false).recode { |v| v.sqrt }
         end
 
         def round precision=0
-          self.dup.map_vectors! { |v| v.round(precision) if v.type == :numeric }
+          only_numerics(clone: false).recode { |v| v.round(precision) }
         end
        private
 

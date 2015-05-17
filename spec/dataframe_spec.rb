@@ -779,28 +779,6 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#each_vector" do
-    context Daru::Index do
-      it "iterates over all vectors" do
-        ret = @data_frame.each_vector do |vector|
-          expect(vector.index).to eq([:one, :two, :three, :four, :five].to_index)
-          expect(vector.class).to eq(Daru::Vector) 
-        end
-
-        expect(ret).to eq(@data_frame)
-      end
-
-      it "returns Enumerable if no block specified" do
-        ret = @data_frame.each_vector
-        expect(ret.is_a?(Enumerator)).to eq(true) 
-      end
-    end
-
-    context Daru::MultiIndex do
-
-    end
-  end
-
   context "#each_vector_with_index" do
     it "iterates over vectors with index" do
       idxs = []
@@ -811,17 +789,6 @@ describe Daru::DataFrame do
       end
 
       expect(idxs).to eq([:a, :b, :c])
-
-      expect(ret).to eq(@data_frame)
-    end
-  end
-
-  context "#each_row" do
-    it "iterates over rows" do
-      ret = @data_frame.each_row do |row|
-        expect(row.index).to eq([:a, :b, :c].to_index)
-        expect(row.class).to eq(Daru::Vector)
-      end
 
       expect(ret).to eq(@data_frame)
     end
@@ -841,6 +808,31 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#each" do
+    it "iterates over rows" do
+      ret = @data_frame.each(:row) do |row|
+        expect(row.index).to eq([:a, :b, :c].to_index)
+        expect(row.class).to eq(Daru::Vector)
+      end
+
+      expect(ret).to eq(@data_frame)
+    end
+
+    it "iterates over all vectors" do
+      ret = @data_frame.each do |vector|
+        expect(vector.index).to eq([:one, :two, :three, :four, :five].to_index)
+        expect(vector.class).to eq(Daru::Vector) 
+      end
+
+      expect(ret).to eq(@data_frame)
+    end
+
+    it "returns Enumerable if no block specified" do
+      ret = @data_frame.each
+      expect(ret.is_a?(Enumerator)).to eq(true) 
+    end
+  end
+
   context "#recode" do
     before do
       @ans_vector = Daru::DataFrame.new({b: [21,22,23,24,25], a: [11,12,13,14,15], 
@@ -851,13 +843,13 @@ describe Daru::DataFrame do
         c: [121, 484, 1089, 1936, 3025]}, order: [:a, :b, :c], 
         index: [:one, :two, :three, :four, :five])
     end
-    
+
     it "maps over the vectors of a DataFrame and returns a DataFrame" do
       ret = @data_frame.recode do |vector|
         vector.map! { |e| e += 10}
       end
 
-      expect(ret).to eq(@ans)
+      expect(ret).to eq(@ans_vector)
     end
 
     it "maps over the rows of a DataFrame and returns a DataFrame" do
@@ -870,42 +862,49 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#recode!" do
-    it "recodes a given Vector" do
-      @df = Daru::DataFrame.new({ 
-        :id   => Daru::Vector.new([1, 2, 3, 4, 5]), 
-        :name => Daru::Vector.new(%w(Alex Claude Peter Franz George)), 
-        :age  => Daru::Vector.new([20, 23, 25, 27, 5]),
-        :city => Daru::Vector.new(['New York', 'London', 'London', 'Paris', 'Tome']),
-        :a1   => Daru::Vector.new(['a,b', 'b,c', 'a', nil, 'a,b,c']) 
-        }, order: [:id, :name, :age, :city, :a1]
-      )
+  context "#map" do
+    it "iterates over rows and returns an Array" do
+      ret = @data_frame.map_rows do |row|
+        expect(row.class).to eq(Daru::Vector)
+        row[:a] * row[:c]
+      end
 
-      @df.recode!(:age) { |c| c[:id] * 2 }
-      expect(@df[:age]).to eq(Daru::Vector.new [2, 4, 6, 8, 10])
+      expect(ret).to eq([])
+      expect(@data_frame.vectors.to_a).to eq([:a, :b, :c])
     end
-  end
 
-  context "#map_vectors" do
     it "iterates over vectors and returns an Array" do
-      ret = @data_frame.map_vectors do |vector|
+      ret = @data_frame.map(:vector) do |vector|
         vector.mean
       end
       expect(ret).to eq([23, 13, 43])
     end
   end
 
-  context "#map_vectors!" do
-    it "maps vectors and modifies the dataframe" do
-      ans = Daru::DataFrame.new({b: [21,22,23,24,25], a: [11,12,13,14,15], 
+  context "#map!" do
+    before do
+      @ans_vector = Daru::DataFrame.new({b: [21,22,23,24,25], a: [11,12,13,14,15], 
         c: [21,32,43,54,65]}, order: [:a, :b, :c], 
         index: [:one, :two, :three, :four, :five])
 
-      @data_frame.map_vectors! do |vector|
-        vector.map! { |e| e += 10}
+      @ans_row = Daru::DataFrame.new({b: [12,13,14,15,16], a: [2,3,4,5,6], 
+        c: [12,23,34,45,56]}, order: [:a, :b, :c], 
+        index: [:one, :two, :three, :four, :five])
+    end
+
+    it "destructively maps over the vectors and changes the DF" do
+      @data_frame.map! do |vector|
+        vector + 10
+      end
+      expect(@data_frame).to eq(@ans_vector)
+    end
+
+    it "destructively maps over the rows and changes the DF" do
+      @data_frame.map!(:row) do |row|
+        row + 1
       end
 
-      expect(@data_frame).to eq(ans)
+      expect(@data_frame).to eq(@ans_row)
     end
   end
 
@@ -926,17 +925,6 @@ describe Daru::DataFrame do
         Daru::Vector.new([11,12,13,14,15]),
         Daru::Vector.new([21,32,43,54,65])])
       expect(idx).to eq([:a, :b, :c])
-    end
-  end
-
-  context "#map_rows" do
-    it "iterates over rows and returns an Array" do
-      ret = @data_frame.map_rows do |row|
-        expect(row.class).to eq(Daru::Vector)
-        row[:a] * row[:c]
-      end
-
-      expect(ret).to eq([])
     end
   end
 
@@ -1312,7 +1300,7 @@ describe Daru::DataFrame do
       }, index: [:bar, :foo]))
     end
 
-    it "creates row index as per (double) index argument and default aggregates to mean" do
+    it "creates row index as per (double) index argument and default aggregates to mean", focus: true do
       agg_mi = Daru::MultiIndex.new(
         [        
           [:bar, :large],
@@ -1728,6 +1716,33 @@ describe Daru::DataFrame do
 
       expect(df.one_to_many([:id],[:car_color1, :car_value1, :car_color2, 
           :car_value2, :car_color3, :car_value3])).to eq(df)
+    end
+  end
+
+  context "#only_numerics" do
+    before do
+      @v1 = Daru::Vector.new([1,2,3,4,5])
+      @v2 = Daru::Vector.new(%w(one two three four five))
+      @v3 = Daru::Vector.new([11,22,33,44,55])
+      @df = Daru::DataFrame.new({
+        a: @v1, b: @v2, c: @v3 }, clone: false)
+    end
+
+    it "returns a view of only the numeric vectors" do
+      dfon = @df.only_numerics(clone: false)
+
+      expect(dfon).to eq(
+        Daru::DataFrame.new({ a: @v1, c: @v3 }, clone: false))
+      expect(dfon[:a].object_id).to eq(@v1.object_id)
+    end
+
+    it "returns a clone of numeric vectors" do
+      dfon = @df.only_numerics
+
+      expect(dfon).to eq(
+        Daru::DataFrame.new({ a: @v1, c: @v3}, clone: false)
+      )
+      expect(dfon[:a].object_id).to_not eq(@v1.object_id)
     end
   end
 end if mri?

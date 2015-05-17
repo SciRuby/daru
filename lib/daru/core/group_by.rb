@@ -171,7 +171,6 @@ module Daru
         else
           arry.map { |e| e.is_a?(Numeric) ? e : e.to_sym }
         end
-
         symbolized_arry
       end
 

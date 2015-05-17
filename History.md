@@ -30,6 +30,7 @@
         - #[]= does not clone the vector if it has the same index as the DataFrame.
         - Added a :clone option to initialize that will not clone Daru::Vectors passed into the constructor.
         - Added #save.
+        - Added #only_numerics.
 * Changes
     - Changes Vector#nil_positions to Vector#missing_positions so that future changes for accomodating different values for missing data can be made easily.
     - Changed History.txt to History.md

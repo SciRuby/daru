@@ -112,7 +112,7 @@ module Daru
     def initialize source, opts={}
       vectors = opts[:order]
       index   = opts[:index]
-      clone   = true unless opts[:clone] == false
+      clone   = opts[:clone] == false ? false : true
       @name   = (opts[:name] || SecureRandom.uuid).to_sym
       @data   = []
 
@@ -138,7 +138,7 @@ module Daru
             vectors.each_with_index do |name, idx|
               hsh[name] = source[idx]
             end
-            initialize(hsh, index: index, order: vectors, name: @name)
+            initialize(hsh, index: index, order: vectors, name: @name, clone: clone)
           else # array of hashes
             if vectors.nil?
               @vectors = Daru::Index.new source[0].keys.map(&:to_sym)
@@ -273,7 +273,7 @@ module Daru
         src[vector] = @data[@vectors[vector]].dup
       end
 
-      Daru::DataFrame.new src, order: @vectors.dup, index: @index.dup, name: @name
+      Daru::DataFrame.new src, order: @vectors.dup, index: @index.dup, name: @name, clone: true
     end
 
     # Returns a 'view' of the DataFrame, i.e the object ID's of vectors are
@@ -386,21 +386,69 @@ module Daru
       end
     end
 
-    # Map each vector. Returns a DataFrame whose vectors are modified according
-    # to the value returned by the block. As is the case with Enumerable#map,
-    # the object returned by each block must be a Daru::Vector for the dataframe
-    # to remain relevant.
+    # Destructive map. Modifies the DataFrame. Each run of the block
+    # must return a Daru::Vector. You can specify the axis to map over
+    # as the argument. Default to :vector.
+    def map! axis=:vector, &block
+      if axis == :vector or axis == :column
+        map_vectors!(&block)
+      elsif axis == :row
+        map_rows!(&block)
+      end
+    end
+
+    # Maps over the DataFrame and returns a DataFrame. Each run of the
+    # block must return a Daru::Vector object. You can specify the axis
+    # to map over. Default to :vector.
+    def recode axis=:vector, &block
+      if axis == :vector or axis == :column
+        recode_vectors(&block)
+      elsif axis == :row
+        recode_rows(&block)
+      end
+    end
+
+    def recode_vectors &block
+      block_given? or to_enum(:recode_vectors) 
+
+      df = self.dup
+      df.each_vector_with_index do |v, i|
+        ret = yield v
+        ret.is_a?(Daru::Vector) or raise TypeError, "Every iteration must return Daru::Vector not #{ret.class}"
+        df[i] = ret
+      end
+    end
+
+    def recode_rows &block
+      
+    end
+
+    # Map each vector and return an Array.
     def map_vectors(&block)
       return to_enum(:map_vectors) unless block_given?
 
-      self.dup.map_vectors!(&block)
+      arry = []
+      @data.each do |vec|
+        arry << yield(vec)
+      end
+
+      arry
     end
 
     # Destructive form of #map_vectors
     def map_vectors!(&block)
       return to_enum(:map_vectors!) unless block_given?
 
-      @data.map!(&block)
+      vectors.dup.each do |n|
+        v = yield self[n]
+        # if v.nil?
+          # delete_vector n
+        # else
+          v.is_a?(Daru::Vector) or raise TypeError, "Must return a Daru::Vector not #{v.class}"
+          self[n] = v
+        # end
+      end
+
       self
     end
 
@@ -408,35 +456,52 @@ module Daru
     def map_vectors_with_index(&block)
       return to_enum(:map_vectors_with_index) unless block_given?
 
-      df = self.dup
-      df.each_vector_with_index do |vector, name|
-        df[name, :vector] = yield(vector, name)
+      
+      dt = []
+      each_vector_with_index do |vector, name|
+        dt << yield(vector, name)
       end
 
-      df
+      dt
     end
 
     # Map each row
     def map_rows(&block)
       return to_enum(:map_rows) unless block_given?
 
-      df = self.dup
-      df.each_row_with_index do |row, index|
-        df[index, :row] = yield(row)
+      dt = []
+      each_row do |row|
+        dt << yield(row)
       end
 
-      df
+      dt
     end
 
     def map_rows_with_index(&block)
       return to_enum(:map_rows_with_index) unless block_given?
 
-      df = self.dup
-      df.each_row_with_index do |row, index|
-        df[index, :row] = yield(row, index)
+      dt = []
+      each_row_with_index do |row, index|
+        dt << yield(row, index)
       end
 
-      df
+      dt
+    end
+
+    def map_rows!(&block)
+      return to_enum(:map_rows!) unless block_given?
+
+      index.dup.each do |i|
+        r = yield self.row[i]
+        # if r.nil?
+          # delete_row i
+        # else
+          r.is_a?(Daru::Vector) or raise TypeError, "Returned object must be Daru::Vector not #{r.class}"
+          self.row[i] = r
+        # end
+      end
+
+      self
     end
 
     # Retrieves a Daru::Vector, based on the result of calculation 
@@ -615,15 +680,30 @@ module Daru
       self.dup.reindex! new_index
     end
 
-    # Return the names of all the numeric vectors. Will include vectors with nils
+    # Return the indexes of all the numeric vectors. Will include vectors with nils
     # alongwith numbers.
     def numeric_vectors
       numerics = []
 
-      each_vector do |vec|
-        numerics << vec.name if(vec.type == :numeric)
+      each_vector_with_index do |vec, i|
+        numerics << i if(vec.type == :numeric)
       end
       numerics
+    end
+
+    # Return a DataFrame of only the numerical Vectors. If clone: false
+    # is specified as option, only a *view* of the Vectors will be
+    # returned. Defaults to clone: true.
+    def only_numerics opts={}
+      cln = opts[:clone] == false ? false : true
+      nv = numeric_vectors
+      arry = nv.inject([]) do |arr, v|
+        arr << self[v]
+        arr
+      end
+
+      order = @vectors.is_a?(MultiIndex) ? MultiIndex.new(nv) : Index.new(nv)
+      Daru::DataFrame.new(arry, clone: cln, order: order, index: @index)
     end
 
     # Sorts a dataframe (ascending/descending)according to the given sequence of 
