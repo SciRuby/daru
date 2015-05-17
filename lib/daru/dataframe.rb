@@ -818,6 +818,28 @@ module Daru
       to_html
     end
 
+    # Use marshalling to save dataframe to a file.
+    def save filename
+      Daru::IO.save self, filename
+    end
+
+    def _dump depth
+      Marshal.dump({
+        data:  @data, 
+        index: @index.to_a, 
+        order: @vectors.to_a,
+        name:  @name
+        })
+    end
+
+    def self._load data
+      h = Marshal.load data
+      Daru::DataFrame.new(h[:data], 
+        index: h[:index], 
+        order: h[:order],
+        name:  h[:name])
+    end
+
     # Change dtypes of vectors by supplying a hash of :vector_name => :new_dtype
     # 
     # == Usage

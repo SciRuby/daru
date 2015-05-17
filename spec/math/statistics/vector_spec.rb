@@ -1,6 +1,6 @@
 require 'spec_helper.rb'
 
-describe Daru::Vector, focus: true do
+describe Daru::Vector do
   [:array, :gsl].each do |dtype| #nmatrix still unstable
     describe dtype do
       before do

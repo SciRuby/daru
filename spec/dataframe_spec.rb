@@ -264,7 +264,7 @@ describe Daru::DataFrame do
         expect(df.vectors).to eq([:a,:c,:b].to_index)
       end
 
-      it "does not copy vectors when clone: false", focus: true do
+      it "does not copy vectors when clone: false" do
         a = Daru::Vector.new([1,2,3,4,5])
         b = Daru::Vector.new([1,2,3,4,5])
         c = Daru::Vector.new([1,2,3,4,5])
@@ -1474,21 +1474,7 @@ describe Daru::DataFrame do
       expect(@df_mi.summary.size > 0).to eq(true)
     end
   end
-
-  context "#save" do
-    it "saves df to a file" do
-      outfile = Tempfile.new('dataframe.df')
-      @data_frame.save(outfile.path)
-      a = Daru.load(outfile.path)
-      expect(a).to eq(@data_frame)
-
-      outfile = Tempfile.new('df_with_mi.df')
-      @df_with_mi.save(outfile.path)
-      b = Daru.load(outfile.path)
-      expect(b).to eq(@df_with_mi)
-    end
-  end
-
+  
   context "#to_gsl" do
     it "converts to GSL::Matrix" do
       mat = GSL::Matrix.columns([11,12,13,14,15],[1,2,3,4,5],[11,22,33,44,55])

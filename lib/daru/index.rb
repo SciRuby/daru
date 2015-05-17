@@ -104,5 +104,15 @@ module Daru
     def dup
       Daru::Index.new @relation_hash.keys
     end
+
+    def _dump depth
+      Marshal.dump({relation_hash: @relation_hash})
+    end
+
+    def self._load data
+      h = Marshal.load data
+
+      Daru::Index.new(h[:relation_hash].keys, h[:relation_hash].values)
+    end
   end
 end

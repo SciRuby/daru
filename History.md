@@ -1,4 +1,4 @@
-== 0.0.6
+# 0.0.6
 
 * Fixes
     - Update documentation and fix it in other places.
@@ -7,6 +7,9 @@
 * Enhancements
     - Wrote a proper .travis.yml
     - Added optional GSL dependency gsl-nmatrix
+    - Added Marshalling and unMarshalling capabilities to Vector, Index and 
+    DataFrame.
+    - Added new methods Daru::IO.save and Daru::IO.load for saving and loading data to and from files by marshalling.
     - Vector
         - #center
         - #standardize
@@ -19,16 +22,19 @@
         - Added .new_with_size for creating vectors by specifying a size for the
         vector and a block for generating values.
         - Added Vector#verify, #recode! and #recode.
+        - Added #save.
     - DataFrame
         - #dup_only_valid
         - #clone
         - #[]= does not clone the vector if it has the same index as the DataFrame.
         - Added a :clone option to initialize that will not clone Daru::Vectors passed into the constructor.
+        - Added #save.
 * Changes
     - Changes Vector#nil_positions to Vector#missing_positions so that future changes for accomodating different values for missing data can be made easily.
+    - Changed History.txt to History.md
 
 
-== 0.0.5
+# 0.0.5
 
 * Easy accessors for some methods
 * Faster CSV loading.
@@ -63,7 +69,7 @@
 * Added #covariance to calculate the covariance between numbers of a DataFrame and #correlation to calculate correlation. 
 * Enumerators return Enumerator objects if there is no block.
 
-== 0.0.4
+# 0.0.4
 * Added wrappers for Array, NMatrix and MDArray such that the external implementation is completely transparent of the data type being used internally.
 * Added statistics methods for vectors for ArrayWrapper. These are compatible with statsample methods.
 * Added plotting functions for DataFrame and Vector using Nyaplot.
@@ -76,33 +82,33 @@
 * #max for Vector can return a Vector object with the index set to the index of the max value.
 * Tonnes of documentation for most methods.
 
-== 0.0.3.1
+# 0.0.3.1
 * Added aritmetic methods for vector aritmetic by taking the index of values into account.
 
-== 0.0.3
+# 0.0.3
 * This release is a complete rewrite of the entire gem to accomodate index values.
 
-== 0.0.2.4
+# 0.0.2.4
 * Initialize dataframe from an array which looks like [{a: 10, b: 20}, {a: 11, b: 12}]. Works for parsed JSON.
 * Over-riding vectors in DataFrame will still preserve order.
 * Any re-assignment of rows in #each_row and #each_row_with_index will reflect in the DataFrame.
 * Added #to_a and #to_json to DataFrame.
 
-== 0.0.2.3
+# 0.0.2.3
 * Added #filter\_rows and #delete_row to DataFrame and changed #row to return a row containing a Hash of column name and value.
 * Vector objects passed into a DataFrame are now duplicated so that any changes dont affect the original vector.
 * Added an optional opts argument to DataFrame.
 * Sending more fields than vectors in DataFrame will cause addition of nil vectors.
 * Init a DataFrame without having to convert explicitly to vectors.
 
-== 0.0.2.2
+# 0.0.2.2
 * Added test cases and multiple column access through the [] operator on DataFrames
 
-== 0.0.2.1
+# 0.0.2.1
 * Fixed bugs with previous code and more iterators
 
-== 0.0.2
+# 0.0.2
 * Added iterators for dataframe and vector alongwith printing functions (to_html) to interface properly with iRuby notebook.
 
-== 0.0.1
+# 0.0.1
 * Added classes for DataFrame and Vector alongwith some super-basic functions to get off the ground

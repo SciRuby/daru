@@ -1,8 +1,6 @@
 require 'spec_helper.rb'
 
 describe Daru::Vector do
-  ALL_DTYPES = [:array, :nmatrix, :gsl]
-
   ALL_DTYPES.each do |dtype|
     describe dtype.to_s do
       before do
@@ -318,7 +316,7 @@ describe Daru::Vector do
         end
       end
 
-      context "#delete_at",focus: true do
+      context "#delete_at" do
         context Daru::Index do
           before :each do
             @dv = Daru::Vector.new [1,2,3,4,5], name: :a, 
@@ -519,15 +517,6 @@ describe Daru::Vector do
 
         context Daru::MultiIndex do
           pending
-        end
-      end
-
-      context "#save" do
-        it "saves to a file and returns the same Vector" do
-          outfile = Tempfile.new('vector.vec')
-          @common_all_dtypes.save(outfile.path)
-          a = Daru.load outfile.path
-          expect(a).to eq(c)
         end
       end
 

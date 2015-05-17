@@ -18,6 +18,22 @@ module Daru
 
         Daru::DataFrame.new(hsh)
       end
+
+      def save klass, filename
+        fp = File.open(filename, 'w')
+        Marshal.dump(klass, fp)
+        fp.close
+      end
+
+      def load filename
+        if File.exist? filename
+          o = false
+          File.open(filename, 'r') { |fp| o = Marshal.load(fp) }
+          o
+        else
+          false
+        end
+      end
     end
   end
 end
