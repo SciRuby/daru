@@ -841,23 +841,62 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#map_vectors" do
-    it "iterates over vectors and returns a modified DataFrame" do
-      ans = Daru::DataFrame.new({b: [21,22,23,24,25], a: [11,12,13,14,15], 
-      c: [21,32,43,54,65]}, order: [:a, :b, :c], 
-      index: [:one, :two, :three, :four, :five])
+  context "#recode" do
+    before do
+      @ans_vector = Daru::DataFrame.new({b: [21,22,23,24,25], a: [11,12,13,14,15], 
+        c: [21,32,43,54,65]}, order: [:a, :b, :c], 
+        index: [:one, :two, :three, :four, :five])
 
-      ret = @data_frame.map_vectors do |vector|
-        vector = vector.map { |e| e += 10}
+      @ans_rows = Daru::DataFrame.new({b: [121, 144, 169, 196, 225], a: [1,4,9,16,25], 
+        c: [121, 484, 1089, 1936, 3025]}, order: [:a, :b, :c], 
+        index: [:one, :two, :three, :four, :five])
+    end
+    
+    it "maps over the vectors of a DataFrame and returns a DataFrame" do
+      ret = @data_frame.recode do |vector|
+        vector.map! { |e| e += 10}
       end
 
-      expect(ret).to eq(ans)
-      expect(ret == @data_frame).to eq(false)
+      expect(ret).to eq(@ans)
+    end
+
+    it "maps over the rows of a DataFrame and returns a DataFrame" do
+      ret = @data_frame.recode(:row) do |row|
+        expect(row.class).to eq(Daru::Vector)
+        row.map { |e| e*e }
+      end
+
+      expect(ret).to eq(@ans_rows)
+    end
+  end
+
+  context "#recode!" do
+    it "recodes a given Vector" do
+      @df = Daru::DataFrame.new({ 
+        :id   => Daru::Vector.new([1, 2, 3, 4, 5]), 
+        :name => Daru::Vector.new(%w(Alex Claude Peter Franz George)), 
+        :age  => Daru::Vector.new([20, 23, 25, 27, 5]),
+        :city => Daru::Vector.new(['New York', 'London', 'London', 'Paris', 'Tome']),
+        :a1   => Daru::Vector.new(['a,b', 'b,c', 'a', nil, 'a,b,c']) 
+        }, order: [:id, :name, :age, :city, :a1]
+      )
+
+      @df.recode!(:age) { |c| c[:id] * 2 }
+      expect(@df[:age]).to eq(Daru::Vector.new [2, 4, 6, 8, 10])
+    end
+  end
+
+  context "#map_vectors" do
+    it "iterates over vectors and returns an Array" do
+      ret = @data_frame.map_vectors do |vector|
+        vector.mean
+      end
+      expect(ret).to eq([23, 13, 43])
     end
   end
 
   context "#map_vectors!" do
-    it "maps vectors (bang)" do
+    it "maps vectors and modifies the dataframe" do
       ans = Daru::DataFrame.new({b: [21,22,23,24,25], a: [11,12,13,14,15], 
         c: [21,32,43,54,65]}, order: [:a, :b, :c], 
         index: [:one, :two, :three, :four, :five])
@@ -871,7 +910,7 @@ describe Daru::DataFrame do
   end
 
   context "#map_vectors_with_index" do
-    it "iterates over vectors with index and returns a modified DataFrame" do
+    it "iterates over vectors with index and returns an Array" do
       ans = Daru::DataFrame.new({b: [21,22,23,24,25], a: [11,12,13,14,15], 
       c: [21,32,43,54,65]}, order: [:a, :b, :c], 
       index: [:one, :two, :three, :four, :five])
@@ -879,43 +918,38 @@ describe Daru::DataFrame do
       idx = []
       ret = @data_frame.map_vectors_with_index do |vector, index|
         idx << index
-        vector = vector.map { |e| e += 10}
+        vector.map { |e| e += 10}
       end
 
-      expect(ret).to eq(ans)
+      expect(ret).to eq([
+        Daru::Vector.new([21,22,23,24,25]), 
+        Daru::Vector.new([11,12,13,14,15]),
+        Daru::Vector.new([21,32,43,54,65])])
       expect(idx).to eq([:a, :b, :c])
     end
   end
 
   context "#map_rows" do
-    it "iterates over rows and returns a modified DataFrame" do
-      ans = Daru::DataFrame.new({b: [121, 144, 169, 196, 225], a: [1,4,9,16,25], 
-        c: [121, 484, 1089, 1936, 3025]}, order: [:a, :b, :c], 
-        index: [:one, :two, :three, :four, :five])
-
+    it "iterates over rows and returns an Array" do
       ret = @data_frame.map_rows do |row|
         expect(row.class).to eq(Daru::Vector)
-        row = row.map { |e| e*e }
+        row[:a] * row[:c]
       end
 
-      expect(ret).to eq(ans)
+      expect(ret).to eq([])
     end
   end
 
   context "#map_rows_with_index" do
     it "iterates over rows with index and returns a modified DataFrame" do
-      ans = Daru::DataFrame.new({b: [121, 144, 169, 196, 225], a: [1,4,9,16,25], 
-        c: [121, 484, 1089, 1936, 3025]},order: [:a, :b, :c], 
-        index: [:one, :two, :three, :four, :five])
-
       idx = []
       ret = @data_frame.map_rows_with_index do |row, index|
         idx << index
         expect(row.class).to eq(Daru::Vector)
-        row = row.map { |e| e*e }
+        row[:a] * row[:c]
       end
 
-      expect(ret).to eq(ans)
+      expect(ret).to eq([])
       expect(idx).to eq([:one, :two, :three, :four, :five])
     end
   end
@@ -1586,22 +1620,6 @@ describe Daru::DataFrame do
     it "calculates complete vector mean" do
       expect(@df.vector_mean).to eq(
         Daru::Vector.new [nil, 3.4, 6, nil, 6.0, nil])
-    end
-  end
-
-  context "#recode!" do
-    it "recodes a given Vector" do
-      @df = Daru::DataFrame.new({ 
-        :id   => Daru::Vector.new([1, 2, 3, 4, 5]), 
-        :name => Daru::Vector.new(%w(Alex Claude Peter Franz George)), 
-        :age  => Daru::Vector.new([20, 23, 25, 27, 5]),
-        :city => Daru::Vector.new(['New York', 'London', 'London', 'Paris', 'Tome']),
-        :a1   => Daru::Vector.new(['a,b', 'b,c', 'a', nil, 'a,b,c']) 
-        }, order: [:id, :name, :age, :city, :a1]
-      )
-
-      @df.recode!(:age) { |c| c[:id] * 2 }
-      expect(@df[:age]).to eq(Daru::Vector.new [2, 4, 6, 8, 10])
     end
   end
 

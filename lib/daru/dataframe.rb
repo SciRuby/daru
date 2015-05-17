@@ -350,6 +350,42 @@ module Daru
       self
     end
 
+    # Iterate over each row or vector of the DataFrame. Specify axis
+    # by passing :vector or :row as the argument. Default to :vector.
+    # 
+    # == Arguments
+    # 
+    # * +axis+ - The axis to iterate over. Can be :vector (or :column)
+    # or :row. Default to :vector.
+    def each axis=:vector, &block
+      if axis == :vector or axis == :column
+        each_vector(&block)
+      elsif axis == :row
+        each_row(&block)
+      else
+        raise ArgumentError, "Unknown axis #{axis}"
+      end
+    end
+
+    # Map over each vector or row of the data frame according to
+    # the argument specified. Will return an Array of the resulting
+    # elements. To map over each row/vector and get a DataFrame,
+    # see #recode.
+    # 
+    # == Arguments
+    # 
+    # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
+    # Default to :vector.
+    def map axis=:vector, &block
+      if axis == :vector or axis == :column
+        map_vectors(&block)
+      elsif axis == :row
+        map_rows(&block)
+      else
+        raise ArgumentError, "Unknown axis #{axis}"
+      end
+    end
+
     # Map each vector. Returns a DataFrame whose vectors are modified according
     # to the value returned by the block. As is the case with Enumerable#map,
     # the object returned by each block must be a Daru::Vector for the dataframe
@@ -404,7 +440,7 @@ module Daru
     end
 
     # Retrieves a Daru::Vector, based on the result of calculation 
-    # performed on each case.
+    # performed on each row.
     def collect_rows
       data = []
       each_row do |row|
