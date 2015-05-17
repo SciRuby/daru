@@ -125,7 +125,7 @@ module Daru
         # Sample variance with denominator (N-1)
         def variance_sample m=nil
           m ||= self.mean
-          if @data.respond_to? :variance_sample 
+          if @data.respond_to? :variance_sample
             @data.variance_sample m
           else
             sum_of_squares(m).quo((@size - @missing_positions.size) - 1)

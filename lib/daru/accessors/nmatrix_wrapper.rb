@@ -28,8 +28,8 @@ module Daru
         # init with twice the storage for reducing the need to resize
       end
 
-      def [] index
-        return @data[index] if index < @size
+      def [] *index
+        return @data[*index] if index[0] < @size
         nil
       end
  

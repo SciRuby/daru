@@ -22,7 +22,7 @@
         - Added .new_with_size for creating vectors by specifying a size for the
         vector and a block for generating values.
         - Added Vector#verify, #recode! and #recode.
-        - Added #save.
+        - Added #save, #jackknife and #bootstrap.
     - DataFrame
         - #dup_only_valid
         - #clone

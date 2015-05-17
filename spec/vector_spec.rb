@@ -610,47 +610,15 @@ describe Daru::Vector do
         end
       end
 
-      context "#histogram" do
-        it "returns correct histogram" do
-          a = Daru::Vector.new 10.times.map { |v| v }, dtype: dtype
-
-          hist = a.histogram(2)
-          expect(hist.bin).to eq([5, 5])
-          3.times do |i|
-            expect(hist.get_range(i)[0]).to be_within(1e-9).of(i * 4.5)
-          end
-        end
-      end
-
-      context "#jackknife" do
-        it "jack knife correctly with named method" do
-          a = Daru::Vector.new [1, 2, 3, 4]
-          df = a.jackknife(:mean)
-          expect(a.mean).to eq (df[:mean].mean)
-
-          df = a.jackknife([:mean, :sd])
-          expect(a.mean).to eq (df[:mean].mean)
-          expect(a.sd).to eq (df[:mean].sd)
-        end
-
-        it "jack knife correctly with custom method" do
-          a   = Daru::Vector.new [17.23, 18.71, 13.93, 18.81, 15.78, 11.29, 14.91, 13.39, 18.21, 11.57, 14.28, 10.94, 18.83, 15.52, 13.45, 15.25]
-          ds  = a.jackknife(log_s2: ->(v) {  Math.log(v.variance) })
-          exp = Daru::Vector.new [1.605, 2.972, 1.151, 3.097, 0.998, 3.308, 0.942, 1.393, 2.416, 2.951, 1.043, 3.806, 3.122, 0.958, 1.362, 0.937]
-
-          expect(exp).to eq(ds[:log_s2])
-          expect(ds[:log_s2].mean).to be_within(0.00001).of(2.00389)
-          expect(ds[:log_s2].variance).to be_within(0.001).of(1.091)
-        end
-
-        it "jack knife correctly with k > 1" do
-          # TODO
-        end
-      end
-
       context "#bootstrap" do
         it "returns a vector with mean=mu and sd=se" do
-          # TODO
+          rng = Distribution::Normal.rng(0, 1)
+          vector =Daru::Vector.new_with_size(100, dtype: dtype) { rng.call}
+
+          df = vector.bootstrap([:mean, :sd], 200)
+          se = 1 / Math.sqrt(vector.size)
+          expect(df[:mean].mean).to be_within(0.3).of(0)
+          expect(df[:mean].sd).to be_within(0.02).of(se)
         end
       end
     end
@@ -658,6 +626,40 @@ describe Daru::Vector do
 
   # -----------------------------------------------------------------------
   # works with arrays only
+
+  context "#jackknife", focus: true do
+    it "jack knife correctly with named method" do
+      a = Daru::Vector.new [1, 2, 3, 4]
+      df = a.jackknife(:mean)
+      expect(df[:mean].mean).to eq (a.mean)
+
+      df = a.jackknife([:mean, :sd])
+      expect(df[:mean].mean).to eq(a.mean)
+      expect(df[:mean].sd).to eq(a.sd)
+    end
+
+    it "jack knife correctly with custom method" do
+      a   = Daru::Vector.new [17.23, 18.71, 13.93, 18.81, 15.78, 11.29, 14.91, 13.39, 18.21, 11.57, 14.28, 10.94, 18.83, 15.52, 13.45, 15.25]
+      ds  = a.jackknife(log_s2: ->(v) {  Math.log(v.variance) })
+      exp = Daru::Vector.new [1.605, 2.972, 1.151, 3.097, 0.998, 3.308, 0.942, 1.393, 2.416, 2.951, 1.043, 3.806, 3.122, 0.958, 1.362, 0.937]
+
+      expect_correct_vector_in_delta ds[:log_s2], exp, 0.001
+      # expect(ds[:log_s2]).to be_within(0.001).of(exp)
+      expect(ds[:log_s2].mean).to be_within(0.00001).of(2.00389)
+      expect(ds[:log_s2].variance).to be_within(0.001).of(1.091)
+    end
+
+    it "jack knife correctly with k > 1" do
+      rng = Distribution::Normal.rng(0,1)
+      a   = Daru::Vector.new_with_size(6) { rng.call}
+      
+      ds = a.jackknife(:mean, 2)
+      mean = a.mean
+      exp = Daru::Vector.new [3 * mean - 2 * (a[2] + a[3] + a[4] + a[5]) / 4, 3 * mean - 2 * (a[0] + a[1] + a[4] + a[5]) / 4, 3 * mean - 2 * (a[0] + a[1] + a[2] + a[3]) / 4]
+      expect_correct_vector_in_delta(exp, ds[:mean], 1e-13)
+    end
+  end
+
   context "#splitted" do
     it "splits correctly" do
       a = Daru::Vector.new ['a', 'a,b', 'c,d', 'a,d', 'd', 10, nil]

@@ -3,7 +3,10 @@ module Daru
     # Internal class for wrapping ruby array
     class ArrayWrapper
       include Enumerable
+      extend Forwardable
 
+      def_delegators :@data, :slice!
+      
       def each(&block)
         @data.each(&block)
         self
@@ -24,8 +27,8 @@ module Daru
         set_size
       end
 
-      def [] index
-        @data[index]
+      def [] *index
+        @data[*index]
       end
 
       def []= index, value

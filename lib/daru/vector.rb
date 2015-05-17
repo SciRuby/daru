@@ -568,6 +568,85 @@ module Daru
       Daru::Vector.new @data.dup, name: @name, index: @index.dup
     end
 
+    # == Bootstrap
+    # Generate +nr+ resamples (with replacement) of size  +s+
+    # from vector, computing each estimate from +estimators+
+    # over each resample.
+    # +estimators+ could be
+    # a) Hash with variable names as keys and lambdas as  values
+    #   a.bootstrap(:log_s2=>lambda {|v| Math.log(v.variance)},1000)
+    # b) Array with names of method to bootstrap
+    #   a.bootstrap([:mean, :sd],1000)
+    # c) A single method to bootstrap
+    #   a.jacknife(:mean, 1000)
+    # If s is nil, is set to vector size by default.
+    #
+    # Returns a DataFrame where each vector is a vector
+    # of length +nr+ containing the computed resample estimates.
+    def bootstrap(estimators, nr, s=nil)
+      s ||= size
+      h_est, es, bss = prepare_bootstrap(estimators)
+
+      nr.times do |i|
+        bs = sample_with_replacement(s)
+        es.each do |estimator|
+          bss[estimator].push(h_est[estimator].call(bs))
+        end
+      end
+
+      es.each do |est|
+        bss[est] = Daru::Vector.new bss[est]
+      end
+
+      Daru::DataFrame.new bss
+    end
+
+    # == Jacknife
+    # Returns a dataset with jacknife delete-+k+ +estimators+
+    # +estimators+ could be:
+    # a) Hash with variable names as keys and lambdas as values
+    #   a.jacknife(:log_s2=>lambda {|v| Math.log(v.variance)})
+    # b) Array with method names to jacknife
+    #   a.jacknife([:mean, :sd])
+    # c) A single method to jacknife
+    #   a.jacknife(:mean)
+    # +k+ represent the block size for block jacknife. By default
+    # is set to 1, for classic delete-one jacknife.
+    #
+    # Returns a dataset where each vector is an vector
+    # of length +cases+/+k+ containing the computed jacknife estimates.
+    #
+    # == Reference:
+    # * Sawyer, S. (2005). Resampling Data: Using a Statistical Jacknife.
+    def jackknife(estimators, k=1)
+      raise "n should be divisible by k:#{k}" unless size % k==0
+
+      nb = (size / k).to_i
+      h_est, es, ps = prepare_bootstrap(estimators)
+
+      est_n = es.inject({}) do |h,v|
+        h[v] = h_est[v].call(self)
+        h
+      end
+
+      nb.times do |i|
+        other = @data.dup
+        other.slice!(i*k, k)
+        other = Daru::Vector.new other
+
+        es.each do |estimator|
+          # Add pseudovalue
+          ps[estimator].push(
+            nb * est_n[estimator] - (nb-1) * h_est[estimator].call(other))
+        end
+      end
+
+      es.each do |est|
+        ps[est] = Daru::Vector.new ps[est]
+      end
+      Daru::DataFrame.new ps
+    end
+
     # Creates a new vector consisting only of non-nil data
     # 
     # == Arguments
@@ -599,7 +678,6 @@ module Daru
     def save filename
       Daru::IO.save self, filename
     end
-
 
     def _dump(depth) # :nodoc:
       Marshal.dump({
@@ -633,6 +711,26 @@ module Daru
     end
 
    private
+
+    # For an array or hash of estimators methods, returns
+    # an array with three elements
+    # 1.- A hash with estimators names as keys and lambdas as values
+    # 2.- An array with estimators names
+    # 3.- A Hash with estimators names as keys and empty arrays as values
+    def prepare_bootstrap(estimators)
+      h_est = estimators
+      h_est = [h_est] unless h_est.is_a?(Array) or h_est.is_a?(Hash)
+
+      if h_est.is_a? Array
+        h_est = h_est.inject({}) do |h, est|
+          h[est] = lambda { |v| v.send(est) }
+          h
+        end
+      end
+      bss = h_est.keys.inject({}) { |h,v| h[v] = []; h }
+
+      [h_est, h_est.keys, bss]
+    end
 
     def quick_sort vector, index, order, &block
       recursive_quick_sort vector, index, order, 0, @size-1, &block

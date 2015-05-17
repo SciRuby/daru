@@ -1,6 +1,6 @@
 require 'spec_helper.rb'
 
-describe Daru::IO, focus: true do
+describe Daru::IO do
   describe Daru::DataFrame do
     context ".from_csv" do
       it "loads from a CSV file" do
