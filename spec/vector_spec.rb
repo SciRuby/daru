@@ -677,23 +677,23 @@ describe Daru::Vector do
       expect(@common.only_valid.to_a.sort).to eq(
         [-99, -99, 1, 2, 3, 4, 5, 5, 5, 5, 5, 6, 6, 7, 8, 9]
       )
-      expect(common.data_with_nils).to eq(
-        [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, nil, 1, 2, 3, 4, nil, -99, -99]
+      expect(@common.to_a).to eq(
+        [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99]
       )
 
       @common.missing_values = [-99]
       expect(@common.only_valid.to_a.sort).to eq(
         [1, 2, 3, 4, 5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10]
       )
-      expect(@common.data_with_nils).to eq(
-        [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, nil, nil]
+      expect(@common.to_a).to eq(
+        [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99]
       )
 
       @common.missing_values = []
       expect(@common.only_valid.to_a.sort).to eq(
         [-99, -99, 1, 2, 3, 4, 5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10]
       )
-      expect(@common.data_with_nils).to eq(
+      expect(@common.to_a).to eq(
         [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99]  
       )
     end

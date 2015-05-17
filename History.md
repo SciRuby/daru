@@ -23,6 +23,7 @@
         vector and a block for generating values.
         - Added Vector#verify, #recode! and #recode.
         - Added #save, #jackknife and #bootstrap.
+        - Added #missing_values= that will allow setting values for treating data as 'missing'.
     - DataFrame
         - #dup_only_valid
         - #clone

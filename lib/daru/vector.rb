@@ -27,11 +27,19 @@ module Daru
       self
     end
 
+    # The name of the Daru::Vector. String.
     attr_reader :name
+    # The row index. Can be either Daru::Index or Daru::MultiIndex.
     attr_reader :index
+    # The total number of elements of the vector.
     attr_reader :size
+    # The underlying dtype of the Vector. Can be either :array, :nmatrix or :gsl.
     attr_reader :dtype
+    # If the dtype is :nmatrix, this attribute represents the data type of the
+    # underlying NMatrix object. See NMatrix docs for more details on NMatrix
+    # data types.
     attr_reader :nm_dtype
+    # An Array or the positions in the vector that are being treated as 'missing'.
     attr_reader :missing_positions
 
     # Create a Vector object.
@@ -56,6 +64,9 @@ module Daru
     # 
     # * +:nm_dtype+ - For NMatrix, the data type of the numbers. See the NMatrix docs for
     # further information on supported data type.
+    # 
+    # * +:missing_values+ - An Array of the values that are to be treated as 'missing'.
+    # nil is the default missing value.
     # 
     # == Usage
     # 
@@ -84,6 +95,7 @@ module Daru
       end
 
       @possibly_changed_type = true
+      set_missing_values opts[:missing_values]
       set_missing_positions
       set_size
     end
@@ -193,6 +205,25 @@ module Daru
       end
 
       set_size
+      set_missing_positions
+    end
+
+    # The values to be treated as 'missing'. *nil* is the default missing
+    # type. To set missing values see the missing_values= method.
+    def missing_values
+      @missing_values.keys  
+    end
+
+    # Assign an Array to treat certain values as 'missing'.
+    # 
+    # == Usage
+    # 
+    #   v = Daru::Vector.new [1,2,3,4,5]
+    #   v.missing_values = [3]
+    #   v.missing_positions 
+    #   #=> [2]
+    def missing_values= values
+      set_missing_values values
       set_missing_positions
     end
 
@@ -849,7 +880,7 @@ module Daru
     def set_missing_positions
       @missing_positions = []
       @index.each do |e|
-        @missing_positions << e if(self[e].nil?)
+        @missing_positions << e if (@missing_values.has_key?(self[e]))
       end
     end
 
@@ -864,6 +895,18 @@ module Daru
     def element_from_numeric_index location
       pos = index_for location
       pos ? @data[pos] : nil
+    end
+
+    # Setup missing_values. The missing_values instance variable is set
+    # as a Hash for faster lookup times.
+    def set_missing_values values_arry
+      @missing_values = {}
+      @missing_values[nil] = 0
+      if values_arry
+        values_arry.each do |e|
+          @missing_values[e] = 0
+        end
+      end
     end
   end
 end
