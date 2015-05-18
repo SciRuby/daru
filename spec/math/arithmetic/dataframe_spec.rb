@@ -59,7 +59,17 @@ describe Daru::DataFrame do
 
   context "#round" do
     it "rounds to precision" do
-      @df.round
+      df = Daru::DataFrame.new({
+        a: [1.3434,2.4332,5.6655,12.3344,32.233],
+        b: [1.3434,2.4332,5.6655,12.3344,32.233],
+        c: %w(a b c d e)
+      })
+      ans = Daru::DataFrame.new({
+        a: [1.34,2.43,5.67,12.33,32.23],
+        b: [1.34,2.43,5.67,12.33,32.23],
+      })
+
+      expect(df.round(2)).to eq(ans)
     end
   end
 

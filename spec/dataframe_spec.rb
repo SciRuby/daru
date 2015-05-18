@@ -512,7 +512,41 @@ describe Daru::DataFrame do
     end
 
     context Daru::MultiIndex do
-      pending
+      it "raises error when incomplete index specified but index is absent" do
+        expect {
+          @df_mi[:d] = [100,200,300,400,100,200,300,400,100,200,300,400]
+        }.to raise_error
+      end
+
+      it "assigns all sub-indexes when a top level index is specified" do
+        pending
+        @df_mi[:a] = [100,200,300,400,100,200,300,400,100,200,300,400]
+        
+        expect(@df_mi).to eq(Daru::DataFrame.new([
+          [100,200,300,400,100,200,300,400,100,200,300,400],
+          [100,200,300,400,100,200,300,400,100,200,300,400],
+          @vector_arry1,
+          @vector_arry2], index: @multi_index, order: @order_mi))  
+      end
+
+      it "creates a new vector when full index specfied" do
+        order = Daru::MultiIndex.new([
+          [:a,:one,:bar],
+          [:a,:two,:baz],
+          [:b,:two,:foo],
+          [:b,:one,:foo],
+          [:c,:one,:bar]])
+        answer = Daru::DataFrame.new([
+          @vector_arry1, 
+          @vector_arry2,
+          @vector_arry1,
+          @vector_arry2,
+          [100,200,300,400,100,200,300,400,100,200,300,400]
+          ], index: @multi_index, order: order)
+        @df_mi[:c,:one,:bar] = [100,200,300,400,100,200,300,400,100,200,300,400]
+
+        expect(@df_mi).to eq(answer)
+      end
     end
   end
 
@@ -864,7 +898,7 @@ describe Daru::DataFrame do
 
   context "#map" do
     it "iterates over rows and returns an Array" do
-      ret = @data_frame.map_rows do |row|
+      ret = @data_frame.map(:row) do |row|
         expect(row.class).to eq(Daru::Vector)
         row[:a] * row[:c]
       end
@@ -874,7 +908,7 @@ describe Daru::DataFrame do
     end
 
     it "iterates over vectors and returns an Array" do
-      ret = @data_frame.map(:vector) do |vector|
+      ret = @data_frame.map do |vector|
         vector.mean
       end
       expect(ret).to eq([23, 13, 43])
@@ -1300,7 +1334,7 @@ describe Daru::DataFrame do
       }, index: [:bar, :foo]))
     end
 
-    it "creates row index as per (double) index argument and default aggregates to mean", focus: true do
+    it "creates row index as per (double) index argument and default aggregates to mean" do
       agg_mi = Daru::MultiIndex.new(
         [        
           [:bar, :large],
@@ -1315,7 +1349,7 @@ describe Daru::DataFrame do
       }, index: agg_mi))
     end
  
-    it "creates row and vector index as per (single) index and (single) vectors args" do
+    it "creates row and vector index as per (single) index and (single) vectors args", focus: true do
       agg_vectors = Daru::MultiIndex.new([
         [:d, :one],
         [:d, :two],
@@ -1743,6 +1777,74 @@ describe Daru::DataFrame do
         Daru::DataFrame.new({ a: @v1, c: @v3}, clone: false)
       )
       expect(dfon[:a].object_id).to_not eq(@v1.object_id)
+    end
+
+    context Daru::MultiIndex do
+      before do
+        agg_vectors = Daru::MultiIndex.new(
+          [
+            [:d, :one, :large],
+            [:d, :one, :small],
+            [:d, :two, :large],
+            [:d, :two, :small],
+            [:e, :one, :large],
+            [:e, :one, :small],
+            [:e, :two, :large],
+            [:e, :two, :small]
+          ]
+        )
+
+        agg_index = Daru::MultiIndex.new(
+          [
+            [:bar],
+            [:foo]
+          ]
+        )
+        @df = Daru::DataFrame.new(
+          [
+            [4.112,2.234],
+            %w(a b),
+            [6.342,nil],
+            [7.2344,3.23214],
+            [8.234,4.533],
+            [10.342,2.3432],
+            [12.0,nil],
+            %w(a b)
+          ], order: agg_vectors, index: agg_index
+        )
+      end
+
+      it "returns numeric vectors" do
+        vectors = Daru::MultiIndex.new(
+          [
+            [:d, :one, :large],
+            [:d, :two, :large],
+            [:d, :two, :small],
+            [:e, :one, :large],
+            [:e, :one, :small],
+            [:e, :two, :large]
+          ]
+        )
+
+        index = Daru::MultiIndex.new(
+          [
+            [:bar],
+            [:foo]
+          ]
+        )
+        answer = Daru::DataFrame.new(
+          [
+            [4.112,2.234],
+            [6.342,nil],
+            [7.2344,3.23214],
+            [8.234,4.533],
+            [10.342,2.3432],
+            [12.0,nil],
+          ], order: vectors, index: index
+        )
+
+        expect(@df.only_numerics).to eq(answer)
+      end
     end
   end
 end if mri?

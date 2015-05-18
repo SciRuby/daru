@@ -627,7 +627,7 @@ describe Daru::Vector do
   # -----------------------------------------------------------------------
   # works with arrays only
 
-  context "#jackknife", focus: true do
+  context "#jackknife" do
     it "jack knife correctly with named method" do
       a = Daru::Vector.new [1, 2, 3, 4]
       df = a.jackknife(:mean)

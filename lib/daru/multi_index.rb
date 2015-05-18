@@ -17,12 +17,12 @@ module Daru
     attr_reader :values
     
     # Initialize a MultiIndex by passing a tuple of indexes. The order assigned
-    #   to the multi index corresponds to the position of the tuple in the array
-    #   of tuples.
+    # to the multi index corresponds to the position of the tuple in the array
+    # of tuples.
     # 
     # Although you can create your own hierarchially indexed Vectors and DataFrames,
-    #   this class currently contains minimal error checking and is mainly used 
-    #   internally for summarizing, splitting and grouping of data.
+    # this class currently contains minimal error checking and is mainly used 
+    # internally for summarizing, splitting and grouping of data.
     # 
     # == Arguments
     # 
@@ -68,6 +68,15 @@ module Daru
       end
     end
 
+    def + other
+      other.flatten!
+      tuples = to_a
+      raise ArgumentError, "Incomplete tuple #{other}" unless 
+        tuples.all? { |t| t.size == other.size }
+      
+      Daru::MultiIndex.new(tuples << (other))
+    end
+
     # Compare two MultiIndex objects for equality based on the contents of their
     # relation hashes. Does not take object_id into account.
     def == other
@@ -106,6 +115,10 @@ module Daru
     def key key
       tuple = find_tuple_for(@relation_hash, key)
       tuple.empty? ? nil : tuple
+    end
+
+    def size
+      to_a.size
     end
 
    private

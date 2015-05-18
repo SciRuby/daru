@@ -229,11 +229,13 @@ module Daru
     # of the vector will be matched against the row/vector indexes of the DataFrame
     # before an insertion is performed. Unmatched indexes will be set to nil.
     def []=(*args)
-      name   = args[0]
-      axis   = args[1]
+      axis = args.include?(:row) ? :row : :vector
+      args.delete :vector
+      args.delete :row
+
+      name = args[0..-2]
       vector = args[-1]
 
-      axis = (!axis.is_a?(Symbol) and (axis != :vector or axis != :row)) ? :vector : axis
       if axis == :vector
         insert_or_modify_vector name, vector
       elsif axis == :row        
@@ -412,11 +414,17 @@ module Daru
       block_given? or to_enum(:recode_vectors) 
 
       df = self.dup
-      df.each_vector_with_index do |v, i|
+      self.each_vector_with_index do |v, i|
         ret = yield v
         ret.is_a?(Daru::Vector) or raise TypeError, "Every iteration must return Daru::Vector not #{ret.class}"
-        df[i] = ret
+        puts "index #{i}"
+        puts "\n\nyielded #{ret.inspect}"
+        df[*i] = ret
+
+        puts "post assign #{df[*i].inspect}"
       end
+
+      df
     end
 
     def recode_rows &block
@@ -691,6 +699,15 @@ module Daru
       numerics
     end
 
+    def numeric_vector_names
+      numerics = []
+
+      each_vector do |vec, i|
+        numerics << vec.name if(vec.type == :numeric)
+      end
+      numerics
+    end
+
     # Return a DataFrame of only the numerical Vectors. If clone: false
     # is specified as option, only a *view* of the Vectors will be
     # returned. Defaults to clone: true.
@@ -797,7 +814,7 @@ module Daru
       elsif opts[:values].is_a?(Array)
         opts[:values]
       else # nil
-        (@vectors.to_a - (index | vectors)) & numeric_vectors
+        (@vectors.to_a - (index | vectors)) & numeric_vector_names
       end
       
       raise IndexError, "No numeric vectors to aggregate" if values.empty?
@@ -837,6 +854,7 @@ module Daru
         df_vectors = Daru::MultiIndex.new symbolize(vector_indexes.uniq)
         pivoted_dataframe = Daru::DataFrame.new({}, index: df_index, order: df_vectors)
 
+        puts "vec #{df_vectors.to_a} idx #{df_index.to_a}" 
         super_hash.each do |row_index, sub_h|
           sub_h.each do |vector_index, val|
             pivoted_dataframe[symbolize(vector_index)][symbolize(row_index)] = val
@@ -1243,8 +1261,12 @@ module Daru
     end
 
     def insert_or_modify_vector name, vector
-      @vectors = reassign_index_as(@vectors + name)
+      @vectors = @vectors + name
       v        = nil
+
+      if vectors.is_a?(Index)        
+        name = name[0]
+      end
 
       if vector.is_a?(Daru::Vector)
         v = Daru::Vector.new [], name: set_name(name), index: @index
@@ -1261,23 +1283,27 @@ module Daru
       @data[@vectors[name]] = v
     end
 
-    def insert_or_modify_row name, vector      
-      if @index.include? name
-        v = vector.dv(name, @vectors, @dtype) 
-
-        @vectors.each do |vector|
-          @data[@vectors[vector]][name] = v[vector] 
-        end
+    def insert_or_modify_row name, vector    
+      if index.is_a?(MultiIndex)
       else
-        @index = reassign_index_as(@index + name)
-        v      = Daru::Vector.new(vector, name: set_name(name), index: @vectors)
+        name = name[0]
+        if @index.include? name
+          v = vector.dv(name, @vectors, @dtype) 
 
-        @vectors.each do |vector|
-          @data[@vectors[vector]].concat v[vector], name
+          @vectors.each do |vector|
+            @data[@vectors[vector]][name] = v[vector] 
+          end
+        else
+          @index = reassign_index_as(@index + name)
+          v      = Daru::Vector.new(vector, name: set_name(name), index: @vectors)
+
+          @vectors.each do |vector|
+            @data[@vectors[vector]].concat v[vector], name
+          end
         end
-      end
 
-      set_size
+        set_size
+      end
     end
 
     def create_empty_vectors
