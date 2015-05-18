@@ -34,6 +34,7 @@
         - Added #only_numerics.
         - Added better iterators and changed some behaviour of previous ones to make them more ruby-like. New iterators are #map, #map!, #each and #recode.
         - Added #vector_sum and #vector_mean.
+        - Added #to_gsl to convert to GSL::Matrix.
 * Changes
     - Changes Vector#nil_positions to Vector#missing_positions so that future changes for accomodating different values for missing data can be made easily.
     - Changed History.txt to History.md

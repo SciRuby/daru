@@ -418,7 +418,7 @@ module Daru
     end
 
     def recode_vectors &block
-      block_given? or to_enum(:recode_vectors) 
+      block_given? or return to_enum(:recode_vectors) 
 
       df = self.dup
       self.each_vector_with_index do |v, i|
@@ -431,7 +431,7 @@ module Daru
     end
 
     def recode_rows &block
-      block_given? or to_enum(:recode_rows)
+      block_given? or return to_enum(:recode_rows)
 
       df = self.dup
       self.each_row_with_index do |r, i|
@@ -608,6 +608,34 @@ module Daru
       df.keep_vector_if &block
 
       df
+    end
+
+    # Return a nested hash using vector names as keys and an array constructed of 
+    # hashes with other values. If block provided, is used to provide the
+    # values, with parameters +row+ of dataset, +current+ last hash on 
+    # hierarchy and +name+ of the key to include
+    def nest *tree_keys, &block
+      tree_keys = tree_keys[0] if tree_keys[0].is_a? Array
+      out = {}
+
+      each_row do |row|
+        current = out
+        # Create tree
+        tree_keys[0, tree_keys.size-1].each do |f|
+          root = row[f]
+          current[root] ||= {}
+          current = current[root]
+        end
+        name = row[tree_keys.last]
+        if !block
+          current[name] ||= []
+          current[name].push(row.to_hash.delete_if { |key,value| tree_keys.include? key})
+        else
+          current[name] = block.call(row, current,name)
+        end
+      end
+
+      out
     end
 
     # Return the number of rows and columns of the DataFrame in an Array.
@@ -899,6 +927,16 @@ module Daru
       else
         grouped.send(aggregate_function)
       end
+    end
+
+    # Convert all numeric vectors to GSL::Matrix
+    def to_gsl
+      numerics_as_arrays = []
+      numeric_vectors.each do |n|
+        numerics_as_arrays << self[n].to_a
+      end
+
+      GSL::Matrix.alloc *numerics_as_arrays.transpose
     end
 
     # Convert all vectors of type *:numeric* into a Matrix.

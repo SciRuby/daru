@@ -1523,7 +1523,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#nest" do
+  context "#nest", focus: true do
     it "nests in a hash" do
       df = Daru::DataFrame.new({
         :a => Daru::Vector.new(%w(a a a b b b)),
@@ -1531,9 +1531,9 @@ describe Daru::DataFrame do
         :c => Daru::Vector.new(%w(f g h i j k))
       })
       nest = df.nest :a, :b
-      expect(nest[:a][:c]).to eq([{ :c => :f }, { :c => :g }])
-      expect(nest[:a][:d]).to eq([{ :c => :h }])
-      expect(nest[:b][:e]).to eq([{ :c => :j }, { :c => :k }])
+      expect(nest['a']['c']).to eq([{ :c => 'f' }, { :c => 'g' }])
+      expect(nest['a']['d']).to eq([{ :c => 'h' }])
+      expect(nest['b']['e']).to eq([{ :c => 'j' }, { :c => 'k' }])
     end
   end
 
@@ -1546,7 +1546,8 @@ describe Daru::DataFrame do
   
   context "#to_gsl" do
     it "converts to GSL::Matrix" do
-      mat = GSL::Matrix.columns([11,12,13,14,15],[1,2,3,4,5],[11,22,33,44,55])
+      rows = [[1,2,3,4,5],[11,12,13,14,15],[11,22,33,44,55]].transpose
+      mat = GSL::Matrix.alloc *rows
       expect(@data_frame.to_gsl).to eq(mat)
     end
   end

@@ -283,11 +283,11 @@ module Daru
     # 
     # * +:dtype+ - :array for Ruby Array. :nmatrix for NMatrix.
     def cast opts={}
-      dtype = opts[:dtype]
+      dt = opts[:dtype]
       raise ArgumentError, "Unsupported dtype #{opts[:dtype]}" unless 
-        dtype == :array or dtype == :nmatrix or dtype == :gsl
+        dt == :array or dt == :nmatrix or dt == :gsl
 
-      @data = cast_vector_to dtype
+      @data = cast_vector_to dt unless @dtype == dt
     end
 
     # Delete an element by value
@@ -406,6 +406,26 @@ module Daru
 
       @data.map!(&block).data
       @data = cast_vector_to(dt || @dtype)
+      self
+    end
+
+    def delete_if &block
+      return to_enum(:delete_if) unless block_given?
+
+      keep_e = []
+      keep_i = []
+      each_with_index do |n, i|
+        if yield(n)
+          keep_e << n
+          keep_i << i
+        end
+      end
+
+      @data = cast_vector_to @dtype, keep_e
+      @index = @index.is_a?(MultiIndex) ? MultiIndex.new(keep_i) : Index.new(keep_i)
+      set_missing_positions
+      set_size
+      
       self
     end
 
@@ -894,7 +914,6 @@ module Daru
     # @dtype variable is set and the underlying data type of vector changed.
     def cast_vector_to dtype, source=nil, nm_dtype=nil
       source = @data.to_a if source.nil?
-      return @data if @dtype and @dtype == dtype
 
       new_vector = 
       case dtype
