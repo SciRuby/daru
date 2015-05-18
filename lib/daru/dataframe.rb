@@ -476,7 +476,6 @@ module Daru
     def map_vectors_with_index(&block)
       return to_enum(:map_vectors_with_index) unless block_given?
 
-      
       dt = []
       each_vector_with_index do |vector, name|
         dt << yield(vector, name)
@@ -513,12 +512,8 @@ module Daru
 
       index.dup.each do |i|
         r = yield self.row[i]
-        # if r.nil?
-          # delete_row i
-        # else
-          r.is_a?(Daru::Vector) or raise TypeError, "Returned object must be Daru::Vector not #{r.class}"
-          self.row[i] = r
-        # end
+        r.is_a?(Daru::Vector) or raise TypeError, "Returned object must be Daru::Vector not #{r.class}"
+        self.row[i] = r
       end
 
       self
@@ -647,6 +642,35 @@ module Daru
     # @param [Fixnum] quantity (10) The number of elements to display from the bottom.
     def tail quantity=10
       self[(@size - quantity)..(@size-1), :row]
+    end
+
+    # Returns a vector with sum of all vectors specified in the argument. 
+    # Tf vecs parameter is empty, sum all numeric vector.
+    def vector_sum vecs=nil
+      vecs ||= numeric_vectors
+      sum = Daru::Vector.new [0]*@size, index: @index, name: @name, dtype: @dtype
+
+      vecs.each do |n|
+        sum += self[n]
+      end
+
+      sum
+    end
+
+    # Calculate mean of the rows of the dataframe.
+    # 
+    # == Arguments
+    # 
+    # * +max_missing+ - The maximum number of elements in the row that can be
+    # zero for the mean calculation to happen. Default to 0.
+    def vector_mean max_missing=0
+      mean_vec = Daru::Vector.new [0]*@size, index: @index, name: "mean_#{@name}"
+
+      each_row_with_index do |row, i|
+        mean_vec[i] = row.missing_positions.size > max_missing ? nil : row.mean
+      end
+
+      mean_vec
     end
 
     # Group elements by vector to perform operations on them. Returns a 

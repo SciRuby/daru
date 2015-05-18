@@ -1578,10 +1578,10 @@ describe Daru::DataFrame do
 
   context "#vector_sum" do
     before do
-      @a1 = Daru::Vector.new [1, 2, 3, 4, 5, nil]
-      @a2 = Daru::Vector.new [10, 10, 20, 20, 20, 30]
-      @b1 = Daru::Vector.new [nil, 1, 1, 1, 1, 2]
-      @b2 = Daru::Vector.new [2, 2, 2, nil, 2, 3]
+      a1 = Daru::Vector.new [1, 2, 3, 4, 5, nil]
+      a2 = Daru::Vector.new [10, 10, 20, 20, 20, 30]
+      b1 = Daru::Vector.new [nil, 1, 1, 1, 1, 2]
+      b2 = Daru::Vector.new [2, 2, 2, nil, 2, 3]
       @df = Daru::DataFrame.new({ :a1 => a1, :a2 => a2, :b1 => b1, :b2 => b2 })
     end
 
@@ -1634,22 +1634,13 @@ describe Daru::DataFrame do
 
   context "#vector_mean" do
     before do
-      @a1 = Daru::Vector.new [1, 2, 3, 4, 5, nil]
-      @a2 = Daru::Vector.new [10, 10, 20, 20, 20, 30]
-      @b1 = Daru::Vector.new [nil, 1, 1, 1, 1, 2]
-      @b2 = Daru::Vector.new [2, 2, 2, nil, 2, 3]
-      @c  = Daru::Vector.new [nil, 2, 4, 2, 2, 2]
+      a1 = Daru::Vector.new [1, 2, 3, 4, 5, nil]
+      a2 = Daru::Vector.new [10, 10, 20, 20, 20, 30]
+      b1 = Daru::Vector.new [nil, 1, 1, 1, 1, 2]
+      b2 = Daru::Vector.new [2, 2, 2, nil, 2, 3]
+      c  = Daru::Vector.new [nil, 2, 4, 2, 2, 2]
       @df = Daru::DataFrame.new({
         :a1 => a1, :a2 => a2, :b1 => b1, :b2 => b2, :c => c })
-    end
-
-    it "calculates partial vector mean" do
-      expect(@df.vector_mean([:a1, :a2], 1)).to eq(
-        Daru::Vector.new [5.5, 6, 11.5, 12, 12.5, 30])
-      expect(@df.vector_mean([:b1, :b2], 1)).to eq(
-        Daru::Vector.new [2, 1.5, 1.5, 1, 1.5, 2.5])
-      expect(@df.vector_mean([:b1, :b2, :c], 1)).to eq(
-        Daru::Vector.new [nil, 5.0 / 3, 7.0 / 3, 1.5, 5.0 / 3, 7.0 / 3])
     end
 
     it "calculates complete vector mean" do
