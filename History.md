@@ -24,6 +24,7 @@
         - Added Vector#verify, #recode! and #recode.
         - Added #save, #jackknife and #bootstrap.
         - Added #missing_values= that will allow setting values for treating data as 'missing'.
+        - Added #split_by_separator, #split_by_separator_freq and #splitted.
     - DataFrame
         - #dup_only_valid
         - #clone

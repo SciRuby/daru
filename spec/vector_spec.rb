@@ -847,11 +847,11 @@ describe Daru::Vector do
 
   context "#split_by_separator" do
     def expect_correct_tokens hash
-      expect(b[:a].to_a).to eq([1, 1, 0, 1, 0, nil])
-      expect(b[:b].to_a).to eq([0, 1, 0, 0, 0, nil])
-      expect(b[:c].to_a).to eq([0, 0, 1, 0, 0, nil])
-      expect(b[:d].to_a).to eq([0, 0, 1, 1, 0, nil])
-      expect(b[10].to_a).to eq([0, 0, 0, 0, 1, nil])
+      expect(hash['a'].to_a).to eq([1, 1, 0, 1, 0, nil])
+      expect(hash['b'].to_a).to eq([0, 1, 0, 0, 0, nil])
+      expect(hash['c'].to_a).to eq([0, 0, 1, 0, 0, nil])
+      expect(hash['d'].to_a).to eq([0, 0, 1, 1, 0, nil])
+      expect(hash[10].to_a).to eq([0, 0, 0, 0, 1, nil])
     end
 
     before do
@@ -879,15 +879,16 @@ describe Daru::Vector do
 
     it "gives the same values using a different separator" do
       a = Daru::Vector.new ['a', 'a*b', 'c*d', 'a*d', 10, nil]
-      b = split_by_separator '*'
+      b = a.split_by_separator '*'
       expect_correct_tokens b
     end
   end
 
   context "#split_by_separator_freq" do
-    it "#split_by_separator_freq returns the number of ocurrences of tokens" do
+    it "returns the number of ocurrences of tokens" do
       a = Daru::Vector.new ['a', 'a,b', 'c,d', 'a,d', 10, nil]
-      expect(@a.split_by_separator_freq).to eq(a) 
+      expect(a.split_by_separator_freq).to eq(
+        { 'a' => 3, 'b' => 1, 'c' => 1, 'd' => 2, 10 => 1 }) 
     end
   end
 

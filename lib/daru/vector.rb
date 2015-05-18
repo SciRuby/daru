@@ -422,6 +422,70 @@ module Daru
       h
     end
 
+    # Return an Array with the data splitted by a separator.
+    #   a=Daru::Vector.new(["a,b","c,d","a,b","d"])
+    #   a.splitted
+    #     =>
+    #   [["a","b"],["c","d"],["a","b"],["d"]]
+    def splitted sep=","
+      @data.map do |s|
+        if s.nil?
+          nil
+        elsif s.respond_to? :split
+          s.split sep
+        else
+          [s]
+        end
+      end
+    end
+
+    # Returns a hash of Vectors, defined by the different values
+    # defined on the fields
+    # Example:
+    #
+    #  a=Daru::Vector.new(["a,b","c,d","a,b"])
+    #  a.split_by_separator
+    #  =>  {"a"=>#<Daru::Vector:0x7f2dbcc09d88
+    #        @data=[1, 0, 1]>,
+    #       "b"=>#<Daru::Vector:0x7f2dbcc09c48
+    #        @data=[1, 1, 0]>,
+    #      "c"=>#<Daru::Vector:0x7f2dbcc09b08
+    #        @data=[0, 1, 1]>}
+    #
+    def split_by_separator sep=","
+      split_data = splitted sep
+      factors = split_data.flatten.uniq.compact
+
+      out = factors.inject({}) do |h,x|
+        h[x] = []
+        h
+      end
+
+      split_data.each do |r|
+        if r.nil?
+          factors.each do |f|
+            out[f].push(nil)
+          end
+        else
+          factors.each do |f|
+            out[f].push(r.include?(f) ? 1:0)
+          end
+        end
+      end
+
+      out.inject({}) do |s,v|
+        s[v[0]] = Daru::Vector.new v[1]
+        s
+      end
+    end
+
+    def split_by_separator_freq(sep=",")
+      split_by_separator(sep).inject({}) do |a,v|
+        a[v[0]] = v[1].inject { |s,x| s+x.to_i }
+        a
+      end
+    end
+
     # Returns a vector which has *true* in the position where the element in self
     # is nil, and false otherwise.
     # 
