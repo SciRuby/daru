@@ -421,7 +421,6 @@ module Daru
       block_given? or to_enum(:recode_vectors) 
 
       df = self.dup
-
       self.each_vector_with_index do |v, i|
         ret = yield v
         ret.is_a?(Daru::Vector) or raise TypeError, "Every iteration must return Daru::Vector not #{ret.class}"
@@ -432,7 +431,16 @@ module Daru
     end
 
     def recode_rows &block
-      
+      block_given? or to_enum(:recode_rows)
+
+      df = self.dup
+      self.each_row_with_index do |r, i|
+        ret = yield r
+        ret.is_a?(Daru::Vector) or raise TypeError, "Every iteration must return Daru::Vector not #{ret.class}"
+        df.row[i] = ret
+      end
+
+      df
     end
 
     # Map each vector and return an Array.

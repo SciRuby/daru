@@ -902,7 +902,7 @@ describe Daru::DataFrame do
     it "maps over the rows of a DataFrame and returns a DataFrame" do
       ret = @data_frame.recode(:row) do |row|
         expect(row.class).to eq(Daru::Vector)
-        row.map { |e| e*e }
+        row.map! { |e| e*e }
       end
 
       expect(ret).to eq(@ans_rows)
@@ -916,7 +916,7 @@ describe Daru::DataFrame do
         row[:a] * row[:c]
       end
 
-      expect(ret).to eq([])
+      expect(ret).to eq([11, 44, 99, 176, 275])
       expect(@data_frame.vectors.to_a).to eq([:a, :b, :c])
     end
 
@@ -924,7 +924,7 @@ describe Daru::DataFrame do
       ret = @data_frame.map do |vector|
         vector.mean
       end
-      expect(ret).to eq([23, 13, 43])
+      expect(ret).to eq([3.0, 13.0, 33.0])
     end
   end
 
@@ -964,13 +964,13 @@ describe Daru::DataFrame do
       idx = []
       ret = @data_frame.map_vectors_with_index do |vector, index|
         idx << index
-        vector.map { |e| e += 10}
+        vector.recode { |e| e += 10}
       end
 
       expect(ret).to eq([
-        Daru::Vector.new([21,22,23,24,25]), 
-        Daru::Vector.new([11,12,13,14,15]),
-        Daru::Vector.new([21,32,43,54,65])])
+        Daru::Vector.new([11,12,13,14,15],index: [:one, :two, :three, :four, :five]),
+        Daru::Vector.new([21,22,23,24,25],index: [:one, :two, :three, :four, :five]), 
+        Daru::Vector.new([21,32,43,54,65],index: [:one, :two, :three, :four, :five])])
       expect(idx).to eq([:a, :b, :c])
     end
   end
@@ -984,7 +984,7 @@ describe Daru::DataFrame do
         row[:a] * row[:c]
       end
 
-      expect(ret).to eq([])
+      expect(ret).to eq([11, 44, 99, 176, 275])
       expect(idx).to eq([:one, :two, :three, :four, :five])
     end
   end

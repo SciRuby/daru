@@ -31,6 +31,7 @@
         - Added a :clone option to initialize that will not clone Daru::Vectors passed into the constructor.
         - Added #save.
         - Added #only_numerics.
+        - Added better iterators and changed some behaviour of previous ones to make them more ruby-like. New iterators are #map, #map!, #each and #recode.
 * Changes
     - Changes Vector#nil_positions to Vector#missing_positions so that future changes for accomodating different values for missing data can be made easily.
     - Changed History.txt to History.md
