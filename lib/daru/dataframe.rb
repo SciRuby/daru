@@ -376,6 +376,18 @@ module Daru
       end
     end
 
+    # Iterate over a row or vector and return results in a Daru::Vector.
+    # Specify axis with :vector or :row. Default to :vector.
+    def collect axis=:vector, &block
+      if axis == :vector or axis == :column
+        collect_vectors(&block)
+      elsif axis == :row
+        collect_rows(&block)
+      else
+        raise ArgumentError, "Unknown axis #{axis}"
+      end
+    end
+
     # Map over each vector or row of the data frame according to
     # the argument specified. Will return an Array of the resulting
     # elements. To map over each row/vector and get a DataFrame,
@@ -927,6 +939,28 @@ module Daru
       else
         grouped.send(aggregate_function)
       end
+    end
+
+    # Merge vectors from two dataframes
+    # In case of name collition, the vectors names are changed to
+    # x_1, x_2 ....
+    #
+    # @return {Statsample::Dataset}
+    def merge other
+      raise "Indexes should be equal (this:#{@index.to_a}; other:#{other.index.to_a}" unless @index == other_ds.index
+      types = @fields.collect{|f| @vectors[f].type} + other_ds.fields.collect{|f| other_ds[f].type}
+      new_fields = (@fields+other_ds.fields).recode_repeated
+      ds_new=Statsample::Dataset.new(new_fields)
+      new_fields.each_index{|i|
+        field=new_fields[i]
+        ds_new[field].type=types[i]
+      }
+      @cases.times {|i|
+        row=case_as_array(i)+other_ds.case_as_array(i)
+        ds_new.add_case_array(row)
+      }
+      ds_new.update_valid_data
+      ds_new
     end
 
     # Convert all numeric vectors to GSL::Matrix

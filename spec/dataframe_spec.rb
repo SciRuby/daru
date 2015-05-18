@@ -909,6 +909,28 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#collect" do
+    before do
+      @df = Daru::DataFrame.new({
+        a: [1,2,3,4,5], 
+        b: [11,22,33,44,55],
+        c: [1,2,3,4,5]
+      })
+    end
+
+    it "collects calculation over rows and returns a Vector from the results" do
+      expect(@df.collect(:row) { |row| (row[:a] + row[:c]) * row[:c] }).to eq(
+        Daru::Vector.new([])
+        )
+    end
+
+    it "collects calculation over vectors and returns a Vector from the results" do
+      expect(@df.collect { |v| v[0] * v[1] + v[4] }).to eq(
+        Daru::Vector.new([])
+        )
+    end
+  end
+
   context "#map" do
     it "iterates over rows and returns an Array" do
       ret = @data_frame.map(:row) do |row|
@@ -957,10 +979,6 @@ describe Daru::DataFrame do
 
   context "#map_vectors_with_index" do
     it "iterates over vectors with index and returns an Array" do
-      ans = Daru::DataFrame.new({b: [21,22,23,24,25], a: [11,12,13,14,15], 
-      c: [21,32,43,54,65]}, order: [:a, :b, :c], 
-      index: [:one, :two, :three, :four, :five])
-
       idx = []
       ret = @data_frame.map_vectors_with_index do |vector, index|
         idx << index
