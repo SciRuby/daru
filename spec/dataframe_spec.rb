@@ -530,6 +530,7 @@ describe Daru::DataFrame do
       end
 
       it "creates a new vector when full index specfied" do
+        pending
         order = Daru::MultiIndex.new([
           [:a,:one,:bar],
           [:a,:two,:baz],
@@ -767,15 +768,27 @@ describe Daru::DataFrame do
   end
 
   context "#dup" do
-    it "dups every data structure inside DataFrame" do
-      clo = @data_frame.dup
+    context Daru::Index do
+      it "dups every data structure inside DataFrame" do
+        clo = @data_frame.dup
 
-      expect(clo.object_id)        .not_to eq(@data_frame.object_id)
-      expect(clo.vectors.object_id).not_to eq(@data_frame.object_id)
-      expect(clo.index.object_id)  .not_to eq(@data_frame.object_id)
+        expect(clo.object_id)        .not_to eq(@data_frame.object_id)
+        expect(clo.vectors.object_id).not_to eq(@data_frame.object_id)
+        expect(clo.index.object_id)  .not_to eq(@data_frame.object_id)
 
-      @data_frame.each_vector_with_index do |vector, index|
-        expect(vector.object_id).not_to eq(clo.vector[index].object_id)
+        @data_frame.each_vector_with_index do |vector, index|
+          expect(vector.object_id).not_to eq(clo.vector[index].object_id)
+        end
+      end
+    end
+
+    context Daru::MultiIndex do
+      it "duplicates with multi index" do
+        clo = @df_mi.dup
+
+        expect(clo)                  .to     eq(@df_mi)
+        expect(clo.vectors.object_id).not_to eq(@df_mi.vectors.object_id)
+        expect(clo.index.object_id)  .not_to eq(@df_mi.index.object_id)
       end
     end
   end

@@ -270,9 +270,16 @@ module Daru
 
     # Duplicate the DataFrame entirely.
     def dup
-      src = {}
-      @vectors.each do |vector|
-        src[vector] = @data[@vectors[vector]].dup
+      if vectors.is_a?(MultiIndex)
+        src = []
+        @vectors.each do |vec|
+          src << @data[@vectors[vec]].dup
+        end
+      else
+        src = {}
+        @vectors.each do |vector|
+          src[vector] = @data[@vectors[vector]].dup
+        end
       end
 
       Daru::DataFrame.new src, order: @vectors.dup, index: @index.dup, name: @name, clone: true
@@ -414,14 +421,11 @@ module Daru
       block_given? or to_enum(:recode_vectors) 
 
       df = self.dup
+
       self.each_vector_with_index do |v, i|
         ret = yield v
         ret.is_a?(Daru::Vector) or raise TypeError, "Every iteration must return Daru::Vector not #{ret.class}"
-        puts "index #{i}"
-        puts "\n\nyielded #{ret.inspect}"
         df[*i] = ret
-
-        puts "post assign #{df[*i].inspect}"
       end
 
       df
@@ -854,7 +858,6 @@ module Daru
         df_vectors = Daru::MultiIndex.new symbolize(vector_indexes.uniq)
         pivoted_dataframe = Daru::DataFrame.new({}, index: df_index, order: df_vectors)
 
-        puts "vec #{df_vectors.to_a} idx #{df_index.to_a}" 
         super_hash.each do |row_index, sub_h|
           sub_h.each do |vector_index, val|
             pivoted_dataframe[symbolize(vector_index)][symbolize(row_index)] = val
@@ -1261,12 +1264,12 @@ module Daru
     end
 
     def insert_or_modify_vector name, vector
-      @vectors = @vectors + name
-      v        = nil
-
       if vectors.is_a?(Index)        
         name = name[0]
       end
+
+      @vectors = @vectors + name if !@vectors.include?(name)
+      v        = nil
 
       if vector.is_a?(Daru::Vector)
         v = Daru::Vector.new [], name: set_name(name), index: @index

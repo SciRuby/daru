@@ -73,7 +73,7 @@ module Daru
       tuples = to_a
       raise ArgumentError, "Incomplete tuple #{other}" unless 
         tuples.all? { |t| t.size == other.size }
-      
+
       Daru::MultiIndex.new(tuples << (other))
     end
 

@@ -44,13 +44,7 @@ module Daru
         end
 
         def round precision=0
-          only_numerics(clone: false).recode { |v| 
-            puts "before #{v.inspect}"
-            a=v.round(precision) 
-            puts "after #{a.inspect}"
-            a
-            }
-
+          only_numerics(clone: false).recode { |v| v.round(precision) }
         end
        private
 
