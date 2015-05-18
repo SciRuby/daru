@@ -920,13 +920,13 @@ describe Daru::DataFrame do
 
     it "collects calculation over rows and returns a Vector from the results" do
       expect(@df.collect(:row) { |row| (row[:a] + row[:c]) * row[:c] }).to eq(
-        Daru::Vector.new([])
+        Daru::Vector.new([2,8,18,32,50])
         )
     end
 
     it "collects calculation over vectors and returns a Vector from the results" do
       expect(@df.collect { |v| v[0] * v[1] + v[4] }).to eq(
-        Daru::Vector.new([])
+        Daru::Vector.new([7,297,7])
         )
     end
   end

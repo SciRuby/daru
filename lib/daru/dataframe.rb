@@ -533,10 +533,21 @@ module Daru
 
     # Retrieves a Daru::Vector, based on the result of calculation 
     # performed on each row.
-    def collect_rows
+    def collect_rows &block
       data = []
       each_row do |row|
         data.push yield(row)
+      end
+
+      Daru::Vector.new(data)
+    end
+
+    # Retrives a Daru::Vector, based on the result of calculation
+    # performed on each vector.
+    def collect_vectors &block
+      data = []
+      each_vector do |vec|
+        data.push yield(vec)
       end
 
       Daru::Vector.new(data)

@@ -32,7 +32,7 @@
         - Added a :clone option to initialize that will not clone Daru::Vectors passed into the constructor.
         - Added #save.
         - Added #only_numerics.
-        - Added better iterators and changed some behaviour of previous ones to make them more ruby-like. New iterators are #map, #map!, #each and #recode.
+        - Added better iterators and changed some behaviour of previous ones to make them more ruby-like. New iterators are #map, #map!, #each, #recode and #collect.
         - Added #vector_sum and #vector_mean.
         - Added #to_gsl to convert to GSL::Matrix.
 * Changes
