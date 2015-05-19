@@ -1557,8 +1557,9 @@ describe Daru::DataFrame do
 
   context "#summary" do
     it "produces a summary of data frame" do
-      expect(@data_frame.summary.size > 0).to eq(true)
-      expect(@df_mi.summary.size > 0).to eq(true)
+      pending
+      expect(@data_frame.summary.match("#{@data_frame.name}")).to_not eq(nil)
+      expect(@df_mi.summary.match("#{@df_mi.name}")).to_not eq(nil)
     end
   end
   
@@ -1572,6 +1573,7 @@ describe Daru::DataFrame do
 
   context "#merge" do
     it "merges one dataframe with another" do
+      pending
       a = Daru::Vector.new [1, 2, 3]
       b = Daru::Vector.new [3, 4, 5]
       c = Daru::Vector.new [4, 5, 6]
@@ -1754,6 +1756,7 @@ describe Daru::DataFrame do
 
   context "#one_to_many" do
     it "" do
+      pending
       rows = [
         ['1', 'george', 'red', 10, 'blue', 20, nil, nil],
         ['2', 'fred', 'green', 15, 'orange', 30, 'white', 20],

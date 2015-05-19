@@ -26,6 +26,7 @@ end
 require 'csv'
 require 'matrix'
 require 'securerandom'
+require 'reportbuilder'
 
 require 'daru/index.rb'
 require 'daru/multi_index.rb'

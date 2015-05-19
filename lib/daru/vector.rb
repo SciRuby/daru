@@ -643,6 +643,40 @@ module Daru
       to_html
     end
 
+    # Create a summary of the Vector using Report Builder.
+    def summary(method = :to_text)
+      ReportBuilder.new(no_title: true).add(self).send(method)
+    end
+
+    def report_building b
+      b.section(:name => name) do |s|
+        s.text "n :#{size}"
+        s.text "n valid:#{n_valid}"
+        if @type == :object
+          s.text  "factors: #{factors.join(',')}"
+          s.text  "mode: #{mode}"
+
+          s.table(:name => "Distribution") do |t|
+            frequencies.sort.each do |k,v|
+              key = @index.include?(k) ? @index[k] : k
+              t.row [key, v , ("%0.2f%%" % (v.quo(n_valid)*100))]
+            end
+          end
+        end
+
+        s.text "median: #{median.to_s}" if (@type==:numeric or @type==:numeric)
+        if @type==:numeric
+          s.text "mean: %0.4f" % mean
+          if sd
+            s.text "std.dev.: %0.4f" % sd
+            s.text "std.err.: %0.4f" % se
+            s.text "skew: %0.4f" % skew
+            s.text "kurtosis: %0.4f" % kurtosis
+          end
+        end
+      end
+    end
+
     # Over rides original inspect for pretty printing in irb
     def inspect spacing=20, threshold=15
       longest = [@name.to_s.size,

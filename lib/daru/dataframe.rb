@@ -319,6 +319,21 @@ module Daru
       self.row[index || @size] = row
     end
 
+    # Create a summary of the Vector using Report Builder.
+    # def summary(method = :to_text)
+    #   ReportBuilder.new(no_title: true).add(self).send(method)
+    # end
+
+    # def report_building b
+    #   b.section(:name => name) do |g|
+    #     g.text "Number of rows: #{@index.size}"
+    #     self.each_vector_with_index do |v, i|
+    #       g.text "Vector : [#{i}]"
+    #       g.parse_element(v)
+    #     end
+    #   end
+    # end
+
     # Access a row or set/create a row. Refer #[] and #[]= docs for details.
     # 
     # == Usage
@@ -693,6 +708,35 @@ module Daru
       df
     end
 
+    # Test each row with one or more tests. Each test is a Proc with the form
+    # *Proc.new {|row| row[:age] > 0}*
+    # 
+    # The function returns an array with all errors.
+    def verify(*tests)
+      if(tests[0].is_a? Symbol)
+        id = tests[0]
+        tests.shift
+      else
+        id = @vectors.first
+      end
+
+      vr = []
+      i  = 0
+      each(:row) do |row|
+        i += 1
+        tests.each do |test|
+          if !test[2].call(row)
+            values = ""
+            if test[1].size>0
+              values = " (" + test[1].collect{ |k| "#{k}=#{row[k]}" }.join(", ") + ")"
+            end
+            vr.push("#{i} [#{row[id]}]: #{test[0]}#{values}")
+          end
+        end
+      end
+      vr
+    end
+
     # Returns a vector, based on a string with a calculation based
     # on vector.
     # 
@@ -907,6 +951,10 @@ module Daru
       Daru::DataFrame.new(arry, clone: cln, order: order, index: @index)
     end
 
+    def summary
+      
+    end
+
     # Sorts a dataframe (ascending/descending)according to the given sequence of 
     # vectors, using the attributes provided in the blocks.
     # 
@@ -1047,28 +1095,6 @@ module Daru
       else
         grouped.send(aggregate_function)
       end
-    end
-
-    # Merge vectors from two dataframes
-    # In case of name collition, the vectors names are changed to
-    # x_1, x_2 ....
-    #
-    # @return {Statsample::Dataset}
-    def merge other
-      raise "Indexes should be equal (this:#{@index.to_a}; other:#{other.index.to_a}" unless @index == other_ds.index
-      types = @fields.collect{|f| @vectors[f].type} + other_ds.fields.collect{|f| other_ds[f].type}
-      new_fields = (@fields+other_ds.fields).recode_repeated
-      ds_new=Statsample::Dataset.new(new_fields)
-      new_fields.each_index{|i|
-        field=new_fields[i]
-        ds_new[field].type=types[i]
-      }
-      @cases.times {|i|
-        row=case_as_array(i)+other_ds.case_as_array(i)
-        ds_new.add_case_array(row)
-      }
-      ds_new.update_valid_data
-      ds_new
     end
 
     # Convert all numeric vectors to GSL::Matrix

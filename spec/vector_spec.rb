@@ -617,7 +617,7 @@ describe Daru::Vector do
 
       context "#summary" do
         it "has name in the summary" do
-          expect(@common_all_dtypes.summary.match(/#{common_all_dtypes.name}/)).to eq(true)
+          expect(@common_all_dtypes.summary.match("#{@common_all_dtypes.name}")).to_not eq(nil)
         end
       end
 
