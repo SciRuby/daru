@@ -1738,13 +1738,13 @@ describe Daru::DataFrame do
       df = Daru::DataFrame.crosstab_by_assignation(v1, v2, v3)
 
       expect(df[:_id].type).to eq(:object)
-      expect(df[:a]).to eq(:numeric)
-      expect(df[:b]).to eq(:numeric)
+      expect(df[:a].type).to eq(:numeric)
+      expect(df[:b].type).to eq(:numeric)
 
       ev_id = Daru::Vector.new %w(a b c)
-      ev_a  = Daru::Vector.new %w(0 0 0) 
-      ev_b  = Daru::Vector.new %w(1 1 0) 
-      ev_c  = Daru::Vector.new %w(0 1 1) 
+      ev_a  = Daru::Vector.new [0, 0, 0]
+      ev_b  = Daru::Vector.new [1, 1, 0]
+      ev_c  = Daru::Vector.new [0, 1, 1]
       df2 = Daru::DataFrame.new({ 
         :_id => ev_id, :a => ev_a, :b => ev_b, :c => ev_c })
 

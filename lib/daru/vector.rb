@@ -21,6 +21,13 @@ module Daru
       self
     end
 
+    def each_index(&block)
+      return to_enum(:each_index) unless block_given?
+
+      @index.each(&block)
+      self
+    end
+
     def map!(&block)
       return to_enum(:map!) unless block_given?
       @data.map!(&block)
@@ -425,7 +432,7 @@ module Daru
       @index = @index.is_a?(MultiIndex) ? MultiIndex.new(keep_i) : Index.new(keep_i)
       set_missing_positions
       set_size
-      
+
       self
     end
 

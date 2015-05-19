@@ -37,6 +37,7 @@
         - Added #to_gsl to convert to GSL::Matrix.
         - Added #has_missing_data? and #missing_values_rows.
         - Added #compute.
+        - Added .crosstab_by_assignation to generate data frame from row, column and value vectors.
 * Changes
     - Changes Vector#nil_positions to Vector#missing_positions so that future changes for accomodating different values for missing data can be made easily.
     - Changed History.txt to History.md

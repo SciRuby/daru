@@ -59,6 +59,62 @@ module Daru
 
         df
       end
+
+      # Generates a new dataset, using three vectors
+      # - Rows
+      # - Columns
+      # - Values
+      #
+      # For example, you have these values
+      #
+      #   x   y   v
+      #   a   a   0
+      #   a   b   1
+      #   b   a   1
+      #   b   b   0
+      #
+      # You obtain
+      #   id  a   b
+      #    a  0   1
+      #    b  1   0
+      #
+      # Useful to process outputs from databases
+      def crosstab_by_assignation rows, columns, values
+        raise "Three vectors should be equal size" if 
+          rows.size != columns.size or rows.size!=values.size
+
+        cols_values = columns.factors
+        cols_n      = cols_values.size
+
+        h_rows = rows.factors.inject({}) do |a,v| 
+          a[v] = cols_values.inject({}) do |a1,v1| 
+            a1[v1]=nil 
+            a1
+          end
+          a
+        end
+
+        values.each_index do |i|
+          h_rows[rows[i]][columns[i]] = values[i]
+        end
+        df = Daru::DataFrame.new({}, order: [:_id] + cols_values.to_a)
+
+        # cols_values.each do |c|
+        #   df[c].type = values.type
+        # end
+
+        rows.factors.each do |row|
+          n_row = Array.new(cols_n+1)
+          n_row[0] = row
+          cols_values.each_index do |i|
+            n_row[i+1] = h_rows[row][cols_values[i]]
+          end
+
+          df.add_row(n_row)
+        end
+        # df.update_valid_data
+        df
+      end
     end
 
     # The vectors (columns) index of the DataFrame
@@ -257,6 +313,10 @@ module Daru
     # Access a vector by name.
     def column name
       vector[name]
+    end
+
+    def add_row row, index=nil
+      self.row[index || @size] = row
     end
 
     # Access a row or set/create a row. Refer #[] and #[]= docs for details.
