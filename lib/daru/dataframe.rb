@@ -633,6 +633,23 @@ module Daru
       df
     end
 
+    # Returns a vector, based on a string with a calculation based
+    # on vector.
+    # 
+    # The calculation will be eval'ed, so you can put any variable
+    # or expression valid on ruby.
+    # 
+    # For example:
+    #   a = Daru::Vector.new [1,2]
+    #   b = Daru::Vector.new [3,4]
+    #   ds = Daru::DataFrame.new({:a => a,:b => b})
+    #   ds.compute("a+b")
+    #   => Vector [4,6]
+    def compute text, &block
+      return instance_eval(&block) if block_given?
+      instance_eval(text) 
+    end
+
     # Return a vector with the number of missing values in each row.
     # 
     # == Arguments

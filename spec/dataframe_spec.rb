@@ -1718,7 +1718,7 @@ describe Daru::DataFrame do
       v1       = Daru::Vector.new [1, 2, 3, 4]
       v2       = Daru::Vector.new [4, 3, 2, 1]
       v3       = Daru::Vector.new [10, 20, 30, 40]
-      vnumeric = Daru::Vector.new [1.quo(2), 1, 3.quo(2), 2]
+      vnumeric = Daru::Vector.new [0, 0, 1, 4]
       vsum     = Daru::Vector.new [1 + 4 + 10.0, 2 + 3 + 20.0, 3 + 2 + 30.0, 4 + 1 + 40.0]
       vmult    = Daru::Vector.new [1 * 4, 2 * 3, 3 * 2, 4 * 1]
 
