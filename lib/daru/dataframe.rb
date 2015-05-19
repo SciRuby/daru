@@ -633,6 +633,26 @@ module Daru
       df
     end
 
+    # Return a vector with the number of missing values in each row.
+    # 
+    # == Arguments
+    # 
+    # * +missing_values+ - An Array of the values that should be 
+    # treated as 'missing'. The default missing value is *nil*.
+    def missing_values_rows missing_values=[nil]
+      number_of_missing = []
+      each_row do |row|
+        row.missing_values = missing_values
+        number_of_missing << row.missing_positions.size
+      end
+
+      Daru::Vector.new number_of_missing, index: @index, name: "#{@name}_missing_rows".to_sym
+    end
+
+    def has_missing_data?
+      !!@data.any? { |v| v.has_missing_data? }
+    end
+
     # Return a nested hash using vector names as keys and an array constructed of 
     # hashes with other values. If block provided, is used to provide the
     # values, with parameters +row+ of dataset, +current+ last hash on 

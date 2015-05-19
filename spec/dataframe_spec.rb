@@ -1633,11 +1633,11 @@ describe Daru::DataFrame do
 
   context "has_missing_data?" do
     before do
-      @a1 = Daru::Vector.new [1, nil, 3, 4, 5, nil]
-      @a2 = Daru::Vector.new [10, nil, 20, 20, 20, 30]
-      @b1 = Daru::Vector.new [nil, nil, 1, 1, 1, 2]
-      @b2 = Daru::Vector.new [2, 2, 2, nil, 2, 3]
-      @c  = Daru::Vector.new [nil, 2, 4, 2, 2, 2]
+      a1 = Daru::Vector.new [1, nil, 3, 4, 5, nil]
+      a2 = Daru::Vector.new [10, nil, 20, 20, 20, 30]
+      b1 = Daru::Vector.new [nil, nil, 1, 1, 1, 2]
+      b2 = Daru::Vector.new [2, 2, 2, nil, 2, 3]
+      c  = Daru::Vector.new [nil, 2, 4, 2, 2, 2]
       @df = Daru::DataFrame.new({ :a1 => a1, :a2 => a2, :b1 => b1, :b2 => b2, :c => c })
     end
 
