@@ -1891,3 +1891,14 @@ describe Daru::DataFrame do
     end
   end
 end if mri?
+
+describe "Daru::DataFrame::lazy_update" do
+  context "Allow updating metadata lazily" do
+    it "updates metadata immediately when lazy_update is false" do
+      
+    end
+
+    it "does not update metadata immediately when lazy_update is true" do
+    end
+  end
+end

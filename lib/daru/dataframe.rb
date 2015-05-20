@@ -382,13 +382,10 @@ module Daru
     def dup_only_valid
       rows_with_nil = @data.inject([]) do |memo, vector|
         memo.concat vector.missing_positions
-        puts "#{vector.missing_positions}"
         memo
       end.uniq
 
-      puts "#{rows_with_nil}"
       row_indexes = @index.to_a
-      puts "sffsfsf #{row_indexes - rows_with_nil}"
       self.row[*(row_indexes - rows_with_nil)]
     end
 
@@ -551,12 +548,8 @@ module Daru
 
       vectors.dup.each do |n|
         v = yield self[n]
-        # if v.nil?
-          # delete_vector n
-        # else
-          v.is_a?(Daru::Vector) or raise TypeError, "Must return a Daru::Vector not #{v.class}"
-          self[n] = v
-        # end
+        v.is_a?(Daru::Vector) or raise TypeError, "Must return a Daru::Vector not #{v.class}"
+        self[n] = v
       end
 
       self
@@ -1204,6 +1197,15 @@ module Daru
 
     def to_s
       to_html
+    end
+
+    # Method for updating the metadata (i.e. missing value positions) of the
+    # after assingment/deletion etc. are complete. This is provided so that
+    # time is not wasted in creating the metadata for the vector each time
+    # assignment/deletion of elements is done. Updating data this way is called
+    # lazy loading. To set or unset lazy loading, see the .lazy_update= method.
+    def update
+      @data.each { |v| v.update }
     end
 
     # Use marshalling to save dataframe to a file.

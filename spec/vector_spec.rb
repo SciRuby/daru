@@ -938,11 +938,3 @@ describe Daru::Vector do
     end
   end
 end if mri?
-
-describe Daru::Vector::LAZY_UPDATE do
-  context "A variable which will set whether Vector metadata is updated immediately or lazily." do
-    it "does not update metadata when LAZY_UPDATE is set to default false" do
-      
-    end
-  end
-end

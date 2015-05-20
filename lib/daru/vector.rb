@@ -9,13 +9,6 @@ require 'accessors/gsl_wrapper.rb'
 
 module Daru
   class Vector
-    # A variable which will set whether Vector metadata is updated immediately or lazily.
-    # Call the #update method every time a values are set or removed in order to update
-    # metadata like positions of missing values.
-    def self.LAZY_UPDATE= value
-      @@lazy_update = value
-    end
-
     include Enumerable
     include Daru::Maths::Arithmetic::Vector
     include Daru::Maths::Statistics::Vector
@@ -109,7 +102,6 @@ module Daru
       end
 
       @possibly_changed_type = true
-      LAZY_UPDATE= false
       set_missing_values opts[:missing_values]
       set_missing_positions
       set_size
@@ -217,11 +209,10 @@ module Daru
         end
       else
         @data[pos] = value
-        @missing_positions << pos if @missing_values.has_key?(value)
       end
 
       set_size
-      set_missing_positions
+      set_missing_positions unless Daru.lazy_update
     end
 
     # The values to be treated as 'missing'. *nil* is the default missing
@@ -236,11 +227,23 @@ module Daru
     # 
     #   v = Daru::Vector.new [1,2,3,4,5]
     #   v.missing_values = [3]
+    #   v.update
     #   v.missing_positions 
     #   #=> [2]
     def missing_values= values
       set_missing_values values
-      set_missing_positions
+      set_missing_positions unless Daru.lazy_update
+    end
+
+    # Method for updating the metadata (i.e. missing value positions) of the
+    # after assingment/deletion etc. are complete. This is provided so that
+    # time is not wasted in creating the metadata for the vector each time
+    # assignment/deletion of elements is done. Updating data this way is called
+    # lazy loading. To set or unset lazy loading, see the .lazy_update= method.
+    def update
+      if Daru.lazy_update
+        set_missing_positions
+      end
     end
 
     # Two vectors are equal if the have the exact same index values corresponding
@@ -288,7 +291,7 @@ module Daru
       end
       @data[@index[index]] = element
       set_size
-      set_missing_positions
+      set_missing_positions unless Daru.lazy_update
     end
     alias :push :concat 
     alias :<< :concat
@@ -323,7 +326,7 @@ module Daru
       end
 
       set_size
-      set_missing_positions
+      set_missing_positions unless Daru.lazy_update
     end
 
     # The type of data contained in the vector. Can be :object or :numeric. If
@@ -439,7 +442,7 @@ module Daru
 
       @data = cast_vector_to @dtype, keep_e
       @index = @index.is_a?(MultiIndex) ? MultiIndex.new(keep_i) : Index.new(keep_i)
-      set_missing_positions
+      set_missing_positions unless Daru.lazy_update
       set_size
 
       self
