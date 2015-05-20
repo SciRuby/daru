@@ -382,10 +382,13 @@ module Daru
     def dup_only_valid
       rows_with_nil = @data.inject([]) do |memo, vector|
         memo.concat vector.missing_positions
+        puts "#{vector.missing_positions}"
         memo
       end.uniq
 
+      puts "#{rows_with_nil}"
       row_indexes = @index.to_a
+      puts "sffsfsf #{row_indexes - rows_with_nil}"
       self.row[*(row_indexes - rows_with_nil)]
     end
 

@@ -343,7 +343,7 @@ describe Daru::Vector do
         end
       end
 
-      context "#delete_if", focus: true do
+      context "#delete_if" do
         it "deletes elements if block evaluates to true" do
           v = Daru::Vector.new [1,22,33,45,65,32,524,656,123,99,77], dtype: dtype
           ret = v.delete_if { |d| d % 11 != 0 }
@@ -921,4 +921,28 @@ describe Daru::Vector do
       expect(indexed.reset_index!.index).to eq(Daru::Index.new([0,1,2,3,4]))
     end
   end
+
+  context "#name=" do
+    before :each do
+      @v = Daru::Vector.new [1,2,3,4,5,5], name: :this_vector
+    end
+
+    it "assings name" do
+      @v.name = :that_vector
+      expect(@v.name).to eq(:that_vector)
+    end
+
+    it "underscores and downcases space separated string and stores name as a symbol" do
+      @v.name = "This is a vector"
+      expect(@v.name).to eq(:this_is_a_vector)
+    end
+  end
 end if mri?
+
+describe Daru::Vector::LAZY_UPDATE do
+  context "A variable which will set whether Vector metadata is updated immediately or lazily." do
+    it "does not update metadata when LAZY_UPDATE is set to default false" do
+      
+    end
+  end
+end

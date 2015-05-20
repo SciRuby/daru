@@ -1397,7 +1397,7 @@ describe Daru::DataFrame do
       }, index: agg_mi))
     end
  
-    it "creates row and vector index as per (single) index and (single) vectors args", focus: true do
+    it "creates row and vector index as per (single) index and (single) vectors args" do
       agg_vectors = Daru::MultiIndex.new([
         [:d, :one],
         [:d, :two],
@@ -1558,7 +1558,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#nest", focus: true do
+  context "#nest" do
     it "nests in a hash" do
       df = Daru::DataFrame.new({
         :a => Daru::Vector.new(%w(a a a b b b)),
@@ -1650,7 +1650,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "has_missing_data?" do
+  context "has_missing_data?", focus: true do
     before do
       a1 = Daru::Vector.new [1, nil, 3, 4, 5, nil]
       a2 = Daru::Vector.new [10, nil, 20, 20, 20, 30]

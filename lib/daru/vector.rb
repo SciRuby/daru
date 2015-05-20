@@ -9,6 +9,13 @@ require 'accessors/gsl_wrapper.rb'
 
 module Daru
   class Vector
+    # A variable which will set whether Vector metadata is updated immediately or lazily.
+    # Call the #update method every time a values are set or removed in order to update
+    # metadata like positions of missing values.
+    def self.LAZY_UPDATE= value
+      @@lazy_update = value
+    end
+
     include Enumerable
     include Daru::Maths::Arithmetic::Vector
     include Daru::Maths::Statistics::Vector
@@ -102,6 +109,7 @@ module Daru
       end
 
       @possibly_changed_type = true
+      LAZY_UPDATE= false
       set_missing_values opts[:missing_values]
       set_missing_positions
       set_size
@@ -209,6 +217,7 @@ module Daru
         end
       else
         @data[pos] = value
+        @missing_positions << pos if @missing_values.has_key?(value)
       end
 
       set_size
@@ -724,6 +733,14 @@ module Daru
       @name = new_name.to_sym
     end
 
+    def name= new_name
+      if new_name.is_a? String
+        @name = new_name.strip.downcase.squeeze(" ").gsub(" ", "_").to_sym
+      else
+        rename new_name
+      end
+    end
+
     # Duplicate elements and indexes
     def dup 
       Daru::Vector.new @data.dup, name: @name, index: @index.dup
@@ -815,6 +832,9 @@ module Daru
     # @as_a [Symbol] Passing :array will return only the elements
     # as an Array. Otherwise will return a Daru::Vector.
     def only_valid as_a=:vector
+      return self if !has_missing_data? and as_a == :vector
+      return self.to_a if !has_missing_data? and as_a != :vector
+
       new_index = @index.to_a - missing_positions
       new_vector = new_index.map do |idx|
         self[idx]
