@@ -733,14 +733,15 @@ module Daru
     # 
     # @param new_name [Symbol] The new name.
     def rename new_name
-      @name = new_name.to_sym
-    end
+      if new_name.is_a?(Numeric)
+        @name = new_name 
+        return
+      end
 
-    def name= new_name
       if new_name.is_a? String
         @name = new_name.strip.downcase.squeeze(" ").gsub(" ", "_").to_sym
       else
-        rename new_name
+        @name = new_name.to_sym
       end
     end
 

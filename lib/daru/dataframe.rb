@@ -169,8 +169,10 @@ module Daru
       vectors = opts[:order]
       index   = opts[:index]
       clone   = opts[:clone] == false ? false : true
-      @name   = (opts[:name] || SecureRandom.uuid).to_sym
       @data   = []
+
+      temp_name = opts[:name]
+      @name   = temp_name.is_a?(Numeric) ? temp_name : (temp_name || SecureRandom.uuid).to_sym
 
       if source.empty?
         @vectors = create_index vectors
@@ -375,6 +377,16 @@ module Daru
         hsh
       end
       Daru::DataFrame.new(h, clone: false)
+    end
+
+    # Returns a 'shallow' copy of DataFrame if missing data is not present, 
+    # or a full copy of only valid data if missing data is present.
+    def clone_only_valid
+      if has_missing_data?
+        dup_only_valid
+      else
+        clone
+      end
     end
 
     # Creates a new duplicate dataframe containing only rows 
@@ -1205,7 +1217,20 @@ module Daru
     # assignment/deletion of elements is done. Updating data this way is called
     # lazy loading. To set or unset lazy loading, see the .lazy_update= method.
     def update
-      @data.each { |v| v.update }
+      @data.each { |v| v.update } if Daru.lazy_update
+    end
+
+    def rename new_name
+      if new_name.is_a?(Numeric)
+        @name = new_name 
+        return
+      end
+
+      if new_name.is_a? String
+        @name = new_name.strip.downcase.squeeze(" ").gsub(" ", "_").to_sym
+      else
+        @name = new_name.to_sym
+      end
     end
 
     # Use marshalling to save dataframe to a file.

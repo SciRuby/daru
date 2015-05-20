@@ -922,18 +922,18 @@ describe Daru::Vector do
     end
   end
 
-  context "#name=" do
+  context "#rename" do
     before :each do
       @v = Daru::Vector.new [1,2,3,4,5,5], name: :this_vector
     end
 
     it "assings name" do
-      @v.name = :that_vector
+      @v.rename :that_vector
       expect(@v.name).to eq(:that_vector)
     end
 
     it "underscores and downcases space separated string and stores name as a symbol" do
-      @v.name = "This is a vector"
+      @v.rename "This is a vector"
       expect(@v.name).to eq(:this_is_a_vector)
     end
   end

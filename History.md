@@ -28,7 +28,7 @@
         - Added #reset_index!
     - DataFrame
         - #dup_only_valid
-        - #clone
+        - #clone, #clone_only_valid
         - #[]= does not clone the vector if it has the same index as the DataFrame.
         - Added a :clone option to initialize that will not clone Daru::Vectors passed into the constructor.
         - Added #save.
