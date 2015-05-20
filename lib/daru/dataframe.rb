@@ -385,7 +385,7 @@ module Daru
         memo
       end.uniq
 
-      row_indexes = Array.new(nrows) { |i| i }
+      row_indexes = @index.to_a
       self.row[*(row_indexes - rows_with_nil)]
     end
 
@@ -675,6 +675,16 @@ module Daru
         
         delete_vector vector unless keep_vector
       end
+    end
+
+    # creates a new vector with the data of a given field which the block returns true
+    def filter_vector vec
+      d = []
+      each_row do |row|
+        d.push(row[vec]) if yield row
+      end
+
+      Daru::Vector.new(d)
     end
 
     # Iterates over each row and retains it in a new DataFrame if the block returns

@@ -1057,6 +1057,23 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#filter_field" do
+    before do
+      @df = Daru::DataFrame.new({ 
+        :id => Statsample::Vector.new([1, 2, 3, 4, 5]), 
+        :name => Statsample::Vector.new(%w(Alex Claude Peter Franz George)), 
+        :age => Statsample::Vector.new([20, 23, 25, 27, 5]),
+        :city => Statsample::Vector.new(['New York', 'London', 'London', 'Paris', 'Tome']),
+        :a1 => Statsample::Vector.new(['a,b', 'b,c', 'a', nil, 'a,b,c']) },
+        order: [:id, :name, :age, :city, :a1])
+    end
+
+    it "creates new vector with the data of a given field for which block returns true" do
+      filtered = @df.filter_vector(:id) { |c| c[:id] == 2 or c[:id] == 4 }
+      expect(filtered).to eq(Daru::Vector.new([2,4]))
+    end
+  end
+
   context "#filter_rows" do
     context Daru::Index do
       it "filters rows" do

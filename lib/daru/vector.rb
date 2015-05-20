@@ -513,6 +513,11 @@ module Daru
       end
     end
 
+    def reset_index!
+      @index = Daru::Index.new(Array.new(size) { |i| i })
+      self
+    end
+
     # Returns a vector which has *true* in the position where the element in self
     # is nil, and false otherwise.
     # 

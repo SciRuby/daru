@@ -909,4 +909,16 @@ describe Daru::Vector do
       expect(v.n_valid).to eq(6)
     end
   end
+
+  context "#reset_index!" do
+    it "resets any index to a numerical serialized index" do
+      v = Daru::Vector.new([1,2,3,4,5,nil,nil,4,nil])
+      r = v.only_valid.reset_index!
+      expect(r).to eq(Daru::Vector.new([1,2,3,4,5,4]))
+      expect(r.index).to eq(Daru::Index.new([0,1,2,3,4,5]))
+
+      indexed = Daru::Vector.new([1,2,3,4,5], index: [:a, :b, :c, :d, :e])
+      expect(indexed.reset_index!.index).to eq(Daru::Index.new([0,1,2,3,4]))
+    end
+  end
 end if mri?

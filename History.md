@@ -25,6 +25,7 @@
         - Added #save, #jackknife and #bootstrap.
         - Added #missing_values= that will allow setting values for treating data as 'missing'.
         - Added #split_by_separator, #split_by_separator_freq and #splitted.
+        - Added #reset_index!
     - DataFrame
         - #dup_only_valid
         - #clone
@@ -38,6 +39,7 @@
         - Added #has_missing_data? and #missing_values_rows.
         - Added #compute and #verify.
         - Added .crosstab_by_assignation to generate data frame from row, column and value vectors.
+        - Added #filter_vector.
 * Changes
     - Changes Vector#nil_positions to Vector#missing_positions so that future changes for accomodating different values for missing data can be made easily.
     - Changed History.txt to History.md
