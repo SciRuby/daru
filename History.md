@@ -40,6 +40,7 @@
         - Added #compute and #verify.
         - Added .crosstab_by_assignation to generate data frame from row, column and value vectors.
         - Added #filter_vector.
+        - Added #standardize and added argument option to #dup.
     - Added a lazy update feature that will allow users to delay updating the missing positions index until the last possible moment.
 * Changes
     - Changes Vector#nil_positions to Vector#missing_positions so that future changes for accomodating different values for missing data can be made easily.

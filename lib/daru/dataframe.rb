@@ -346,20 +346,32 @@ module Daru
     end
 
     # Duplicate the DataFrame entirely.
-    def dup
+    # 
+    # == Arguments
+    # 
+    # * +vectors_to_dup+ - An Array specifying the names of Vectors to 
+    # be duplicated. Will duplicate the entire DataFrame if not specified.
+    def dup vectors_to_dup=nil
+      vectors_to_dup = @vectors unless vectors_to_dup
+
+      new_order =
       if vectors.is_a?(MultiIndex)
         src = []
-        @vectors.each do |vec|
+        vectors_to_dup.each do |vec|
           src << @data[@vectors[vec]].dup
         end
+
+        Daru::MultiIndex.new(vectors_to_dup)
       else
         src = {}
-        @vectors.each do |vector|
+        vectors_to_dup.each do |vector|
           src[vector] = @data[@vectors[vector]].dup
         end
+
+        Daru::Index.new(vectors_to_dup)
       end
 
-      Daru::DataFrame.new src, order: @vectors.dup, index: @index.dup, name: @name, clone: true
+      Daru::DataFrame.new src, order: new_order, index: @index.dup, name: @name, clone: true
     end
 
     # Returns a 'view' of the DataFrame, i.e the object ID's of vectors are

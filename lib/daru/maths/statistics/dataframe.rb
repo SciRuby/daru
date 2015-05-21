@@ -37,6 +37,15 @@ module Daru
           compute_stats :product
         end
 
+        def standardize
+          df = self.only_numerics clone: true
+          df.map! do |v|
+            v.standardize
+          end
+
+          df
+        end
+
         # Create a summary of mean, standard deviation, count, max and min of 
         # each numeric vector in the dataframe in one shot.
         # 
@@ -69,7 +78,7 @@ module Daru
           else
             df_as_matrix = to_matrix
             denominator  = for_sample_data ? nrows - 1 : nrows
-            ones         = Matrix.column_vector [1]*nrows
+            ones         = ::Matrix.column_vector [1]*nrows
             deviation_scores = df_as_matrix - (ones * ones.transpose * df_as_matrix) / nrows
             ((deviation_scores.transpose * deviation_scores) / denominator).to_a
           end
