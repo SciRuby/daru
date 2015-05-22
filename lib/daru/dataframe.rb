@@ -256,6 +256,7 @@ module Daru
 
       set_size
       validate
+      update
     end
 
     # Access row or vector. Specify name of row/vector followed by axis(:row, :vector).
@@ -408,6 +409,7 @@ module Daru
         memo.concat vector.missing_positions
         memo
       end.uniq
+
 
       row_indexes = @index.to_a
       self.row[*(row_indexes - rows_with_nil)]
@@ -637,12 +639,30 @@ module Daru
       Daru::Vector.new(data)
     end
 
+    def collect_row_with_index &block
+      data = []
+      each_row_with_index do |row, i|
+        data.push yield(row, i)
+      end
+
+      Daru::Vector.new(data)
+    end
+
     # Retrives a Daru::Vector, based on the result of calculation
     # performed on each vector.
     def collect_vectors &block
       data = []
       each_vector do |vec|
         data.push yield(vec)
+      end
+
+      Daru::Vector.new(data)
+    end
+
+    def collect_vector_with_index &block
+      data = []
+      each_vector_with_index do |vec, i|
+        data.push yield(vec, i)
       end
 
       Daru::Vector.new(data)

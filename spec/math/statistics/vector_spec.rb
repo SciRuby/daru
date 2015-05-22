@@ -243,11 +243,15 @@ describe Daru::Vector do
   end
 
   context "#center" do
-    it "returns a centered vector" do
-      vector = Daru::Vector.new([11,55,33,25,22,nil])
-      expect(vector.center.round(1)).to eq(
-        Daru::Vector.new([-18.2, 25.8, 3.8, -4.2, -7.2, nil])
-        )
+    it "centers" do
+      mean = rand
+      samples = 11
+      centered = Daru::Vector.new(samples.times.map { |i| i - ((samples / 2).floor).to_i })
+      not_centered = centered.recode { |v| v + mean }
+      obs = not_centered.center
+      centered.each_with_index do |v, i|
+        expect(v).to be_within(0.0001).of(obs[i])
+      end
     end
   end
 

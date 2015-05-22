@@ -31,6 +31,7 @@ module Daru
     def map!(&block)
       return to_enum(:map!) unless block_given?
       @data.map!(&block)
+      update
       self
     end
 
