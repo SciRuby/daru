@@ -17,8 +17,8 @@ describe Daru::Vector do
 
       context "#sum_of_squares" do
         it "calcs sum of squares, omits nil values" do
-          @dv.sum_of_squares
-          @dv_with_nils.sum_of_squares
+          v = Daru::Vector.new [1,2,3,4,5,6], dtype: dtype
+          expect(v.sum_of_squares).to eq(17.5)
         end
       end
 
@@ -30,7 +30,7 @@ describe Daru::Vector do
 
       context "#variance_sample" do
         it "calculates sample variance" do
-          @dv.variance_sample
+          expect(@dv.variance).to be_within(0.01).of(75118.84)
         end
       end
 

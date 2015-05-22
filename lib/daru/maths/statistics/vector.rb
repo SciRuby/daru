@@ -45,7 +45,7 @@ module Daru
         end
 
         def sum_of_squared_deviation
-          (@data.to_a.inject(0) { |a,x| x.square + a } - (sum.square.quo((@size - @missing_positions.size)))).to_f
+          (@data.inject(0) { |a,x| x.square + a } - (sum.square.quo(n_valid)).to_f).to_f
         end
 
         # Retrieve unique values of non-nil data
@@ -128,7 +128,7 @@ module Daru
           if @data.respond_to? :variance_sample
             @data.variance_sample m
           else
-            sum_of_squares(m).quo((@size - @missing_positions.size) - 1)
+            sum_of_squares(m).quo((n_valid) - 1)
           end
         end
 
@@ -144,7 +144,9 @@ module Daru
 
         def sum_of_squares(m=nil)
           m ||= mean
-          @data.inject(0) { |memo, val| val.nil? ? memo : (memo + (val - m)**2) }
+          @data.inject(0) { |memo, val| 
+            @missing_values.has_key?(val) ? memo : (memo + (val - m)**2) 
+          }
         end
 
         def standard_deviation_population m=nil
