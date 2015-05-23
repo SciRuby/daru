@@ -1,6 +1,7 @@
 require 'rspec'
 require 'matrix'
 require 'awesome_print'
+require 'distribution'
 
 def mri?
   RUBY_ENGINE == 'ruby'
@@ -15,7 +16,7 @@ if jruby?
 else
   require 'nmatrix'
 end
-require 'distribution'
+
 
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
