@@ -31,9 +31,10 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'rake'
+  spec.add_development_dependency 'rserve-client', '~> 0.3'
   spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'awesome_print'
   spec.add_development_dependency 'nyaplot'
   spec.add_development_dependency 'nmatrix', '~> 0.1.0'
-  spec.add_development_dependency 'statsample'
+  spex.add_development_dependency 'distribution', '~> 0.7'
 end

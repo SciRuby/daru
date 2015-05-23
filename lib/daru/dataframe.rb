@@ -1313,7 +1313,7 @@ module Daru
       longest = [@name.to_s.size,
                  @vectors.map(&:to_s).map(&:size).max, 
                  @index  .map(&:to_s).map(&:size).max,
-                 @data   .map{ |v|  v.map(&:to_s).map(&:size).max }.max].max
+                 @data   .map{ |v| v.map(&:to_s).map(&:size).max }.max].max
 
       name      = @name || 'nil'
       content   = ""

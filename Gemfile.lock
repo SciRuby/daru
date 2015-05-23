@@ -87,5 +87,6 @@ DEPENDENCIES
   nmatrix (~> 0.1.0)
   nyaplot
   rake
+  rserve-client (~> 0.3)
   rspec
   statsample!

@@ -909,7 +909,7 @@ module Daru
 
       if h_est.is_a? Array
         h_est = h_est.inject({}) do |h, est|
-          h[est] = lambda { |v| v.send(est) }
+          h[est] = lambda { |v| Daru::Vector.new(v).send(est) }
           h
         end
       end
