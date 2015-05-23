@@ -83,6 +83,7 @@ DEPENDENCIES
   awesome_print
   bundler
   daru!
+  distribution (~> 0.7)
   gsl-nmatrix!
   nmatrix (~> 0.1.0)
   nyaplot

@@ -28,7 +28,7 @@
         - Added #reset_index!
     - DataFrame
         - #dup_only_valid
-        - #clone, #clone_only_valid
+        - #clone, #clone_only_valid, #clone_structure
         - #[]= does not clone the vector if it has the same index as the DataFrame.
         - Added a :clone option to initialize that will not clone Daru::Vectors passed into the constructor.
         - Added #save.
@@ -42,6 +42,7 @@
         - Added #filter_vector.
         - Added #standardize and added argument option to #dup.
     - Added a lazy update feature that will allow users to delay updating the missing positions index until the last possible moment.
+    - Added interoperaility with rserve client which makes it possible to change daru data to R data and perform computation there.
 * Changes
     - Changes Vector#nil_positions to Vector#missing_positions so that future changes for accomodating different values for missing data can be made easily.
     - Changed History.txt to History.md

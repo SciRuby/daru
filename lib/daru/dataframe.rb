@@ -375,6 +375,10 @@ module Daru
       Daru::DataFrame.new src, order: new_order, index: @index.dup, name: @name, clone: true
     end
 
+    def clone_structure
+      Daru::DataFrame.new([], order: @vectors.dup, index: @index.dup, name: @name)
+    end
+
     # Returns a 'view' of the DataFrame, i.e the object ID's of vectors are
     # preserved.
     # 

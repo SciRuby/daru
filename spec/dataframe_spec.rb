@@ -826,6 +826,16 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#clone_structure" do
+    it "clones only the index and vector structures of the data frame" do
+      cs = @data_frame.clone_structure
+
+      expect(cs.vectors).to eq(@data_frame.vectors)
+      expect(cs.index).to eq(@data_frame.index)
+      expect(cs[:a]).to eq(Daru::Vector.new([nil] * cs[:a].size, index: @data_frame.index))
+    end
+  end
+
   context "#each_vector_with_index" do
     it "iterates over vectors with index" do
       idxs = []
