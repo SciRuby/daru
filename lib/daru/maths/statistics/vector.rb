@@ -41,7 +41,7 @@ module Daru
         alias :mad :median_absolute_deviation
 
         def standard_error
-          standard_deviation_sample/(Math::sqrt((@size - @missing_positions.size)))
+          standard_deviation_sample/(Math::sqrt((n_valid)))
         end
 
         def sum_of_squared_deviation
@@ -344,6 +344,7 @@ module Daru
         alias :sd :standard_deviation_sample
         alias :ss :sum_of_squares
         alias :percentil :percentile
+        alias :se :standard_error
       end
     end
   end

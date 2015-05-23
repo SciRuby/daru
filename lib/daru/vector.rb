@@ -49,6 +49,9 @@ module Daru
     attr_reader :nm_dtype
     # An Array or the positions in the vector that are being treated as 'missing'.
     attr_reader :missing_positions
+    # Store a hash of labels for values. Supplementary only. Recommend using index
+    # for proper usage.
+    attr_accessor :labels
 
     # Create a Vector object.
     # 
@@ -836,8 +839,9 @@ module Daru
     # 
     # @as_a [Symbol] Passing :array will return only the elements
     # as an Array. Otherwise will return a Daru::Vector.
-    def only_valid as_a=:vector
-      return self if !has_missing_data? and as_a == :vector
+    def only_valid as_a=:vector, duplicate=true
+      return self.dup if !has_missing_data? and as_a == :vector and duplicate
+      return self if !has_missing_data? and as_a == :vector and !duplicate
       return self.to_a if !has_missing_data? and as_a != :vector
 
       new_index = @index.to_a - missing_positions
