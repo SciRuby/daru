@@ -794,18 +794,29 @@ describe Daru::DataFrame do
   end
 
   context "#dup_only_valid" do
-    it "dups rows with non-missing data only" do
-      missing_data_df = Daru::DataFrame.new({
+    before do
+      @missing_data_df = Daru::DataFrame.new({
         a: [1  , 2, 3, nil, 4, nil, 5],
         b: [nil, 2, 3, nil, 4, nil, 5],
         c: [1,   2, 3, 43 , 4, nil, 5]
-      })
+      })      
+    end
+
+    it "dups rows with non-missing data only" do
       df = Daru::DataFrame.new({
         a: [2, 3, 4, 5],
         b: [2, 3, 4, 5],
         c: [2, 3, 4, 5]
       }, index: [1,2,4,6]) 
-      expect(missing_data_df.dup_only_valid).to eq(df)
+      expect(@missing_data_df.dup_only_valid).to eq(df)
+    end
+
+    it "dups only the specified vectors" do
+      df = Daru::DataFrame.new({
+        a: [2,3,4,5],
+        c: [2,3,4,5]
+      }, index: [1,2,4,6])
+      expect(@missing_data_df.dup_only_valid([:a, :c])).to eq(df)
     end
   end
 
@@ -1806,6 +1817,56 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#any?" do
+    before do
+      @df = Daru::DataFrame.new({
+        a: [1,2,3,4,5], 
+        b: [10,20,30,40,50],
+        c: [11,22,33,44,55]})
+    end
+
+    it "returns true if any one of the vectors satisfy condition" do
+      expect(@df.any? { |v| v[0] == 1 }).to eq(true)
+    end
+
+    it "returns false if none of the vectors satisfy the condition" do
+      expect(@df.any? { |v| v.mean > 100 }).to eq(false)
+    end
+
+    it "returns true if any one of the rows satisfy condition" do
+      expect(@df.any?(:row) { |r| r[:a] == 1 and r[:c] == 11 }).to eq(true)
+    end
+
+    it "returns false if none of the rows satisfy the condition" do
+      expect(@df.any?(:row) { |r| r.mean > 100 }).to eq(false)
+    end
+  end
+
+  context "#all?" do
+    before do
+      @df = Daru::DataFrame.new({
+        a: [1,2,3,4,5], 
+        b: [10,20,30,40,50],
+        c: [11,22,33,44,55]})
+    end
+    
+    it "returns true if all of the vectors satisfy condition" do
+      expect(@df.all? { |v| v.mean < 40 }).to eq(true)
+    end
+
+    it "returns false if any one of the vectors does not satisfy condition" do
+      expect(@df.all? { |v| v.mean == 30 }).to eq(false)
+    end
+
+    it "returns true if all of the rows satisfy condition" do
+      expect(@df.all?(:row) { |r| r.mean < 70 }).to eq(true)
+    end
+
+    it "returns false if any one of the rows does not satisfy condition" do
+      expect(@df.all?(:row) { |r| r.mean == 30 }).to eq(false)
+    end
+  end
+
   context "#only_numerics" do
     before do
       @v1 = Daru::Vector.new([1,2,3,4,5])
@@ -1901,14 +1962,3 @@ describe Daru::DataFrame do
     end
   end
 end if mri?
-
-describe "Daru::DataFrame::lazy_update" do
-  context "Allow updating metadata lazily" do
-    it "updates metadata immediately when lazy_update is false" do
-      
-    end
-
-    it "does not update metadata immediately when lazy_update is true" do
-    end
-  end
-end

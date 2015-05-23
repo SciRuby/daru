@@ -937,4 +937,32 @@ describe Daru::Vector do
       expect(@v.name).to eq(:this_is_a_vector)
     end
   end
+
+  context "#any?" do
+    before do
+      @v = Daru::Vector.new([1,2,3,4,5])
+    end
+
+    it "returns true if block returns true for any one of the elements" do
+      expect(@v.any?{ |e| e == 1 }).to eq(true)
+    end
+
+    it "returns false if block is false for all elements" do
+      expect(@v.any?{ |e| e > 10 }).to eq(false)
+    end
+  end 
+
+  context "#all?" do
+    before do
+      @v = Daru::Vector.new([1,2,3,4,5])
+    end
+
+    it "returns true if block is true for all elements" do
+      expect(@v.all? { |e| e < 6 }).to eq(true)
+    end
+
+    it "returns false if block is false for any one element" do
+      expect(@v.all? { |e| e == 2 }).to eq(false)
+    end
+  end
 end if mri?

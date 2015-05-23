@@ -408,15 +408,14 @@ module Daru
 
     # Creates a new duplicate dataframe containing only rows 
     # without a single missing value.
-    def dup_only_valid
+    def dup_only_valid vecs=nil
       rows_with_nil = @data.inject([]) do |memo, vector|
         memo.concat vector.missing_positions
         memo
       end.uniq
 
-
       row_indexes = @index.to_a
-      self.row[*(row_indexes - rows_with_nil)]
+      (vecs.nil? ? self : dup(vecs)).row[*(row_indexes - rows_with_nil)]
     end
 
     # Iterate over each vector
@@ -874,6 +873,32 @@ module Daru
     # Check if a vector is present
     def has_vector? vector
       !!@vectors[*vector]
+    end
+
+    def any? axis=:vector, &block
+      if axis == :vector or axis == :column
+        @data.any?(&block)
+      elsif axis == :row
+        each_row do |row|
+          return true if yield(row)
+        end
+        return false
+      else
+        raise ArgumentError, "Unidentified axis #{axis}"
+      end
+    end
+
+    def all? axis=:vector, &block
+      if axis == :vector or axis == :column
+        @data.all?(&block)
+      elsif axis == :row
+        each_row do |row|
+          return false unless yield(row)
+        end
+        return true
+      else
+        raise ArgumentError, "Unidentified axis #{axis}"
+      end
     end
 
     # The first ten elements of the DataFrame

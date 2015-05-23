@@ -28,6 +28,13 @@ module Daru
       self
     end
 
+    def each_with_index(&block)
+      return to_enum(:each_with_index) unless block_given?
+
+      @index.each { |i|  yield(self[i], i) }
+      self
+    end
+
     def map!(&block)
       return to_enum(:map!) unless block_given?
       @data.map!(&block)
@@ -374,6 +381,14 @@ module Daru
       Daru::Vector.new uniq_vector, name: @name, index: new_index, dtype: @dtype
     end
 
+    def any? &block
+      @data.data.any?(&block)
+    end
+
+    def all? &block
+      @data.data.all?(&block)
+    end
+
     # Sorts a vector according to its values. If a block is specified, the contents
     # will be evaluated and data will be swapped whenever the block evaluates 
     # to *true*. Defaults to ascending order sorting. Any missing values will be
@@ -411,9 +426,10 @@ module Daru
       @data.to_a.sort(&block)
     end
 
-    # Returns *true* if the value passed actually exists in the vector.
+    # Returns *true* if the value passed is actually exists or is not marked as
+    # a *missing value*.
     def exists? value
-      !self[index_of(value)].nil?
+      !@missing_values.has_key?(self[index_of(value)])
     end
 
     # Like map, but returns a Daru::Vector with the returned values.

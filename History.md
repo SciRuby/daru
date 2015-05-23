@@ -26,6 +26,7 @@
         - Added #missing_values= that will allow setting values for treating data as 'missing'.
         - Added #split_by_separator, #split_by_separator_freq and #splitted.
         - Added #reset_index!
+        - Added #any? and #all?
     - DataFrame
         - #dup_only_valid
         - #clone, #clone_only_valid, #clone_structure
@@ -41,6 +42,7 @@
         - Added .crosstab_by_assignation to generate data frame from row, column and value vectors.
         - Added #filter_vector.
         - Added #standardize and added argument option to #dup.
+        - Added #any? and #all? for vector and row axis.
     - Added a lazy update feature that will allow users to delay updating the missing positions index until the last possible moment.
     - Added interoperaility with rserve client which makes it possible to change daru data to R data and perform computation there.
 * Changes
