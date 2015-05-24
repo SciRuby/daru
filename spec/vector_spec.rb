@@ -932,9 +932,9 @@ describe Daru::Vector do
       expect(@v.name).to eq(:that_vector)
     end
 
-    it "underscores and downcases space separated string and stores name as a symbol" do
+    it "stores name as a symbol" do
       @v.rename "This is a vector"
-      expect(@v.name).to eq(:this_is_a_vector)
+      expect(@v.name).to eq(:"This is a vector")
     end
   end
 

@@ -7,8 +7,7 @@
 * Enhancements
     - Wrote a proper .travis.yml
     - Added optional GSL dependency gsl-nmatrix
-    - Added Marshalling and unMarshalling capabilities to Vector, Index and 
-    DataFrame.
+    - Added Marshalling and unMarshalling capabilities to Vector, Index and DataFrame.
     - Added new methods Daru::IO.save and Daru::IO.load for saving and loading data to and from files by marshalling.
     - Vector
         - #center
@@ -43,6 +42,7 @@
         - Added #filter_vector.
         - Added #standardize and added argument option to #dup.
         - Added #any? and #all? for vector and row axis.
+        - Better creation of empty data frames.
     - Added a lazy update feature that will allow users to delay updating the missing positions index until the last possible moment.
     - Added interoperaility with rserve client which makes it possible to change daru data to R data and perform computation there.
 * Changes

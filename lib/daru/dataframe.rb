@@ -112,7 +112,7 @@ module Daru
 
           df.add_row(n_row)
         end
-        # df.update_valid_data
+        df.update
         df
       end
     end
@@ -1286,12 +1286,7 @@ module Daru
         @name = new_name 
         return
       end
-
-      if new_name.is_a? String
-        @name = new_name.strip.downcase.squeeze(" ").gsub(" ", "_").to_sym
-      else
-        @name = new_name.to_sym
-      end
+      @name = new_name.to_sym
     end
 
     # Use marshalling to save dataframe to a file.
@@ -1340,9 +1335,9 @@ module Daru
     # Pretty print in a nice table format for the command line (irb/pry/iruby)
     def inspect spacing=10, threshold=15
       longest = [@name.to_s.size,
-                 @vectors.map(&:to_s).map(&:size).max, 
-                 @index  .map(&:to_s).map(&:size).max,
-                 @data   .map{ |v| v.map(&:to_s).map(&:size).max }.max].max
+                 (@vectors.map(&:to_s).map(&:size).max || 0), 
+                 (@index  .map(&:to_s).map(&:size).max || 0),
+                 (@data   .map{ |v| v.map(&:to_s).map(&:size).max}.max || 0)].max
 
       name      = @name || 'nil'
       content   = ""
@@ -1609,20 +1604,35 @@ module Daru
 
       @vectors = @vectors + name if !@vectors.include?(name)
       v        = nil
+      
+      if @index.empty?
+        v = vector.is_a?(Daru::Vector) ? vector : Daru::Vector.new(vector.to_a)  
+        @index = v.index
+        @data[@vectors[name]] = v
+        set_size
 
-      if vector.is_a?(Daru::Vector)
-        v = Daru::Vector.new [], name: set_name(name), index: @index
-        @index.each do |idx|
-          v[idx] = vector[idx]
+        @data.map! do |v|
+          if v.size == 0
+            Daru::Vector.new([nil]*@size, name: set_name(name), index: @index)
+          else
+            v
+          end
         end
       else
-        raise Exception, "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}" if
-          @size != vector.size
+        if vector.is_a?(Daru::Vector)
+          v = Daru::Vector.new [], name: set_name(name), index: @index
+          @index.each do |idx|
+            v[idx] = vector[idx]
+          end
+        else
+          raise Exception, "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}" if
+            @size != vector.size
 
-        v = Daru::Vector.new(vector, name: set_name(name), index: @index)
+          v = Daru::Vector.new(vector, name: set_name(name), index: @index)
+        end
+
+        @data[@vectors[name]] = v
       end
-
-      @data[@vectors[name]] = v
     end
 
     def insert_or_modify_row name, vector    
@@ -1696,10 +1706,14 @@ module Daru
     def create_vectors_index_with vectors, source
       vectors = source.keys.sort if vectors.nil?
 
+      @vectors =
       unless vectors.is_a?(Index) or vectors.is_a?(MultiIndex)
-        @vectors = Daru::Index.new (vectors + (source.keys - vectors)).uniq.map(&:to_sym)
+        Daru::Index.new((vectors + (source.keys - vectors))
+          .uniq
+          .map { |e| e.respond_to?(:to_sym) ? e.to_sym : e }
+        )
       else
-        @vectors = vectors
+        vectors
       end
     end
 

@@ -275,6 +275,26 @@ describe Daru::DataFrame do
         expect(df[:c].object_id).to eq(c.object_id)
       end
 
+      it "allows creation of empty dataframe with only order", focus: true do
+        df = Daru::DataFrame.new({}, order: [:a, :b, :c])
+        df[:a] = Daru::Vector.new([1,2,3,4,5,6])
+
+        expect(df.size).to eq(6)
+        expect(df[:a]).to eq(Daru::Vector.new([1,2,3,4,5,6]))
+        expect(df[:b]).to eq(Daru::Vector.new([nil,nil,nil,nil,nil,nil]))
+        expect(df[:c]).to eq(Daru::Vector.new([nil,nil,nil,nil,nil,nil]))
+      end
+
+      it "allows creation of dataframe without specifying order or index" do
+        df = Daru::DataFrame.new({})
+        df[:a] = Daru::Vector.new([1,2,3,4,5])
+
+        expect(df.size)        .to eq(5)
+        expect(df.index.to_a)  .to eq([0,1,2,3,4])
+        expect(df.vectors.to_a).to eq([:a])
+        expect(df[:a])         .to eq(Daru::Vector.new([1,2,3,4,5]))
+      end
+
       it "raises error for incomplete DataFrame index" do
         expect {
           df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
@@ -1671,7 +1691,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "has_missing_data?", focus: true do
+  context "has_missing_data?" do
     before do
       a1 = Daru::Vector.new [1, nil, 3, 4, 5, nil]
       a2 = Daru::Vector.new [10, nil, 20, 20, 20, 30]

@@ -10,7 +10,7 @@ describe "Daru.lazy_update" do
         expect(v.missing_positions.include?(1)).to eq(true)
       end
 
-      it "does NOT update metadata immediately when @@lazy_update is set to default true. Update done when #update is called", focus: true do
+      it "does NOT update metadata immediately when @@lazy_update is set to default true. Update done when #update is called" do
         Daru.lazy_update = true
         v    = Daru::Vector.new [1,2,3,4,nil,nil]
         v[1] = nil
@@ -39,7 +39,7 @@ describe "Daru.lazy_update" do
         expect(@df[:a].missing_positions.include?(1)).to eq(true)
       end
 
-      it "does NOT update metadata immediately when @@lazy_update is set to default true. Update done when #update is called", focus: true do
+      it "does NOT update metadata immediately when @@lazy_update is set to default true. Update done when #update is called" do
         Daru.lazy_update = true
         @df[:c][0] = nil
         @df[:a][1] = nil

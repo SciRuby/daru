@@ -101,6 +101,10 @@ module Daru
       @relation_hash.has_key? index
     end
 
+    def empty?
+      @relation_hash.empty?
+    end
+
     def dup
       Daru::Index.new @relation_hash.keys
     end

@@ -77,6 +77,10 @@ module Daru
       Daru::MultiIndex.new(tuples << (other))
     end
 
+    def empty?
+      @relation_hash.empty?
+    end
+
     # Compare two MultiIndex objects for equality based on the contents of their
     # relation hashes. Does not take object_id into account.
     def == other

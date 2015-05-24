@@ -717,8 +717,8 @@ module Daru
     # Over rides original inspect for pretty printing in irb
     def inspect spacing=20, threshold=15
       longest = [@name.to_s.size,
-                 @index.to_a.map(&:to_s).map(&:size).max, 
-                 @data    .map(&:to_s).map(&:size).max,
+                 (@index.to_a.map(&:to_s).map(&:size).max || 0), 
+                 (@data    .map(&:to_s).map(&:size).max || 0),
                  'nil'.size].max
 
       content   = ""
@@ -757,12 +757,8 @@ module Daru
         @name = new_name 
         return
       end
-
-      if new_name.is_a? String
-        @name = new_name.strip.downcase.squeeze(" ").gsub(" ", "_").to_sym
-      else
-        @name = new_name.to_sym
-      end
+      
+      @name = new_name.to_sym
     end
 
     # Duplicate elements and indexes
