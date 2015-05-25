@@ -733,6 +733,19 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#add_row" do
+    it "allows adding rows after making empty DF by specfying only order" do
+      df = Daru::DataFrame.new({}, order: [:a, :b, :c])
+      df.add_row [1,2,3]
+      df.add_row [5,6,7]
+
+      expect(df[:a]).to eq(Daru::Vector.new([1,5]))
+      expect(df[:b]).to eq(Daru::Vector.new([2,6]))
+      expect(df[:c]).to eq(Daru::Vector.new([3,7]))
+      expect(df.index).to eq(Daru::Index.new([0,1]))
+    end
+  end
+
   context "#vector" do
     context Daru::Index do
       it "appends an Array as a Daru::Vector" do

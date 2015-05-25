@@ -1637,6 +1637,7 @@ module Daru
 
     def insert_or_modify_row name, vector    
       if index.is_a?(MultiIndex)
+        # TODO
       else
         name = name[0]
         if @index.include? name

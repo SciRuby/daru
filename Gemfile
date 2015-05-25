@@ -2,5 +2,4 @@ source 'https://rubygems.org'
 
 gemspec
 
-gem 'statsample', :path => "/home/sameer/gitrepos/statsample/"
-gem 'gsl-nmatrix', :path => "/home/sameer/gitrepos/gsl-nmatrix/"
+gem 'gsl-nmatrix', :git => "https://github.com/v0dro/gsl-nmatrix.git"
