@@ -2,6 +2,7 @@ require 'rspec'
 require 'matrix'
 require 'awesome_print'
 require 'distribution'
+require 'tempfile'
 
 def mri?
   RUBY_ENGINE == 'ruby'

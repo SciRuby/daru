@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'reportbuilder', '~> 1.4'
 
-  spec.add_development_dependency 'bundler'
+  spec.add_development_dependency 'bundler', '~> 1.6'
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rserve-client', '~> 0.3'
   spec.add_development_dependency 'rspec'
@@ -37,4 +37,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'nyaplot'
   spec.add_development_dependency 'nmatrix', '~> 0.1.0'
   spec.add_development_dependency 'distribution', '~> 0.7'
+  spec.add_development_dependency 'gsl-nmatrix', '~>1.17'
 end

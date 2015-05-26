@@ -1,8 +1,6 @@
 language:
   ruby
 
-cache: bundler
-
 env:
   - CPLUS_INCLUDE_PATH=/usr/include/atlas C_INCLUDE_PATH=/usr/include/atlas
 
@@ -10,14 +8,25 @@ rvm:
   - '2.0'
   - '2.1'
   - '2.2'
+  - ruby-head
+
+matrix:
+  allow_failures:
+    - rvm: ruby-head
+
+  fast_finish:
+    true
+
+script: "bundle exec rspec"
+
+install:
+  - gem install bundler -v '1.6'
+  - gem install nmatrix-0.1.0.gem
+  - gem install gsl-nmatrix-1.17.gem
+  - bundle install
 
 before_install:
-  - gem install bundler
   - sudo apt-get update -qq
   - sudo apt-get install -qq libatlas-base-dev
   - sudo apt-get install -y libgsl0-dev r-base r-base-dev
   - sudo Rscript -e "install.packages(c('Rserve','irr'),,'http://cran.us.r-project.org')"
-
-script:
-  - bundle install
-  - bundle exec rspec
