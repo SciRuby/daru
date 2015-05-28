@@ -1176,6 +1176,24 @@ module Daru
       end
     end
 
+    def merge other_df
+      raise "Number of rows must be equal in this: #{nrows} and other: #{other_df.nrows}" unless nrows == other_ds.nrows
+      types = @fields.collect{|f| @vectors[f].type} + other_ds.fields.collect{|f| other_ds[f].type}
+      new_fields = (@fields+other_ds.fields).recode_repeated
+      ds_new=Statsample::Dataset.new(new_fields)
+      new_fields.each_index{|i|
+        field=new_fields[i]
+        ds_new[field].type=types[i]
+      }
+      @cases.times {|i|
+        row=case_as_array(i)+other_ds.case_as_array(i)
+        ds_new.add_case_array(row)
+      }
+      ds_new.update_valid_data
+      ds_new
+
+    end
+
     # Convert all numeric vectors to GSL::Matrix
     def to_gsl
       numerics_as_arrays = []

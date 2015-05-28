@@ -1644,7 +1644,6 @@ describe Daru::DataFrame do
 
   context "#merge" do
     it "merges one dataframe with another" do
-      pending
       a = Daru::Vector.new [1, 2, 3]
       b = Daru::Vector.new [3, 4, 5]
       c = Daru::Vector.new [4, 5, 6]
