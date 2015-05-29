@@ -79,6 +79,21 @@ describe Daru::DataFrame do
         f: [40,80,400]
         }, index: [:d, :e, :f]
       ))
+
+      test = Daru::DataFrame.rows([
+        [0.3543,0.4535,0.2424],
+        [0.123,0.53323,0.544],
+        [0.4345,0.4552,0.425]
+      ], order: [:a, :b, :c])
+      ans = Daru::DataFrame.new({
+        a: [0.0261607, -0.0071019, -0.0153640],
+        b: [-0.0071019, 0.0020747, 0.0056071],
+        c: [-0.0153640, 0.0056071, 0.0230777]
+      })
+      
+      test.cov.each_vector_with_index do |v, i|
+        expect_correct_vector_in_delta v, ans[i], 0.01
+      end
     end
   end
 

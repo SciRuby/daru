@@ -64,40 +64,39 @@ module Daru
           Daru::DataFrame.new(description_hash, index: methods)
         end
 
-        # Calculate variance-covariance between the numeric vectors.
-        # 
-        # == Arguments
-        # 
-        # +for_sample_data+ - If set to false, will calculate the population 
-        # covariance (denominator N), otherwise calculates the sample covariance
-        # matrix. Default to true.
-        def covariance for_sample_data=true
-          cov_arry = 
-          if defined? NMatrix and NMatrix.respond_to?(:cov)
-            to_nmatrix.cov(for_sample_data).to_a
-          else
-            df_as_matrix = to_matrix
-            denominator  = for_sample_data ? nrows - 1 : nrows
-            ones         = ::Matrix.column_vector [1]*nrows
-            deviation_scores = df_as_matrix - (ones * ones.transpose * df_as_matrix) / nrows
-            ((deviation_scores.transpose * deviation_scores) / denominator).to_a
+        # Calculate sample variance-covariance between the numeric vectors.
+        def covariance
+          cache={}
+          vectors = self.numeric_vectors
+
+          mat_rows = vectors.collect do |row|
+            vectors.collect do |col|
+              if row == col
+                self[row].variance
+              else
+                if cache[[col,row]].nil?
+                  cov = vector_cov(self[row],self[col])
+                  cache[[row,col]] = cov
+                  cov
+                else
+                  cache[[col,row]]
+                end
+              end
+            end
           end
 
-          Daru::DataFrame.rows(cov_arry, index: numeric_vectors, order: numeric_vectors)
+          Daru::DataFrame.rows(mat_rows, index: numeric_vectors, order: numeric_vectors)
         end
 
         alias :cov :covariance
           
         # Calculate the correlation between the numeric vectors.
         def correlation
-          corr_arry = 
-          if defined? NMatrix and NMatrix.respond_to?(:corr)
-            to_nmatrix.corr.to_a
-          else
-            standard_deviation = std.to_matrix
-            (cov.to_matrix.elementwise_division(standard_deviation.transpose * 
-              standard_deviation)).to_a
-          end
+          standard_deviation = std.to_matrix
+          corr_arry = (cov
+            .to_matrix
+            .elementwise_division(standard_deviation.transpose * 
+            standard_deviation)).to_a
 
           Daru::DataFrame.rows(corr_arry, index: numeric_vectors, order: numeric_vectors)
         end
@@ -105,6 +104,19 @@ module Daru
         alias :corr :correlation
 
        private
+
+        def vector_cov v1a, v2a
+          sum_of_squares(v1a,v2a) / (v1a.size - 1)
+        end
+
+        def sum_of_squares v1, v2
+          v1a,v2a = v1.only_valid ,v2.only_valid
+          v1a.reset_index!
+          v2a.reset_index!        
+          m1 = v1a.mean
+          m2 = v2a.mean
+          (v1a.size).times.inject(0) {|ac,i| ac+(v1a[i]-m1)*(v2a[i]-m2)}
+        end
 
         def compute_stats method
           Daru::Vector.new(
