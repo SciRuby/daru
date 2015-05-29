@@ -1628,7 +1628,6 @@ describe Daru::DataFrame do
 
   context "#summary" do
     it "produces a summary of data frame" do
-      pending
       expect(@data_frame.summary.match("#{@data_frame.name}")).to_not eq(nil)
       expect(@df_mi.summary.match("#{@df_mi.name}")).to_not eq(nil)
     end
@@ -1666,7 +1665,15 @@ describe Daru::DataFrame do
   end
 
   context "#vector_by_calculation" do
-
+    it "DSL for returning vector of each calculation" do
+      a1 = Daru::Vector.new([1, 2, 3, 4, 5, 6, 7])
+      a2 = Daru::Vector.new([10, 20, 30, 40, 50, 60, 70])
+      a3 = Daru::Vector.new([100, 200, 300, 400, 500, 600, 700])
+      ds = Daru::DataFrame.new({ :a => a1, :b => a2, :c => a3 })
+      total = ds.vector_by_calculation { a + b + c }
+      expected = Daru::Vector.new([111, 222, 333, 444, 555, 666, 777])
+      expect(total).to eq(expected)
+    end
   end
 
   context "#vector_sum" do

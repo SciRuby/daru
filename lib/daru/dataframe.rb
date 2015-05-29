@@ -790,6 +790,34 @@ module Daru
       vr
     end
 
+    # DSL for yielding each row and returning a Daru::Vector based on the
+    # value each run of the block returns.
+    # 
+    # == Usage
+    # 
+    #   a1 = Daru::Vector.new([1, 2, 3, 4, 5, 6, 7])
+    #   a2 = Daru::Vector.new([10, 20, 30, 40, 50, 60, 70])
+    #   a3 = Daru::Vector.new([100, 200, 300, 400, 500, 600, 700])
+    #   ds = Daru::DataFrame.new({ :a => a1, :b => a2, :c => a3 })
+    #   total = ds.vector_by_calculation { a + b + c }
+    #   # <Daru::Vector:82314050 @name = nil @size = 7 >
+    #   #   nil
+    #   # 0 111
+    #   # 1 222
+    #   # 2 333
+    #   # 3 444
+    #   # 4 555
+    #   # 5 666
+    #   # 6 777
+    def vector_by_calculation &block
+      a = []
+      each_row do |r|
+        a.push r.instance_eval(&block)
+      end
+
+      Daru::Vector.new a
+    end
+
     # Returns a vector, based on a string with a calculation based
     # on vector.
     # 
