@@ -1176,22 +1176,114 @@ module Daru
       end
     end
 
+    # Merge vectors from two datasets
+    # In case of name collition, the vectors names are changed to
+    # x_1, x_2 ....
+    #
+    # @return {Daru::DataFrame}
     def merge other_df
-      raise "Number of rows must be equal in this: #{nrows} and other: #{other_df.nrows}" unless nrows == other_ds.nrows
-      types = @fields.collect{|f| @vectors[f].type} + other_ds.fields.collect{|f| other_ds[f].type}
-      new_fields = (@fields+other_ds.fields).recode_repeated
-      ds_new=Statsample::Dataset.new(new_fields)
-      new_fields.each_index{|i|
-        field=new_fields[i]
-        ds_new[field].type=types[i]
-      }
-      @cases.times {|i|
-        row=case_as_array(i)+other_ds.case_as_array(i)
-        ds_new.add_case_array(row)
-      }
-      ds_new.update_valid_data
-      ds_new
+      raise "Number of rows must be equal in this: #{nrows} and other: #{other_df.nrows}" unless nrows == other_df.nrows
 
+      new_fields = (@vectors.to_a + other_df.vectors.to_a)
+                        .recode_repeated
+                        .map(&:to_sym)
+      df_new     = DataFrame.new({}, order: new_fields)
+
+      (0...nrows).to_a.each do |i|
+        row = self.row[i].to_a + other_df.row[i].to_a
+        df_new.add_row(row)
+      end
+
+      df_new.update
+      df_new
+    end
+
+    # Creates a new dataset for one to many relations
+    # on a dataset, based on pattern of field names.
+    #
+    # for example, you have a survey for number of children
+    # with this structure:
+    #   id, name, child_name_1, child_age_1, child_name_2, child_age_2
+    # with
+    #   ds.one_to_many([:id], "child_%v_%n"
+    # the field of first parameters will be copied verbatim
+    # to new dataset, and fields which responds to second
+    # pattern will be added one case for each different %n.
+    # 
+    # == Usage
+    #   cases=[
+    #     ['1','george','red',10,'blue',20,nil,nil],
+    #     ['2','fred','green',15,'orange',30,'white',20],
+    #     ['3','alfred',nil,nil,nil,nil,nil,nil]
+    #   ]
+    #   ds=Daru::DataFrame.rows(cases, order: [:id, :name, :car_color1, :car_value1, :car_color2, :car_value2, :car_color3, :car_value3])
+    #   ds.one_to_many([:id],'car_%v%n').to_matrix
+    #   => Matrix[
+    #      ["red", "1", 10],
+    #      ["blue", "1", 20],
+    #      ["green", "2", 15],
+    #      ["orange", "2", 30],
+    #      ["white", "2", 20]
+    #      ]
+    #
+    def one_to_many(parent_fields, pattern)
+      re      = Regexp.new pattern.gsub("%v","(.+?)").gsub("%n","(\\d+?)")
+      ds_vars = parent_fields
+      vars    = []
+      max_n   = 0
+      h       = parent_fields.inject({}) { |a,v| 
+        a[v] = Daru::Vector.new([])
+        a 
+      }
+      # Adding _row_id
+      h[:_col_id] = Daru::Vector.new([])
+      ds_vars.push(:_col_id)
+
+      @vectors.each do |f|
+        if f =~ re
+          if !vars.include? $1
+            vars.push($1)
+            h[$1] = Daru::Vector.new([])
+          end
+          max_n = $2.to_i if max_n < $2.to_i
+        end
+      end
+      ds = DataFrame.new(h, order: ds_vars+vars)
+
+      each_row do |row|
+        row_out = {}
+        parent_fields.each do |f|
+          row_out[f]=row[f]
+        end
+
+        max_n.times do |n1|
+          n  = n1+1
+          any_data = false
+          vars.each do |v|
+            data = row[pattern.gsub("%v",v.to_s).gsub("%n",n.to_s).to_sym]
+            row_out[v] = data
+            any_data = true if !data.nil?
+          end
+
+          if any_data
+            row_out[:_col_id] = n
+            ds.add_row(row_out)
+          end
+        end
+      end
+      ds.update
+      ds
+    end
+
+    def add_vectors_by_split_recode(name_, join='-', sep=',')
+      split = self[name_].split_by_separator(sep)
+      i = 1
+      split.each { |k,v|
+        new_field = name_.to_s + join + i.to_s
+        v.rename name_.to_s + ":" + k.to_s
+        self[new_field.to_sym] = v
+        i += 1
+      }
     end
 
     # Convert all numeric vectors to GSL::Matrix

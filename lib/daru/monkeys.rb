@@ -1,4 +1,40 @@
 class Array
+  # Recode repeated values on an array, adding the number of repetition
+  # at the end
+  # Example:
+  #   a=%w{a b c c d d d e}
+  #   a.recode_repeated
+  #   => ["a","b","c_1","c_2","d_1","d_2","d_3","e"]
+  def recode_repeated
+    if size != uniq.size
+      # Find repeated
+      repeated = inject({}) do |acc, v|
+        if acc[v].nil?
+          acc[v] = 1
+        else
+          acc[v] += 1
+        end
+        acc
+      end.select { |_k, v| v > 1 }.keys
+
+      ns = repeated.inject({}) do |acc, v|
+        acc[v] = 0
+        acc
+      end
+
+      collect do |f|
+        if repeated.include? f
+          ns[f] += 1
+          sprintf('%s_%d', f, ns[f])
+        else
+          f
+        end
+      end
+    else
+      self
+    end
+  end
+  
   def daru_vector name=nil, index=nil, dtype=:array
     Daru::Vector.new self, name: name, index: index, dtype: dtype
   end

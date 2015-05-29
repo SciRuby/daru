@@ -43,6 +43,7 @@
         - Added #standardize and added argument option to #dup.
         - Added #any? and #all? for vector and row axis.
         - Better creation of empty data frames.
+        - Added #merge, #one_to_many, #add_vectors_by_split_recode
     - Added a lazy update feature that will allow users to delay updating the missing positions index until the last possible moment.
     - Added interoperaility with rserve client which makes it possible to change daru data to R data and perform computation there.
 * Changes

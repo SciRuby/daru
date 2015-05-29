@@ -1654,10 +1654,12 @@ describe Daru::DataFrame do
       exp = Daru::DataFrame.new({ :a => a, :b => b, :c => c, :d => d })
 
       expect(ds1.merge(ds2)).to eq(exp)
-      expect(ds2.merge(ds1)).to eq(exp)
+      expect(ds2.merge(ds1)).to eq(
+        Daru::DataFrame.new({c: c, d: d, a: a, b: b}, order: [:c, :d, :a, :b]))
 
       ds3 = Daru::DataFrame.new({ :a => e })
-      exp = Daru::DataFrame.new({ :a_1 => a, :b => b, :a_2 => e })
+      exp = Daru::DataFrame.new({ :a_1 => a, :a_2 => e, :b => b }, 
+        order: [:a_1, :b, :a_2])
 
       expect(ds1.merge(ds3)).to eq(exp)
     end
@@ -1741,7 +1743,23 @@ describe Daru::DataFrame do
   end
 
   context "#add_vectors_by_split_recode" do
-    # TODO
+    before do
+      @ds = Daru::DataFrame.new({ 
+        :id   => Daru::Vector.new([1, 2, 3, 4, 5]), 
+        :name => Daru::Vector.new(%w(Alex Claude Peter Franz George)), 
+        :age  => Daru::Vector.new([20, 23, 25, 27, 5]),
+        :city => Daru::Vector.new(['New York', 'London', 'London', 'Paris', 'Tome']),
+        :a1   => Daru::Vector.new(['a,b', 'b,c', 'a', nil, 'a,b,c']) }, 
+        order: [:id, :name, :age, :city, :a1])
+    end
+
+    it "" do
+      @ds.add_vectors_by_split_recode(:a1, '_')
+      expect(@ds.vectors.to_a)    .to eq([:id, :name, :age, :city ,:a1, :a1_1, :a1_2, :a1_3])
+      expect(@ds[:a1_1].to_a).to eq([1, 0, 1, nil, 1])
+      expect(@ds[:a1_2].to_a).to eq([1, 1, 0, nil, 1])
+      expect(@ds[:a1_3].to_a).to eq([0, 1, 0, nil, 1])
+    end
   end
 
   context "#add_vectors_by_split" do
@@ -1826,7 +1844,6 @@ describe Daru::DataFrame do
 
   context "#one_to_many" do
     it "" do
-      pending
       rows = [
         ['1', 'george', 'red', 10, 'blue', 20, nil, nil],
         ['2', 'fred', 'green', 15, 'orange', 30, 'white', 20],
@@ -1844,8 +1861,7 @@ describe Daru::DataFrame do
         :id => ids, :_col_id => col_ids, :color => colors, :value => values
         }, order: [:id, :_col_id, :color, :value])
 
-      expect(df.one_to_many([:id],[:car_color1, :car_value1, :car_color2, 
-          :car_value2, :car_color3, :car_value3])).to eq(df)
+      expect(df.one_to_many([:id], 'car_%v%n')).to eq(df_expected)
     end
   end
 
