@@ -1,9 +1,3 @@
-begin
-  require 'nyaplot'
-rescue LoadError => e
-  puts "#{e}"
-end
-
 module Daru
   module Plotting
     module DataFrame
@@ -47,4 +41,4 @@ module Daru
       end
     end
   end
-end
+end if Daru.has_nyaplot?
