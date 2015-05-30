@@ -4,6 +4,7 @@
     - Update documentation and fix it in other places.
     - Fix Vector#sum_of_squares and #ranked.
     - Fixed some tests that were giving RSpec warnings
+    - Fixed a bug where nyaplot not being present would raise a warning.
 * Enhancements
     - Wrote a proper .travis.yml
     - Added optional GSL dependency gsl-nmatrix
@@ -15,7 +16,7 @@
         - #vector_percentile
         - Added a new wrapper class Daru::Accessors::GSLWrapper for wrapping around GSL::Vector, which works similarly to NMatrixWrapper or ArrayWrapper.
         - Added a host of statistical methods to GSLWrapper in Daru::Accessors::GSLStatistics that call the relevant GSL::Vector functions for super-fast C level computations.
-        - More stats functions - #vector_standarized_compute, #vector_centered_compute, #sample_with_replacement, #sample_without_replacement
+        - More stats functions - #vector_standardized_compute, #vector_centered_compute, #sample_with_replacement, #sample_without_replacement
         - #only_valid for creating a Vector with only non-nil data
         - Ported many Statsample::Vector stat methods to Daru::Vector. These are: #percentile, #factors, etc.
         - Added .new_with_size for creating vectors by specifying a size for the
@@ -44,6 +45,7 @@
         - Added #any? and #all? for vector and row axis.
         - Better creation of empty data frames.
         - Added #merge, #one_to_many, #add_vectors_by_split_recode
+        - Added constant SPLIT_TOKEN and methods #add_vectors_by_split, .[]
     - Added a lazy update feature that will allow users to delay updating the missing positions index until the last possible moment.
     - Added interoperaility with rserve client which makes it possible to change daru data to R data and perform computation there.
 * Changes

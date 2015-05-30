@@ -148,10 +148,10 @@ describe Daru::Vector do
         end
       end
 
-      context "#vector_standarized_compute" do
-        it "calculates vector_standarized_compute" do
-          @dv.vector_standarized_compute(@dv.mean, @dv.sd)
-          @dv_with_nils.vector_standarized_compute(@dv.mean, @dv.sd)
+      context "#vector_standardized_compute" do
+        it "calculates vector_standardized_compute" do
+          @dv.vector_standardized_compute(@dv.mean, @dv.sd)
+          @dv_with_nils.vector_standardized_compute(@dv.mean, @dv.sd)
         end
       end
 

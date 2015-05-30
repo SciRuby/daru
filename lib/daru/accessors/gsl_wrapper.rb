@@ -1,7 +1,7 @@
 module Daru
   module Accessors
     module GSLStatistics
-      def vector_standarized_compute(m,sd)
+      def vector_standardized_compute(m,sd)
         Daru::Vector.new @data.collect { |x| (x.to_f - m).quo(sd) }, dtype: :gsl,
           index: @context.index, name: @context.name
       end

@@ -3,6 +3,7 @@ def jruby?
 end
 
 module Daru
+  SPLIT_TOKEN = ','
   class << self
     @@lazy_update = false
     

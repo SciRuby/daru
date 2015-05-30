@@ -103,13 +103,13 @@ describe Daru::Vector do
       context ".[]" do
         it "returns same results as R-c()" do
           reference = Daru::Vector.new([0, 4, 5, 6, 10])
-          expect(Statsample::Vector[0, 4, 5, 6, 10])          .to eq(reference)
-          expect(Statsample::Vector[0, 4..6, 10])             .to eq(reference)
-          expect(Statsample::Vector[[0], [4, 5, 6], [10]])    .to eq(reference)
-          expect(Statsample::Vector[[0], [4, [5, [6]]], [10]]).to eq(reference)
-          
-          expect(Statsample::Vector[[0], Daru::Vector.new([4, 5, 6]), [10]])
-                                                              .to eq(reference)
+          expect(Daru::Vector[0, 4, 5, 6, 10])          .to eq(reference)
+          expect(Daru::Vector[0, 4..6, 10])             .to eq(reference)
+          expect(Daru::Vector[[0], [4, 5, 6], [10]])    .to eq(reference)
+          expect(Daru::Vector[[0], [4, [5, [6]]], [10]]).to eq(reference)
+
+          expect(Daru::Vector[[0], Daru::Vector.new([4, 5, 6]), [10]])
+                                                        .to eq(reference)
         end
       end
 
@@ -943,6 +943,16 @@ describe Daru::Vector do
 
     it "returns false if block is false for any one element" do
       expect(@v.all? { |e| e == 2 }).to eq(false)
+    end
+  end
+
+  context "#only_missing" do
+    it "returns a vector (with proper index) of all the elements marked 'missing'" do
+      v = Daru::Vector.new([1,2,3,4,5,6,4,5,5,4,4,nil,nil,nil])
+      v.missing_values = [nil, 5]
+
+      expect(v.only_missing).to eq(Daru::Vector.new([5,5,5,nil,nil,nil], 
+        index: [4,7,8,11,12,13]))
     end
   end
 end if mri?

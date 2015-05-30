@@ -888,6 +888,21 @@ module Daru
       out
     end
 
+    def vector_count_characters vecs=nil
+      vecs ||= @vectors.to_a
+
+      collect_row_with_index do |row, i|
+        vecs.inject(0) do |memo, vec|
+          memo + (row[vec].nil? ? 0 : row[vec].to_s.size)
+        end
+      end
+    end
+
+    def add_vectors_by_split(name,join='-',sep=Daru::SPLIT_TOKEN)
+      split = self[name].split_by_separator(sep)
+      split.each { |k,v| self[(name.to_s + join + k.to_s).to_sym] = v }
+    end
+
     # Return the number of rows and columns of the DataFrame in an Array.
     def shape
       [@index.size, @vectors.size]
@@ -1308,7 +1323,7 @@ module Daru
       ds
     end
 
-    def add_vectors_by_split_recode(name_, join='-', sep=',')
+    def add_vectors_by_split_recode(name_, join='-', sep=Daru::SPLIT_TOKEN)
       split = self[name_].split_by_separator(sep)
       i = 1
       split.each { |k,v|

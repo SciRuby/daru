@@ -135,6 +135,28 @@ module Daru
       vector
     end
 
+    # Create a vector using (almost) any object
+    # * Array: flattened
+    # * Range: transformed using to_a
+    # * Daru::Vector
+    # * Numeric and string values
+    def self.[](*args)
+      values = []
+      args.each do |a|
+        case a
+        when Array
+          values.concat a.flatten
+        when Daru::Vector
+          values.concat a.to_a
+        when Range
+          values.concat  a.to_a
+        else
+          values << a
+        end
+      end
+      Daru::Vector.new(values)
+    end
+
     # Get one or more elements with specified index or a range.
     # 
     # == Usage
@@ -851,6 +873,11 @@ module Daru
     # 
     # @as_a [Symbol] Passing :array will return only the elements
     # as an Array. Otherwise will return a Daru::Vector.
+    # 
+    # @duplicate [Symbol] In case no missing data is found in the
+    # vector, setting this to false will return the same vector.
+    # Otherwise, a duplicate will be returned irrespective of 
+    # presence of missing data.
     def only_valid as_a=:vector, duplicate=true
       return self.dup if !has_missing_data? and as_a == :vector and duplicate
       return self if !has_missing_data? and as_a == :vector and !duplicate
@@ -864,6 +891,14 @@ module Daru
       return new_vector if as_a != :vector
       
       Daru::Vector.new new_vector, index: new_index, name: @name, dtype: dtype
+    end
+
+    def only_missing as_a=:vector
+      if as_a == :vector
+        self[*missing_positions]
+      elsif as_a == :array
+        self[*missing_positions].to_a
+      end
     end
 
     # Copies the structure of the vector (i.e the index, size, etc.) and fills all

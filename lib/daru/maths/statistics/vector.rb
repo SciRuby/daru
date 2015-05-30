@@ -272,7 +272,23 @@ module Daru
           sd = use_population ? sdp : sds
           return Daru::Vector.new([nil]*@size) if m.nil? or sd == 0.0
 
-          vector_standarized_compute m, sd
+          vector_standardized_compute m, sd
+        end
+
+        def box_cox_transformation lambda # :nodoc:
+          raise "Should be a numeric" unless @type == :numeric
+
+          self.recode do |x|
+            if !x.nil?
+              if(lambda == 0)
+                Math.log(x)
+              else
+                (x ** lambda - 1).quo(lambda)
+              end
+            else
+              nil
+            end
+          end
         end
 
         # Replace each non-nil value in the vector with its percentile.
@@ -281,9 +297,9 @@ module Daru
           ranked.recode! { |i| i.nil? ? nil : (i.quo(c)*100).to_f }
         end
 
-        def vector_standarized_compute(m,sd)
-          if @data.respond_to? :vector_standarized_compute
-            @data.vector_standarized_compute(m,sd)
+        def vector_standardized_compute(m,sd)
+          if @data.respond_to? :vector_standardized_compute
+            @data.vector_standardized_compute(m,sd)
           else
             Daru::Vector.new @data.collect { |x| x.nil? ? nil : (x.to_f - m).quo(sd) },
               index: index, name: name, dtype: dtype
