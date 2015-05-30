@@ -138,7 +138,7 @@ module Daru
           if @data.respond_to? :variance_population
             @data.variance_population m
           else
-            sum_of_squares(m).quo((@size - @missing_positions.size)).to_f            
+            sum_of_squares(m).quo((n_valid)).to_f            
           end
         end
 

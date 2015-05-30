@@ -1078,8 +1078,19 @@ module Daru
       Daru::DataFrame.new(arry, clone: cln, order: order, index: @index)
     end
 
-    def summary
-      
+    # Generate a summary of this DataFrame with ReportBuilder.
+    def summary(method = :to_text)
+      ReportBuilder.new(no_title: true).add(self).send(method)
+    end
+
+    def report_building(b) # :nodoc: #
+      b.section(:name=>@name) do |g|
+        g.text "Number of rows: #{nrows}"
+        @vectors.each do |v|
+          g.text "Element:[#{v}]"
+          g.parse_element(self[v])
+        end
+      end
     end
 
     # Sorts a dataframe (ascending/descending)according to the given sequence of 

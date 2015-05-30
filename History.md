@@ -27,6 +27,7 @@
         - Added #split_by_separator, #split_by_separator_freq and #splitted.
         - Added #reset_index!
         - Added #any? and #all?
+        - Added #db_type for guessing the type of SQL type contained in the vector.
     - DataFrame
         - #dup_only_valid
         - #clone, #clone_only_valid, #clone_structure
@@ -45,7 +46,7 @@
         - Added #any? and #all? for vector and row axis.
         - Better creation of empty data frames.
         - Added #merge, #one_to_many, #add_vectors_by_split_recode
-        - Added constant SPLIT_TOKEN and methods #add_vectors_by_split, .[]
+        - Added constant SPLIT_TOKEN and methods #add_vectors_by_split, .[], #summary.
     - Added a lazy update feature that will allow users to delay updating the missing positions index until the last possible moment.
     - Added interoperaility with rserve client which makes it possible to change daru data to R data and perform computation there.
 * Changes

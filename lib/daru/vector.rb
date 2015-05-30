@@ -901,6 +901,20 @@ module Daru
       end
     end
 
+    # Returns the database type for the vector, according to its content
+    def db_type(dbs=:mysql)
+      # first, detect any character not number
+      if @data.find {|v| v.to_s=~/\d{2,2}-\d{2,2}-\d{4,4}/} or @data.find {|v| v.to_s=~/\d{4,4}-\d{2,2}-\d{2,2}/}
+        return "DATE"
+      elsif @data.find {|v|  v.to_s=~/[^0-9e.-]/ }
+        return "VARCHAR (255)"
+      elsif @data.find {|v| v.to_s=~/\./}
+        return "DOUBLE"
+      else
+        return "INTEGER"
+      end
+    end
+
     # Copies the structure of the vector (i.e the index, size, etc.) and fills all
     # all values with nils.
     def clone_structure
