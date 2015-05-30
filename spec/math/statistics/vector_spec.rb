@@ -125,7 +125,8 @@ describe Daru::Vector do
 
       context "#average_deviation_population" do
         it "calculates average_deviation_population" do
-          @dv.average_deviation_population
+          a = Daru::Vector.new([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype: dtype)
+          expect(a.average_deviation_population).to eq(20.quo(9).to_f)
         end
       end
 

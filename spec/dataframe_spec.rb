@@ -1712,6 +1712,20 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#vector_count_characters" do
+    it "" do
+      a1  = Daru::Vector.new( [1, 'abcde', 3, 4, 5, nil])
+      a2  = Daru::Vector.new( [10, 20.3, 20, 20, 20, 30])
+      b1  = Daru::Vector.new( [nil, '343434', 1, 1, 1, 2])
+      b2  = Daru::Vector.new( [2, 2, 2, nil, 2, 3])
+      c   = Daru::Vector.new([nil, 2, 'This is a nice example', 2, 2, 2])
+      ds  = Daru::DataFrame.new({ :a1 => a1, :a2 => a2, :b1 => b1, :b2 => b2, :c => c })
+
+      expect(ds.vector_count_characters).to eq(Daru::Vector.new([4, 17, 27, 5, 6, 5]))
+    end
+  end
+
+
   context "has_missing_data?" do
     before do
       a1 = Daru::Vector.new [1, nil, 3, 4, 5, nil]
@@ -1770,7 +1784,23 @@ describe Daru::DataFrame do
   end
 
   context "#add_vectors_by_split" do
-    # TODO
+    before do
+      @ds = Daru::DataFrame.new({ 
+        :id   => Daru::Vector.new([1, 2, 3, 4, 5]), 
+        :name => Daru::Vector.new(%w(Alex Claude Peter Franz George)), 
+        :age  => Daru::Vector.new([20, 23, 25, 27, 5]),
+        :city => Daru::Vector.new(['New York', 'London', 'London', 'Paris', 'Tome']),
+        :a1   => Daru::Vector.new(['a,b', 'b,c', 'a', nil, 'a,b,c']) 
+        }, order: [:id, :name, :age, :city, :a1])
+    end
+
+    it "" do
+      @ds.add_vectors_by_split(:a1, '_')
+      expect(@ds.vectors.to_a).to eq([:id, :name, :age, :city, :a1, :a1_a, :a1_b, :a1_c])
+      expect(@ds[:a1_a].to_a).to eq([1, 0, 1, nil, 1])
+      expect(@ds[:a1_b].to_a).to eq([1, 1, 0, nil, 1])
+      expect(@ds[:a1_c].to_a).to eq([0, 1, 0, nil, 1])
+    end
   end
 
   context "#verify" do

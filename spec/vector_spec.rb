@@ -100,6 +100,19 @@ describe Daru::Vector do
         end
       end
 
+      context ".[]" do
+        it "returns same results as R-c()" do
+          reference = Daru::Vector.new([0, 4, 5, 6, 10])
+          expect(Statsample::Vector[0, 4, 5, 6, 10])          .to eq(reference)
+          expect(Statsample::Vector[0, 4..6, 10])             .to eq(reference)
+          expect(Statsample::Vector[[0], [4, 5, 6], [10]])    .to eq(reference)
+          expect(Statsample::Vector[[0], [4, [5, [6]]], [10]]).to eq(reference)
+          
+          expect(Statsample::Vector[[0], Daru::Vector.new([4, 5, 6]), [10]])
+                                                              .to eq(reference)
+        end
+      end
+
       context "#[]" do
         context Daru::Index do
           before :each do

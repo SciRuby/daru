@@ -851,9 +851,14 @@ module Daru
       Daru::Vector.new number_of_missing, index: @index, name: "#{@name}_missing_rows".to_sym
     end
 
+    # TODO: remove next version
+    alias :vector_missing_values :missing_values_rows
+
     def has_missing_data?
       !!@data.any? { |v| v.has_missing_data? }
     end
+
+    alias :flawed? :has_missing_data?
 
     # Return a nested hash using vector names as keys and an array constructed of 
     # hashes with other values. If block provided, is used to provide the

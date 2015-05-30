@@ -189,8 +189,11 @@ module Daru
         end
 
         def average_deviation_population m=nil
+          type == :numeric or raise TypeError, "Vector must be numeric"
           m ||= mean
-          (@data.inject(0) {|memo, val| val + (val - m).abs }) / n_valid
+          (@data.inject( 0 ) { |memo, val| 
+            @missing_values.has_key?(val) ? memo : ( val - m ).abs + memo
+          }).quo( n_valid )
         end
 
         def recode!(&block)
