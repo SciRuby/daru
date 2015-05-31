@@ -34,7 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rserve-client', '~> 0.3'
   spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'awesome_print'
-  spec.add_development_dependency 'nyaplot'
+  spec.add_development_dependency 'nyaplot', '~> 0.1.5'
   spec.add_development_dependency 'nmatrix', '~> 0.1.0'
   spec.add_development_dependency 'distribution', '~> 0.7'
   spec.add_development_dependency 'gsl-nmatrix', '~>1.17'

@@ -38,6 +38,7 @@ require 'matrix'
 require 'securerandom'
 require 'reportbuilder'
 
+require 'daru/version.rb'
 require 'daru/index.rb'
 require 'daru/multi_index.rb'
 require 'daru/vector.rb'

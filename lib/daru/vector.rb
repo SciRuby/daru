@@ -12,7 +12,7 @@ module Daru
     include Enumerable
     include Daru::Maths::Arithmetic::Vector
     include Daru::Maths::Statistics::Vector
-    include Daru::Plotting::Vector
+    include Daru::Plotting::Vector if Daru.has_nyaplot?
 
     def each(&block)
       return to_enum(:each) unless block_given?

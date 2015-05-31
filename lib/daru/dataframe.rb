@@ -12,7 +12,7 @@ module Daru
 
     include Daru::Maths::Arithmetic::DataFrame
     include Daru::Maths::Statistics::DataFrame
-    include Daru::Plotting::DataFrame
+    include Daru::Plotting::DataFrame if Daru.has_nyaplot?
 
     class << self
       # Load data from a CSV file. Specify an optional block to grab the CSV 
