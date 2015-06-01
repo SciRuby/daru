@@ -699,6 +699,20 @@ module Daru
       set_size
     end
 
+    # Creates a DataFrame with the random data, of n size.
+    # If n not given, uses original number of rows.
+    #
+    # @return {Daru::DataFrame}
+    def bootstrap(n=nil)
+      n ||= nrows
+      ds_boot = Daru::DataFrame.new({}, order: @vectors)
+      n.times do
+        ds_boot.add_row(row[rand(n)])
+      end
+      ds_boot.update
+      ds_boot
+    end
+
     def keep_row_if &block
       deletion = []
 

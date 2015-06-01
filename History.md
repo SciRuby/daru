@@ -47,6 +47,7 @@
         - Better creation of empty data frames.
         - Added #merge, #one_to_many, #add_vectors_by_split_recode
         - Added constant SPLIT_TOKEN and methods #add_vectors_by_split, .[], #summary.
+        - Added #bootstrap.
     - Added a lazy update feature that will allow users to delay updating the missing positions index until the last possible moment.
     - Added interoperaility with rserve client which makes it possible to change daru data to R data and perform computation there.
 * Changes
