@@ -1354,6 +1354,28 @@ describe Daru::DataFrame do
     end  
   end
 
+  context "#reindex_vectors!" do
+    before :each do
+      @df = Daru::DataFrame.new({
+        a: [1,2,3,4,5],
+        b: [11,22,33,44,55],
+        c: %w(a b c d e)
+      })
+    end
+
+    it "changes names of vectors" do
+      ans = Daru::DataFrame.new({
+        a: [1,2,3,4,5],
+        b: [11,22,33,44,55],
+        c: %w(a b c d e)
+      }, order: [:b, :c, :a])
+
+      expect(@df.reindex_vectors!([:b,:c,:a])).to eq(Daru::Index.new([:b,:c,:a], [1,2,0]))
+      expect(@df[:a]).to eq(Daru::Vector.new([1,2,3,4,5]))
+      expect(@df[:c]).to eq(Daru::Vector.new(%w(a b c d e)))
+    end
+  end
+
   context "#to_matrix" do
     before do
       @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 

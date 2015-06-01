@@ -671,6 +671,21 @@ module Daru
       Daru::Vector.new(data)
     end
 
+    # Generate a matrix, based on vector names of the DataFrame.
+    #
+    # @return {::Matrix}
+    def collect_matrix
+      vecs = vectors.to_a
+      rows = vecs.collect { |row|
+        vecs.collect { |col|
+          yield row,col
+        }
+      }
+
+      Matrix.rows(rows)
+    end
+
+
     # Delete a vector
     def delete_vector vector
       if @vectors.include? vector
@@ -1038,6 +1053,13 @@ module Daru
       Daru::Core::GroupBy.new(self, vectors)
     end
 
+    def reindex_vectors! new_vectors
+      raise ArgumentError, "Number of vectors passed into function (#{new_vectors.size}) should equal that present in the DataFrame (#{@vectors.size})" if 
+        @vectors.size != new_vectors.size
+
+      @vectors = Daru::Index.new new_vectors.map(&:to_sym), new_vectors.map { |e| @vectors[e] }
+    end
+
     # Change the index of the DataFrame and its underlying vectors. Destructive.
     # 
     # @param [Symbol, Array] new_index Specify an Array if 
@@ -1249,9 +1271,8 @@ module Daru
       end
     end
 
-    # Merge vectors from two datasets
-    # In case of name collition, the vectors names are changed to
-    # x_1, x_2 ....
+    # Merge vectors from two DataFrames. In case of name collision, 
+    # the vectors names are changed to x_1, x_2 ....
     #
     # @return {Daru::DataFrame}
     def merge other_df
@@ -1270,6 +1291,50 @@ module Daru
       df_new.update
       df_new
     end
+
+    # Join 2 DataFrames by given fields
+    # type is one of :left and :inner, default is :left
+    #
+    # Untested! Use at your own risk.
+    # 
+    # @return {Daru::DataFrame}
+    def join(other_ds,fields_1=[],fields_2=[],type=:left)
+      fields_new = other_ds.vectors.to_a - fields_2
+      fields     =     self.vectors.to_a + fields_new
+
+      other_ds_hash = {}
+      other_ds.each_row do |row|
+        key = row.to_hash.select { |k,v| fields_2.include?(k) }.values
+        value = row.to_hash.select { |k,v| fields_new.include?(k) }
+
+        if other_ds_hash[key].nil?
+          other_ds_hash[key] = [value]
+        else
+          other_ds_hash[key] << value
+        end
+      end
+
+      new_ds = DataFrame.new({}, order: fields)
+
+      self.each_row do |row|
+        key = row.to_hash.select{|k,v| fields_1.include?(k)}.values
+        new_case = row.to_hash
+
+        if other_ds_hash[key].nil?
+          if type == :left
+            fields_new.each{|field| new_case[field] = nil}
+            new_ds.add_row(Daru::Vector.new(new_case))
+          end
+        else
+          other_ds_hash[key].each do |new_values|
+            new_ds.add_row(Daru::Vector.new(new_case.merge(new_values)))
+          end
+        end
+      end
+
+      new_ds
+    end
+
 
     # Creates a new dataset for one to many relations
     # on a dataset, based on pattern of field names.
