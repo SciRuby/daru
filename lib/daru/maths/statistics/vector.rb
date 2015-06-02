@@ -50,7 +50,7 @@ module Daru
 
         # Retrieve unique values of non-nil data
         def factors
-          only_valid.uniq
+          only_valid.uniq.reset_index!
         end
 
         # Maximum element of the vector.
@@ -81,6 +81,10 @@ module Daru
             end
             hash
           end
+        end
+
+        def freqs
+          Daru::Vector.new(frequencies)
         end
 
         def proportions

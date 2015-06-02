@@ -955,4 +955,14 @@ describe Daru::Vector do
         index: [4,7,8,11,12,13]))
     end
   end
+
+  context "#detach_index" do
+    it "creates a DataFrame with first Vector as index and second as values of the Vector" do
+      v = Daru::Vector.new([1,2,3,4,5,6], index: [:a, :b, :c, :d, :e, :f], name: :values)
+      expect(v.detach_index).to eq(Daru::DataFrame.new({
+        index: ['a', 'b', 'c', 'd', 'e', 'f'],
+        vector: [1,2,3,4,5,6]
+      }))
+    end
+  end
 end if mri?

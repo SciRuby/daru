@@ -270,6 +270,7 @@ module Daru
       else
         axis = :vector
       end
+      names.map! { |e| e.respond_to?(:to_sym) ? e.to_sym : e }
 
       if axis == :vector
         access_vector *names
@@ -294,6 +295,7 @@ module Daru
 
       name = args[0..-2]
       vector = args[-1]
+      name.map! { |e| e.respond_to?(:to_sym) ? e.to_sym : e }
 
       if axis == :vector
         insert_or_modify_vector name, vector

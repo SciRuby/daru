@@ -169,6 +169,7 @@ module Daru
     #   # For vectors employing hierarchial multi index
     #   
     def [](*indexes)
+      indexes.map! { |e| e.respond_to?(:to_sym) ? e.to_sym : e }
       location = indexes[0]
       if @index.is_a?(MultiIndex)
         result = 
@@ -617,6 +618,13 @@ module Daru
       end
 
       self
+    end
+
+    def detach_index
+      Daru::DataFrame.new({
+        index: @index.to_a.map(&:to_s),
+        vector: @data.to_a
+      })
     end
 
     # Non-destructive version of #replace_nils!

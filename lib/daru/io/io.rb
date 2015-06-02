@@ -7,7 +7,7 @@ module Daru
         opts[:converters]        ||= :numeric
         opts[:header_converters] ||= :symbol
 
-        csv = CSV.read(path, 'r', opts)
+        csv = ::CSV.read(path, 'rb', opts)
 
         yield csv if block_given?
 
