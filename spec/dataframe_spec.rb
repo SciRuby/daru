@@ -421,6 +421,14 @@ describe Daru::DataFrame do
       it "accesses vector with Integer index" do
         expect(@df[0, :vector]).to eq([1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five]))
       end
+
+      it "returns a subset of DataFrame when specified range" do
+        subset = @df[:b..:c]
+        expect(subset).to eq(Daru::DataFrame.new({
+          b: [11,12,13,14,15],
+          c: [11,22,33,44,55]
+          }, index: [:one, :two, :three, :four, :five]))
+      end
     end
 
     context Daru::MultiIndex do

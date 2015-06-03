@@ -1753,6 +1753,8 @@ module Daru
 
     def access_vector *names
       location = names[0]
+
+      return dup(@vectors[location]) if location.is_a?(Range)
       if @vectors.is_a?(MultiIndex)
         pos = vectors_index_for names
 

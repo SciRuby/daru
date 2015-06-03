@@ -299,7 +299,7 @@ module Daru
     end
 
     def tail q=10
-      self[-q..-1]
+      self[(@size - q - 1)..(@size-1)]
     end
 
     # Reports whether missing data is present in the Vector.
