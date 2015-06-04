@@ -389,6 +389,7 @@ module Daru
     # +vectors_to_clone+ - Names of vectors to clone. Optional. Will return
     # a view of the whole data frame otherwise.
     def clone *vectors_to_clone
+      vectors_to_clone.flatten! unless vectors_to_clone.all? { |a| !a.is_a?(Array) }
       return super if vectors_to_clone.empty?
 
       h = vectors_to_clone.inject({}) do |hsh, vec|

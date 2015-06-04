@@ -876,6 +876,13 @@ describe Daru::DataFrame do
       expect(cloned[:a].object_id).to eq(@data_frame[:a].object_id)
       expect(cloned[:b].object_id).to eq(@data_frame[:b].object_id)
     end
+
+    it "clones properly when supplied array" do
+      cloned = @data_frame.clone([:a, :b])
+      expect(cloned.object_id).to_not eq(@data_frame.object_id)
+      expect(cloned[:a].object_id).to eq(@data_frame[:a].object_id)
+      expect(cloned[:b].object_id).to eq(@data_frame[:b].object_id)
+    end
   end
 
   context "#clone_structure" do
