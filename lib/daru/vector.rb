@@ -121,6 +121,15 @@ module Daru
     # Create a new vector by specifying the size and an optional value
     # and block to generate values.
     # 
+    # == Description
+    #
+    # The *new_with_size* class method lets you create a Daru::Vector
+    # by specifying the size as the argument. The optional block, if 
+    # supplied, is run once for populating each element in the Vector.
+    #
+    # The result of each run of the block is the value that is ultimately
+    # assigned to that position in the Vector.
+    #
     # == Options
     # :value
     # All the rest like .new
@@ -140,6 +149,28 @@ module Daru
     # * Range: transformed using to_a
     # * Daru::Vector
     # * Numeric and string values
+    # 
+    # == Description
+    #
+    # The `Vector.[]` class method creates a vector from almost any
+    # object that has a `#to_a` method defined on it. It is similar
+    # to R's `c` method.
+    # 
+    # == Usage
+    # 
+    #   a = Daru::Vector[1,2,3,4,6..10]
+    #   #=>
+    #   # <Daru::Vector:99448510 @name = nil @size = 9 >
+    #   #   nil
+    #   # 0   1
+    #   # 1   2
+    #   # 2   3
+    #   # 3   4
+    #   # 4   6
+    #   # 5   7
+    #   # 6   8
+    #   # 7   9
+    #   # 8  10
     def self.[](*args)
       values = []
       args.each do |a|
@@ -295,7 +326,7 @@ module Daru
     end
 
     def head q=10
-      self[0..q]
+      self[0..(q-1)]
     end
 
     def tail q=10
@@ -692,7 +723,13 @@ module Daru
     # Convert to html for iruby
     def to_html threshold=30
       name = @name || 'nil'
-      html = '<table>' + '<tr><th> </th><th>' + name.to_s + '</th></tr>'
+      html = "<table>" + 
+        "<tr>" +
+          "<th colspan=\"2\">" + 
+            "Daru::Vector:#{self.object_id} " + " size: #{size}" + 
+          "</th>" +
+        "</tr>"
+      html += '<tr><th> </th><th>' + name.to_s + '</th></tr>'
       @index.each_with_index do |index, num|
         html += '<tr><td>' + index.to_s + '</td>' + '<td>' + self[index].to_s + '</td></tr>'
     

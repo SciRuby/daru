@@ -200,10 +200,6 @@ module Daru
           }).quo( n_valid )
         end
 
-        def recode!(&block)
-          @data.recode!(&block)
-        end
-
         # Returns the value of the percentile q
         #
         # Accepts an optional second argument specifying the strategy to interpolate
