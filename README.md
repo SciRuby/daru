@@ -30,7 +30,8 @@ Written in pure Ruby so should work with all ruby implementations.
 
 ## Notebooks
 
-* [Basic Creation of Vectors and DataFrame](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/data_analysis/Creation%20of%20Vector%20and%20DataFrame.ipynb)
+* [Basic Creation of Vectors and DataFrame](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Creation%20of%20Vector%20and%20DataFrame.ipynb)
+* [Detailed Usage of Daru::Vector](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Usage%20of%20Vector.ipynb)
 * [Analysis and plotting of a data set comprising of music listening habits of a last.fm user](http://nbviewer.ipython.org/github/v0dro/daru/blob/master/notebooks/intro_with_music_data_.ipynb)
 * [Basic splitting, grouping and aggregating of data](http://nbviewer.ipython.org/github/v0dro/daru/blob/master/notebooks/grouping_splitting_pivots.ipynb)
 
