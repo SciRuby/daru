@@ -1494,7 +1494,13 @@ module Daru
 
     # Convert to html for IRuby.
     def to_html threshold=30
-      html  = '<table><tr><th></th>'
+      html = "<table>" + 
+        "<tr>" +
+          "<th colspan=\"#{@vectors.size+1}\">" + 
+            "Daru::DataFrame:#{self.object_id} " + " rows: #{nrows} " + " cols: #{ncols}" 
+          "</th>" +
+        "</tr>"
+      html +='<tr><th></th>'
       @vectors.each { |vector| html += '<th>' + vector.to_s + '</th>' }
       html += '</tr>'
 
@@ -1893,16 +1899,19 @@ module Daru
         # TODO
       else
         name = name[0]
-        if @index.include? name
-          v = vector.dv(name, @vectors, @dtype) 
+        v =
+        if vector.is_a?(Daru::Vector)
+          vector
+        else
+          Daru::Vector.new(vector, name: set_name(name), index: @vectors)
+        end
 
+        if @index.include? name
           @vectors.each do |vector|
             @data[@vectors[vector]][name] = v[vector] 
           end
         else
           @index = reassign_index_as(@index + name)
-          v      = Daru::Vector.new(vector, name: set_name(name), index: @vectors)
-
           @vectors.each do |vector|
             @data[@vectors[vector]].concat v[vector], name
           end

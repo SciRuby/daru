@@ -625,6 +625,12 @@ describe Daru::DataFrame do
         expect(@df.row[:two]).to eq([2,9,11].dv(:two, [:a, :b, :c]))
       end
 
+      it "correctlu aligns assinged DV by index for new rows" do
+        @df.row[:latest] = Daru::Vector.new([2,3,1], index: [:b,:c,:a])
+
+        expect(@df.row[:latest]).to eq(Daru::Vector.new([1,2,3], index: [:a,:b,:c]))
+      end
+
       it "inserts nils for indexes that dont exist in the DataFrame" do
         @df.row[:two] = [49, 99, 59].dv(nil, [:oo, :aah, :gaah])
 

@@ -24,7 +24,7 @@ module Daru
         x_axis  = options[:type] == :scatter ? Array.new(@size) { |i| i } : @index.to_a
         plot    = Nyaplot::Plot.new
         diagram =
-        if options[:type] == :histogram
+        if [:box, :histogram].include? options[:type]
           plot.add(options[:type], @data.to_a)
         else
           plot.add(options[:type], x_axis, @data.to_a)

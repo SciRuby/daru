@@ -253,6 +253,19 @@ module Daru
       end
     end
 
+    # Just like in Hashes, you can specify the index label of the Daru::Vector
+    # and assign an element an that place in the Daru::Vector.
+    # 
+    # == Usage
+    # 
+    #   v = Daru::Vector.new([1,2,3], index: [:a, :b, :c])
+    #   v[:a] = 999
+    #   #=> 
+    #   ##<Daru::Vector:90257920 @name = nil @size = 3 >
+    #   #    nil
+    #   #  a 999
+    #   #  b   2
+    #   #  c   3
     def []=(*location, value)
       cast(dtype: :array) if value.nil? and dtype != :array
 

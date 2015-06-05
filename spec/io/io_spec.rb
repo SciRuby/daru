@@ -13,6 +13,27 @@ describe Daru::IO do
       end
     end
 
+    context "#write_csv" do
+      it "writes DataFrame to a CSV file" do
+      end
+    end
+
+    context ".from_excel" do
+      it "loads DataFrame from an Excel Spreadsheet" do
+      end
+    end
+
+    context "#write_excel" do
+      it "writes DataFrame to an Excel Spreadsheet" do
+      end
+    end
+
+    context ".from_sql" do
+    end
+
+    context "#write_sql" do
+    end
+
     context "JSON" do
       it "loads parsed JSON" do
         require 'json'
