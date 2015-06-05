@@ -24,8 +24,28 @@ module Daru
       # 
       # == Options
       # 
-      # Accepts the same options as the Daru::DataFrame constructor and uses those
-      # to eventually construct the resulting DataFrame.
+      # Accepts the same options as the Daru::DataFrame constructor and CSV.read()
+      # and uses those to eventually construct the resulting DataFrame.
+      #
+      # == Verbose Description
+      #
+      # You can specify all the options to the `.from_csv` function that you 
+      # do to the Ruby `CSV.read()` function, since this is what is used internally.
+      #
+      # For example, if the columns in your CSV file are separated by something 
+      # other that commas, you can use the `:col_sep` option. If you want to 
+      # convert numeric values to numbers and not keep them as strings, you can 
+      # use the `:converters` option and set it to `:numeric`.
+      #
+      # The `.from_csv` function uses the following defaults for reading CSV files 
+      # (that are passed into the `CSV.read()` function):
+      #
+      #   {
+      #     :col_sep           => ',',
+      #     :headers           => true,
+      #     :converters        => :numeric,
+      #     :header_converters => :symbol
+      #   }
       def from_csv path, opts={}, &block
         Daru::IO.from_csv path, opts, &block      
       end
@@ -98,10 +118,6 @@ module Daru
           h_rows[rows[i]][columns[i]] = values[i]
         end
         df = Daru::DataFrame.new({}, order: [:_id] + cols_values.to_a)
-
-        # cols_values.each do |c|
-        #   df[c].type = values.type
-        # end
 
         rows.factors.each do |row|
           n_row = Array.new(cols_n+1)
@@ -1544,6 +1560,22 @@ module Daru
         return
       end
       @name = new_name.to_sym
+    end
+
+    # Write this DataFrame to a CSV file.
+    #
+    # == Arguements
+    #
+    # * filename - Path of CSV file where the DataFrame is to be saved.
+    # 
+    # == Options
+    # 
+    # * convert_comma - If set to *true*, will convert any commas in any
+    # of the data to full stops ('.').
+    # All the options accepted by CSV.read() can also be passed into this 
+    # function.
+    def write_csv filename, opts={}
+      Daru::IO.dataframe_write_csv self, filename, opts
     end
 
     # Use marshalling to save dataframe to a file.

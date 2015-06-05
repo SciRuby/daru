@@ -15,6 +15,15 @@ describe Daru::IO do
 
     context "#write_csv" do
       it "writes DataFrame to a CSV file" do
+        df = Daru::DataFrame.new({
+          a: [1,2,3,4,5], 
+          b: [11,22,33,44,55],
+          c: ['a', 'g', 4, 5,'addadf'],
+          d: [nil, 23, 4,'a','ff',44]})
+        t = Tempfile.new('data.csv')
+        df.write_csv t.path
+
+        expect(Daru::DataFrame.from_csv(t.path)).to eq(df)
       end
     end
 

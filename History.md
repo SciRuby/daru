@@ -5,6 +5,7 @@
     - Fix Vector#sum_of_squares and #ranked.
     - Fixed some tests that were giving RSpec warnings
     - Fixed a bug where nyaplot not being present would raise a warning.
+    - Fixed a bug in DataFrame row assignment.
 * Enhancements
     - Wrote a proper .travis.yml
     - Added optional GSL dependency gsl-nmatrix
@@ -28,6 +29,7 @@
         - Added #reset_index!
         - Added #any? and #all?
         - Added #db_type for guessing the type of SQL type contained in the vector.
+        - Added and tested plotting support for histogram and box plot.
     - DataFrame
         - #dup_only_valid
         - #clone, #clone_only_valid, #clone_structure

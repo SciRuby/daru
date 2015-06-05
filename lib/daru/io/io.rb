@@ -16,7 +16,26 @@ module Daru
           hsh[col_name] = values
         end
 
-        Daru::DataFrame.new(hsh)
+        Daru::DataFrame.new(hsh,opts)
+      end
+
+      def dataframe_write_csv dataframe, path, opts={}
+        options = {
+          converters: :numeric
+        }.merge(opts)
+
+        writer = ::CSV.open(path, 'w', options)
+        writer << dataframe.vectors.to_a
+
+        dataframe.each_row do |row|
+          if options[:convert_comma]
+            writer << row.map { |v| v.to_s.gsub('.', ',') }
+          else
+            writer << row.to_a
+          end
+        end
+
+        writer.close
       end
 
       def save klass, filename
