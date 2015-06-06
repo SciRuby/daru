@@ -1,12 +1,31 @@
 module Daru
-  module IOHelpers
-    class << self
-
-    end
-  end
-
   module IO
     class << self
+      def from_excel path, opts={}
+        opts = {
+          :worksheet_id => 0,
+        }.merge opts
+
+        worksheet_id = opts[:worksheet_id]
+        book         = Spreadsheet.open path
+        worksheet    = book.worksheet worksheet_id
+        headers      = worksheet.row(0).recode_repeated.map(&:to_sym)
+
+        df = Daru::DataFrame.new({})
+        headers.each_with_index do |h,i|
+          col = worksheet.column(i).to_a
+          col.delete_at 0
+          df[h] = col
+        end
+
+        df
+      end
+
+      def dataframe_write_excel dataframe, path, opts={}
+        
+      end
+
+      # Loading/Writing CSV files
       def from_csv path, opts={}
         opts[:col_sep]           ||= ','
         opts[:converters]        ||= :numeric
@@ -60,6 +79,7 @@ module Daru
         writer.close
       end
 
+      # Loading and writing Marshalled DataFrame/Vector
       def save klass, filename
         fp = File.open(filename, 'w')
         Marshal.dump(klass, fp)
@@ -75,6 +95,7 @@ module Daru
           false
         end
       end
+
     end
   end
 end

@@ -43,12 +43,24 @@ module Daru
       #
       #   {
       #     :col_sep           => ',',
-      #     :headers           => true,
-      #     :converters        => :numeric,
-      #     :header_converters => :symbol
+      #     :converters        => :numeric
       #   }
       def from_csv path, opts={}, &block
         Daru::IO.from_csv path, opts, &block      
+      end
+
+      # Read data from an Excel file into a DataFrame.
+      # 
+      # == Arguments
+      # 
+      # * path - Path of the file to be read.
+      # 
+      # == Options
+      # 
+      # *:worksheet_id - ID of the worksheet that is to be read from the whole
+      # excel file.
+      def from_excel path, opts={}, &block      
+        Daru::IO.from_excel path, opts, &block
       end
 
       # Create DataFrame by specifying rows as an Array of Arrays or Array of
@@ -1577,6 +1589,15 @@ module Daru
     # function.
     def write_csv filename, opts={}
       Daru::IO.dataframe_write_csv self, filename, opts
+    end
+
+    # Write this dataframe to an Excel Spreadsheet
+    # 
+    # == Arguments
+    # 
+    # * filename - The path of the file where the DataFrame should be written.
+    def write_excel filename, opts={}
+      Daru::IO.dataframe_write_excel self, filename, opts
     end
 
     # Use marshalling to save dataframe to a file.

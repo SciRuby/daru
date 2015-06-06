@@ -45,19 +45,52 @@ describe Daru::IO do
     end
 
     context ".from_excel" do
+      before do
+        id   = Daru::Vector.new([1, 2, 3, 4, 5, 6])
+        name = Daru::Vector.new(%w(Alex Claude Peter Franz George Fernand))
+        age  = Daru::Vector.new( [20, 23, 25, nil, 5.5, nil])
+        city = Daru::Vector.new(['New York', 'London', 'London', 'Paris', 'Tome', nil])
+        a1   = Daru::Vector.new(['a,b', 'b,c', 'a', nil, 'a,b,c', nil])
+        @expected = Daru::DataFrame.new({ 
+          :id => id, :name => name, :age => age, :city => city, :a1 => a1 
+          }, order: [:id, :name, :age, :city, :a1])
+      end
+
       it "loads DataFrame from an Excel Spreadsheet" do
+        df = Daru::DataFrame.from_excel 'spec/fixtures/test_xls.xls'
+
+        expect(df.nrows).to eq(6)
+        expect(df.vectors.to_a).to eq([:id, :name, :age, :city, :a1])
+        expect(df[:age][5]).to eq(nil)
+        expect(@expected).to eq(df)
       end
     end
 
     context "#write_excel" do
-      it "writes DataFrame to an Excel Spreadsheet" do
+      before do
+        a   = Daru::Vector.new(100.times.map { rand(100) })
+        b   = Daru::Vector.new((['b'] * 100))
+        @expected = Daru::DataFrame.new({ :b => b, :a => a })
+
+        tempfile = Tempfile.new('test_write.xls')
+
+        @expected.write_excel tempfile.path
+        @df = Daru::DataFrame.from_excel tempfile.path
+      end
+
+      it "correctly writes DataFrame to an Excel Spreadsheet" do
+        expect(@expected).to eq(@df)
       end
     end
 
     context ".from_sql" do
+      it "loads data from an SQL database" do
+      end
     end
 
     context "#write_sql" do
+      it "writes the DataFrame to an SQL database" do
+      end
     end
 
     context "JSON" do

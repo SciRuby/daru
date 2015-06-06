@@ -33,7 +33,9 @@ module Daru
   create_has_library :nyaplot
 end
 
-require 'csv'
+autoload :Spreadsheet, 'spreadsheet'
+autoload :CSV, 'csv'
+
 require 'matrix'
 require 'securerandom'
 require 'reportbuilder'
