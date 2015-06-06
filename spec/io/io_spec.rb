@@ -11,6 +11,23 @@ describe Daru::IO do
         expect(df.vector[:image_resolution].first).to eq(6.55779)
         expect(df.vector[:true_transform].first).to eq("-0.2362347,0.6308649,0.7390552,0,0.6523478,-0.4607318,0.6018043,0,0.7201635,0.6242881,-0.3027024,4262.65,0,0,0,1")
       end
+
+      it "works properly for repeated headers", focus: true do
+        df = Daru::DataFrame.from_csv('spec/fixtures/repeated_fields.csv')
+        expect(df.vectors.to_a).to eq([:a1, :age_1, :age_2, :city, :id, :name_1, :name_2])
+
+        age = Daru::Vector.new([3, 4, 5, 6, nil, 8])
+        expect(df[:age_2]).to eq(age)
+      end
+
+      it "accepts scientific notation as float" do
+        ds = Daru::DataFrame.from_csv('spec/fixtures/scientific_notation.csv')
+        expect(ds.vectors.to_a).to eq([:x, :y])
+        y = [9.629587310436753e+127, 1.9341543147883677e+129, 3.88485279048245e+130]
+        y.zip(ds[:y]).each do |y_expected, y_ds|
+          expect(y_ds).to be_within(0.001).of(y_expected)
+        end
+      end
     end
 
     context "#write_csv" do
@@ -19,7 +36,7 @@ describe Daru::IO do
           a: [1,2,3,4,5], 
           b: [11,22,33,44,55],
           c: ['a', 'g', 4, 5,'addadf'],
-          d: [nil, 23, 4,'a','ff',44]})
+          d: [nil, 23, 4,'a','ff']})
         t = Tempfile.new('data.csv')
         df.write_csv t.path
 

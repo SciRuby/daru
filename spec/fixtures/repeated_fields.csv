@@ -1,0 +1,7 @@
+"id","name","age","city","a1","name","age"
+1,"Alex",20,"New York","a,b","a",3
+2,"Claude",23,"London","b,c","b",4
+3,"Peter",25,"London","a","c",5
+4,"Franz",27,"Paris",,"d",6
+5,"George","5,5","Tome","a,b,c","f",
+6,"Fernand",20,"London","c,b","f",8

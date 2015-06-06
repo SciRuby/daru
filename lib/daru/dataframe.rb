@@ -16,7 +16,8 @@ module Daru
 
     class << self
       # Load data from a CSV file. Specify an optional block to grab the CSV 
-      # object and pre-condition it.
+      # object and pre-condition it (for example use the `convert` or 
+      # `header_convert` methods).
       # 
       # == Arguments
       # 
@@ -24,7 +25,7 @@ module Daru
       # 
       # == Options
       # 
-      # Accepts the same options as the Daru::DataFrame constructor and CSV.read()
+      # Accepts the same options as the Daru::DataFrame constructor and CSV.open()
       # and uses those to eventually construct the resulting DataFrame.
       #
       # == Verbose Description
