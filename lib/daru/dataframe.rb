@@ -62,6 +62,16 @@ module Daru
         Daru::IO.from_excel path, opts, &block
       end
 
+      # Read a database query and returns a Dataset
+      #
+      # USE:
+      #
+      #  dbh = DBI.connect("DBI:Mysql:database:localhost", "user", "password")
+      #  Daru::DataFrame.from_sql(dbh, "SELECT * FROM test")
+      def from_sql dbh, query
+        Daru::IO.from_sql dbh, query
+      end
+
       # Create DataFrame by specifying rows as an Array of Arrays or Array of
       # Daru::Vector objects.
       def rows source, opts={}
@@ -1455,6 +1465,32 @@ module Daru
       }
     end
 
+    # Create a sql, basen on a given Dataset
+    # 
+    # == Arguments
+    # 
+    # * table - String specifying name of the table that will created in SQL.
+    # * charset - Character set. Default is "UTF8".
+    # 
+    # == Usage
+    #
+    #  ds = Daru::DataFrame.new({
+    #   :id   => Daru::Vector.new([1,2,3,4,5]),
+    #   :name => Daru::Vector.new(%w{Alex Peter Susan Mary John})
+    #  })
+    #  ds.create_sql('names')
+    #   ==>"CREATE TABLE names (id INTEGER,\n name VARCHAR (255)) CHARACTER SET=UTF8;"
+    #
+    def create_sql(table,charset="UTF8")
+      sql    = "CREATE TABLE #{table} ("
+      fields = self.vectors.to_a.collect do |f|
+        v = self[f]
+        f.to_s + " " + v.db_type
+      end
+
+      sql + fields.join(",\n ")+") CHARACTER SET=#{charset};"
+    end
+
     # Convert all numeric vectors to GSL::Matrix
     def to_gsl
       numerics_as_arrays = []
@@ -1598,6 +1634,23 @@ module Daru
     def write_excel filename, opts={}
       Daru::IO.dataframe_write_excel self, filename, opts
     end
+
+    # Insert each case of the Dataset on the selected table
+    #
+    # == Arguments
+    # 
+    # * dbh - DBI database connection object.
+    # * query - Query string.
+    # 
+    # == Usage
+    #
+    #  ds = Daru::DataFrame.new({:id=>Daru::Vector.new([1,2,3]), :name=>Daru::Vector.new(["a","b","c"])})
+    #  dbh = DBI.connect("DBI:Mysql:database:localhost", "user", "password")
+    #  ds.write_sql(dbh,"test")
+    def write_sql dbh, table
+      Daru::IO.dataframe_write_sql self, dbh, table
+    end
+
 
     # Use marshalling to save dataframe to a file.
     def save filename

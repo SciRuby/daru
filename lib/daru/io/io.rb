@@ -94,6 +94,34 @@ module Daru
         writer.close
       end
 
+      # Loading/writing from SQL databases
+
+      def from_sql dbh, query
+        require 'dbi'
+        sth     = dbh.execute(query)
+        vectors = {}
+        fields  = []
+        sth.column_info.each do |c|
+          vectors[c[:name]] = Daru::Vector.new([])
+          vectors[c[:name]].rename c[:name]
+          fields.push(c[:name].to_sym)
+        end
+        ds=Daru::DataFrame.new(vectors,order: fields)
+        sth.fetch do |row|
+          ds.add_row(row.to_a)
+        end
+        ds.update
+        ds
+      end
+
+      def dataframe_write_sql ds, dbh, table
+        require 'dbi'
+        query = "INSERT INTO #{table} ("+ds.vectors.to_a.join(",")+") VALUES ("+((["?"]*ds.vectors.size).join(","))+")"
+        sth   =  dbh.prepare(query)
+        ds.each_row { |c| sth.execute(*c.to_a) }
+        return true
+      end
+
       # Loading and writing Marshalled DataFrame/Vector
       def save klass, filename
         fp = File.open(filename, 'w')

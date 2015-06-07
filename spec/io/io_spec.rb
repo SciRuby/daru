@@ -85,11 +85,13 @@ describe Daru::IO do
 
     context ".from_sql" do
       it "loads data from an SQL database" do
+        # TODO: write these tests
       end
     end
 
     context "#write_sql" do
       it "writes the DataFrame to an SQL database" do
+        # TODO: write these tests
       end
     end
 
