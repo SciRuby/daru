@@ -1,4 +1,22 @@
 module Daru
+  module IOHelpers
+    class << self
+      def process_row(row,empty)
+        row.to_a.map do |c|
+          if empty.include?(c)
+            nil
+          else
+            if c.is_a? String and c.is_number?
+              c =~ /^\d+$/ ? c.to_i : c.gsub(",",".").to_f
+            else
+              c
+            end
+          end
+        end
+      end
+    end
+  end
+
   module IO
     class << self
       # Functions for loading/writing Excel files.
@@ -120,6 +138,21 @@ module Daru
         sth   =  dbh.prepare(query)
         ds.each_row { |c| sth.execute(*c.to_a) }
         return true
+      end
+
+      # Loading data from plain text files
+
+      def from_plaintext filename, fields
+        ds = Daru::DataFrame.new({}, order: fields)
+        fp = File.open(filename,"r")
+        fp.each_line do |line|
+          row = Daru::IOHelpers.process_row(line.strip.split(/\s+/),[""])
+          next if row == ["\x1A"]
+          ds.add_row(row)
+        end
+        ds.update
+        fields.each { |f| ds[f].rename f }
+        ds
       end
 
       # Loading and writing Marshalled DataFrame/Vector

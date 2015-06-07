@@ -95,3 +95,13 @@ class Matrix
     end
   end
 end
+
+class String
+  def is_number?
+    if self =~ /^-?\d+[,.]?\d*(e-?\d+)?$/
+      true
+    else
+      false
+    end
+  end
+end

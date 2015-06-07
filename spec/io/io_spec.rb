@@ -95,6 +95,14 @@ describe Daru::IO do
       end
     end
 
+    context ".from_plaintext" do
+      it "reads data from plain text files" do
+        df = Daru::DataFrame.from_plaintext 'spec/fixtures/bank2.dat', [:v1,:v2,:v3,:v4,:v5,:v6]
+
+        expect(df.vectors.to_a).to eq([:v1,:v2,:v3,:v4,:v5,:v6])
+      end
+    end
+
     context "JSON" do
       it "loads parsed JSON" do
         require 'json'
