@@ -1,6 +1,8 @@
 module Daru
   module IO
     class << self
+      # Functions for loading/writing Excel files.
+
       def from_excel path, opts={}
         opts = {
           :worksheet_id => 0,
@@ -22,10 +24,23 @@ module Daru
       end
 
       def dataframe_write_excel dataframe, path, opts={}
-        
+        book   = Spreadsheet::Workbook.new
+        sheet  = book.create_worksheet
+        format = Spreadsheet::Format.new :color => :blue, :weight => :bold
+
+        sheet.row(0).concat(dataframe.vectors.to_a.map(&:to_s)) # Unfreeze strings
+        sheet.row(0).default_format = format
+        i = 1
+        dataframe.each_row do |row|
+          sheet.row(i).concat(row.to_a)
+          i += 1
+        end
+
+        book.write(path)
       end
 
-      # Loading/Writing CSV files
+      # Functions for loading/writing CSV files
+
       def from_csv path, opts={}
         opts[:col_sep]           ||= ','
         opts[:converters]        ||= :numeric
@@ -95,7 +110,6 @@ module Daru
           false
         end
       end
-
     end
   end
 end

@@ -57,8 +57,7 @@ module Daru
       # 
       # == Options
       # 
-      # *:worksheet_id - ID of the worksheet that is to be read from the whole
-      # excel file.
+      # *:worksheet_id - ID of the worksheet that is to be read.
       def from_excel path, opts={}, &block      
         Daru::IO.from_excel path, opts, &block
       end
