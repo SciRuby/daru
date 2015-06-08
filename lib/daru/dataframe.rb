@@ -1039,7 +1039,7 @@ module Daru
     #
     # @param [Fixnum] quantity (10) The number of elements to display from the top.
     def head quantity=10
-      self[0..quantity, :row]
+      self[0..(quantity-1), :row]
     end
 
     # The last ten elements of the DataFrame

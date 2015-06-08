@@ -826,6 +826,14 @@ describe Daru::Vector do
     end
   end
 
+  context "#only_numerics" do
+    it "returns only numerical or missing data" do
+      v = Daru::Vector.new([1,2,nil,3,4,'s','a',nil])
+      expect(v.only_numerics).to eq(Daru::Vector.new([1,2,nil,3,4,nil],
+        index: [0,1,2,3,4,7]))
+    end
+  end
+
   context "#to_gsl" do
     it "returns a GSL::Vector of non-nil data" do
       vector = Daru::Vector.new [1,2,3,4,nil,6,nil]

@@ -8,12 +8,8 @@ rvm:
   - '2.0'
   - '2.1'
   - '2.2'
-  - ruby-head
 
 matrix:
-  allow_failures:
-    - rvm: ruby-head
-
   fast_finish:
     true
 

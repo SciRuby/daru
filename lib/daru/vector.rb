@@ -951,12 +951,25 @@ module Daru
       Daru::Vector.new new_vector, index: new_index, name: @name, dtype: dtype
     end
 
+    # Returns a Vector containing only missing data (preserves indexes).
     def only_missing as_a=:vector
       if as_a == :vector
         self[*missing_positions]
       elsif as_a == :array
         self[*missing_positions].to_a
       end
+    end
+
+    # Returns a Vector with only numerical data. Missing data is included
+    # but non-Numeric objects are excluded. Preserves index.
+    def only_numerics
+      numeric_indexes = []
+
+      each_with_index do |v, i|
+        numeric_indexes << i if(v.kind_of?(Numeric) or @missing_values.has_key?(v))
+      end
+
+      self[*numeric_indexes]
     end
 
     # Returns the database type for the vector, according to its content
