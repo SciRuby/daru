@@ -24,6 +24,14 @@ describe Daru::Vector do
     it "puts a nil when one of the operands is nil" do
       expect(@with_md1 + @with_md2).to eq(Daru::Vector.new([nil,7,nil,nil,nil,7], name: :missing, index: [:a, :b, :c, :corona, :obi, :wan]))
     end
+
+    it "appropriately adds vectors with numeric and non-numeric indexes" do
+      pending "Need an alternate index implementation?"
+      v1 = Daru::Vector.new([1,2,3])
+      v2 = Daru::Vector.new([1,2,3], index: [:a,:b,:c])
+
+      expect(v1 + v2).to eq(Daru::Vector.new([nil]*6, index: [0,1,2,:a,:b,:c]))      
+    end
   end
 
   context "#-" do

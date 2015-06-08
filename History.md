@@ -1,4 +1,4 @@
-# 0.0.6
+# 0.1.0
 
 * Fixes
     - Update documentation and fix it in other places.
@@ -11,6 +11,9 @@
     - Added optional GSL dependency gsl-nmatrix
     - Added Marshalling and unMarshalling capabilities to Vector, Index and DataFrame.
     - Added new methods Daru::IO.save and Daru::IO.load for saving and loading data to and from files by marshalling.
+    - Lots of documentation and new notebooks.
+    - Added data loading and writing from and to CSV, Excel, plain text and SQL databases.
+    - Daru::DataFrame and Vector have now completely replaced Statsample::Dataset and Vector.
     - Vector
         - #center
         - #standardize
@@ -50,6 +53,7 @@
         - Added #merge, #one_to_many, #add_vectors_by_split_recode
         - Added constant SPLIT_TOKEN and methods #add_vectors_by_split, .[], #summary.
         - Added #bootstrap.
+        - Added a #filter method to wrap around #filter_vectors and #filter_rows.
     - Added a lazy update feature that will allow users to delay updating the missing positions index until the last possible moment.
     - Added interoperaility with rserve client which makes it possible to change daru data to R data and perform computation there.
 * Changes

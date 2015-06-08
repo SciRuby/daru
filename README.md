@@ -319,20 +319,14 @@ Missing data is an integral part of any data analysis operation and [this blog p
 
 * Automate testing for both MRI and JRuby.
 * Enable creation of DataFrame by only specifying an NMatrix/MDArray in initialize. Vector naming happens automatically (alphabetic) or is specified in an Array.
-* Destructive map iterators for DataFrame.
 * Completely test all functionality for MDArray.
 * Basic Data manipulation and analysis operations: 
-    - Different kinds of join operations
-    - Dataframe/vector merge (left, right, inner, outer)
-    - Verification of data in a vector
     - DF concat
 * Option to express a DataFrame as an NMatrix or MDArray so as to use more efficient storage techniques.
 * Assignment of a column to a single number should set the entire column to that number.
 * == between daru_vector and string/number.
 * Multiple column assignment with []=
 * Multiple value assignment for vectors with []=.
-* Load DataFrame from multiple sources (excel, SQL, etc.).
-* Deletion of elements from Vector should only modify the index and leave the vector as it is so that compacting is not needed and things are faster.
 * #find\_max function which will evaluate a block and return the row for the value of the block is max.
 * Function to check if a value of a row/vector is within a specified range.
 * Create a new vector in map_rows if any of the already present rows dont match the one assigned in the block.
@@ -341,12 +335,9 @@ Missing data is an integral part of any data analysis operation and [this blog p
 * Cumulative sum.
 * Time series support.
 * Calculate percentage change.
-* Working with missing data - drop\_missing\_data, dropping rows with missing data.
 * Have some sample data sets for users to play around with. Should be able to load these from the code itself.
 * Sorting with missing data present.
-* Make vectors aware of the data frame that they are a part of.
 * re_index should re establish previous index values in the newly supplied index.
-* Reset index.
 
 ## Contributing
 
@@ -354,6 +345,7 @@ Pick a feature from the Roadmap above or think of your own and send me a Pull Re
 
 ## Acknowledgements
 
+* Google and the Ruby Science Foundation for the Google Summer of Code 2015 grant for further developing daru and integrating it with other ruby gems.
 * Thank you [last.fm](http://www.last.fm/) for making user data accessible to the public.
 
 Copyright (c) 2015, Sameer Deshmukh

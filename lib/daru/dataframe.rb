@@ -378,21 +378,6 @@ module Daru
       self.row[index || @size] = row
     end
 
-    # Create a summary of the Vector using Report Builder.
-    # def summary(method = :to_text)
-    #   ReportBuilder.new(no_title: true).add(self).send(method)
-    # end
-
-    # def report_building b
-    #   b.section(:name => name) do |g|
-    #     g.text "Number of rows: #{@index.size}"
-    #     self.each_vector_with_index do |v, i|
-    #       g.text "Vector : [#{i}]"
-    #       g.parse_element(v)
-    #     end
-    #   end
-    # end
-
     # Access a row or set/create a row. Refer #[] and #[]= docs for details.
     # 
     # == Usage
@@ -523,6 +508,12 @@ module Daru
 
     # Iterate over each row or vector of the DataFrame. Specify axis
     # by passing :vector or :row as the argument. Default to :vector.
+    #
+    # == Description
+    #
+    # `#each` works exactly like Array#each. The default mode for `each` 
+    # is to iterate over the columns of the DataFrame. To iterate over 
+    # rows you must pass the axis, i.e `:row` as an argument.
     # 
     # == Arguments
     # 
@@ -540,6 +531,15 @@ module Daru
 
     # Iterate over a row or vector and return results in a Daru::Vector.
     # Specify axis with :vector or :row. Default to :vector.
+    #
+    # == Description
+    #
+    # The #collect iterator works similar to #map, the only difference 
+    # being that it returns a Daru::Vector comprising of the results of 
+    # each block run. The resultant Vector has the same index as that 
+    # of the axis over which collect has iterated. It also accepts the 
+    # optional axis argument.
+    #
     # == Arguments
     # 
     # * +axis+ - The axis to iterate over. Can be :vector (or :column)
@@ -558,6 +558,13 @@ module Daru
     # the argument specified. Will return an Array of the resulting
     # elements. To map over each row/vector and get a DataFrame,
     # see #recode.
+    # 
+    # == Description
+    # 
+    # The #map iterator works like Array#map. The value returned by 
+    # each run of the block is added to an Array and the Array is 
+    # returned. This method also accepts an axis argument, like #each. 
+    # The default is :vector.
     # 
     # == Arguments
     # 
@@ -592,6 +599,15 @@ module Daru
     # Maps over the DataFrame and returns a DataFrame. Each run of the
     # block must return a Daru::Vector object. You can specify the axis
     # to map over. Default to :vector.
+    #
+    # == Description
+    #
+    # Recode works similarly to #map, but an important difference between 
+    # the two is that recode returns a modified Daru::DataFrame instead 
+    # of an Array. For this reason, #recodeexpects that every run of the 
+    # block to return a Daru::Vector.
+    #
+    # Just like map and each, recode also accepts an optional _axis_ argument.
     # 
     # == Arguments
     # 
@@ -607,10 +623,32 @@ module Daru
 
     # Retain vectors or rows if the block returns a truthy value.
     # 
+    # == Description
+    # 
+    # For filtering out certain rows/vectors based on their values, 
+    # use the #filter method. By default it iterates over vectors and 
+    # keeps those vectors for which the block returns true. It accepts 
+    # an optional axis argument which lets you specify whether you want 
+    # to iterate over vectors or rows.
+    # 
     # == Arguments
     # 
     # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
     # Default to :vector.
+    # 
+    # == Usage
+    # 
+    #   # Filter vectors
+    #
+    #   df.filter do |vector|
+    #     vector.type == :numeric and vector.median < 50
+    #   end
+    #
+    #   # Filter rows
+    #
+    #   df.filter(:row) do |row|
+    #     row[:a] + row[:d] < 100
+    #   end
     def filter axis=:vector, &block
       if axis == :vector or axis == :column
         filter_vectors(&block)
@@ -940,7 +978,7 @@ module Daru
         a.push r.instance_eval(&block)
       end
 
-      Daru::Vector.new a
+      Daru::Vector.new a, index: @index
     end
 
     # Returns a vector, based on a string with a calculation based

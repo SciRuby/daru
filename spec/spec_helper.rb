@@ -32,3 +32,9 @@ def expect_correct_vector_in_delta v1, v2, delta
     expect(v1[v]).to be_within(delta).of(v2[v])
   end
 end
+
+def expect_correct_df_in_delta df1, df2, delta
+  df1.each_vector_with_index do |vector, i|
+    expect_correct_vector_in_delta vector, df2[i], delta
+  end
+end

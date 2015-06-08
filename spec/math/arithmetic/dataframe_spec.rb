@@ -17,16 +17,20 @@ describe Daru::DataFrame do
     end
 
     it "adds two dataframes to produce a third" do
-      expect(@left + @right).to eq(Daru::DataFrame.new({a: [2,nil,nil,8,nil,nil,nil],
-        b: [20,nil,nil,80,nil,nil,nil], c: [nil,nil,nil,nil,nil,nil]}, index: 
-        [0,1,2,3,4,5,6]))
+      expect(@left + @right).to eq(Daru::DataFrame.new({
+        a: [2,nil,nil,8,nil,nil,nil],
+        b: [20,nil,nil,80,nil,nil,nil], 
+        c: [nil,nil,nil,nil,nil,nil]
+        }, index: [0,1,2,3,4,5,6]))
     end
   end
 
   context "#-" do
     it "subtracts a number from all numeric vectors" do
-      expect(@df - 2).to eq(Daru::DataFrame.new({a: [-1,0,1,2,3], b: ['a','e','i','o','u'], 
-      c: [8,18,28,38,48]}))
+      expect(@df - 2).to eq(Daru::DataFrame.new({
+        a: [-1,0,1,2,3], 
+        b: ['a','e','i','o','u'], 
+        c: [8,18,28,38,48]}))
     end
 
     it "subtracts a data frame from another" do
@@ -53,7 +57,12 @@ describe Daru::DataFrame do
 
   context "#sqrt" do
     it "calculates sqrt" do
-      @df.sqrt
+      expect_correct_df_in_delta(@df.sqrt, 
+        Daru::DataFrame.new({
+          a: [1.0,1.41421356,1.73205080,2.0,2.23606797],
+          c: [3.16227766, 4.47213595 ,5.47722557 ,6.32455532, 7.07106781]
+        }), 0.001
+      )
     end
   end
 

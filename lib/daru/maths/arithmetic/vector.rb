@@ -65,7 +65,7 @@ module Daru
         def v2v_binary operation, other
           common_idxs = []
           elements    = []
-          index = (@index.to_a + other.index.to_a).uniq.sort
+          index = (@index.to_a | other.index.to_a).sort
 
           index.each do |idx|
             this = self[idx]

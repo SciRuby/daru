@@ -39,6 +39,7 @@ module Daru
           only_numerics(clone: false).recode { |v| v.exp }
         end
 
+        # Calcuate square root of numeric vectors.
         def sqrt
           only_numerics(clone: false).recode { |v| v.sqrt }
         end
