@@ -123,7 +123,7 @@ module Daru
             numeric_vectors.inject({}) do |hash, vec|
               hash[vec] = self[vec].send(method)
               hash
-            end
+            end, name: method
           )
         end
       end

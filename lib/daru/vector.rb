@@ -770,11 +770,11 @@ module Daru
         s.text "n :#{size}"
         s.text "n valid:#{n_valid}"
         if @type == :object
-          s.text  "factors: #{factors.join(',')}"
+          s.text  "factors: #{factors.to_a.join(',')}"
           s.text  "mode: #{mode}"
 
           s.table(:name => "Distribution") do |t|
-            frequencies.sort.each do |k,v|
+            frequencies.sort_by { |a| a.to_s }.each do |k,v|
               key = @index.include?(k) ? @index[k] : k
               t.row [key, v , ("%0.2f%%" % (v.quo(n_valid)*100))]
             end
