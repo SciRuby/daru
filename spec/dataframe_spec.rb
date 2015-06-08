@@ -1001,7 +1001,7 @@ describe Daru::DataFrame do
 
     it "collects calculation over vectors and returns a Vector from the results" do
       expect(@df.collect { |v| v[0] * v[1] + v[4] }).to eq(
-        Daru::Vector.new([7,297,7])
+        Daru::Vector.new([7,297,7], index: [:a, :b, :c])
         )
     end
   end

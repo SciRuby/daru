@@ -431,6 +431,7 @@ module Daru
       Daru::DataFrame.new src, order: new_order, index: @index.dup, name: @name, clone: true
     end
 
+    # Only clone the structure of the DataFrame.
     def clone_structure
       Daru::DataFrame.new([], order: @vectors.dup, index: @index.dup, name: @name)
     end
@@ -539,6 +540,10 @@ module Daru
 
     # Iterate over a row or vector and return results in a Daru::Vector.
     # Specify axis with :vector or :row. Default to :vector.
+    # == Arguments
+    # 
+    # * +axis+ - The axis to iterate over. Can be :vector (or :column)
+    # or :row. Default to :vector.
     def collect axis=:vector, &block
       if axis == :vector or axis == :column
         collect_vectors(&block)
@@ -571,6 +576,11 @@ module Daru
     # Destructive map. Modifies the DataFrame. Each run of the block
     # must return a Daru::Vector. You can specify the axis to map over
     # as the argument. Default to :vector.
+    # 
+    # == Arguments
+    # 
+    # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
+    # Default to :vector.
     def map! axis=:vector, &block
       if axis == :vector or axis == :column
         map_vectors!(&block)
@@ -582,6 +592,11 @@ module Daru
     # Maps over the DataFrame and returns a DataFrame. Each run of the
     # block must return a Daru::Vector object. You can specify the axis
     # to map over. Default to :vector.
+    # 
+    # == Arguments
+    # 
+    # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
+    # Default to :vector.
     def recode axis=:vector, &block
       if axis == :vector or axis == :column
         recode_vectors(&block)
@@ -590,11 +605,25 @@ module Daru
       end
     end
 
+    # Retain vectors or rows if the block returns a truthy value.
+    # 
+    # == Arguments
+    # 
+    # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
+    # Default to :vector.
+    def filter axis=:vector, &block
+      if axis == :vector or axis == :column
+        filter_vectors(&block)
+      elsif axis == :row
+        filter_rows(&block)
+      end
+    end
+
     def recode_vectors &block
       block_given? or return to_enum(:recode_vectors) 
 
       df = self.dup
-      self.each_vector_with_index do |v, i|
+      df.each_vector_with_index do |v, i|
         ret = yield v
         ret.is_a?(Daru::Vector) or raise TypeError, "Every iteration must return Daru::Vector not #{ret.class}"
         df[*i] = ret
@@ -607,7 +636,7 @@ module Daru
       block_given? or return to_enum(:recode_rows)
 
       df = self.dup
-      self.each_row_with_index do |r, i|
+      df.each_row_with_index do |r, i|
         ret = yield r
         ret.is_a?(Daru::Vector) or raise TypeError, "Every iteration must return Daru::Vector not #{ret.class}"
         df.row[i] = ret
@@ -691,47 +720,57 @@ module Daru
     # Retrieves a Daru::Vector, based on the result of calculation 
     # performed on each row.
     def collect_rows &block
+      return to_enum(:collect_rows) unless block_given?
+
       data = []
       each_row do |row|
         data.push yield(row)
       end
 
-      Daru::Vector.new(data)
+      Daru::Vector.new(data, index: @index)
     end
 
     def collect_row_with_index &block
+      return to_enum(:collect_row_with_index) unless block_given?
+
       data = []
       each_row_with_index do |row, i|
         data.push yield(row, i)
       end
 
-      Daru::Vector.new(data)
+      Daru::Vector.new(data, index: @index)
     end
 
     # Retrives a Daru::Vector, based on the result of calculation
     # performed on each vector.
     def collect_vectors &block
+      return to_enum(:collect_vectors) unless block_given?
+
       data = []
       each_vector do |vec|
         data.push yield(vec)
       end
 
-      Daru::Vector.new(data)
+      Daru::Vector.new(data, index: @vectors)
     end
 
     def collect_vector_with_index &block
+      return to_enum(:collect_vector_with_index) unless block_given?
+
       data = []
       each_vector_with_index do |vec, i|
         data.push yield(vec, i)
       end
 
-      Daru::Vector.new(data)
+      Daru::Vector.new(data, index: @vectors)
     end
 
     # Generate a matrix, based on vector names of the DataFrame.
     #
     # @return {::Matrix}
     def collect_matrix
+      return to_enum(:collect_matrix) unless block_given?
+
       vecs = vectors.to_a
       rows = vecs.collect { |row|
         vecs.collect { |col|
