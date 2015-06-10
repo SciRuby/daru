@@ -6,12 +6,19 @@ module Daru
       # to the block, if it is specified. See the nyaplot docs for info on how to
       # further use these objects.
       # 
+      # Detailed instructions on use of the plotting API can be found in the 
+      # notebooks whose links you can find in the README.
+      # 
       # == Options
       # 
-      # * +:type+  - Type of plot (scatter, bar, histogram)
+      # * +:type+  - Type of plot. Can be :scatter, :bar, :histogram, :line or :box.
+      # * +:x+ - Vector to be used for X co-ordinates.
+      # * +:y+ - Vector to be used for Y co-ordinates.
       # 
       # == Usage
-      #   df = Daru::DataFrame.new({a:[0,1,2,3,4], b:[10,20,30,40,50]})
+      #   # Simple bar chart
+      #   df = Daru::DataFrame.new({a:['A', 'B', 'C', 'D', 'E'], b:[10,20,30,40,50]})
+      #   df.plot type: :bar, x: :a, y: :b
       def plot opts={}
         options = {
           type:  :scatter
@@ -22,7 +29,7 @@ module Daru
 
         diagram =
         case 
-        when !([:scatter, :bar, :line] & types).empty?
+        when !([:scatter, :bar, :line, :histogram] & types).empty?
           if single_diagram? options
             add_single_diagram plot, options
           else
@@ -44,26 +51,25 @@ module Daru
      private
 
       def single_diagram? options
-        options[:x] and options[:x].is_a?(Symbol) and 
-        options[:y] and options[:y].is_a?(Symbol)
+        options[:x] and options[:x].is_a?(Symbol)
       end
 
       def add_single_diagram plot, options
-        plot.add_with_df(
+        args = [
           self.to_nyaplotdf, 
           options[:type], 
-          options[:x], 
-          options[:y]
-        )
+          options[:x]
+        ]
+
+        args << options[:y] if(options[:y])
+
+        plot.add_with_df(*args)
       end
 
       def add_multiple_diagrams plot, options
         types  = extract_option :type, options
         x_vecs = extract_option :x, options
         y_vecs = extract_option :y, options
-
-        x_vecs.size == y_vecs.size or raise ArgumentError, 
-          "Specify same number of X and Y axes"
 
         diagrams   = []
         nyaplot_df = self.to_nyaplotdf

@@ -10,31 +10,37 @@ Data Analysis in RUby
 
 daru (Data Analysis in RUby) is a library for storage, analysis, manipulation and visualization of data.
 
-daru is inspired by `Statsample::Dataset` and pandas, a very mature solution in Python.
+daru is inspired by pandas, a very mature solution in Python.
 
-Written in pure Ruby so should work with all ruby implementations.
+Written in pure Ruby so should work with all ruby implementations. Tested with MRI 2.0, 2.1, 2.2.
 
 ## Features
 
 * Data structures:
     - Vector - A basic 1-D vector.
     - DataFrame - A 2-D table-like structure which is internally composed of named `Vectors`.
-* Compatible with [IRuby notebook](https://github.com/minad/iruby) and [statsample](https://github.com/clbustos/statsample).
+* Compatible with [IRuby notebook](https://github.com/SciRuby/iruby) and [statsample](https://github.com/SciRuby/statsample).
 * Singly and hierarchially indexed data structures.
 * Flexible and intuitive API for manipulation and analysis of data.
 * Easy plotting, statistics and arithmetic.
 * Plentiful iterators.
-* Optional speed and space optimization on MRI with [NMatrix](https://github.com/SciRuby/nmatrix).
+* Optional speed and space optimization on MRI with [NMatrix](https://github.com/SciRuby/nmatrix) and GSL.
 * Easy splitting, aggregation and grouping of data.
 * Quickly reducing data with pivot tables for quick data summary.
 
 ## Notebooks
 
+### Usage
+
 * [Basic Creation of Vectors and DataFrame](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Creation%20of%20Vector%20and%20DataFrame.ipynb)
 * [Detailed Usage of Daru::Vector](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Usage%20of%20Vector.ipynb)
 * [Detailed Usage of Daru::DataFrame](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Usage%20of%20DataFrame.ipynb)
-* [Analysis and plotting of a data set comprising of music listening habits of a last.fm user](http://nbviewer.ipython.org/github/v0dro/daru/blob/master/notebooks/intro_with_music_data_.ipynb)
-* [Basic splitting, grouping and aggregating of data](http://nbviewer.ipython.org/github/v0dro/daru/blob/master/notebooks/grouping_splitting_pivots.ipynb)
+* [Visualizing Data With Daru::DataFrame](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Visualization/Visualizing%20data%20with%20daru%20DataFrame.ipynb)
+* [Grouping, Splitting and Pivoting Data](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Grouping%2C%20Splitting%20and%20Pivoting.ipynb)
+
+### Case Studies
+
+* [Finding and Plotting most heard artists from a Last.fm dataset](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Finding%20and%20plotting%20the%20most%20heard%20artists%20on%20last%20fm.ipynb)
 
 ## Blog Posts
 
@@ -132,9 +138,7 @@ df
 
 #### Initialization of Vector
 
-The `Vector` data structure is also named and indexed. It accepts arguments name, source, index (in that order).
-
-In the simplest case it can be constructed like this:
+In the simplest case Daru::Vector can be constructed like this:
 
 ```ruby
 
@@ -308,7 +312,7 @@ You can also generate Excel-style pivot tables with `#pivot_table`.
 
 #### Plotting
 
-daru uses [Nyaplot](https://github.com/domitry/nyaplot) for plotting and an example of this can be found in the [notebook](http://nbviewer.ipython.org/github/v0dro/daru/blob/master/notebooks/intro_with_music_data_.ipynb) or [blog post](http://v0dro.github.io/blog/2014/11/25/data-analysis-in-ruby-basic-data-manipulation-and-plotting/).
+daru uses [Nyaplot](https://github.com/domitry/nyaplot) for plotting and an example of this can be found in the [blog post](http://v0dro.github.io/blog/2014/11/25/data-analysis-in-ruby-basic-data-manipulation-and-plotting/).
 
 Head over to the tutorials and notebooks listed above for more examples.
 

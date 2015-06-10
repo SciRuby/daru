@@ -1680,10 +1680,9 @@ module Daru
           (@vectors + 1).size.times { html += '<td>...</td>' }
           html += '</tr>'
 
-          html += "<tr></tr>"
-
           last_row = self.row[size - 1]
           html += '<tr>'
+          html += "<td>" + @index[size-1].to_s + "</td>"
           (0..(ncols - 1)).to_a.each do |i|
             html += '<td>' + last_row[i].to_s + '</td>' 
           end
