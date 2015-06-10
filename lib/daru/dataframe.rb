@@ -1604,6 +1604,11 @@ module Daru
       Matrix.columns numerics_as_arrays
     end
 
+    # Return a Nyaplot::DataFrame from the data of this DataFrame.
+    def to_nyaplotdf
+      Nyaplot::DataFrame.new(to_a[0])
+    end
+
     # Convert all vectors of type *:numeric* and not containing nils into an NMatrix.
     def to_nmatrix
       numerics_as_arrays = []
@@ -1673,6 +1678,15 @@ module Daru
         if num > threshold
           html += '<tr>'
           (@vectors + 1).size.times { html += '<td>...</td>' }
+          html += '</tr>'
+
+          html += "<tr></tr>"
+
+          last_row = self.row[size - 1]
+          html += '<tr>'
+          (0..(ncols - 1)).to_a.each do |i|
+            html += '<td>' + last_row[i].to_s + '</td>' 
+          end
           html += '</tr>'
           break
         end

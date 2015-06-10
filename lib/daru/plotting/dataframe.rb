@@ -9,36 +9,91 @@ module Daru
       # == Options
       # 
       # * +:type+  - Type of plot (scatter, bar, histogram)
-      #
-      # * +:legends+ - The names of the vectors that are to be used as X and Y axes.
-      # The vectors names must be specified as symbols inside an Array. They 
-      # also should be specified in the right order. For example, passing [:a, :b]
-      # will keep vector :a as the X axis and :b as the Y axis. Passing [:a]
-      # keep :a as the X axis and plot the frequency with which :a appears 
-      # on the Y axis.
-      #
-      # * +:frame+ - Pass this as *true* to disable plotting the graph directly
-      # and instead manually create Nyaplot::Frame object inside the block using
-      # the Nyaplot::Plot object for plotting one or many graphs in a frame.
       # 
       # == Usage
       #   df = Daru::DataFrame.new({a:[0,1,2,3,4], b:[10,20,30,40,50]})
-      #   df.plot legends: [:a, :b], type: :bar
       def plot opts={}
         options = {
-          type:  :scatter,
-          frame: false,
-          legends: []
+          type:  :scatter
         }.merge(opts)
 
         plot = Nyaplot::Plot.new
-        diagram = plot.add_with_df(Nyaplot::DataFrame.new(self.to_a[0]), 
-          options[:type], *options[:legends])
+        types = extract_option :type, options
+
+        diagram =
+        case 
+        when !([:scatter, :bar, :line] & types).empty?
+          if single_diagram? options
+            add_single_diagram plot, options
+          else
+            add_multiple_diagrams plot, options
+          end
+        when types.include?(:box)
+          numeric = self.only_numerics(clone: false).dup_only_valid
+
+          plot.add_with_df(
+            numeric.to_nyaplotdf,
+            :box, *numeric.vectors.to_a)
+        end
 
         yield(plot, diagram) if block_given?
 
-        plot.show unless options[:frame]
+        plot.show
       end
+
+     private
+
+      def single_diagram? options
+        options[:x] and options[:x].is_a?(Symbol) and 
+        options[:y] and options[:y].is_a?(Symbol)
+      end
+
+      def add_single_diagram plot, options
+        plot.add_with_df(
+          self.to_nyaplotdf, 
+          options[:type], 
+          options[:x], 
+          options[:y]
+        )
+      end
+
+      def add_multiple_diagrams plot, options
+        types  = extract_option :type, options
+        x_vecs = extract_option :x, options
+        y_vecs = extract_option :y, options
+
+        x_vecs.size == y_vecs.size or raise ArgumentError, 
+          "Specify same number of X and Y axes"
+
+        diagrams   = []
+        nyaplot_df = self.to_nyaplotdf
+        total      = x_vecs.size
+        types = types.size < total ? types*total : types
+
+
+        (0...total).each do |i|
+          diagrams << plot.add_with_df(
+            nyaplot_df,
+            types[i],
+            x_vecs[i],
+            y_vecs[i]
+          )
+        end
+
+        diagrams
+      end
+
+      def extract_option opt, options
+        if options[opt]
+          o = options[opt]
+          o.is_a?(Array) ? o : [o]
+        else
+          arr = options.keys
+          arr.keep_if { |a| a =~ Regexp.new("\\A#{opt.to_s}") }.sort
+          arr.map { |a| options[a] }
+        end
+      end
+
     end
   end
 end if Daru.has_nyaplot?

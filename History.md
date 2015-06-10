@@ -10,7 +10,7 @@
     - Wrote a proper .travis.yml
     - Added optional GSL dependency gsl-nmatrix
     - Added Marshalling and unMarshalling capabilities to Vector, Index and DataFrame.
-    - Added new methods Daru::IO.save and Daru::IO.load for saving and loading data to and from files by marshalling.
+    - Added new method Daru::IO.load for loading data from files by marshalling.
     - Lots of documentation and new notebooks.
     - Added data loading and writing from and to CSV, Excel, plain text and SQL databases.
     - Daru::DataFrame and Vector have now completely replaced Statsample::Dataset and Vector.
@@ -21,7 +21,9 @@
         - Added a new wrapper class Daru::Accessors::GSLWrapper for wrapping around GSL::Vector, which works similarly to NMatrixWrapper or ArrayWrapper.
         - Added a host of statistical methods to GSLWrapper in Daru::Accessors::GSLStatistics that call the relevant GSL::Vector functions for super-fast C level computations.
         - More stats functions - #vector_standardized_compute, #vector_centered_compute, #sample_with_replacement, #sample_without_replacement
-        - #only_valid for creating a Vector with only non-nil data
+        - #only_valid for creating a Vector with only non-nil data.
+        - #only_missing for creating a Vector of only missing data.
+        - #only_numeric to create Vector of only numerical data.
         - Ported many Statsample::Vector stat methods to Daru::Vector. These are: #percentile, #factors, etc.
         - Added .new_with_size for creating vectors by specifying a size for the
         vector and a block for generating values.
@@ -54,6 +56,7 @@
         - Added constant SPLIT_TOKEN and methods #add_vectors_by_split, .[], #summary.
         - Added #bootstrap.
         - Added a #filter method to wrap around #filter_vectors and #filter_rows.
+        - Greatly improved plotting function.
     - Added a lazy update feature that will allow users to delay updating the missing positions index until the last possible moment.
     - Added interoperaility with rserve client which makes it possible to change daru data to R data and perform computation there.
 * Changes
