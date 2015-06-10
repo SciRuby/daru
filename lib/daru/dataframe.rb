@@ -378,6 +378,10 @@ module Daru
       self.row[index || @size] = row
     end
 
+    def add_vector n, vector
+      self[n] = vector
+    end
+
     # Access a row or set/create a row. Refer #[] and #[]= docs for details.
     # 
     # == Usage

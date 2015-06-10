@@ -63,6 +63,15 @@ module Daru
         opts[:col_sep]           ||= ','
         opts[:converters]        ||= :numeric
 
+        daru_options = opts.keys.inject({}) do |hash, k|
+          if [:clone, :order, :index, :name].include?(k)
+            hash[k] = opts[k]
+            opts.delete k
+          end
+
+          hash
+        end
+
         # Preprocess headers for detecting and correcting repetition in 
         # case the :headers option is not specified.
         unless opts[:headers]
@@ -90,7 +99,7 @@ module Daru
           end
         end
 
-        Daru::DataFrame.new(hsh,opts)
+        Daru::DataFrame.new(hsh,daru_options)
       end
 
       def dataframe_write_csv dataframe, path, opts={}
