@@ -16,7 +16,7 @@ matrix:
 script: "bundle exec rspec"
 
 install:
-  - gem install bundler -v '1.6'
+  - gem install bundler
   - gem install nmatrix-0.1.0.gem
   - gem install gsl-nmatrix-1.17.gem
   - bundle install
