@@ -748,6 +748,12 @@ module Daru
     
         if num > threshold
           html += '<tr><td>...</td><td>...</td></tr>'
+
+          last_index = @index.to_a.last
+          html += '<tr>' + 
+                    '<td>' + last_index.to_s       + '</td>' +
+                    '<td>' + self[last_index].to_s + '</td>' +
+                  '</tr>'
           break
         end
       end
