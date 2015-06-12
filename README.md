@@ -27,6 +27,7 @@ Written in pure Ruby so should work with all ruby implementations. Tested with M
 * Optional speed and space optimization on MRI with [NMatrix](https://github.com/SciRuby/nmatrix) and GSL.
 * Easy splitting, aggregation and grouping of data.
 * Quickly reducing data with pivot tables for quick data summary.
+* Import and exports dataset from and to Excel, CSV, Databases and plain text files.
 
 ## Notebooks
 
