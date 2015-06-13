@@ -41,6 +41,7 @@ Written in pure Ruby so should work with all ruby implementations. Tested with M
 
 ### Case Studies
 
+* [Logistic Regression Analysis with daru and statsample-glm](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Logistic%20Regression%20with%20daru%20and%20statsample-glm.ipynb)
 * [Finding and Plotting most heard artists from a Last.fm dataset](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Finding%20and%20plotting%20the%20most%20heard%20artists%20on%20last%20fm.ipynb)
 
 ## Blog Posts
@@ -78,7 +79,7 @@ Docs can be found [here](https://rubygems.org/gems/daru).
 
 ## Contributing
 
-Pick a feature from the Roadmap above or think of your own and send me a Pull Request!
+Pick a feature from the Roadmap or the issue tracker or think of your own and send me a Pull Request!
 
 ## Acknowledgements
 
