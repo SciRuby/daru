@@ -226,7 +226,7 @@ module Daru
       @data   = []
 
       temp_name = opts[:name]
-      @name   = temp_name.is_a?(Numeric) ? temp_name : (temp_name || SecureRandom.uuid).to_sym
+      @name   = temp_name || SecureRandom.uuid
 
       if source.empty?
         @vectors = create_index vectors
@@ -253,9 +253,10 @@ module Daru
             initialize(hsh, index: index, order: vectors, name: @name, clone: clone)
           else # array of hashes
             if vectors.nil?
-              @vectors = Daru::Index.new source[0].keys.map(&:to_sym)
+              @vectors = Daru::Index.new source[0].keys
             else
-              @vectors = Daru::Index.new (vectors + (source[0].keys - vectors)).uniq.map(&:to_sym)
+              @vectors = Daru::Index.new(
+                (vectors + (source[0].keys - vectors)).uniq)
             end
             @index = Daru::Index.new(index || source.size)
 
@@ -324,7 +325,6 @@ module Daru
       else
         axis = :vector
       end
-      names.map! { |e| e.respond_to?(:to_sym) ? e.to_sym : e }
 
       if axis == :vector
         access_vector *names
@@ -349,7 +349,6 @@ module Daru
 
       name = args[0..-2]
       vector = args[-1]
-      name.map! { |e| e.respond_to?(:to_sym) ? e.to_sym : e }
 
       if axis == :vector
         insert_or_modify_vector name, vector
@@ -1015,7 +1014,7 @@ module Daru
         number_of_missing << row.missing_positions.size
       end
 
-      Daru::Vector.new number_of_missing, index: @index, name: "#{@name}_missing_rows".to_sym
+      Daru::Vector.new number_of_missing, index: @index, name: "#{@name}_missing_rows"
     end
 
     # TODO: remove next version
@@ -1087,7 +1086,7 @@ module Daru
 
     # Check if a vector is present
     def has_vector? vector
-      !!@vectors[*vector]
+      @vectors.include? vector
     end
 
     def any? axis=:vector, &block
@@ -1195,7 +1194,7 @@ module Daru
       raise ArgumentError, "Number of vectors passed into function (#{new_vectors.size}) should equal that present in the DataFrame (#{@vectors.size})" if 
         @vectors.size != new_vectors.size
 
-      @vectors = Daru::Index.new new_vectors.map(&:to_sym), new_vectors.map { |e| @vectors[e] }
+      @vectors = Daru::Index.new new_vectors, new_vectors.map { |e| @vectors[e] }
     end
 
     # Change the index of the DataFrame and its underlying vectors. Destructive.
@@ -1512,8 +1511,8 @@ module Daru
         a 
       }
       # Adding _row_id
-      h[:_col_id] = Daru::Vector.new([])
-      ds_vars.push(:_col_id)
+      h['_col_id'] = Daru::Vector.new([])
+      ds_vars.push('_col_id')
 
       @vectors.each do |f|
         if f =~ re
@@ -1536,13 +1535,13 @@ module Daru
           n  = n1+1
           any_data = false
           vars.each do |v|
-            data = row[pattern.gsub("%v",v.to_s).gsub("%n",n.to_s).to_sym]
+            data = row[pattern.gsub("%v",v.to_s).gsub("%n",n.to_s)]
             row_out[v] = data
             any_data = true if !data.nil?
           end
 
           if any_data
-            row_out[:_col_id] = n
+            row_out['_col_id'] = n
             ds.add_row(row_out)
           end
         end
@@ -1842,14 +1841,14 @@ module Daru
 
     def == other
       @index == other.index and @size == other.size and @vectors == other.vectors and 
-      @vectors.all? { |vector| self[vector, :vector] == other[vector, :vector] }
+      @vectors.to_a.all? { |v| self[v] == other[v] }
     end
 
     def method_missing(name, *args, &block)
       if md = name.match(/(.+)\=/)
         insert_or_modify_vector name[/(.+)\=/].delete("=").to_sym, args[0]
       elsif self.has_vector? name
-        self[name, :vector]
+        self[name]
       else
         super(name, *args, &block)
       end
@@ -2184,14 +2183,11 @@ module Daru
     end
 
     def create_vectors_index_with vectors, source
-      vectors = source.keys.sort if vectors.nil?
+      vectors = source.keys.sort_by { |a| a.to_s } if vectors.nil?
 
       @vectors =
       unless vectors.is_a?(Index) or vectors.is_a?(MultiIndex)
-        Daru::Index.new((vectors + (source.keys - vectors))
-          .uniq
-          .map { |e| e.respond_to?(:to_sym) ? e.to_sym : e }
-        )
+        Daru::Index.new((vectors + (source.keys - vectors)).uniq)
       else
         vectors
       end

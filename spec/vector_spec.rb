@@ -985,12 +985,13 @@ describe Daru::Vector do
     end
   end
 
-  context "#detach_index" do
+  context "#detach_index", focus: true do
     it "creates a DataFrame with first Vector as index and second as values of the Vector" do
-      v = Daru::Vector.new([1,2,3,4,5,6], index: [:a, :b, :c, :d, :e, :f], name: :values)
+      v = Daru::Vector.new([1,2,3,4,5,6], 
+        index: ['a', 'b', 'c', 'd', 'e', 'f'], name: :values)
       expect(v.detach_index).to eq(Daru::DataFrame.new({
         index: ['a', 'b', 'c', 'd', 'e', 'f'],
-        vector: [1,2,3,4,5,6]
+        values: [1,2,3,4,5,6]
       }))
     end
   end

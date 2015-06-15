@@ -12,7 +12,7 @@ describe Daru::IO do
         expect(df.vector[:true_transform].first).to eq("-0.2362347,0.6308649,0.7390552,0,0.6523478,-0.4607318,0.6018043,0,0.7201635,0.6242881,-0.3027024,4262.65,0,0,0,1")
       end
 
-      it "works properly for repeated headers", focus: true do
+      it "works properly for repeated headers" do
         df = Daru::DataFrame.from_csv('spec/fixtures/repeated_fields.csv')
         expect(df.vectors.to_a).to eq([:a1, :age_1, :age_2, :city, :id, :name_1, :name_2])
 
@@ -111,11 +111,11 @@ describe Daru::IO do
         df   = Daru::DataFrame.new JSON.parse(json)
 
         expect(df.vectors).to eq([
-          :name, :nativeName, :tld, :cca2, :ccn3, :cca3, :currency, :callingCode, 
-          :capital, :altSpellings, :relevance, :region, :subregion, :language, 
-          :languageCodes, :translations, :latlng, :demonym, :borders, :area].to_index)
+          'name', 'nativeName', 'tld', 'cca2', 'ccn3', 'cca3', 'currency', 'callingCode', 
+          'capital', 'altSpellings', 'relevance', 'region', 'subregion', 'language', 
+          'languageCodes', 'translations', 'latlng', 'demonym', 'borders', 'area'].to_index)
 
-        expect(df.row[0][:name]).to eq("Afghanistan")
+        expect(df.row[0]['name']).to eq("Afghanistan")
       end
     end
 

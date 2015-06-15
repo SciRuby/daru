@@ -275,7 +275,7 @@ describe Daru::DataFrame do
         expect(df[:c].object_id).to eq(c.object_id)
       end
 
-      it "allows creation of empty dataframe with only order", focus: true do
+      it "allows creation of empty dataframe with only order" do
         df = Daru::DataFrame.new({}, order: [:a, :b, :c])
         df[:a] = Daru::Vector.new([1,2,3,4,5,6])
 
@@ -1888,40 +1888,42 @@ describe Daru::DataFrame do
       df = Daru::DataFrame.crosstab_by_assignation(v1, v2, v3)
 
       expect(df[:_id].type).to eq(:object)
-      expect(df[:a].type).to eq(:numeric)
-      expect(df[:b].type).to eq(:numeric)
+      expect(df['a'].type).to eq(:numeric)
+      expect(df['b'].type).to eq(:numeric)
 
       ev_id = Daru::Vector.new %w(a b c)
       ev_a  = Daru::Vector.new [0, 0, 0]
       ev_b  = Daru::Vector.new [1, 1, 0]
       ev_c  = Daru::Vector.new [0, 1, 1]
       df2 = Daru::DataFrame.new({ 
-        :_id => ev_id, :a => ev_a, :b => ev_b, :c => ev_c })
+        :_id => ev_id, 'a' => ev_a, 'b' => ev_b, 'c' => ev_c })
 
       expect(df2).to eq(df)
     end
   end
 
-  context "#one_to_many" do
+  context "#one_to_many", focus: true do
     it "" do
       rows = [
         ['1', 'george', 'red', 10, 'blue', 20, nil, nil],
         ['2', 'fred', 'green', 15, 'orange', 30, 'white', 20],
         ['3', 'alfred', nil, nil, nil, nil, nil, nil]
       ]
+
       df = Daru::DataFrame.rows(rows, 
-        order: [:id, :name, :car_color1, :car_value1, :car_color2, 
-          :car_value2, :car_color3, :car_value3])
+        order: ['id', 'name', 'car_color1', 'car_value1', 'car_color2', 
+          'car_value2', 'car_color3', 'car_value3'])
 
       ids     = Daru::Vector.new %w(1 1 2 2 2)
       colors  = Daru::Vector.new %w(red blue green orange white)
       values  = Daru::Vector.new [10, 20, 15, 30, 20]
       col_ids = Daru::Vector.new [1, 2, 1, 2, 3]
-      df_expected = Daru::DataFrame.new({
-        :id => ids, :_col_id => col_ids, :color => colors, :value => values
-        }, order: [:id, :_col_id, :color, :value])
 
-      expect(df.one_to_many([:id], 'car_%v%n')).to eq(df_expected)
+      df_expected = Daru::DataFrame.new({
+        'id' => ids, '_col_id' => col_ids, 'color' => colors, 'value' => values
+        }, order: ['id', '_col_id', 'color', 'value'])
+
+      expect(df.one_to_many(['id'], 'car_%v%n')).to eq(df_expected)
     end
   end
 

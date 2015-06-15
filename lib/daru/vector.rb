@@ -200,7 +200,6 @@ module Daru
     #   # For vectors employing hierarchial multi index
     #   
     def [](*indexes)
-      indexes.map! { |e| e.respond_to?(:to_sym) ? e.to_sym : e }
       location = indexes[0]
       if @index.is_a?(MultiIndex)
         result = 
@@ -666,8 +665,8 @@ module Daru
 
     def detach_index
       Daru::DataFrame.new({
-        index: @index.to_a.map(&:to_s),
-        vector: @data.to_a
+        index: @index.to_a,
+        values: @data.to_a
       })
     end
 

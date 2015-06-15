@@ -26,8 +26,6 @@ module Daru
 
       if values.nil?
         index.each_with_index do |n, idx|
-          n = n.to_sym unless n.is_a?(Integer)
-
           @relation_hash[n] = idx 
         end
       else
@@ -55,27 +53,45 @@ module Daru
       @relation_hash.keys == other.to_a and @relation_hash.values == other.relation_hash.values
     end
 
-    def [](key)
-      case key
-      when Range
-        if key.first.is_a?(Integer) and key.last.is_a?(Integer)
-          first = key.first
-          last = key.last
-        else
-          first = @relation_hash[key.first]
-          last  = @relation_hash[key.last]
-        end
+    def [](*key)
+      loc = key[0]
 
-        indexes = []
-        (first..last).each do |idx|
+      case 
+      when loc.is_a?(Range)
+        first = loc.first
+        last = loc.last
+
+        slice first, last
+      when key.size > 1
+        Daru::Index.new key.map { |k| self[k] }, key
+      else
+        v = @relation_hash[loc]
+        return loc if v.nil?
+        v
+      end
+    end
+
+    def slice *args
+      start   = args[0]
+      en      = args[1]
+      indexes = []
+
+      if start.is_a?(Integer) and en.is_a?(Integer)
+        (start..en).each do |idx|
           indexes << @relation_hash.key(idx)
         end
 
-        Daru::Index.new indexes, (first..last).to_a
-      when Array # works only with numeric indices
-        Daru::Index.new key.map { |k| @relation_hash.key(k) }, key
+        Index.new indexes, (start..en).to_a
       else
-        @relation_hash[key]
+        keys      = @relation_hash.keys
+        start_idx = keys.index(start)
+        en_idx    = keys.index(en)
+
+        for i in start_idx..en_idx
+          indexes << keys[i]
+        end
+
+        Index.new indexes, (start_idx..en_idx).to_a
       end
     end
 

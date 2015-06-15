@@ -18,8 +18,8 @@ describe Daru::DataFrame do
 
     it "adds two dataframes to produce a third" do
       expect(@left + @right).to eq(Daru::DataFrame.new({
-        a: [2,nil,nil,8,nil,nil,nil],
-        b: [20,nil,nil,80,nil,nil,nil], 
+        a: [2,nil,nil,8,nil,nil],
+        b: [20,nil,nil,80,nil,nil], 
         c: [nil,nil,nil,nil,nil,nil]
         }, index: [0,1,2,3,4,5,6]))
     end

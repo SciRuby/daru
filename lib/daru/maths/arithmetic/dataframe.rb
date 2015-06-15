@@ -64,8 +64,8 @@ module Daru
 
           hsh = {}
           all_vectors.each do |vector_name|
-            this = self .has_vector?(vector_name) ? self .vector[vector_name] : nil
-            that = other.has_vector?(vector_name) ? other.vector[vector_name] : nil
+            this = self .has_vector?(vector_name) ? self[vector_name] : nil
+            that = other.has_vector?(vector_name) ? other[vector_name] : nil
 
             if this and that
               hsh[vector_name] = this.send(operation, that)

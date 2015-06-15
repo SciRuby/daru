@@ -49,15 +49,22 @@ describe Daru::Index do
       expect(@id[:two..:five]).to eq(Daru::Index.new([:two, :three, :four, :five], 
         [1,2,3,4]))
 
-      expect(@mixed_id['b'..0]).to eq(Daru::Index.new(['b','c',:d,:a,0],
+      expect(@mixed_id['a'..'c']).to eq(Daru::Index.new(['a','b','c'],
+        [0,1,2]))
+
+      # If both start and end are numbers then refer to numerical indexes
+      expect(@mixed_id[0..2]).to eq(Daru::Index.new(['a','b','c'],
+        [0,1,2]))
+
+      # If atleast one is a number then refer to actual indexing
+      expect(@mixed_id.slice('b',0)).to eq(Daru::Index.new(['b','c',:d,:a,0],
         [1,2,3,4,5]))
     end
 
     it "returns multiple keys if specified multiple indices" do
-      expect(@id[[0,1,3,4]]).to eq(Daru::Index.new([:one, :two, :four, :five], 
-        [0,1,3,4]))
-      expect(@mixed_id[0,5,3,2]).to eq(Daru::Index.new(['a',0,:d,'c'],
-        [[0,5,3,2]]))
+      expect(@id[0,1,3,4]).to eq(Daru::Index.new([0,1,3,4], [0,1,3,4]))
+      expect(@mixed_id[0,5,3,2]).to eq(Daru::Index.new([5, 7, 6, 2],
+        [0,5,3,2]))
     end
 
     it "returns correct index position for non-numeric index" do
@@ -67,7 +74,7 @@ describe Daru::Index do
 
     it "returns correct index position for mixed index" do
       expect(@mixed_id[0]).to eq(5)
-      expect(@mixed_id['c'].to eq(2))
+      expect(@mixed_id['c']).to eq(2)
     end
   end
 end
