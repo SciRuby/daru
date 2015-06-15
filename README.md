@@ -19,7 +19,7 @@ Written in pure Ruby so should work with all ruby implementations. Tested with M
 * Data structures:
     - Vector - A basic 1-D vector.
     - DataFrame - A 2-D spreadsheet-like structure for manipulating and storing data sets. This is daru's primary data structure.
-* Compatible with [IRuby notebook](https://github.com/SciRuby/iruby) and [statsample](https://github.com/SciRuby/statsample).
+* Compatible with [IRuby notebook](https://github.com/SciRuby/iruby), [statsample](https://github.com/SciRuby/statsample) and [statsample-glm]().
 * Singly and hierarchially indexed data structures.
 * Flexible and intuitive API for manipulation and analysis of data.
 * Easy plotting, statistics and arithmetic.

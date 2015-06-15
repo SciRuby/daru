@@ -430,10 +430,6 @@ describe Daru::DataFrame do
           }, index: [:one, :two, :three, :four, :five]))
       end
     end
-
-    context Daru::MultiIndex do
-      # See #vector
-    end
   end
 
   context "#[:row]" do
@@ -459,10 +455,6 @@ describe Daru::DataFrame do
 
         expect(df[0, :row]).to eq([1,11,11].dv(nil, [:a, :b, :c]))
       end
-    end
-
-    context Daru::MultiIndex do
-      # See #row
     end
   end
 
@@ -1092,10 +1084,6 @@ describe Daru::DataFrame do
                 index: [:one, :two, :three, :four, :five]))    
       end
     end
-
-    context Daru::MultiIndex do
-      pending
-    end
   end
 
   context "#delete_row" do
@@ -1161,10 +1149,6 @@ describe Daru::DataFrame do
         expect(a).to eq(Daru::DataFrame.new({a: [2], b: [3]}, order: [:a, :b], index: [1]))
       end
     end
-
-    context Daru::MultiIndex do
-      pending
-    end
   end
 
   context "#filter_vectors" do
@@ -1178,10 +1162,6 @@ describe Daru::DataFrame do
 
         expect(a).to eq(Daru::DataFrame.new({a: [1,2,3]}))
       end
-    end
-
-    context Daru::MultiIndex do
-      pending
     end
   end
 

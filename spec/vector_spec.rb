@@ -77,6 +77,12 @@ describe Daru::Vector do
           dv = Daru::Vector.new [1,2], name: :mi, index: @multi_index, dtype: :array
           expect(dv).to eq(Daru::Vector.new([1,2,nil,nil], name: :mi, index: @multi_index, dtype: :array))
         end
+
+        it "accepts all sorts of objects for indexing" do
+          dv = Daru::Vector.new [1,2,3,4], index: ['a', 'b', :r, 0]
+          expect(dv.to_a).to eq([1,2,3,4])
+          expect(dv.index.to_a).to eq(['a', 'b', :r, 0])
+        end
       end
 
       context ".new_with_size" do
@@ -146,6 +152,14 @@ describe Daru::Vector do
           it "returns a vector when specified numeric Range" do
             expect(@dv[3..4]).to eq(Daru::Vector.new([4,5], name: :yoga, 
               index: [:padme, :r2d2], dtype: dtype))
+          end
+
+          it "returns correct results for index of multiple index" do
+            v = Daru::Vector.new([1,2,3,4], index: ['a','c',1,:a])
+            expect(v['a']).to eq(1)
+            expect(v[:a]).to eq(4)
+            expect(v[1]).to eq(3)
+            expect(v[0]).to eq(1)
           end
         end
 
@@ -232,6 +246,21 @@ describe Daru::Vector do
           it "sets dtype to Array if a nil is assigned" do
             @dv[0] = nil
             expect(@dv.dtype).to eq(:array)
+          end
+
+          it "assigns correctly for a mixed index Vector" do
+            v = Daru::Vector.new [1,2,3,4], index: ['a',:a,0,66]
+            v['a'] = 666
+            expect(v['a']).to eq(666)
+
+            v[0] = 666
+            expect(v[0]).to eq(666)
+
+            v[3] = 666
+            expect(v[3]).to eq(666)
+
+            expect(v).to eq(Daru::Vector.new([666,2,666,666], 
+              index: ['a',:a,0,66]))
           end
         end
 
@@ -323,10 +352,6 @@ describe Daru::Vector do
             expect(dv).to eq(Daru::Vector.new [1,2,4,5], name: :a)
           end
         end
-
-        context Daru::MultiIndex do
-          pending
-        end
       end
 
       context "#delete_at" do
@@ -349,10 +374,6 @@ describe Daru::Vector do
             expect(@dv).to eq(Daru::Vector.new [1,2,4,5], name: :a, 
               index: [:one, :two, :four, :five], dtype: dtype)
           end
-        end
-
-        context Daru::MultiIndex do
-          pending "Possibly next release"
         end
       end
 
