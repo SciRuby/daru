@@ -33,7 +33,7 @@ module Daru
     #   tuples = [:a,:a,:b,:b].zip([:one,:two,:one,:two])
     #   #=> [[:a, :one], [:a, :two], [:b, :one], [:b, :two]]
     #   Daru::MultiIndex.new(tuples)
-    def initialize source, values=nil
+    def initialize source
       @relation_hash = {}
       @size = source.size
       values = Array.new(source.size) { |i| i } if values.nil?

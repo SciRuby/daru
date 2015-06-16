@@ -17,25 +17,28 @@ module Daru
 
     attr_reader :index_class
 
-    def initialize index, values=nil
+    def initialize index
       @relation_hash = {}
 
       index = 0                         if index.nil?
       index = Array.new(index) { |i| i} if index.is_a? Integer
       index = index.to_a                if index.is_a? Daru::Index
 
-      if values.nil?
-        index.each_with_index do |n, idx|
-          @relation_hash[n] = idx 
-        end
-      else
-        raise IndexError, "Size of values : #{values.size} and index : #{index.size} do not match" if
-          index.size != values.size
-
-        values.each_with_index do |value,i|
-          @relation_hash[index[i]] = value
-        end
+      # if values.nil?
+      # raise IndexError, "Size of values : #{values.size} and index : #{index.size} do not match" if
+      #   index.size != values.size
+        
+      index.each_with_index do |n, idx|
+        @relation_hash[n] = idx 
       end
+      # else
+        # raise IndexError, "Size of values : #{values.size} and index : #{index.size} do not match" if
+        #   index.size != values.size
+
+        # values.each_with_index do |value,i|
+        #   @relation_hash[index[i]] = value
+        # end
+      # end
 
       @relation_hash.freeze
       @size = @relation_hash.size

@@ -16,74 +16,49 @@ describe Daru::MultiIndex do
       [:c,:two,:foo],
       [:c,:two,:bar]
     ]
-    @multi_mi = Daru::MultiIndex.new(@index_tuples)
+    @multi_mi = Daru::MultiIndex.from_tuples(@index_tuples)
   end
 
-  context "#initialize" do
+  context ".initialize" do
+    it "accepts labels and levels as arguments" do
+      mi = Daru::MultiIndex.new(
+        labels: [[:a,:a,:b,:b,:c,:c], [:one, :two]],
+        levels: [[0,0,1,1,2,2], [0,1,0,1,0,1]])
+
+      expect(mi[:a, :two]).to eq(1)
+    end
+
+    it "raises error for wrong number of labels or levels" do
+      expect {
+        Daru::MultiIndex.new(
+          labels: [[:a,:a,:b,:b,:c,:c], [:one, :two]],
+          levels: [[0,0,1,1,2,2]])
+      }.to raise_error
+    end
+  end
+
+  context ".from_tuples" do
     it "creates 2 layer MultiIndex from tuples" do
-      tuples = [[:a, :one], [:a, :two], [:b, :one], [:b, :two], [:c, :one], [:c, :two]]
-      mi = Daru::MultiIndex.new(tuples)
-      expect(mi.relation_hash).to eq({
-        :a => {
-          :one => 0, 
-          :two => 1
-        },
-        :b => {
-          :one => 2,
-          :two => 3
-        },
-        :c => {
-          :one => 4,
-          :two => 5
-        }
-      })
+      tuples = [
+        [:a, :one], 
+        [:a, :two], 
+        [:b, :one], 
+        [:b, :two], 
+        [:c, :one], 
+        [:c, :two]
+      ]
+      mi = Daru::MultiIndex.from_tuples(tuples)
+      expect(mi.levels).to eq([:a, :b, :c], [:one,:two])
+      expect(mi.labels).to eq([[0,0,1,1,2,2], [0,1,0,1,0,1]])
     end
 
     it "creates a triple layer MultiIndex from tuples" do
-      expect(@multi_mi.relation_hash).to eq({
-        :a => {
-          :one => {
-            :bar => 0,
-            :baz => 1
-            },
-          :two => {
-            :bar => 2,
-            :baz => 3
-          }
-        },
-        :b => {
-          :one => {
-            :bar => 4,
-            :foo => 7
-          },
-          :two => {
-            :bar => 5,
-            :baz => 6
-          }
-        },
-        :c => {
-          :one => {
-            :bar => 8,
-            :baz => 9
-          },
-          :two => {
-            :foo => 10,
-            :bar => 11,
-          }
-        }
-      })
-    end
-
-    it "accepts array index values externally" do
-      mi = Daru::MultiIndex.new([
-        [:a,:one,:bar],
-        [:a,:one,:baz],
-        [:a,:two,:bar],
-        [:a,:two,:baz],
-        [:b,:one,:bar]
-      ], [6,3,1,2,9])
-
-      expect(mi[:a,:two,:baz]).to eq(2)
+      expect(@multi_mi.levels).to eq([[:a,:b,:c], [:one, :two],[:bar,:baz,:foo]])
+      expect(@multi_mi.labels).to eq([
+        [0,0,0,0,1,1,1,1,2,2,2,2],
+        [0,0,1,1,0,1,1,0,0,0,1,1],
+        [0,1,0,1,0,0,1,2,0,1,2,0]
+      ])
     end
   end 
 
@@ -98,44 +73,14 @@ describe Daru::MultiIndex do
       expect(@multi_mi[:a, :one, :baz]).to eq(1)
     end
 
-    it "returns a MultiIndex when specifying incomplete tuple" do
-      expect(@multi_mi[:b]).to eq(Daru::MultiIndex.new([
-          [:one,:bar],
-          [:two,:bar],
-          [:two,:baz],
-          [:one,:foo]
-        ], [4,5,6,7])
-      )
-
-      expect(@multi_mi[:b, :one]).to eq(Daru::MultiIndex.new([
-          [:bar],
-          [:foo]
-        ], [4,7])
-      )
+    it "returns an Array of indices when specifying incomplete tuple" do
+      expect(@multi_mi[:b]).to eq([4,5,6,7])
+      expect(@multi_mi[:b, :one]).to eq([4,7])
       # TODO: Return Daru::Index if a single layer of indexes is present.
     end
 
-    it "returns a MultiIndex when specifying as an integer index" do
-      expect(@multi_mi[1]).to eq(Daru::MultiIndex.new([
-          [:one,:bar],
-          [:two,:bar],
-          [:two,:baz],
-          [:one,:foo]
-        ],[4,5,6,7])
-      )
-    end
-
-    it "supports numeric Ranges" do
-      expect(@multi_mi[0..1]).to eq(Daru::MultiIndex.new([        
-        [:a,:one,:bar],
-        [:a,:one,:baz],
-        [:a,:two,:bar],
-        [:a,:two,:baz],
-        [:b,:one,:bar],
-        [:b,:two,:bar],
-        [:b,:two,:baz],
-        [:b,:one,:foo]
-      ]))
+    it "returns actual index when specifying as an integer index" do
+      expect(@multi_mi[1]).to eq(1)
     end
   end
 
@@ -184,13 +129,13 @@ describe Daru::MultiIndex do
 
   context "#==" do
     it "returns false for unequal MultiIndex comparisons" do
-      mi1 = Daru::MultiIndex.new([
+      mi1 = Daru::MultiIndex.from_tuples([
         [:a, :one, :bar],
         [:a, :two, :baz],
         [:b, :one, :foo],
         [:b, :two, :bar]
         ])
-      mi2 = Daru::MultiIndex.new([
+      mi2 = Daru::MultiIndex.from_tuples([
         [:a, :two, :bar],
         [:b, :one, :foo],
         [:a, :one, :baz],
@@ -203,14 +148,14 @@ describe Daru::MultiIndex do
 
   context "#values" do
     it "returns an array of indices in order" do
-      mi = Daru::MultiIndex.new([
+      mi = Daru::MultiIndex.from_tuples([
         [:a, :one, :bar],
         [:a, :two, :baz],
         [:b, :one, :foo],
         [:b, :two, :bar]
-        ], [3,5,1,6])
+        ])
 
-      expect(mi.values).to eq([3,5,1,6])
+      expect(mi.values).to eq([0,1,2,3])
     end
   end
 end
