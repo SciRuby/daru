@@ -1,6 +1,6 @@
 require 'spec_helper.rb'
 
-describe Daru::MultiIndex do
+describe Daru::MultiIndex, focus: true do
   before(:each) do
     @index_tuples = [
       [:a,:one,:bar],
@@ -22,8 +22,8 @@ describe Daru::MultiIndex do
   context ".initialize" do
     it "accepts labels and levels as arguments" do
       mi = Daru::MultiIndex.new(
-        labels: [[:a,:a,:b,:b,:c,:c], [:one, :two]],
-        levels: [[0,0,1,1,2,2], [0,1,0,1,0,1]])
+        levels: [[:a,:b,:c], [:one, :two]],
+        labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]])
 
       expect(mi[:a, :two]).to eq(1)
     end
@@ -31,8 +31,8 @@ describe Daru::MultiIndex do
     it "raises error for wrong number of labels or levels" do
       expect {
         Daru::MultiIndex.new(
-          labels: [[:a,:a,:b,:b,:c,:c], [:one, :two]],
-          levels: [[0,0,1,1,2,2]])
+          levels: [[:a,:a,:b,:b,:c,:c], [:one, :two]],
+          labels: [[0,0,1,1,2,2]])
       }.to raise_error
     end
   end
@@ -48,7 +48,7 @@ describe Daru::MultiIndex do
         [:c, :two]
       ]
       mi = Daru::MultiIndex.from_tuples(tuples)
-      expect(mi.levels).to eq([:a, :b, :c], [:one,:two])
+      expect(mi.levels).to eq([[:a, :b, :c], [:one,:two]])
       expect(mi.labels).to eq([[0,0,1,1,2,2], [0,1,0,1,0,1]])
     end
 
@@ -73,14 +73,31 @@ describe Daru::MultiIndex do
       expect(@multi_mi[:a, :one, :baz]).to eq(1)
     end
 
-    it "returns an Array of indices when specifying incomplete tuple" do
-      expect(@multi_mi[:b]).to eq([4,5,6,7])
-      expect(@multi_mi[:b, :one]).to eq([4,7])
+    it "returns MultiIndex when specifying incomplete tuple" do
+      expect(@multi_mi[:b]).to eq(MultiIndex.from_tuples([
+        [:b,:one,:bar],
+        [:b,:two,:bar],
+        [:b,:two,:baz],
+        [:b,:one,:foo]
+      ]))
+      expect(@multi_mi[:b, :one]).to eq(MultiIndex.from_tuples([
+        [:b,:one,:bar],
+        [:b,:one,:foo]
+      ]))
       # TODO: Return Daru::Index if a single layer of indexes is present.
     end
 
     it "returns actual index when specifying as an integer index" do
       expect(@multi_mi[1]).to eq(1)
+    end
+
+    it "returns MultiIndex when specifying wholly numeric ranges" do
+      expect(@multi_mi[3..6]).to eq(MultiIndex.from_tuples([
+        [:a,:two,:baz],
+        [:b,:one,:bar],
+        [:b,:two,:bar],
+        [:b,:two,:baz]
+      ]))
     end
   end
 

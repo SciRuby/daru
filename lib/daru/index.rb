@@ -27,7 +27,7 @@ module Daru
       # if values.nil?
       # raise IndexError, "Size of values : #{values.size} and index : #{index.size} do not match" if
       #   index.size != values.size
-        
+
       index.each_with_index do |n, idx|
         @relation_hash[n] = idx 
       end
@@ -98,6 +98,7 @@ module Daru
       end
     end
 
+    # Produce new index from the set union of two indexes.
     def +(other)
       if other.respond_to? :relation_hash #another index object
         (@relation_hash.keys + other.relation_hash.keys).uniq.to_index
@@ -106,6 +107,11 @@ module Daru
       else
         (@relation_hash.keys + other).uniq.to_index
       end
+    end
+
+    # Produce a new index from the set intersection of two indexes
+    def & other
+      
     end
 
     def to_a
@@ -135,7 +141,87 @@ module Daru
     def self._load data
       h = Marshal.load data
 
-      Daru::Index.new(h[:relation_hash].keys, h[:relation_hash].values)
+      Daru::Index.new(h[:relation_hash].keys)
+    end
+  end # class Index
+
+  class MultiIndex
+
+    attr_reader :labels, :levels
+
+    def initialize opts={}
+      labels = opts[:labels]
+      levels = opts[:levels]
+
+      raise ArgumentError, 
+        "Must specify both labels and levels" unless labels and levels
+      raise ArgumentError,
+        "Labels and levels should be same size" if labels.size != levels.size
+      raise ArgumentError,
+        "Incorrect labels and levels" if incorrect_fields?(labels, levels)
+
+      @labels = labels
+      @levels = levels
+    end
+
+    def incorrect_fields? labels, levels
+      max_level = levels[0].size
+
+      correct = labels.all? { |e| e.size == max_level }
+      correct = levels.all? { |e| e.uniq.size == e.size }
+
+      !correct
+    end
+
+    private :incorrect_fields?
+
+    def self.from_arrays arrays
+      levels = arrays.map { |e| e.uniq.sort_by { |a| a.to_s  } }
+      labels = []
+
+      arrays.each_with_index do |arry, level_index|
+        label = []
+        level = levels[level_index]
+        arry.each_with_index do |lvl, i|
+          label << level.index(lvl)
+        end
+
+        labels << label
+      end
+
+      MultiIndex.new labels: labels, levels: levels
+    end
+
+    def self.from_tuples tuples
+      from_arrays tuples.transpose
+    end
+
+    def [] *key
+      
+    end
+
+    def | other
+      
+    end
+
+    def empty?
+      
+    end
+
+    def include? tuple
+      
+    end
+
+    def == other
+      
+    end
+
+    def to_a
+      
+    end
+
+    def inspect
+      
     end
   end
 end
