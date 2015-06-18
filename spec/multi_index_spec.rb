@@ -74,25 +74,21 @@ describe Daru::MultiIndex, focus: true do
     end
 
     it "returns MultiIndex when specifying incomplete tuple" do
-      expect(@multi_mi[:b]).to eq(MultiIndex.from_tuples([
+      expect(@multi_mi[:b]).to eq(Daru::MultiIndex.from_tuples([
         [:b,:one,:bar],
         [:b,:two,:bar],
         [:b,:two,:baz],
         [:b,:one,:foo]
       ]))
-      expect(@multi_mi[:b, :one]).to eq(MultiIndex.from_tuples([
+      expect(@multi_mi[:b, :one]).to eq(Daru::MultiIndex.from_tuples([
         [:b,:one,:bar],
         [:b,:one,:foo]
       ]))
       # TODO: Return Daru::Index if a single layer of indexes is present.
     end
 
-    it "returns actual index when specifying as an integer index" do
-      expect(@multi_mi[1]).to eq(1)
-    end
-
     it "returns MultiIndex when specifying wholly numeric ranges" do
-      expect(@multi_mi[3..6]).to eq(MultiIndex.from_tuples([
+      expect(@multi_mi[3..6]).to eq(Daru::MultiIndex.from_tuples([
         [:a,:two,:baz],
         [:b,:one,:bar],
         [:b,:two,:bar],
@@ -125,7 +121,9 @@ describe Daru::MultiIndex, focus: true do
     end
 
     it "returns nil for non-existent pointer number" do
-      expect(@multi_mi.key(100)).to eq(nil)
+      expect {
+        @multi_mi.key(100)
+      }.to raise_error ArgumentError
     end
   end
 
@@ -173,6 +171,64 @@ describe Daru::MultiIndex, focus: true do
         ])
 
       expect(mi.values).to eq([0,1,2,3])
+    end
+  end
+
+  context "#|" do
+    before do
+      @mi1 = Daru::MultiIndex.from_tuples([
+        [:a, :one, :bar],
+        [:a, :two, :baz],
+        [:b, :one, :foo],
+        [:b, :two, :bar]
+        ])
+      @mi2 = Daru::MultiIndex.from_tuples([
+        [:a, :two, :bar],
+        [:b, :one, :foo],
+        [:a, :one, :baz],
+        [:b, :two, :baz]
+        ])
+    end
+
+    it "returns a union of two MultiIndex objects" do
+      expect(@mi1 | @mi2).to eq(Daru::MultiIndex.new(
+        levels: [[:a, :b], [:one, :two], [:bar, :baz, :foo]],
+        labels: [
+          [0, 0, 1, 1, 0, 0, 1], 
+          [0, 1, 0, 1, 1, 0, 1], 
+          [0, 1, 2, 0, 0, 1, 1]
+        ])
+      )
+    end
+  end
+
+  context "#&" do
+    it "returns the intersection of two MI objects" do
+    end
+  end
+
+  context "#empty?" do
+    it "returns true if nothing present in MultiIndex" do
+      expect(Daru::MultiIndex.new(labels: [[]], levels: [[]]).empty?).to eq(true)
+    end
+  end
+
+  context "#drop_left_level" do
+    it "drops the leftmost level" do
+      expect(
+        Daru::MultiIndex.from_tuples([
+          [:c,:one,:bar],
+          [:c,:one,:baz],
+          [:c,:two,:foo],
+          [:c,:two,:bar]
+        ]).drop_left_level).to eq(
+          Daru::MultiIndex.from_tuples([
+            [:one,:bar],
+            [:one,:baz],
+            [:two,:foo],
+            [:two,:bar]
+          ])
+      )
     end
   end
 end

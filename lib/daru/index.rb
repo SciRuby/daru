@@ -147,7 +147,11 @@ module Daru
 
   class MultiIndex
 
-    attr_reader :labels, :levels
+    attr_reader :labels
+
+    def levels
+      @levels.map { |e| e.keys }
+    end
 
     def initialize opts={}
       labels = opts[:labels]
@@ -161,7 +165,7 @@ module Daru
         "Incorrect labels and levels" if incorrect_fields?(labels, levels)
 
       @labels = labels
-      @levels = levels
+      @levels = levels.map { |e| Hash[e.map.with_index.to_a]}
     end
 
     def incorrect_fields? labels, levels
@@ -182,7 +186,7 @@ module Daru
       arrays.each_with_index do |arry, level_index|
         label = []
         level = levels[level_index]
-        arry.each_with_index do |lvl, i|
+        arry.each do |lvl|
           label << level.index(lvl)
         end
 
@@ -197,31 +201,109 @@ module Daru
     end
 
     def [] *key
-      
+      case
+      when key[0].is_a?(Range) then retrieve_from_range(key[0])
+      else retrieve_from_tuples(key)
+      end
+    end
+
+    def retrieve_from_range range
+      MultiIndex.from_tuples(range.map { |index| key(index) })
+    end
+
+    def retrieve_from_tuples key
+      chosen = []
+
+      key.each_with_index do |k, depth|
+        level_index = @levels[depth][k]
+        label = @labels[depth]
+        chosen = find_all_indexes label, level_index, chosen
+      end
+
+      return chosen[0] if chosen.size == 1
+      return multi_index_from_multiple_selections(chosen)              
+    end
+
+    def multi_index_from_multiple_selections chosen
+      MultiIndex.from_tuples(chosen.map { |e| key(e) })
+    end
+
+    def find_all_indexes label, level_index, chosen
+      if chosen.empty?
+        label.each_with_index do |lbl, i|
+          if lbl == level_index then chosen << i end
+        end
+      else
+        chosen.keep_if { |c| label[c] == level_index }
+      end
+
+      chosen
+    end
+
+    private :find_all_indexes, :multi_index_from_multiple_selections,
+      :retrieve_from_range, :retrieve_from_tuples
+
+    def key index
+      raise ArgumentError,
+        "Key #{index} is too large" if index >= @labels[0].size
+
+      level_indexes = 
+      @labels.inject([]) do |memo, label|
+        memo << label[index]
+        memo
+      end
+
+      tuple = []
+      level_indexes.each_with_index do |level_index, i|
+        tuple << @levels[i].keys[level_index]
+      end
+
+      tuple
+    end
+
+    def drop_left_level
+      MultiIndex.from_arrays to_a.transpose[1..-1]
     end
 
     def | other
-      
+      MultiIndex.from_tuples(to_a | other.to_a)
+    end
+
+    def & other
+      MultiIndex.from_tuples(to_a & other.to_a)
     end
 
     def empty?
-      
+      @labels.flatten.empty? and @levels.all? { |l| l.empty? }
     end
 
     def include? tuple
-      
+      tuple.each_with_index do |tup, i|
+        return false unless @levels[i][tup]
+      end
+      true
+    end
+
+    def size
+      @labels[0].size
     end
 
     def == other
-      
+      other.is_a?(MultiIndex) and 
+      labels == other.labels  and 
+      levels == other.levels
     end
 
     def to_a
-      
+      (0...size).map { |e| key(e) }
+    end
+
+    def values
+      Array.new(size) { |i| i }
     end
 
     def inspect
-      
+      "Daru::MultiIndex:#{self.object_id} (levels: #{levels}\nlabels: #{labels})"
     end
   end
 end
