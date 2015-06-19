@@ -103,7 +103,7 @@ module Daru
       set_name name
 
       @data  = cast_vector_to(opts[:dtype] || :array, source, opts[:nm_dtype])
-      @index = create_index(index || @data.size)
+      @index = try_create_index(index || @data.size)
       
       if @index.size > @data.size
         cast(dtype: :array) # NM with nils seg faults
@@ -202,29 +202,20 @@ module Daru
     def [](*indexes)
       location = indexes[0]
       if @index.is_a?(MultiIndex)
+        sub_index = @index[indexes]
         result = 
-        if location.is_a?(Integer)
-          element_from_numeric_index(location)
-        elsif location.is_a?(Range)
-          arry = location.inject([]) do |memo, num|
-            memo << element_from_numeric_index(num)
-            memo
-          end
-
-          new_index = Daru::MultiIndex.new(@index.to_a[location])
-          Daru::Vector.new(arry, index: new_index, name: @name, dtype: dtype)
+        if sub_index.is_a?(Integer)
+          @data[sub_index]
         else
-          sub_index = @index[indexes]
-
-          if sub_index.is_a?(Integer)
-            element_from_numeric_index(sub_index)
-          else
-            elements = sub_index.map do |tuple|
-              @data[@index[(indexes + tuple)]]
-            end
-            Daru::Vector.new(elements, index: Daru::MultiIndex.new(sub_index.to_a),
-              name: @name, dtype: @dtype)
+          elements = sub_index.map do |tuple|
+            @data[@index[tuple]]
           end
+
+          if !indexes[0].is_a?(Range) and indexes.size < @index.width
+            sub_index = sub_index.drop_left_level indexes.size
+          end
+          Daru::Vector.new(
+            elements, index: sub_index, name: @name, dtype: @dtype)
         end
 
         return result
@@ -232,23 +223,19 @@ module Daru
         unless indexes[1]
           case location
           when Range
-            range = 
-            if location.first.is_a?(Numeric)
-              location
-            else
-              first = location.first
-              last  = location.last
-
-              (first..last)
-            end
-            indexes = @index[range]
+            first = location.first
+            last  = location.last
+            indexes = @index.slice first, last
           else
-            return element_from_numeric_index(location)
+            return @data[@index[location]]
           end
+        else
+          indexes = indexes.map { |e| named_index_for(e) }
         end
 
-        Daru::Vector.new indexes.map { |loc| @data[index_for(loc)] }, name: @name, 
-          index: indexes.map { |e| named_index_for(e) }, dtype: @dtype
+        Daru::Vector.new(
+          indexes.map { |loc| @data[@index[loc]] }, 
+          name: @name, index: indexes, dtype: @dtype)
       end
     end
 
@@ -273,17 +260,11 @@ module Daru
       @possibly_changed_type = true if @type == :numeric and (!value.is_a?(Numeric) and
         !value.nil?)
 
-      pos =
-      if @index.is_a?(MultiIndex) and !location[0].is_a?(Integer)
-        index_for location
-      else
-        index_for location[0]
-      end
+      location = location[0] unless @index.is_a?(MultiIndex)
+      pos      = @index[location]
 
       if pos.is_a?(MultiIndex)
-        pos.each do |sub_tuple|
-          self[*(location + sub_tuple)] = value
-        end
+        pos.each { |tuple| self[tuple] = value }
       else
         @data[pos] = value
       end
@@ -353,20 +334,12 @@ module Daru
 
 
     # Append an element to the vector by specifying the element and index
-    def concat element, index=nil
+    def concat element, index
       raise IndexError, "Expected new unique index" if @index.include? index
 
-      if index.nil? and @index.index_class == Integer
-        @index = create_index(@size + 1)
-        index  = @size
-      else
-        begin
-          @index = create_index(@index + index)
-        rescue StandardError => e
-          raise e, "Expected valid index."
-        end
-      end
+      @index = @index | [index]
       @data[@index[index]] = element
+
       set_size
       set_missing_positions unless Daru.lazy_update
     end
@@ -393,14 +366,8 @@ module Daru
 
     # Delete element by index
     def delete_at index
-      idx = named_index_for index
-      @data.delete_at @index[idx]
-
-      if @index.index_class == Integer
-        @index = Daru::Index.new @size-1
-      else
-        @index = Daru::Index.new (@index.to_a - [idx])
-      end
+      @data.delete_at @index[index]
+      @index = Daru::Index.new(@index.to_a - [index])
 
       set_size
       set_missing_positions unless Daru.lazy_update
@@ -481,9 +448,9 @@ module Daru
     
       order = opts[:ascending] ? :ascending : :descending
       vector, index = send(opts[:type], @data.to_a.dup, @index.to_a, order, &block)
-      index = @index.is_a?(MultiIndex) ? Daru::MultiIndex.new(index) : index
+      index = Daru::Index.new index
 
-      Daru::Vector.new(vector, index: create_index(index), name: @name, dtype: @dtype)
+      Daru::Vector.new(vector, index: index, name: @name, dtype: @dtype)
     end
 
     # Just sort the data and get an Array in return using Enumerable#sort. 
@@ -527,7 +494,7 @@ module Daru
       end
 
       @data = cast_vector_to @dtype, keep_e
-      @index = @index.is_a?(MultiIndex) ? MultiIndex.new(keep_i) : Index.new(keep_i)
+      @index = Daru::Index.new(keep_i)
       set_missing_positions unless Daru.lazy_update
       set_size
 
@@ -830,7 +797,7 @@ module Daru
     # @param new_index [Symbol, Array, Daru::Index] The new index. Passing *:seq*
     #   will reindex with sequential numbers from 0 to (n-1).
     def reindex new_index
-      index = create_index(new_index == :seq ? @size : new_index)
+      index = Daru::Index.new(new_index == :seq ? @size : new_index)
       Daru::Vector.new @data.to_a, index: index, name: name, dtype: @dtype
     end
 
@@ -1179,7 +1146,7 @@ module Daru
       end
     end
 
-    def create_index potential_index
+    def try_create_index potential_index
       if potential_index.is_a?(Daru::MultiIndex) or potential_index.is_a?(Daru::Index)
         potential_index
       else

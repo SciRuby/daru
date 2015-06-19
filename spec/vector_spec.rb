@@ -1,6 +1,6 @@
 require 'spec_helper.rb'
 
-describe Daru::Vector do
+describe Daru::Vector, focus: true do
   ALL_DTYPES.each do |dtype|
     describe dtype.to_s do
       before do
@@ -179,9 +179,10 @@ describe Daru::Vector do
               [:c,:two,:foo],
               [:c,:two,:bar]
             ]
-            @multi_index = Daru::MultiIndex.new(@tuples)
-            @vector = Daru::Vector.new Array.new(12) { |i| i }, index: @multi_index, 
-              dtype: dtype, name: :mi_vector
+            @multi_index = Daru::MultiIndex.from_tuples(@tuples)
+            @vector = Daru::Vector.new(
+              Array.new(12) { |i| i }, index: @multi_index, 
+              dtype: dtype, name: :mi_vector)
           end
 
           it "returns a single element when passed a row number" do
@@ -193,7 +194,7 @@ describe Daru::Vector do
           end
 
           it "returns sub vector when passed first layer of tuple" do
-            mi = Daru::MultiIndex.new([
+            mi = Daru::MultiIndex.from_tuples([
               [:one,:bar],
               [:one,:baz],
               [:two,:bar],
@@ -203,7 +204,7 @@ describe Daru::Vector do
           end
 
           it "returns sub vector when passed first and second layer of tuple" do
-            mi = Daru::MultiIndex.new([
+            mi = Daru::MultiIndex.from_tuples([
               [:foo],
               [:bar]])
             expect(@vector[:c,:two]).to eq(Daru::Vector.new([10,11], index: mi,
@@ -211,7 +212,7 @@ describe Daru::Vector do
           end
 
           it "returns a vector with corresponding MultiIndex when specified numeric Range" do
-            mi = Daru::MultiIndex.new([
+            mi = Daru::MultiIndex.from_tuples([
               [:a,:two,:baz],
               [:b,:one,:bar],
               [:b,:two,:bar],
@@ -280,7 +281,7 @@ describe Daru::Vector do
               [:c,:two,:foo],
               [:c,:two,:bar]
             ]
-            @multi_index = Daru::MultiIndex.new(@tuples)
+            @multi_index = Daru::MultiIndex.from_tuples(@tuples)
             @vector = Daru::Vector.new Array.new(12) { |i| i }, index: @multi_index, 
               dtype: dtype, name: :mi_vector
           end
@@ -322,21 +323,12 @@ describe Daru::Vector do
           @dv.concat 6, :ibanez
 
           expect(@dv.index)   .to eq(
-            [:warwick, :thompson, :jackson, :fender, :esp, :ibanez].to_index)
+            Daru::Index.new([:warwick, :thompson, :jackson, :fender, :esp, :ibanez]))
           expect(@dv[:ibanez]).to eq(6)
           expect(@dv[5])      .to eq(6)
         end
 
-        it "concatenates without index if index is default numeric" do
-          vector = Daru::Vector.new [1,2,3,4,5], name: :nums, dtype: dtype
-
-          vector.concat 6
-
-          expect(vector.index).to eq([0,1,2,3,4,5].to_index)
-          expect(vector[5])   .to eq(6)
-        end
-
-        it "raises error if index not specified and non-numeric index" do
+        it "raises error if index not specified" do
           expect {
             @dv.concat 6
           }.to raise_error
@@ -349,7 +341,8 @@ describe Daru::Vector do
             dv = Daru::Vector.new [1,2,3,4,5], name: :a, dtype: dtype
 
             dv.delete 3
-            expect(dv).to eq(Daru::Vector.new [1,2,4,5], name: :a)
+            expect(dv).to eq(
+              Daru::Vector.new [1,2,4,5], name: :a, index: [0,1,3,4])
           end
         end
       end
@@ -369,6 +362,7 @@ describe Daru::Vector do
           end
 
           it "deletes element of specified integer index" do
+            pending
             @dv.delete_at 2
 
             expect(@dv).to eq(Daru::Vector.new [1,2,4,5], name: :a, 
@@ -400,7 +394,7 @@ describe Daru::Vector do
 
         context Daru::MultiIndex do
           it "returns tuple of specified value" do
-            mi = Daru::MultiIndex.new([
+            mi = Daru::MultiIndex.from_tuples([
               [:a,:two,:bar],
               [:a,:two,:baz],
               [:b,:one,:bar],
@@ -426,7 +420,7 @@ describe Daru::Vector do
           pending
           # it "returns vector as a Hash" do
           #   pending
-          #   mi = Daru::MultiIndex.new([
+          #   mi = Daru::MultiIndex.from_tuples([
           #     [:a,:two,:bar],
           #     [:a,:two,:baz],
           #     [:b,:one,:bar],
@@ -490,7 +484,7 @@ describe Daru::Vector do
 
         context Daru::MultiIndex do
           before do
-            mi = Daru::MultiIndex.new([
+            mi = Daru::MultiIndex.from_tuples([
               [:a, :one,   :foo], 
               [:a, :two,   :bar], 
               [:b, :one,   :bar], 
@@ -502,7 +496,7 @@ describe Daru::Vector do
           end
 
           it "sorts vector" do
-            mi_asc = Daru::MultiIndex.new([
+            mi_asc = Daru::MultiIndex.from_tuples([
               [:b, :three, :bar],
               [:b, :two,   :baz],
               [:a, :two,   :bar],
@@ -514,7 +508,7 @@ describe Daru::Vector do
           end
 
           it "sorts in descending" do
-            mi_dsc = Daru::MultiIndex.new([
+            mi_dsc = Daru::MultiIndex.from_tuples([
               [:b, :one, :bar], 
               [:a, :one, :foo], 
               [:a, :two, :bar], 
@@ -526,7 +520,7 @@ describe Daru::Vector do
           end
 
           it "sorts using the supplied block" do
-            mi_abs = Daru::MultiIndex.new([
+            mi_abs = Daru::MultiIndex.from_tuples([
               [:b, :two,   :baz],
               [:a, :two,   :bar],
               [:a, :one,   :foo],

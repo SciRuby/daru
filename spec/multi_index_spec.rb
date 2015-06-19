@@ -1,6 +1,6 @@
 require 'spec_helper.rb'
 
-describe Daru::MultiIndex, focus: true do
+describe Daru::MultiIndex do
   before(:each) do
     @index_tuples = [
       [:a,:one,:bar],

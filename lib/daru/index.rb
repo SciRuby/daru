@@ -211,10 +211,17 @@ module Daru
     end
 
     def [] *key
+      key.flatten!
       case
       when key[0].is_a?(Range) then retrieve_from_range(key[0])
+      when key[0].is_a?(Integer) then try_retrieve_from_integer(key[0])
       else retrieve_from_tuples(key)
       end
+    end
+
+    def try_retrieve_from_integer int
+      return retrieve_from_tuples(int) if @levels[0].has_key?(int)
+      int
     end
 
     def retrieve_from_range range
@@ -271,8 +278,8 @@ module Daru
       tuple
     end
 
-    def drop_left_level
-      MultiIndex.from_arrays to_a.transpose[1..-1]
+    def drop_left_level by=1
+      MultiIndex.from_arrays to_a.transpose[by..-1]
     end
 
     def | other
@@ -296,6 +303,10 @@ module Daru
 
     def size
       @labels[0].size
+    end
+
+    def width
+      @levels.size
     end
 
     def == other

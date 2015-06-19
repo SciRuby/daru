@@ -1,3 +1,18 @@
+# 0.2.0
+
+* Enhancements
+    - Vector
+        - #concat now compulsorily requires a second index argument.
+    - Indexing
+        - Changed Index so that it now accepts all sorts of data (not restricted to only Symbols as it was previously).
+        - Re wrote MultiIndex in levels and labels form so that its faster and more accomodative of different kinds of index levels.
+        - Changed .new to return appropriate index object based on data passed.
+        - Added .from_tuple and .from_array methods to MultiIndex.
+        - Added union and intersection behaviour to Index and MultiIndex.
+* Changes
+    - Removed the + operator overload from Index and replaced in with union.
+    - Removed the second 'values' argument from Daru::Index because its redundant.
+
 # 0.1.0
 
 * Fixes
