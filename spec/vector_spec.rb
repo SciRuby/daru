@@ -18,7 +18,7 @@ describe Daru::Vector do
             [:b, :two, :baz]
           ]
 
-          @multi_index = Daru::MultiIndex.new(@tuples)
+          @multi_index = Daru::MultiIndex.from_tuples(@tuples)
         end
 
         it "initializes from an Array" do

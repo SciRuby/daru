@@ -1,6 +1,39 @@
 module Daru
   class Index
     include Enumerable
+    # It so happens that over riding the .new method in a super class also
+    # tampers with the default .new method for class that inherit from the
+    # super class (Index in this case). Thus we first alias the original 
+    # new method (from Object) to __new__ when the Index class is evaluated, 
+    # and then we use an inherited hook such that the old new method (from
+    # Object) is once again the default .new for the subclass.
+    # Refer http://blog.sidu.in/2007/12/rubys-new-as-factory.html
+    class << self
+      alias :__new__ :new
+      
+      def inherited subclass
+        class << subclass
+          alias :new :__new__
+        end
+      end
+    end
+
+    # We over-ride the .new method so that any sort of Index can be generated
+    # from Daru::Index based on the types of arguments supplied.
+    def self.new *args, &block
+      source = args[0]
+
+      idx =
+      if source[0].is_a?(Array)
+        Daru::MultiIndex.from_tuples source
+      else
+        i = self.allocate
+        i.send :initialize, *args, &block
+        i
+      end
+
+      idx
+    end
 
     def each(&block)
       @relation_hash.each_key(&block)
@@ -11,49 +44,27 @@ module Daru
       to_a.map(&block)
     end
 
-    attr_reader :relation_hash
-
-    attr_reader :size
-
-    attr_reader :index_class
+    attr_reader :relation_hash, :size
 
     def initialize index
-      @relation_hash = {}
-
       index = 0                         if index.nil?
       index = Array.new(index) { |i| i} if index.is_a? Integer
       index = index.to_a                if index.is_a? Daru::Index
 
-      # if values.nil?
-      # raise IndexError, "Size of values : #{values.size} and index : #{index.size} do not match" if
-      #   index.size != values.size
-
+      @relation_hash = {}
       index.each_with_index do |n, idx|
         @relation_hash[n] = idx 
       end
-      # else
-        # raise IndexError, "Size of values : #{values.size} and index : #{index.size} do not match" if
-        #   index.size != values.size
-
-        # values.each_with_index do |value,i|
-        #   @relation_hash[index[i]] = value
-        # end
-      # end
 
       @relation_hash.freeze
       @size = @relation_hash.size
-
-      if index[0].is_a?(Integer)
-        @index_class = Integer
-      else
-        @index_class = Symbol
-      end
     end
 
     def ==(other)
-      return false if other.size != @size
+      return false if self.class != other.class or other.size != @size
 
-      @relation_hash.keys == other.to_a and @relation_hash.values == other.relation_hash.values
+      @relation_hash.keys   == other.to_a and 
+      @relation_hash.values == other.relation_hash.values
     end
 
     def [](*key)
@@ -66,7 +77,7 @@ module Daru
 
         slice first, last
       when key.size > 1
-        Daru::Index.new key.map { |k| self[k] }, key
+        Daru::Index.new key.map { |k| self[k] }
       else
         v = @relation_hash[loc]
         return loc if v.nil?
@@ -84,7 +95,7 @@ module Daru
           indexes << @relation_hash.key(idx)
         end
 
-        Index.new indexes, (start..en).to_a
+        Index.new indexes
       else
         keys      = @relation_hash.keys
         start_idx = keys.index(start)
@@ -94,19 +105,13 @@ module Daru
           indexes << keys[i]
         end
 
-        Index.new indexes, (start_idx..en_idx).to_a
+        Index.new indexes
       end
     end
 
     # Produce new index from the set union of two indexes.
-    def +(other)
-      if other.respond_to? :relation_hash #another index object
-        (@relation_hash.keys + other.relation_hash.keys).uniq.to_index
-      elsif other.is_a?(Symbol) or other.is_a?(Integer)
-        (@relation_hash.keys << other).uniq.to_index
-      else
-        (@relation_hash.keys + other).uniq.to_index
-      end
+    def |(other)
+      Index.new(to_a | other.to_a)
     end
 
     # Produce a new index from the set intersection of two indexes
@@ -146,6 +151,11 @@ module Daru
   end # class Index
 
   class MultiIndex
+    include Enumerable
+
+    def each(&block)
+      to_a.each(&block)  
+    end
 
     attr_reader :labels
 
