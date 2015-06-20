@@ -1,6 +1,6 @@
 require 'spec_helper.rb'
 
-describe Daru::DataFrame do
+describe Daru::DataFrame, focus: true do
   before :each do
     @data_frame = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
       c: [11,22,33,44,55]}, 
@@ -206,7 +206,7 @@ describe Daru::DataFrame do
         )
       end
 
-      it "adds nil values for missing indexes and aligns by index", focus: true do
+      it "adds nil values for missing indexes and aligns by index" do
         df = Daru::DataFrame.new({
                  b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
                  a: [1,2,3]         .dv(:a, [:two,:one,:three])
@@ -689,20 +689,14 @@ describe Daru::DataFrame do
       it "returns a DataFrame when specifying numeric range" do
         sub_index = Daru::MultiIndex.from_tuples([
           [:a,:one,:bar],
-          [:a,:one,:baz],
-          [:a,:two,:bar],
-          [:a,:two,:baz],
-          [:b,:one,:bar],
-          [:b,:two,:bar],
-          [:b,:two,:baz],
-          [:b,:one,:foo]
+          [:a,:one,:baz]
         ])
 
         expect(@df_mi.row[0..1]).to eq(Daru::DataFrame.new([
-          [11,12,13,14,11,12,13,14],
-          [1,2,3,4,1,2,3,4],
-          [11,12,13,14,11,12,13,14],
-          [1,2,3,4,1,2,3,4]
+          [11,12],
+          [1,2],
+          [11,12],
+          [1,2]
         ], order: @order_mi, index: sub_index, name: :numeric_range))
       end
 
@@ -764,13 +758,13 @@ describe Daru::DataFrame do
 
     context Daru::MultiIndex do
       it "accesses vector with an integer index" do
-        expect(@df_mi.vector[0]).to eq(Daru::Vector.new(@vector_arry1,
-          index: @multi_index))
+        expect(@df_mi.vector[0]).to eq(
+          Daru::Vector.new(@vector_arry1, index: @multi_index))
       end
 
       it "returns a vector when specifying full tuple" do
-        expect(@df_mi.vector[:a, :one, :bar]).to eq(Daru::Vector.new(@vector_arry1,
-          index: @multi_index))
+        expect(@df_mi.vector[:a, :one, :bar]).to eq(
+          Daru::Vector.new(@vector_arry1, index: @multi_index))
       end
 
       it "returns DataFrame when specified first layer of MultiIndex" do
@@ -784,13 +778,9 @@ describe Daru::DataFrame do
         ], index: @multi_index, order: sub_order))
       end
 
-      it "returns DataFrame when specified first and second layer of MultiIndex" do
-        sub_order = Daru::MultiIndex.from_tuples([
-          [:bar]
-        ])
-        expect(@df_mi.vector[:a, :one]).to eq(Daru::DataFrame.new([
-          @vector_arry1
-        ], index: @multi_index, order: sub_order))
+      it "returns a Vector if the last level of MultiIndex is tracked" do
+        expect(@df_mi.vector[:a, :one]).to eq(
+          Daru::Vector.new(@vector_arry1, index: @multi_index))
       end
     end
   end

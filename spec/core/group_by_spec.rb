@@ -14,7 +14,7 @@ describe Daru::Core::GroupBy do
     @tl_group = @df.group_by([:a,:b,:c])
 
     @sl_index = Daru::Index.new([:bar, :foo])
-    @dl_multi_index = Daru::MultiIndex.new([
+    @dl_multi_index = Daru::MultiIndex.from_tuples([
       [:bar, :one],
       [:bar, :three],
       [:bar, :two],
@@ -22,7 +22,7 @@ describe Daru::Core::GroupBy do
       [:foo, :three],
       [:foo, :two]
     ])
-    @tl_multi_index = Daru::MultiIndex.new([
+    @tl_multi_index = Daru::MultiIndex.from_tuples([
       [:bar, :one  , 2],
       [:bar, :three, 1],
       [:bar, :two  , 6],

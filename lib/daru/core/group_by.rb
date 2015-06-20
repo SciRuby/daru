@@ -21,7 +21,7 @@ module Daru
       def size
         index = 
         if multi_indexed_grouping?
-          Daru::MultiIndex.new symbolize(@groups.keys)
+          Daru::MultiIndex.from_tuples symbolize(@groups.keys)
         else
           Daru::Index.new symbolize(@groups.keys.flatten)
         end
@@ -136,11 +136,11 @@ module Daru
         end
 
         index = symbolize @groups.keys
-        index = multi_index ? Daru::MultiIndex.new(index) : Daru::Index.new(index.flatten)
+        index = multi_index ? Daru::MultiIndex.from_tuples(index) : Daru::Index.new(index.flatten)
         order = symbolize order
         order = 
         if order.all?{ |e| e.is_a?(Array) }
-          Daru::MultiIndex.new(order)
+          Daru::MultiIndex.from_tuples(order)
         else
           Daru::Index.new(order)
         end

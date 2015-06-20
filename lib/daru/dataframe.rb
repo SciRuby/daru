@@ -1845,7 +1845,10 @@ module Daru
     end
 
     def == other
-      @index == other.index and @size == other.size and @vectors == other.vectors and 
+      self.class == other.class   and 
+      @index     == other.index   and 
+      @size      == other.size    and 
+      @vectors   == other.vectors and 
       @vectors.to_a.all? { |v| self[v] == other[v] }
     end
 
@@ -1984,21 +1987,24 @@ module Daru
 
       return dup(@vectors[location]) if location.is_a?(Range)
       if @vectors.is_a?(MultiIndex)
-        pos = vectors_index_for names
+        pos = @vectors[names]
 
         if pos.is_a?(Integer)
           return @data[pos]
         else # MultiIndex
           new_vectors = pos.map do |tuple|
-            @data[vectors_index_for(names + tuple)]
+            @data[@vectors[tuple]]
           end
-          Daru::DataFrame.new(new_vectors, index: @index, order: Daru::MultiIndex.new(pos.to_a))
+
+          if !location.is_a?(Range) and names.size < @vectors.width
+            pos = pos.drop_left_level names.size
+          end
+
+          Daru::DataFrame.new(
+            new_vectors, index: @index, order: pos)
         end
       else
-        unless names[1]
-          pos = vectors_index_for location
-          return @data[pos]
-        end
+        return @data[@vectors[location]] unless names[1]
 
         new_vcs = {}
         names.each do |name|
@@ -2013,19 +2019,18 @@ module Daru
       location = names[0]
 
       if @index.is_a?(MultiIndex)
-        pos = row_index_for names
+        pos = @index[names]
         if pos.is_a?(Integer)
           return Daru::Vector.new(populate_row_for(pos), index: @vectors, name: pos)
         else
-          new_rows =
-          if location.is_a?(Range)
-            pos.map { |tuple| populate_row_for(tuple) }
-          else
-            pos.map { |tuple| populate_row_for(names + tuple) }
-          end
+          new_rows = pos.map { |tuple| populate_row_for(tuple) }
           
-          Daru::DataFrame.rows(new_rows, order: @vectors, name: @name, 
-            index: Daru::MultiIndex.new(pos.to_a))
+          if !location.is_a?(Range) and names.size < @index.width
+            pos = pos.drop_left_level names.size
+          end
+
+          Daru::DataFrame.rows(
+            new_rows, order: @vectors, name: @name, index: pos)
         end
       else
         if names[1].nil? 
@@ -2078,9 +2083,7 @@ module Daru
     end
 
     def insert_or_modify_vector name, vector
-      unless vectors.is_a?(MultiIndex)   
-        name = name[0]
-      end
+      name = name[0] unless vectors.is_a?(MultiIndex)   
 
       @vectors = @vectors | [name] if !@vectors.include?(name)
       v        = nil
@@ -2102,10 +2105,14 @@ module Daru
         if vector.is_a?(Daru::Vector)
           v = Daru::Vector.new [], name: set_name(name), index: @index
           @index.each do |idx|
-            v[idx] = vector[idx]
+            if vector.index.include? idx
+              v[idx] = vector[idx]
+            else
+              v[idx] = nil
+            end
           end
         else
-          raise Exception, 
+          raise SizeError,
             "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}" if
             @size != vector.size
 
@@ -2130,7 +2137,11 @@ module Daru
 
         if @index.include? name
           @vectors.each do |vector|
-            @data[@vectors[vector]][name] = v[vector] 
+            if v.index.include? vector
+              @data[@vectors[vector]][name] = v[vector]
+            else
+              @data[@vectors[vector]][name] = nil
+            end
           end
         else
           @index = @index | [name]
