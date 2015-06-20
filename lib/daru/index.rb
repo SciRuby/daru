@@ -24,7 +24,7 @@ module Daru
       source = args[0]
 
       idx =
-      if source[0].is_a?(Array)
+      if source and source[0].is_a?(Array)
         Daru::MultiIndex.from_tuples source
       else
         i = self.allocate
@@ -150,11 +150,15 @@ module Daru
     end
   end # class Index
 
-  class MultiIndex
+  class MultiIndex < Index
     include Enumerable
 
     def each(&block)
       to_a.each(&block)  
+    end
+
+    def map(&block)
+      to_a.map(&block)
     end
 
     attr_reader :labels
@@ -276,6 +280,10 @@ module Daru
       end
 
       tuple
+    end
+
+    def dup
+      MultiIndex.new levels: levels.dup, labels: labels
     end
 
     def drop_left_level by=1

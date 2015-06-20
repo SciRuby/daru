@@ -169,7 +169,7 @@ describe Daru::IO do
   describe Daru::Index do
     context "Marshalling" do
       it "" do
-        i = Daru::Index.new([:a, :b, :c, :d, :e], [8,6,4,3,5])
+        i = Daru::Index.new([:a, :b, :c, :d, :e])
         expect(Marshal.load(Marshal.dump(i))).to eq(i)
       end
     end

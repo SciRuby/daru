@@ -1,6 +1,6 @@
 require 'spec_helper.rb'
 
-describe Daru::Vector, focus: true do
+describe Daru::Vector do
   ALL_DTYPES.each do |dtype|
     describe dtype.to_s do
       before do
@@ -979,7 +979,7 @@ describe Daru::Vector, focus: true do
     end
   end
 
-  context "#detach_index", focus: true do
+  context "#detach_index" do
     it "creates a DataFrame with first Vector as index and second as values of the Vector" do
       v = Daru::Vector.new([1,2,3,4,5,6], 
         index: ['a', 'b', 'c', 'd', 'e', 'f'], name: :values)

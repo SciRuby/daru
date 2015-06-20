@@ -136,7 +136,6 @@ describe Daru::MultiIndex do
   context "#dup" do
     it "completely duplicates the object" do
       duplicate = @multi_mi.dup
-      
       expect(duplicate)          .to eq(@multi_mi)
       expect(duplicate.object_id).to_not eq(@multi_mi.object_id)
     end

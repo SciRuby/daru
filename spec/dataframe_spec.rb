@@ -70,7 +70,8 @@ describe Daru::DataFrame do
 
     context Daru::MultiIndex do
       it "creates a DataFrame from rows" do
-        df = Daru::DataFrame.rows(@rows*3, index: @multi_index, order: [:a,:b,:c,:d,:e])
+        df = Daru::DataFrame.rows(
+          @rows*3, index: @multi_index, order: [:a,:b,:c,:d,:e])
 
         expect(df.index)     .to eq(@multi_index)
         expect(df.vectors)   .to eq(Daru::Index.new([:a,:b,:c,:d,:e]))
@@ -205,7 +206,7 @@ describe Daru::DataFrame do
         )
       end
 
-      it "adds nil values for missing indexes and aligns by index" do
+      it "adds nil values for missing indexes and aligns by index", focus: true do
         df = Daru::DataFrame.new({
                  b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
                  a: [1,2,3]         .dv(:a, [:two,:one,:three])
