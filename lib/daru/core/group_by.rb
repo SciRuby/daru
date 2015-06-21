@@ -8,7 +8,7 @@ module Daru
         @groups = {}
         @non_group_vectors = context.vectors.to_a - names
         @context = context
-        vectors = names.map { |vec| context.vector[vec].to_a }
+        vectors = names.map { |vec| context[vec].to_a }
         tuples  = vectors[0].zip(*vectors[1..-1])
         keys    = tuples.uniq.sort
 
@@ -96,7 +96,8 @@ module Daru
         indexes.each do |idx|
           rows << transpose[idx]
         end
-        Daru::DataFrame.rows(rows, index: @context.index[indexes], order: @context.vectors)
+        Daru::DataFrame.rows(
+          rows, index: @context.index[indexes], order: @context.vectors)
       end
 
      private 
@@ -123,28 +124,25 @@ module Daru
         @groups.each do |group, indexes|
           single_row = []
           @non_group_vectors.each do |ngvector|
-            vector = @context.vector[ngvector]
-            if method_type == :numeric and vector.type == :numeric
-              slice = vector[*indexes]
-
+            vec = @context[ngvector]
+            if method_type == :numeric and vec.type == :numeric
+              slice = vec[*indexes]
               single_row << (slice.is_a?(Numeric) ? slice : slice.send(method))
-              order << ngvector
             end
           end 
 
           rows << single_row
         end
 
-        index = symbolize @groups.keys
-        index = multi_index ? Daru::MultiIndex.from_tuples(index) : Daru::Index.new(index.flatten)
-        order = symbolize order
-        order = 
-        if order.all?{ |e| e.is_a?(Array) }
-          Daru::MultiIndex.from_tuples(order)
-        else
-          Daru::Index.new(order)
+        @non_group_vectors.each do |ngvec|
+          order << ngvec if
+            (method_type == :numeric and @context[ngvec].type == :numeric)
         end
 
+        index = symbolize @groups.keys
+        index = multi_index ? Daru::MultiIndex.from_tuples(index) : Daru::Index.new(index.flatten)
+        order = Daru::Index.new(symbolize(order))
+      
         Daru::DataFrame.new(rows.transpose, index: index, order: order)
       end
 

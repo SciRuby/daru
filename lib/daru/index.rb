@@ -303,6 +303,7 @@ module Daru
     end
 
     def include? tuple
+      tuple.flatten!
       tuple.each_with_index do |tup, i|
         return false unless @levels[i][tup]
       end
@@ -318,9 +319,9 @@ module Daru
     end
 
     def == other
-      other.is_a?(MultiIndex) and 
-      labels == other.labels  and 
-      levels == other.levels
+      self.class == other.class  and 
+      labels     == other.labels and 
+      levels     == other.levels 
     end
 
     def to_a

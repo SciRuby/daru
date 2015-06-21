@@ -68,8 +68,8 @@ module Daru
           index = (@index.to_a | other.index.to_a).sort
 
           index.each do |idx|
-            this = self[idx]
-            that = other[idx]
+            this = self.index.include?(idx) ? self[idx] : nil
+            that = other.index.include?(idx) ? other[idx] : nil
 
             if this and that
               elements << this.send(operation ,that)

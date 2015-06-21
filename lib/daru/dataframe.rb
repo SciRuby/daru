@@ -1,7 +1,6 @@
 $:.unshift File.dirname(__FILE__)
 
 require 'accessors/dataframe_by_row.rb'
-require 'accessors/dataframe_by_vector.rb'
 require 'maths/arithmetic/dataframe.rb'
 require 'maths/statistics/dataframe.rb'
 require 'plotting/dataframe.rb'
@@ -364,15 +363,6 @@ module Daru
       end
     end
 
-    # Access a vector or set/create a vector. Refer #[] and #[]= docs for details.
-    # 
-    # == Usage
-    #   df.vector[:a] # access vector named ':a'
-    #   df.vector[:b] = [1,2,3] # set vector ':b' to [1,2,3]
-    def vector
-      Daru::Accessors::DataFrameByVector.new(self)
-    end
-
     # Access a vector by name.
     def column name
       vector[name]
@@ -402,24 +392,20 @@ module Daru
     # * +vectors_to_dup+ - An Array specifying the names of Vectors to 
     # be duplicated. Will duplicate the entire DataFrame if not specified.
     def dup vectors_to_dup=nil
-      vectors_to_dup = @vectors unless vectors_to_dup
+      vectors_to_dup = @vectors.to_a unless vectors_to_dup
 
-      new_order =
       if vectors.is_a?(MultiIndex)
         src = []
         vectors_to_dup.each do |vec|
           src << @data[@vectors[vec]].dup
         end
-
-        Daru::MultiIndex.new(vectors_to_dup)
       else
         src = {}
         vectors_to_dup.each do |vector|
           src[vector] = @data[@vectors[vector]].dup
         end
-
-        Daru::Index.new(vectors_to_dup)
       end
+      new_order = Daru::Index.new(vectors_to_dup)
 
       Daru::DataFrame.new src, order: new_order, index: @index.dup, name: @name, clone: true
     end
@@ -671,7 +657,8 @@ module Daru
       df = self.dup
       df.each_vector_with_index do |v, i|
         ret = yield v
-        ret.is_a?(Daru::Vector) or raise TypeError, "Every iteration must return Daru::Vector not #{ret.class}"
+        ret.is_a?(Daru::Vector) or 
+          raise TypeError, "Every iteration must return Daru::Vector not #{ret.class}"
         df[*i] = ret
       end
 
@@ -1252,7 +1239,7 @@ module Daru
         arr
       end
 
-      order = @vectors.is_a?(MultiIndex) ? MultiIndex.new(nv) : Index.new(nv)
+      order = Index.new(nv)
       Daru::DataFrame.new(arry, clone: cln, order: order, index: @index)
     end
 
@@ -1351,7 +1338,8 @@ module Daru
     #   #     [:bar]         18         26 
     #   #     [:foo]         10         12 
     def pivot_table opts={}
-      raise ArgumentError, "Specify grouping index" if !opts[:index] or opts[:index].empty?
+      raise ArgumentError, 
+        "Specify grouping index" if !opts[:index] or opts[:index].empty?
 
       index   = opts[:index]
       vectors = opts[:vectors] || []
@@ -1393,7 +1381,7 @@ module Daru
           end
         end
 
-        df_index = Daru::MultiIndex.from_tuples(symbolize(super_hash.keys))
+        df_index = Daru::MultiIndex.from_tuples symbolize(super_hash.keys)
 
         vector_indexes = []
         super_hash.each_value do |sub_hash|
@@ -1508,7 +1496,7 @@ module Daru
     #
     def one_to_many(parent_fields, pattern)
       re      = Regexp.new pattern.gsub("%v","(.+?)").gsub("%n","(\\d+?)")
-      ds_vars = parent_fields
+      ds_vars = parent_fields.dup
       vars    = []
       max_n   = 0
       h       = parent_fields.inject({}) { |a,v| 
@@ -1533,7 +1521,7 @@ module Daru
       each_row do |row|
         row_out = {}
         parent_fields.each do |f|
-          row_out[f]=row[f]
+          row_out[f] = row[f]
         end
 
         max_n.times do |n1|
@@ -1796,7 +1784,7 @@ module Daru
     #   df.recast a: :nmatrix, c: :nmatrix
     def recast opts={}
       opts.each do |vector_name, dtype|
-        vector[vector_name].cast(dtype: dtype)
+        self[vector_name].cast(dtype: dtype)
       end
     end
 
@@ -1846,8 +1834,8 @@ module Daru
 
     def == other
       self.class == other.class   and 
-      @index     == other.index   and 
       @size      == other.size    and 
+      @index     == other.index   and
       @vectors   == other.vectors and 
       @vectors.to_a.all? { |v| self[v] == other[v] }
     end
@@ -1899,7 +1887,7 @@ module Daru
 
     def partition vector_order, index, by, ascending, left_lower, right_upper
       mindex = (left_lower + right_upper) / 2
-      mvalues = vector_order.inject([]) { |a, vector_name| a << vector[vector_name][mindex]; a }
+      mvalues = vector_order.inject([]) { |a, vector_name| a << self[vector_name][mindex]; a }
       i = left_lower
       j = right_upper
       descending = ascending.map { |a| !a }
@@ -1936,7 +1924,7 @@ module Daru
     def keep? current_index, mvalues, vector_order, sort_order, by, vector_order_index
       vector_name = vector_order[vector_order_index]
       if vector_name
-        vec = vector[vector_name]
+        vec = self[vector_name]
         eval = by[vector_name].call(vec[current_index], mvalues[vector_order_index])
 
         if sort_order[vector_order_index] # sort in ascending order
@@ -2035,27 +2023,15 @@ module Daru
       else
         if names[1].nil? 
           if location.is_a?(Range)
-            index_arry = @index.to_a
-
-            range = 
-            if location.first.is_a?(Numeric)
-              location
-            else
-              first_index = index_arry.index location.first
-              last_index  = index_arry.index location.last
-
-              first_index..last_index
-            end
-
-            names = index_arry[range]
+            names = @index[location]
           else
             row  = []
-            name = named_index_for names[0]
+            name = @index[location]
             @vectors.each do |vector|
               row << @data[@vectors[vector]][name]
             end
 
-            return Daru::Vector.new(row, index: @vectors, name: set_name(name))
+            return Daru::Vector.new(row, index: @vectors, name: set_name(location))
           end
         end
         # Access multiple rows
@@ -2064,15 +2040,7 @@ module Daru
           rows << self.row[name]
         end
         
-        Daru::DataFrame.rows rows, name: @name        
-      end
-    end
-
-    def row_index_for location
-      if @index.include?(location) or location[0].is_a?(Range)
-        @index[location]
-      elsif location[0].is_a?(Integer)
-        location[0]
+        Daru::DataFrame.rows rows, index: names ,name: @name        
       end
     end
 
@@ -2083,7 +2051,9 @@ module Daru
     end
 
     def insert_or_modify_vector name, vector
-      name = name[0] unless vectors.is_a?(MultiIndex)   
+      unless @vectors.is_a?(MultiIndex)   
+        name = name[0]
+      end
 
       @vectors = @vectors | [name] if !@vectors.include?(name)
       v        = nil
@@ -2216,10 +2186,6 @@ module Daru
       source.all? do |name, vector|
         idx == vector.index
       end
-    end
-
-    def reassign_index_as new_index
-      Daru::Index.new new_index
     end
 
     def try_create_index index
