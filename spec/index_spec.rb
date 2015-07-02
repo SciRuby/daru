@@ -20,6 +20,10 @@ describe Daru::Index do
       expect(i.levels).to eq([[:b], [:one, :two], [:bar, :baz, :foo]])
       expect(i.labels).to eq([[0,0,0,0],[0,1,1,0],[0,0,1,2]])
     end
+
+    it "creates DateTimeIndex if date-like objects specified" do
+
+    end
   end
 
   context "#initialize" do
