@@ -15,7 +15,7 @@ describe Vector do
   context "#[]" do
     before do
       index   = DateTimeIndex.date_range(
-        :start => Time.new(2012,4,4), :end => Time.new(2012,4,7), freq: :H)
+        :start => Time.new(2012,4,4), :end => Time.new(2012,4,7), freq: 'H')
       @vector = Vector.new([23]*index.size, index: index)
     end
 
@@ -25,14 +25,14 @@ describe Vector do
 
     it "returns slice when partial date" do
       slice_index = DateTimeIndex.date_range(
-        :start => Time.new(2012,4,4), :periods => 24, freq: :H)
+        :start => Time.new(2012,4,4), :periods => 24, freq: 'H')
       expect(@vector['2012-4-4']).to eq(
         Vector.new([23]*slice_index.size, index: slice_index))
     end
 
     it "returns a slice when range" do
       slice_index = DateTimeIndex.date_range(
-        :start => Time.new(2012,4,4), :end => Time.new(2012,4,5), freq: :H)
+        :start => Time.new(2012,4,4), :end => Time.new(2012,4,5), freq: 'H')
       expect(@vector['2012-4-4'..'2012-4-5']).to eq(
         Vector.new([23]*slice_index.size, index: slice_index))
     end

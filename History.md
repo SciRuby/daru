@@ -9,9 +9,12 @@
         - Changed .new to return appropriate index object based on data passed.
         - Added .from_tuple and .from_array methods to MultiIndex.
         - Added union and intersection behaviour to Index and MultiIndex.
+    - DataFrame
+        - Removed the DataFrameByVector class and the #vector function. Now only
+        way to access a Vector in a DF is by using the #[] operator.
 * Changes
     - Removed the + operator overload from Index and replaced in with union.
-    - Removed the second 'values' argument from Daru::Index because its redundant.
+    - Removed the second 'values' argument from Daru::Index because it's redundant.
 
 # 0.1.0
 
