@@ -4,7 +4,7 @@ include Daru
 describe Vector do
   context "#initialize" do
     it "accepts DateTimeIndex in index option" do
-      index  = DateTimeIndex.date_range(:start => Time.new(2012,2,1), periods: 100)
+      index  = DateTimeIndex.date_range(:start => DateTime.new(2012,2,1), periods: 100)
       vector = Vector.new [1,2,3,4,5]*20, index: index
 
       expect(vector.class).to eq(Vector)
@@ -15,7 +15,7 @@ describe Vector do
   context "#[]" do
     before do
       index   = DateTimeIndex.date_range(
-        :start => Time.new(2012,4,4), :end => Time.new(2012,4,7), freq: 'H')
+        :start => DateTime.new(2012,4,4), :end => DateTime.new(2012,4,7), freq: 'H')
       @vector = Vector.new([23]*index.size, index: index)
     end
 
@@ -25,14 +25,14 @@ describe Vector do
 
     it "returns slice when partial date" do
       slice_index = DateTimeIndex.date_range(
-        :start => Time.new(2012,4,4), :periods => 24, freq: 'H')
+        :start => DateTime.new(2012,4,4), :periods => 24, freq: 'H')
       expect(@vector['2012-4-4']).to eq(
         Vector.new([23]*slice_index.size, index: slice_index))
     end
 
     it "returns a slice when range" do
       slice_index = DateTimeIndex.date_range(
-        :start => Time.new(2012,4,4), :end => Time.new(2012,4,5), freq: 'H')
+        :start => DateTime.new(2012,4,4), :end => DateTime.new(2012,4,5), freq: 'H')
       expect(@vector['2012-4-4'..'2012-4-5']).to eq(
         Vector.new([23]*slice_index.size, index: slice_index))
     end
@@ -53,7 +53,7 @@ describe DataFrame do
   before do
     @index = DateTimeIndex.date_range(:start => '2012-2-1', periods: 100)
     @order = DateTimeIndex.new([
-      Time.new(2012,1,3),Time.new(2013,2,3),Time.new(2012,3,3)])
+      DateTime.new(2012,1,3),DateTime.new(2013,2,3),DateTime.new(2012,3,3)])
     @a     = [1,2,3,4,5]*20
     @b     = @a.map { |e| e*3 }
     @c     = @a.map(&:to_s)
@@ -75,7 +75,7 @@ describe DataFrame do
     it "returns DataFrame when incomplete index" do
       answer = DataFrame.new(
         [@a, @c], index: @index, order: DateTimeIndex.new([
-          Time.new(2012,1,3),Time.new(2012,3,3)])
+          DateTime.new(2012,1,3),DateTime.new(2012,3,3)])
         )
       expect(@df['2012']).to eq(answer)
     end
@@ -106,7 +106,7 @@ describe DataFrame do
       b = @b[range]
       c = @c[range]
       i = DateTimeIndex.date_range(:start => '2012-2-1', periods: 29)
-      answer = DataFrame.new([a,b,c], index: index, order: @order)
+      answer = DataFrame.new([a,b,c], index: i, order: @order)
 
       expect(@df.row['2012-2']).to eq(answer)
     end

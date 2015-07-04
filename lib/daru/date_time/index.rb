@@ -1,22 +1,8 @@
 module Daru
   class DateTimeIndex < Index
-    # Have a hash that contains the time difference for frequencies.
-    # Supported frequencies: Second, Minute, Hour, Day, Month, Year
-    # 
-    # To create a hash I need to calculate the difference between 
-    # two secs, mins, etc. This number will be the value for the
-    # corresponding key denoting the frequency in verbose.
-    FREQUENCY = {
-      :Y => 31536000,
-      :M => ,
-      :D => ,
-      :H => ,
-      :Min => ,
-      :S  =>
-    }
 
     def initialize data, opts={}
-      try_convert_to_ruby_time data
+      try_convert_to_ruby_date_time data
 
       if periodic? data
         set_frequency
@@ -28,16 +14,16 @@ module Daru
       end
     end
 
-    def try_convert_to_ruby_time data
+    def try_convert_to_ruby_date_time data
       data.map! do |e|
-        e.is_a?(String) ? Time.parse(e) : e
+        e.is_a?(String) ? DateTime.parse(e) : e
       end
     end
 
     def periodic? data
       return false unless data[1]
 
-      possible_freq = data[1].to_i - data[0].to_i
+      possible_freq = data[1] - data[0]
       data.each_cons(2) do |d|
         return false if (d[1].to_i - d[0].to_i) != possible_freq 
       end
@@ -46,7 +32,7 @@ module Daru
     end
 
     def set_frequency
-      
+      @frequency = data[1] ? (data[1] - data[0]) : nil
     end
 
     def set_start_and_end
@@ -59,5 +45,22 @@ module Daru
     def self.date_range opts={}
 
     end
+
+    def [] key
+      if key.is_a?(Range)
+        first = key.first
+        last = key.last
+
+        # parse out the time information from first and last variables.
+        if @frequency
+          # calculate slice based on start, end, period and frequency
+        else
+          # go through each element to determine the slice
+        end
+      else
+
+      end  
+    end
+
   end
 end
