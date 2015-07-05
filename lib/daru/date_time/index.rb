@@ -39,7 +39,7 @@ module Daru
       
     end
 
-    private :try_convert_to_ruby_time, :periodic?, :set_frequency, 
+    private :try_convert_to_ruby_date_time, :periodic?, :set_frequency, 
       :set_start_and_end
 
     def self.date_range opts={}

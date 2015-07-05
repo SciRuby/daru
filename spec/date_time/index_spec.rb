@@ -138,7 +138,7 @@ describe DateTimeIndex do
       expect {
         DateTimeIndex.date_range(
           :start => DateTime.new(2012,3,4,12,5,4,"+5:30"), 
-          :end => DateTime.new(2013,3,4,12,5,4,"+7:30")), freq: 'M'
+          :end => DateTime.new(2013,3,4,12,5,4,"+7:30"), freq: 'M')
       }.to raise_error(ArgumentError)
     end
   end
