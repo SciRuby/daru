@@ -7,11 +7,30 @@ module Daru
       # string.
       #
       # The 'frequency' argument can denote one of the following:
-      # * 'S' - seconds
-      # * 'M' - minutes
-      # * 
+      # * 'S'     - seconds
+      # * 'M'     - minutes
+      # * 'H'     - hours
+      # * 'D'     - days
+      # * 'W'     - Week (default) anchored on sunday
+      # * 'W-SUN' - Same as 'W'
+      # * 'W-MON' - Week anchored on monday
+      # * 'W-TUE' - Week anchored on tuesday
+      # * 'W-WED' - Week anchored on wednesday
+      # * 'W-THU' - Week anchored on thursday
+      # * 'W-FRI' - Week anchored on friday
+      # * 'W-SAT' - Week anchored on saturday
+      # * 'MS'    - month start
+      # * 'ME'    - month end
+      # * 'YS'    - year start
+      # * 'YE'    - year end
+      # 
+      # Multiples of these can also be specified. For example '2S' for 2 seconds
+      # or '2MS' for two month end offsets.
       def offset_from_frequency frequency
-        
+        raise ArgumentError, "Must specify :freq." if frequency.nil?
+        return frequency if frequency.kind_of?(Daru::DateOffset)
+
+
       end
 
       def generate_data start, en, offset, periods
@@ -38,15 +57,14 @@ module Daru
     def self.date_range opts={}
       helper = DateTimeIndexHelper
 
-      frequency = opts[:freq]
       start     = opts[:start]
       en        = opts[:end]
       periods   = helper.derive_or_get_periods_directly start, en, opts[:periods]
-      offset    = helper.offset_from_frequency frequency
+      offset    = helper.offset_from_frequency opts[:freq]
       data      = helper.generate_data start, en, offset, periods
 
       DateTimeIndex.new(data, :freq => offset, :periods => periods, 
-        :from_date_range => true
+        :from_date_range => true)
     end
 
     def [] key
@@ -79,6 +97,10 @@ module Daru
     end
 
     def size
+      
+    end
+
+    def == other
       
     end
   end

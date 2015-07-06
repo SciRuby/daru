@@ -164,7 +164,7 @@ describe DateTimeIndex do
       expect(index['2014-3-5']).to eq(2)
     end
 
-    it "accepts complete time as a Time object" do
+    it "accepts complete time as a DateTime object" do
       index = DateTimeIndex.new([
         DateTime.new(2014,3,3),DateTime.new(2014,3,4),DateTime.new(2014,3,5),DateTime.new(2014,3,6)])
       expect(index[DateTime.new(2014,3,6)]).to eq(3)

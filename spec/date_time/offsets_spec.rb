@@ -38,6 +38,12 @@ describe DateOffset do
       expect(offset + DateTime.new(2012,3,1)).to eq(
         DateTime.new(2012,4,1))
     end
+
+    it "supports 'n' option to apply same offset multiple times" do
+      offset = DateOffset.new(days: 3, n: 4)
+      expect(offset + DateTime.new(2012,3,1)).to eq(
+        DateTime.new(2012,3,13))
+    end
   end
 end
 
