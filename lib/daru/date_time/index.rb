@@ -2,6 +2,28 @@ module Daru
   # Private module for storing helper functions for DateTimeIndex.
   module DateTimeIndexHelper
     class << self
+      OFFSETS_HASH = {
+        'S' => Offsets::Second,
+        'M' => Offsets::Minute,
+        'H' => Offsets::Hour,
+        'D' => Offsets::Day,
+        'W' => Offsets::Week,
+        'MS' => Offsets::MonthStart,
+        'ME' => Offsets::MonthEnd,
+        'YS' => Offsets::YearStart,
+        'YE' => Offsets::YearEnd
+      }
+
+      DAYS_OF_WEEK = {
+        'SUN' => 0,
+        'MON' => 1,
+        'TUE' => 2,
+        'WED' => 3,
+        'THU' => 4,
+        'FRI' => 5,
+        'SAT' => 6
+      }
+
       # Generates a Daru::DateOffset object for generic offsets or one of the
       # specialized classed within Daru::Offsets depending on the 'frequency'
       # string.
@@ -30,7 +52,27 @@ module Daru
         raise ArgumentError, "Must specify :freq." if frequency.nil?
         return frequency if frequency.kind_of?(Daru::DateOffset)
 
+        matched = /([0-9]*)(S|H|ME|MS|M|D|W|YS|YE)/.match(frequency)
+        raise ArgumentError, 
+          "Invalid frequency string #{frequency}" if matched.nil?
 
+        n             = matched[1] == '0' ? 1 : matched[1].to_i
+        offset_string = matched[2]
+        offset_klass  = OFFSETS_HASH[offset_string]
+
+        if offset_string == 'W'
+          day = Regexp.new(DAYS_OF_WEEK.keys.join('|')).match frequency
+        end
+
+        offset_klass.new(n, weekday: DAYS_OF_WEEK[day])
+      end
+
+      def start_date start
+        start.is_a?(String) ? DateTime.parse(start) : start
+      end
+
+      def end_date en
+        en.is_a?(String) ? DateTime.parse(en) : en
       end
 
       def generate_data start, en, offset, periods
@@ -57,11 +99,11 @@ module Daru
     def self.date_range opts={}
       helper = DateTimeIndexHelper
 
-      start     = opts[:start]
-      en        = opts[:end]
-      periods   = helper.derive_or_get_periods_directly start, en, opts[:periods]
-      offset    = helper.offset_from_frequency opts[:freq]
-      data      = helper.generate_data start, en, offset, periods
+      start   = helper.start_date opts[:start]
+      en      = helper.end_date opts[:end]
+      periods = helper.derive_or_get_periods_directly start, en, opts[:periods]
+      offset  = helper.offset_from_frequency opts[:freq]
+      data    = helper.generate_data start, en, offset, periods
 
       DateTimeIndex.new(data, :freq => offset, :periods => periods, 
         :from_date_range => true)

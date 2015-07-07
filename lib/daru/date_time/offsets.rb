@@ -10,9 +10,21 @@ module Daru
   end
 
   module Offsets
+    class Second < DateOffset
+    end
+
+    class Minute < DateOffset
+    end
+
+    class Hour < DateOffset
+    end
+
+    class Day < DateOffset
+    end
+
     class Week < DateOffset
     end
-    
+
     class MonthBegin < DateOffset
     end
 

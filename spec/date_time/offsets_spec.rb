@@ -50,6 +50,46 @@ end
 include Daru::Offsets
 
 describe Offsets do
+  describe Second do
+    context "#initialize" do
+      it "creates a second offset" do
+        offset = Offsets::Second.new(5)
+        expect(offset + DateTime.new(2012,3,4,23,4,00)).to eq(
+          DateTime.new(2012,3,4,23,4,05))
+      end
+    end
+  end
+
+  describe Minute do
+    context "#initialize" do
+      it "creates a minute offset" do
+        offset = Offsets::Minute.new(2)
+        expect(offset + DateTime.new(2013,4,5,12,45,44)).to eq(
+          DateTime.new(2013,4,5,12,47,44))
+      end
+    end
+  end
+
+  describe Hour do
+    context "#initialize" do
+      it "creates a hour offset" do
+        offset = Offsets::Minute.new(3)
+        expect(offset + DateTime.new(2024,3,2)).to eq(
+          DateTime.new(2024,3,2,03,0,0))
+      end
+    end
+  end
+
+  describe Day do
+    context "#initialize" do
+      it "creates a per day offset" do
+        offset = Offsets::Day.new(12)
+        expect(offset + DateTime.new(2012,5,4)).to eq(
+          DateTime.new(2012,5,16))
+      end
+    end
+  end
+
   describe Week do
     context "#initialize" do
       [:sunday, :monday, :tuesday, :wednesday, :thursday, :friday, 
