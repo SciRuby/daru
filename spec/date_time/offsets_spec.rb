@@ -48,11 +48,10 @@ describe DateOffset do
 end
 
 include Daru::Offsets
-
 describe Offsets do
   describe Second do
     context "#initialize" do
-      it "creates a second offset" do
+      it "creates a seconds offset" do
         offset = Offsets::Second.new(5)
         expect(offset + DateTime.new(2012,3,4,23,4,00)).to eq(
           DateTime.new(2012,3,4,23,4,05))
@@ -62,7 +61,7 @@ describe Offsets do
 
   describe Minute do
     context "#initialize" do
-      it "creates a minute offset" do
+      it "creates a minutes offset" do
         offset = Offsets::Minute.new(2)
         expect(offset + DateTime.new(2013,4,5,12,45,44)).to eq(
           DateTime.new(2013,4,5,12,47,44))
@@ -72,8 +71,8 @@ describe Offsets do
 
   describe Hour do
     context "#initialize" do
-      it "creates a hour offset" do
-        offset = Offsets::Minute.new(3)
+      it "creates an hours offset" do
+        offset = Offsets::Hour.new(3)
         expect(offset + DateTime.new(2024,3,2)).to eq(
           DateTime.new(2024,3,2,03,0,0))
       end
@@ -82,7 +81,7 @@ describe Offsets do
 
   describe Day do
     context "#initialize" do
-      it "creates a per day offset" do
+      it "creates a days offset" do
         offset = Offsets::Day.new(12)
         expect(offset + DateTime.new(2012,5,4)).to eq(
           DateTime.new(2012,5,16))

@@ -95,9 +95,9 @@ describe DateTimeIndex do
       pending
     end
 
-    it "creates a DateTimeIndex of month start frequency" do
+    it "creates a DateTimeIndex of month begin frequency" do
       index = DateTimeIndex.date_range(
-        :start => '2017-4-14', :freq => 'MS', :periods => 5)
+        :start => '2017-4-14', :freq => 'MB', :periods => 5)
       expect(index).to eq(DateTimeIndex.new([
         DateTime.new(2017,4,1), DateTime.new(2017,5,1), DateTime.new(2017,6,1), 
         DateTime.new(2017,7,1), DateTime.new(2017,8,1)]))
@@ -111,8 +111,8 @@ describe DateTimeIndex do
         DateTime.new(2014,5,31), DateTime.new(2014,6,30), DateTime.new(2014,7,31)]))
     end
 
-    it "creates a DateTimeIndex of year start frequency" do
-      index = DateTimeIndex.date_range(:start => '2014-4-2', periods: 3, freq: 'YS')
+    it "creates a DateTimeIndex of year begin frequency" do
+      index = DateTimeIndex.date_range(:start => '2014-4-2', periods: 3, freq: 'YB')
       expect(index).to eq(DateTimeIndex.new([
         DateTime.new(2015,1,1), DateTime.new(2016,1,1), DateTime.new(2017,1,1)]))
     end
@@ -128,7 +128,7 @@ describe DateTimeIndex do
 
     it "creates only specfied number of periods taking precendence over end" do
       index = DateTimeIndex.date_range(start: '2014-5-5', end: '2015-3', 
-        periods: 5, freq: 'YS')
+        periods: 5, freq: 'YB')
       expect(index).to eq(DateTimeIndex.new([
         DateTime.new(2014,1,1),DateTime.new(2015,1,1),DateTime.new(2016,1,1),
         DateTime.new(2017,1,1),DateTime.new(2018,1,1)]))
@@ -200,7 +200,7 @@ describe DateTimeIndex do
         DateTime.new(2012,2,29,0,1,5)]))
     end
 
-    it "accepts year, month, date and specific time as a string" do
+    it "accepts year, month, date and specific time as a string", focus: true  do
       index = DateTimeIndex.date_range(
         :start => DateTime.new(2015,5,3),:end => DateTime.new(2015,5,5), freq: 'M')
       expect(index['2015-5-3 00:04:00']).to eq(5)
@@ -209,7 +209,7 @@ describe DateTimeIndex do
     it "creates DateTimeIndex with seconds frequency" do
       index = DateTimeIndex.date_range(
         :start => DateTime.new(2012,3,2,21,4,2), :end => DateTime.new(2012,3,2,21,5,2),
-        :freq => :S)
+        :freq => 'S')
       expect(index['2012-3-2 21:04:04']).to eq(2)
     end
 

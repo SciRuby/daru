@@ -3,15 +3,15 @@ module Daru
   module DateTimeIndexHelper
     class << self
       OFFSETS_HASH = {
-        'S' => Offsets::Second,
-        'M' => Offsets::Minute,
-        'H' => Offsets::Hour,
-        'D' => Offsets::Day,
-        'W' => Offsets::Week,
-        'MS' => Offsets::MonthStart,
-        'ME' => Offsets::MonthEnd,
-        'YS' => Offsets::YearStart,
-        'YE' => Offsets::YearEnd
+        'S'  => Daru::Offsets::Second,
+        'M'  => Daru::Offsets::Minute,
+        'H'  => Daru::Offsets::Hour,
+        'D'  => Daru::Offsets::Day,
+        'W'  => Daru::Offsets::Week,
+        'MB' => Daru::Offsets::MonthBegin,
+        'ME' => Daru::Offsets::MonthEnd,
+        'YS' => Daru::Offsets::YearBegin,
+        'YE' => Daru::Offsets::YearEnd
       }
 
       DAYS_OF_WEEK = {
@@ -56,15 +56,16 @@ module Daru
         raise ArgumentError, 
           "Invalid frequency string #{frequency}" if matched.nil?
 
-        n             = matched[1] == '0' ? 1 : matched[1].to_i
+        n             = matched[1] == "" ? 1 : matched[1].to_i
         offset_string = matched[2]
         offset_klass  = OFFSETS_HASH[offset_string]
 
         if offset_string == 'W'
           day = Regexp.new(DAYS_OF_WEEK.keys.join('|')).match frequency
+          return offset_klass.new(n, weekday: DAYS_OF_WEEK[day])
         end
 
-        offset_klass.new(n, weekday: DAYS_OF_WEEK[day])
+        offset_klass.new(n)
       end
 
       def start_date start
@@ -76,37 +77,77 @@ module Daru
       end
 
       def generate_data start, en, offset, periods
-        
+        data = [start]
+        new_date = offset + start
+
+        if periods.nil? # use end
+          loop do
+            break if new_date > en
+            data << new_date
+            new_date = offset + new_date
+          end
+        else
+          periods.times do
+            data << new_date
+            new_date = offset + new_date
+          end
+        end
+
+        data
       end
 
-      def derive_or_get_periods_directly start, en, periods
-        
+      def verify_start_and_end start, en
+        raise ArgumentError, "Start and end cannot be the same" if start == en
+        raise ArgumentError, "Start must be lesser than end"    if start > en
+        raise ArgumentError, 
+          "Only same time zones are allowed" if start.zone != en.zone
+      end
+
+      def infer_offset data
+        raise NotImplementedError
       end
     end
   end
 
   class DateTimeIndex < Index
-    def initialize *args
-      # So the initial plan of generating the date from start/end is canned and
-      # is now replaced with one where we store the whole index (ie all the 
-      # DateTime objs) in one array along with their indices and run a bsearch
-      # on it to find the appropriate Date.
-      #
-      # The offset will only serve for generation of these DateTimes from the
-      # start and end dates and periods.
+    include Enumerable
+
+    def each(&block)
+      @data.each(&block)
     end
 
+    attr_reader :frequency, :offset, :periods
+
+    def initialize *args
+      helper = DateTimeIndexHelper
+
+      data = args[0]
+      opts = args[1]
+
+      @offset = 
+      case opts[:freq]
+      when 'infer' then helper.infer_offset(data)
+      when  nil    then nil
+      else  helper.offset_from_frequency(opts[:freq])
+      end
+
+      @frequency = @offset ? @offset.freq_string : nil
+      @data      = data
+      @periods   = data.size
+    end
+
+    # Create a date range by specifying the start, end, periods and frequency
+    # of the data.
     def self.date_range opts={}
       helper = DateTimeIndexHelper
 
-      start   = helper.start_date opts[:start]
-      en      = helper.end_date opts[:end]
-      periods = helper.derive_or_get_periods_directly start, en, opts[:periods]
-      offset  = helper.offset_from_frequency opts[:freq]
-      data    = helper.generate_data start, en, offset, periods
+      start  = helper.start_date opts[:start]
+      en     = helper.end_date opts[:end]
+      helper.verify_start_and_end start, en
+      offset = helper.offset_from_frequency opts[:freq]
+      data   = helper.generate_data start, en, offset, opts[:periods]
 
-      DateTimeIndex.new(data, :freq => offset, :periods => periods, 
-        :from_date_range => true)
+      DateTimeIndex.new(data, :freq => offset)
     end
 
     def [] key
@@ -139,7 +180,7 @@ module Daru
     end
 
     def size
-      
+      @periods
     end
 
     def == other

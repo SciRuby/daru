@@ -1450,7 +1450,7 @@ describe Daru::DataFrame do
       }, index: agg_mi))
     end
  
-    it "creates row and vector index as per (single) index and (single) vectors args", focus: true do
+    it "creates row and vector index as per (single) index and (single) vectors args" do
       agg_vectors = Daru::MultiIndex.from_tuples([
         [:d, :one],
         [:d, :two],
@@ -1880,7 +1880,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#one_to_many", focus: true do
+  context "#one_to_many" do
     it "" do
       rows = [
         ['1', 'george', 'red', 10, 'blue', 20, nil, nil],
