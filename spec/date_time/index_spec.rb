@@ -3,10 +3,10 @@ require 'spec_helper'
 include Daru
 
 describe DateTimeIndex do
-  context ".initialize" do
+  context ".initialize", focus: true do
     it "creates DateTimeIndex from Time objects" do
       index = DateTimeIndex.new([
-        DateTime.new(2014,7,1),DateTime.new(2014,7,2),DateTime.new(2014,7,2),DateTime.new(2014,7,2)])
+        DateTime.new(2014,7,1),DateTime.new(2014,7,2),DateTime.new(2014,7,3),DateTime.new(2014,7,4)])
       expect(index.class).to eq(DateTimeIndex)
       expect(index['2014-7-2']).to eq(1)
     end

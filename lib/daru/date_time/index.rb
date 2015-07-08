@@ -77,18 +77,20 @@ module Daru
       end
 
       def generate_data start, en, offset, periods
-        data = [start]
-        new_date = offset + start
+        data = []
+        new_date = start
 
         if periods.nil? # use end
+          i = 0
           loop do
             break if new_date > en
-            data << new_date
+            data << [new_date, i]
             new_date = offset + new_date
+            i += 1
           end
         else
-          periods.times do
-            data << new_date
+          periods.times do |i|
+            data << [new_date, i]
             new_date = offset + new_date
           end
         end
@@ -106,6 +108,33 @@ module Daru
       def infer_offset data
         raise NotImplementedError
       end
+
+      def find_index_of_date date_time
+        searched = @data.bsearch { |d| d[0] >= date_time }
+        searched[0] == date_time ? searched[1] : nil
+      end
+
+      def find_date_string_bounds date_string
+        date_precision = determine_date_precision_of date_string
+        generate_date_slice DateTime.parse(date_string), date_precision
+        # first I need to find what the date string resolves to, i.e. I need to
+        #   figure what is the precision of the date string. Is it yearly, i.e.
+        #   is it something like '2012', or is it monthly, i.e. something like
+        #   '2012-3'?
+        #
+        # Based on this precision/resolution I need to figure out the bounds 
+        # by outputting the next date in the same precision. So for example,
+        # a year resolution should give the next year, a month resolution should
+        # give the next month etc.
+      end
+
+      def determine_date_precision_of date_string
+        
+      end
+
+      def generate_date_slice date_time, date_precision
+        
+      end
     end
   end
 
@@ -113,7 +142,9 @@ module Daru
     include Enumerable
 
     def each(&block)
-      @data.each(&block)
+      @data.each do |d|
+        yield d[0]
+      end
     end
 
     attr_reader :frequency, :offset, :periods
@@ -122,7 +153,7 @@ module Daru
       helper = DateTimeIndexHelper
 
       data = args[0]
-      opts = args[1]
+      opts = args[1] || {freq: nil}
 
       @offset = 
       case opts[:freq]
@@ -158,6 +189,14 @@ module Daru
         # yielding the elements that will give us a demarcation and thereby serve
         # for slicing the index.
       else
+        helper = DateTimeIndexHelper
+
+        if key.is_a?(DateTime)
+          return helper.find_index_of_date(key)
+        else
+          slice_begin, slice_end = helper.find_date_string_bounds key
+        end
+
         # single key entry
 
         # Single entry is bit more complicated. We need to support partial and 
@@ -179,12 +218,16 @@ module Daru
       end 
     end
 
+    def to_a
+      @data.transpose[0]
+    end
+
     def size
       @periods
     end
 
     def == other
-      
+      self.to_a == other.to_a
     end
   end
 end
