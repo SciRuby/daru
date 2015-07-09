@@ -25,6 +25,13 @@ module Daru
         'SAT' => 6
       }
 
+      TIME_INTERVALS = {
+        Rational(1,1)     => Daru::Offsets::Day,
+        Rational(1,24)    => Daru::Offsets::Hour,
+        Rational(1,1440)  => Daru::Offsets::Minute,
+        Rational(1,86400) => Daru::Offsets::Second
+      }
+
       # Generates a Daru::DateOffset object for generic offsets or one of the
       # specialized classed within Daru::Offsets depending on the 'frequency'
       # string.
@@ -42,9 +49,9 @@ module Daru
       # * 'W-THU' - Week anchored on thursday
       # * 'W-FRI' - Week anchored on friday
       # * 'W-SAT' - Week anchored on saturday
-      # * 'MS'    - month start
+      # * 'MB'    - month begin
       # * 'ME'    - month end
-      # * 'YS'    - year start
+      # * 'YB'    - year begin
       # * 'YE'    - year end
       # 
       # Multiples of these can also be specified. For example '2S' for 2 seconds
@@ -107,18 +114,31 @@ module Daru
       end
 
       def infer_offset data
-        raise NotImplementedError
+        possible_freq = data[1] - data[0]
+        inferred = true
+        data.each_cons(2) do |d|  
+          if d[1] - d[0] != possible_freq
+            inferred = false
+            break
+          end
+        end
+
+        if inferred
+          TIME_INTERVALS[possible_freq].new 
+        else
+          nil
+        end
       end
 
-      def find_index_of_date date_time
-        searched = @data.bsearch { |d| d[0] >= date_time }
+      def find_index_of_date data, date_time
+        searched = data.bsearch { |d| d[0] >= date_time }
         searched[0] == date_time ? searched[1] : nil
       end
 
-      def find_date_string_bounds date_string
+      def find_date_string_bounds offset, date_string
         date_precision = determine_date_precision_of date_string
         date_time = date_time_from date_string, date_precision
-        generate_bounds date_time, date_precision
+        generate_bounds date_time, date_precision, offset.freq_string
       end
 
       def date_time_from date_string, date_precision
@@ -153,7 +173,7 @@ module Daru
         end
       end
 
-      def generate_bounds date_time, date_precision
+      def generate_bounds date_time, date_precision, frequency
         case date_precision
         when :year
           [
@@ -167,26 +187,27 @@ module Daru
               23,59,59)
           ]
         when :date
+        # when (:date and !frequency.match(/D/))
           [
             date_time,
             DateTime.new(date_time.year, date_time.month, date_time.day,23,59,59)
           ]
         when :hour
+        # when (:hour and !frequency.match(/H/))
           [
             date_time,
             DateTime.new(date_time.year, date_time.month, date_time.day, 
             date_time.hour,59,59)
           ]
         when :minute
+        # when (:minute and !frequency.match(/M/))
           [
             date_time,
             DateTime.new(date_time.year, date_time.month, date_time.day, 
               date_time.hour, date_time.min, 59)
            ]
-        when :second
+        else # second or when precision is same as offset
           [ date_time, date_time ]
-        else
-          raise ArgumentError, "Unacceptable precision #{date_precision}"
         end
       end
     end
@@ -247,11 +268,18 @@ module Daru
 
         if @offset
           if key.is_a?(DateTime)
-            return helper.find_index_of_date(key)
+            return helper.find_index_of_date(@data, key)
           else
-            slice_begin, slice_end = helper.find_date_string_bounds key
-            start = @data.bsearch { |d| d[0] >= slice_begin }
-            en    = @data.bsearch { |d| d[0] >= slice_end}
+            slice_begin, slice_end = helper.find_date_string_bounds @offset, key
+            start    = @data.bsearch { |d| d[0] >= slice_begin }
+            after_en = @data.bsearch { |d| d[0] > slice_end }
+            
+            if after_en
+              en = @data[after_en[1] - 1]
+            else
+              en = @data.last
+            end
+
 
             return start[1] if start == en
 

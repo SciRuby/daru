@@ -19,6 +19,13 @@ describe DateTimeIndex do
       expect(index['2014-7-2']).to eq(1)
     end
 
+    it "tries to automatically infer the frequency of the data" do
+      index = DateTimeIndex.new([
+        DateTime.new(2012,1,1), DateTime.new(2012,1,2), DateTime.new(2012,1,3),
+        DateTime.new(2012,1,4), DateTime.new(2012,1,5)], freq: :infer)
+      expect(index.frequency).to eq('D')
+    end
+
     it "lets setting of string time format" do
       pending
       Daru::DateTimeIndex.format = 'some-date-time-format'
@@ -147,13 +154,15 @@ describe DateTimeIndex do
   context "#frequency" do
     it "reports the frequency of when a period index is specified" do
       index = DateTimeIndex.new([
-        DateTime.new(2014,7,1),DateTime.new(2014,7,2),DateTime.new(2014,7,3),DateTime.new(2014,7,4)])
+        DateTime.new(2014,7,1),DateTime.new(2014,7,2),DateTime.new(2014,7,3),
+        DateTime.new(2014,7,4)], freq: :infer)
       expect(index.frequency).to eq('D')
     end
 
     it "reports frequency as nil for non-periodic index" do
       index = DateTimeIndex.new([
-        DateTime.new(2014,7,1),DateTime.new(2014,7,2),DateTime.new(2014,7,3),DateTime.new(2014,7,10)])
+        DateTime.new(2014,7,1),DateTime.new(2014,7,2),DateTime.new(2014,7,3),
+        DateTime.new(2014,7,10)], freq: :infer)
       expect(index.frequency).to eq(nil)
     end
   end
@@ -161,13 +170,16 @@ describe DateTimeIndex do
   context "#[]" do
     it "accepts complete time as a string" do
       index = DateTimeIndex.new([
-        DateTime.new(2014,3,3),DateTime.new(2014,3,4),DateTime.new(2014,3,5),DateTime.new(2014,3,6)])
+        DateTime.new(2014,3,3),DateTime.new(2014,3,4),DateTime.new(2014,3,5),DateTime.new(2014,3,6)], 
+        freq: :infer)
+      expect(index.frequency).to eq('D')
       expect(index['2014-3-5']).to eq(2)
     end
 
     it "accepts complete time as a DateTime object" do
       index = DateTimeIndex.new([
-        DateTime.new(2014,3,3),DateTime.new(2014,3,4),DateTime.new(2014,3,5),DateTime.new(2014,3,6)])
+        DateTime.new(2014,3,3),DateTime.new(2014,3,4),DateTime.new(2014,3,5),DateTime.new(2014,3,6)], 
+        freq: :infer)
       expect(index[DateTime.new(2014,3,6)]).to eq(3)
     end
 
@@ -177,6 +189,13 @@ describe DateTimeIndex do
         DateTime.new(2015,7),DateTime.new(2013,7)])
       expect(index['2014']).to eq(DateTimeIndex.new([
         DateTime.new(2014,5),DateTime.new(2014,7)]))
+    end
+
+    it "accepts only year for frequency data" do
+      index = DateTimeIndex.date_range(:start => DateTime.new(2012,3,2), 
+        periods: 1000, freq: '5D')
+      expect(index['2012']).to eq(DateTimeIndex.date_range(
+        :start => DateTime.new(2012,3,2), :end => DateTime.new(2012,12,27), freq: '5D'))
     end
 
     it "accepts year and month specified as a string" do
@@ -201,13 +220,21 @@ describe DateTimeIndex do
         DateTime.new(2012,2,29,0,1,5)]))
     end
 
-    it "accepts year, month, date and specific time as a string", focus: true  do
+    it "accepts year, month, date for frequency data", focus: true do
+      index = DateTimeIndex.date_range(:start => DateTime.new(2012,2,29), 
+        periods: 1000, freq: 'M')
+      expect(index['2012-2-29']).to eq(DateTimeIndex.date_range(
+        :start => DateTime.new(2012,2,29), 
+        :end   => DateTime.new(2012,2,29,16,39,00), freq: 'M'))
+    end
+
+    it "accepts year, month, date and specific time as a string" do
       index = DateTimeIndex.date_range(
         :start => DateTime.new(2015,5,3),:end => DateTime.new(2015,5,5), freq: 'M')
       expect(index['2015-5-3 00:04:00']).to eq(4)
     end
 
-    it "creates DateTimeIndex with seconds frequency" do
+    it "accepts with seconds accuracy" do
       index = DateTimeIndex.date_range(
         :start => DateTime.new(2012,3,2,21,4,2), :end => DateTime.new(2012,3,2,21,5,2),
         :freq => 'S')
@@ -247,6 +274,15 @@ describe DateTimeIndex do
 
     it "supports time ranges with year, month, date, hours and minutes specified" do
 
+    end
+
+    it "returns slice upto last element if overshoot in partial date" do
+      index = DateTimeIndex.date_range(:start => '2012-4-2', periods: 100, freq: 'M')
+      expect(index['2012-4-2']).to eq(DateTimeIndex.date_range(
+        :start => '2012-4-2', periods: 100, freq: 'M'))
+    end
+
+    it "returns slice upto last element if overshoot in range" do
     end
   end
 
