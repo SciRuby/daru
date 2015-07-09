@@ -142,6 +142,13 @@ describe DateTimeIndex do
         DateTime.new(2017,1,1),DateTime.new(2018,1,1)]))
     end
 
+    it "does not increment start date if it satisifies the anchor" do
+      index = DateTimeIndex.date_range(:start => '2012-1-1', freq: 'MB', periods: 4)
+      expect(index).to eq(DateTimeIndex.new(
+        [DateTime.new(2012,1,1), DateTime.new(2012,2,1), 
+         DateTime.new(2012,3,1), DateTime.new(2012,4,1)]))
+    end
+
     it "raises error for different start and end timezones" do
       expect {
         DateTimeIndex.date_range(
@@ -220,7 +227,7 @@ describe DateTimeIndex do
         DateTime.new(2012,2,29,0,1,5)]))
     end
 
-    it "accepts year, month, date for frequency data", focus: true do
+    it "accepts year, month, date for frequency data" do
       index = DateTimeIndex.date_range(:start => DateTime.new(2012,2,29), 
         periods: 1000, freq: 'M')
       expect(index['2012-2-29']).to eq(DateTimeIndex.date_range(
@@ -305,9 +312,23 @@ describe DateTimeIndex do
   context "#shift" do
     # TODO
     it "shifts all dates to the future by specified value" do
-    end
 
+    end
+  end
+
+  context "#lag" do
     it "shifts all dates to the past by specified value" do
+
+    end
+  end
+
+  context "#year" do
+    it "returns the year of all dates a Ruby array" do
+    end
+  end
+
+  context "#month" do 
+    it "returns month of all dates as Ruby array" do
     end
   end
 end

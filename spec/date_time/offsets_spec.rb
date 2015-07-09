@@ -1,7 +1,7 @@
 require 'spec_helper'
 include Daru
 
-describe DateOffset do
+describe DateOffset, focus: true do
   context "#initialize, #+" do
     it "creates a seconds offset" do
       offset = DateOffset.new(secs: 5)
@@ -56,6 +56,9 @@ describe Offsets do
         expect(offset + DateTime.new(2012,3,4,23,4,00)).to eq(
           DateTime.new(2012,3,4,23,4,05))
       end
+    end
+
+    context "#on_offset?" do
     end
   end
 
@@ -119,6 +122,9 @@ describe Offsets do
           DateTime.new(2012,4,1))
       end
     end
+
+    context "#on_offset?" do
+    end
   end
 
   describe MonthEnd do
@@ -126,6 +132,14 @@ describe Offsets do
       it "creates a month end offset" do
         offset = Offsets::MonthEnd.new
         expect(offset + DateTime.new(2012,3,25)).to eq(
+          DateTime.new(2012,3,31))
+      end
+    end
+
+    context "#+" do
+      it "increases on offset date to end of next month" do
+        offset = Offsets::MonthEnd.new
+        expect(offset + DateTime.new(2012,2,29)).to eq(
           DateTime.new(2012,3,31))
       end
     end
@@ -139,6 +153,9 @@ describe Offsets do
           DateTime.new(2013,1,1))
       end
     end
+
+    context "#on_offset?" do
+    end
   end
 
   describe YearEnd do
@@ -148,6 +165,12 @@ describe Offsets do
         expect(offset + DateTime.new(2012,2,29)).to eq(
           DateTime.new(2012,12,31))
       end
+    end
+
+    context "#+" do
+    end
+
+    context "#on_offset?" do
     end
   end
 end

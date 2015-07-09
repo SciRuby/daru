@@ -68,6 +68,9 @@ module Daru
         offset_string = matched[2]
         offset_klass  = OFFSETS_HASH[offset_string]
 
+        raise ArgumentError,
+          "Cannont interpret offset #{offset_string}" if offset_klass.nil?
+
         if offset_string == 'W'
           day = Regexp.new(DAYS_OF_WEEK.keys.join('|')).match frequency
           return offset_klass.new(n, weekday: DAYS_OF_WEEK[day])
@@ -86,9 +89,18 @@ module Daru
           en, determine_date_precision_of(en)) : en
       end
 
+      def begin_from_zeroth offset, start
+        if offset.kind_of?(Tick) or 
+          (offset.respond_to?(:on_offset?) and offset.on_offset?(start))
+          true
+        else
+          false
+        end
+      end
+
       def generate_data start, en, offset, periods
         data = []
-        new_date = start
+        new_date = begin_from_zeroth(offset, start) ? start : offset + start
 
         if periods.nil? # use end
           loop do
@@ -273,7 +285,7 @@ module Daru
             slice_begin, slice_end = helper.find_date_string_bounds @offset, key
             start    = @data.bsearch { |d| d[0] >= slice_begin }
             after_en = @data.bsearch { |d| d[0] > slice_end }
-            
+
             if after_en
               en = @data[after_en[1] - 1]
             else
