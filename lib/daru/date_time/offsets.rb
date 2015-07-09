@@ -62,7 +62,21 @@ module Daru
       end
     end
 
+    class Month < Tick
+      def freq_string
+        'MONTH'
+      end
+
+      def + date_time
+        date_time >> @n
+      end
+    end
+
     class Week < DateOffset
+      def initialize *args
+        
+      end
+
       def freq_string
         'W' + @weekday
       end

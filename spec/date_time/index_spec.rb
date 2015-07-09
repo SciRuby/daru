@@ -3,10 +3,11 @@ require 'spec_helper'
 include Daru
 
 describe DateTimeIndex do
-  context ".initialize", focus: true do
+  context ".initialize" do
     it "creates DateTimeIndex from Time objects" do
       index = DateTimeIndex.new([
-        DateTime.new(2014,7,1),DateTime.new(2014,7,2),DateTime.new(2014,7,3),DateTime.new(2014,7,4)])
+        DateTime.new(2014,7,1),DateTime.new(2014,7,2),
+        DateTime.new(2014,7,3),DateTime.new(2014,7,4)])
       expect(index.class).to eq(DateTimeIndex)
       expect(index['2014-7-2']).to eq(1)
     end
@@ -47,7 +48,7 @@ describe DateTimeIndex do
     end
 
     it "creates DateTimeIndex of per minute frequency between start and end" do
-      index = DateTimeIndex.date_range(start: '2017-7-1',freq: 'M', periods: 10)
+      index = DateTimeIndex.date_range(start: '2015-7-1',freq: 'M', periods: 10)
 
       expect(index).to eq(DateTimeIndex.new([
         DateTime.new(2015,7,1,0,0,0),DateTime.new(2015,7,1,0,1,0),DateTime.new(2015,7,1,0,2,0),
@@ -58,13 +59,13 @@ describe DateTimeIndex do
     end
 
     it "creates a DateTimeIndex of hourly frequency between start and end" do
-      index = DateTimeIndex.date_range(start: '2017-7-1',freq: 'H', periods: 10)
+      index = DateTimeIndex.date_range(start: '2015-7-1',freq: 'H', periods: 10)
 
       expect(index).to eq(DateTimeIndex.new([
         DateTime.new(2015,7,1,0,0,0),DateTime.new(2015,7,1,1,0,0),DateTime.new(2015,7,1,2,0,0),
-        DateTime.new(2015,7,1,0,3,0),DateTime.new(2015,7,1,0,4,0),DateTime.new(2015,7,1,0,5,0),
-        DateTime.new(2015,7,1,0,6,0),DateTime.new(2015,7,1,0,7,0),DateTime.new(2015,7,1,0,8,0),
-        DateTime.new(2015,7,1,0,9,0)]))
+        DateTime.new(2015,7,1,3,0,0),DateTime.new(2015,7,1,4,0,0),DateTime.new(2015,7,1,5,0,0),
+        DateTime.new(2015,7,1,6,0,0),DateTime.new(2015,7,1,7,0,0),DateTime.new(2015,7,1,8,0,0),
+        DateTime.new(2015,7,1,9,0,0)]))
       expect(index.frequency).to eq('H')
     end
 
@@ -186,7 +187,7 @@ describe DateTimeIndex do
       expect(index['2014-6']).to eq(DateTimeIndex.new([
         DateTime.new(2014,6,3),DateTime.new(2014,6,5)]))
 
-      index = DateTimeIndex.date_range(start: '2014-1-1', periods: 100, freq: 'MS')
+      index = DateTimeIndex.date_range(start: '2014-1-1', periods: 100, freq: 'MB')
       expect(index['2015-3']).to eq(14)
     end
 
@@ -203,7 +204,7 @@ describe DateTimeIndex do
     it "accepts year, month, date and specific time as a string", focus: true  do
       index = DateTimeIndex.date_range(
         :start => DateTime.new(2015,5,3),:end => DateTime.new(2015,5,5), freq: 'M')
-      expect(index['2015-5-3 00:04:00']).to eq(5)
+      expect(index['2015-5-3 00:04:00']).to eq(4)
     end
 
     it "creates DateTimeIndex with seconds frequency" do
@@ -220,10 +221,10 @@ describe DateTimeIndex do
     end
 
     it "supports time ranges with only year specified" do
-      index = DateTimeIndex.date_range(start: '2011-5-5', periods: 50, freq: 'M')
+      index = DateTimeIndex.date_range(start: '2011-5-5', periods: 50, freq: 'MONTH')
       expect(index['2011'..'2012']).to eq(
         DateTimeIndex.date_range(:start => '2011-5-5', :end => '2012-12-5',
-          :freq => 'M'))
+          :freq => 'MONTH'))
     end
 
     it "supports time ranges with year and month specified" do

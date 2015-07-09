@@ -101,6 +101,16 @@ describe Offsets do
     end
   end
 
+  describe Month do
+    context "#initialize" do
+      it "creates a month offset" do
+        offset = Offsets::Month.new(3)
+        expect(offset + DateTime.new(2012,2,29)).to eq(
+          DateTime.new(2012,5,29))
+      end
+    end
+  end
+
   describe MonthBegin do
     context "#initialize" do
       it "creates a month begin offset" do

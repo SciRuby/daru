@@ -8,9 +8,10 @@ module Daru
         'H'  => Daru::Offsets::Hour,
         'D'  => Daru::Offsets::Day,
         'W'  => Daru::Offsets::Week,
+        'MONTH' => Daru::Offsets::Month,
         'MB' => Daru::Offsets::MonthBegin,
         'ME' => Daru::Offsets::MonthEnd,
-        'YS' => Daru::Offsets::YearBegin,
+        'YB' => Daru::Offsets::YearBegin,
         'YE' => Daru::Offsets::YearEnd
       }
 
@@ -49,10 +50,10 @@ module Daru
       # Multiples of these can also be specified. For example '2S' for 2 seconds
       # or '2MS' for two month end offsets.
       def offset_from_frequency frequency
-        raise ArgumentError, "Must specify :freq." if frequency.nil?
+        frequency = 'D' if frequency.nil?
         return frequency if frequency.kind_of?(Daru::DateOffset)
 
-        matched = /([0-9]*)(S|H|ME|MS|M|D|W|YS|YE)/.match(frequency)
+        matched = /([0-9]*)(MONTH|S|H|ME|MS|M|D|W|YS|YE)/.match(frequency)
         raise ArgumentError, 
           "Invalid frequency string #{frequency}" if matched.nil?
 
@@ -69,11 +70,13 @@ module Daru
       end
 
       def start_date start
-        start.is_a?(String) ? DateTime.parse(start) : start
+        start.is_a?(String) ? date_time_from(
+          start, determine_date_precision_of(start)) : start
       end
 
       def end_date en
-        en.is_a?(String) ? DateTime.parse(en) : en
+        en.is_a?(String) ? date_time_from(
+          en, determine_date_precision_of(en)) : en
       end
 
       def generate_data start, en, offset, periods
@@ -81,16 +84,14 @@ module Daru
         new_date = start
 
         if periods.nil? # use end
-          i = 0
           loop do
             break if new_date > en
-            data << [new_date, i]
+            data << new_date
             new_date = offset + new_date
-            i += 1
           end
         else
           periods.times do |i|
-            data << [new_date, i]
+            data << new_date
             new_date = offset + new_date
           end
         end
@@ -116,24 +117,77 @@ module Daru
 
       def find_date_string_bounds date_string
         date_precision = determine_date_precision_of date_string
-        generate_date_slice DateTime.parse(date_string), date_precision
-        # first I need to find what the date string resolves to, i.e. I need to
-        #   figure what is the precision of the date string. Is it yearly, i.e.
-        #   is it something like '2012', or is it monthly, i.e. something like
-        #   '2012-3'?
-        #
-        # Based on this precision/resolution I need to figure out the bounds 
-        # by outputting the next date in the same precision. So for example,
-        # a year resolution should give the next year, a month resolution should
-        # give the next month etc.
+        date_time = date_time_from date_string, date_precision
+        generate_bounds date_time, date_precision
+      end
+
+      def date_time_from date_string, date_precision
+        case date_precision
+        when :year
+          DateTime.new(date_string.gsub(/[^0-9]/, '').to_i)
+        when :month
+          DateTime.new(
+            date_string.match(/\d\d\d\d/).to_s.to_i, 
+            date_string.match(/\-\d?\d/).to_s.gsub("-",'').to_i)
+        else
+          DateTime.parse date_string
+        end
       end
 
       def determine_date_precision_of date_string
-        
+        case date_string
+        when /\d\d\d\d\-\d?\d\-\d?\d \d?\d:\d?\d:\d?\d/
+          :second
+        when /\d\d\d\d\-\d?\d\-\d?\d \d?\d:\d?\d/
+          :minute
+        when /\d\d\d\d\-\d?\d\-\d?\d \d?\d/
+          :hour
+        when /\d\d\d\d\-\d?\d\-\d?\d/
+          :date
+        when /\d\d\d\d\-\d?\d/
+          :month
+        when /\d\d\d\d/
+          :year
+        else
+          raise ArgumentError, "Unacceptable date string #{date_string}"
+        end
       end
 
-      def generate_date_slice date_time, date_precision
-        
+      def generate_bounds date_time, date_precision
+        case date_precision
+        when :year
+          [
+            date_time, 
+            DateTime.new(date_time.year,12,31,23,59,59)
+          ]
+        when :month
+          [
+            date_time,
+            DateTime.new(date_time.year, date_time.month, ((date_time >> 1) - 1).day,
+              23,59,59)
+          ]
+        when :date
+          [
+            date_time,
+            DateTime.new(date_time.year, date_time.month, date_time.day,23,59,59)
+          ]
+        when :hour
+          [
+            date_time,
+            DateTime.new(date_time.year, date_time.month, date_time.day, 
+            date_time.hour,59,59)
+          ]
+        when :minute
+          [
+            date_time,
+            DateTime.new(date_time.year, date_time.month, date_time.day, 
+              date_time.hour, date_time.min, 59)
+           ]
+        when :second
+          [ date_time, date_time ]
+        else
+          raise ArgumentError, "Unacceptable precision #{date_precision}"
+        end
       end
     end
   end
@@ -157,13 +211,13 @@ module Daru
 
       @offset = 
       case opts[:freq]
-      when 'infer' then helper.infer_offset(data)
+      when :infer then helper.infer_offset(data)
       when  nil    then nil
       else  helper.offset_from_frequency(opts[:freq])
       end
 
       @frequency = @offset ? @offset.freq_string : nil
-      @data      = data
+      @data      = data.zip(Array.new(data.size) { |i| i })
       @periods   = data.size
     end
 
@@ -174,7 +228,7 @@ module Daru
 
       start  = helper.start_date opts[:start]
       en     = helper.end_date opts[:end]
-      helper.verify_start_and_end start, en
+      helper.verify_start_and_end(start, en) unless en.nil?
       offset = helper.offset_from_frequency opts[:freq]
       data   = helper.generate_data start, en, offset, opts[:periods]
 
@@ -191,30 +245,21 @@ module Daru
       else
         helper = DateTimeIndexHelper
 
-        if key.is_a?(DateTime)
-          return helper.find_index_of_date(key)
+        if @offset
+          if key.is_a?(DateTime)
+            return helper.find_index_of_date(key)
+          else
+            slice_begin, slice_end = helper.find_date_string_bounds key
+            start = @data.bsearch { |d| d[0] >= slice_begin }
+            en    = @data.bsearch { |d| d[0] >= slice_end}
+
+            return start[1] if start == en
+
+            DateTimeIndex.date_range :start => start[0], :end => en[0], freq: @offset
+          end
         else
-          slice_begin, slice_end = helper.find_date_string_bounds key
+          # TODO
         end
-
-        # single key entry
-
-        # Single entry is bit more complicated. We need to support partial and 
-        # complete date keys.
-        #
-        # For this reason, we will first take the string date, and resolve it
-        # into what it is trying to say. This will be done by a function that 
-        # will take in a date-like string as an input argument and output two
-        # DateTime objects: the first one will denote the start of the range 
-        # that the partial date-string represents and the second the end of the
-        # range that the date-string represents.
-        # 
-        # For example, say the date-string is '2012'. This means that we're 
-        # supposed to serve all the dates in the year 2012. So the string 2012
-        # yields two objects, one which denotes 2012-1-1 00:00:00 and the other
-        # one which denotes 2012-12-31 24:59:59. A binary search on the index
-        # array can then be applied using these two objects and that will yield
-        # the slice.
       end 
     end
 
