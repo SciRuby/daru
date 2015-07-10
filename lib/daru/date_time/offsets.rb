@@ -108,12 +108,24 @@ module Daru
         
       end
 
+      def + date_time
+        
+      end
+
+      def on_offset? date_time
+        
+      end
+
       def freq_string
         'W' + @weekday
       end
     end
 
     class MonthBegin < DateOffset
+      def initialize n=1
+        @n = n
+      end
+
       def freq_string
         'MB'
       end
@@ -131,6 +143,10 @@ module Daru
     end
 
     class MonthEnd < DateOffset
+      def initialize n=1
+        @n = n
+      end
+
       def freq_string
         'ME'
       end
@@ -149,6 +165,10 @@ module Daru
     end
 
     class YearBegin < DateOffset
+      def initialize n=1
+        @n = n
+      end
+
       def freq_string
         'YB'
       end
@@ -163,6 +183,10 @@ module Daru
     end
 
     class YearEnd < DateOffset
+      def initialize n=1
+        @n = n
+      end
+
       def freq_string
         'YE'
       end

@@ -60,7 +60,7 @@ module Daru
         frequency = 'D' if frequency.nil?
         return frequency if frequency.kind_of?(Daru::DateOffset)
 
-        matched = /([0-9]*)(MONTH|S|H|ME|MS|M|D|W|YS|YE)/.match(frequency)
+        matched = /([0-9]*)(MONTH|S|H|MB|ME|M|D|W|YB|YE)/.match(frequency)
         raise ArgumentError, 
           "Invalid frequency string #{frequency}" if matched.nil?
 
@@ -222,6 +222,10 @@ module Daru
           [ date_time, date_time ]
         end
       end
+
+      def possibly_convert_to_date_time data
+        data[0].is_a?(String) ? data.map! { |e| DateTime.parse(e) } : data
+      end
     end
   end
 
@@ -241,6 +245,8 @@ module Daru
 
       data = args[0]
       opts = args[1] || {freq: nil}
+
+      helper.possibly_convert_to_date_time data
 
       @offset = 
       case opts[:freq]

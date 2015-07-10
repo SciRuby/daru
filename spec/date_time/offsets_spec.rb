@@ -93,12 +93,30 @@ describe Offsets do
   end
 
   describe Week do
-    context "#initialize" do
-      [:sunday, :monday, :tuesday, :wednesday, :thursday, :friday, 
-        :saturday].each_with_index do |day,i|
-        it "creates an anchored weekly (#{day}) offset" do
-          offset = Offsets::Week.new(weekday: i)
-          # TODO
+    DAYS = {
+      sunday:    DateTime.new(2015,7,12),
+      monday:    DateTime.new(2015,7,13),
+      tuesday:   DateTime.new(2015,7,14),
+      wednesday: DateTime.new(2015,7,15),
+      thursday:  DateTime.new(2015,7,16),
+      friday:    DateTime.new(2015,7,17),
+      saturday:  DateTime.new(2015,7,11)
+    }
+
+    DAYS.each.with_index do |day_date, i|
+      offset = Offsets::Week.new(weekday: i)
+
+      context "#initialize" do
+        date = DateTime.new(2015,7,10)
+
+        it "creates anchored Week offset for #{day_date[0]}" do
+          expect(offset + date).to eq(day_date[1])
+        end
+      end
+
+      context "#on_offset?" do
+        it "checks if given DateTime is on the offset itself? (#{day_date[0]})" do
+          expect(offset.on_offset?(DAYS[day_date[1]])).to eq(true)
         end
       end
     end

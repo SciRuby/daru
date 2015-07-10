@@ -3,7 +3,7 @@ require 'spec_helper'
 include Daru
 
 describe DateTimeIndex do
-  context ".initialize" do
+  context ".initialize", focus: true do
     it "creates DateTimeIndex from Time objects" do
       index = DateTimeIndex.new([
         DateTime.new(2014,7,1),DateTime.new(2014,7,2),
@@ -14,7 +14,7 @@ describe DateTimeIndex do
 
     it "attempts conversion to Time from strings" do
       index = DateTimeIndex.new([
-        '2014-7-1','2014-7-2','2014-7-3','2014-7-4'])
+        '2014-7-1','2014-7-2','2014-7-3','2014-7-4'], freq: :infer)
       expect(index.class).to eq(DateTimeIndex)
       expect(index['2014-7-2']).to eq(1)
     end
@@ -32,7 +32,7 @@ describe DateTimeIndex do
     end
   end
 
-  context ".date_range" do
+  context ".date_range", focus: true do
     it "creates DateTimeIndex with default options" do
       index = DateTimeIndex.date_range(:start => DateTime.new(2014,5,3),
         :end => DateTime.new(2014,5,10))
@@ -107,8 +107,8 @@ describe DateTimeIndex do
       index = DateTimeIndex.date_range(
         :start => '2017-4-14', :freq => 'MB', :periods => 5)
       expect(index).to eq(DateTimeIndex.new([
-        DateTime.new(2017,4,1), DateTime.new(2017,5,1), DateTime.new(2017,6,1), 
-        DateTime.new(2017,7,1), DateTime.new(2017,8,1)]))
+        DateTime.new(2017,5,1), DateTime.new(2017,6,1), 
+        DateTime.new(2017,7,1), DateTime.new(2017,8,1),DateTime.new(2017,9,1)]))
     end
 
     it "creates a DateTimeIndex of month end frequency" do
@@ -138,8 +138,8 @@ describe DateTimeIndex do
       index = DateTimeIndex.date_range(start: '2014-5-5', end: '2015-3', 
         periods: 5, freq: 'YB')
       expect(index).to eq(DateTimeIndex.new([
-        DateTime.new(2014,1,1),DateTime.new(2015,1,1),DateTime.new(2016,1,1),
-        DateTime.new(2017,1,1),DateTime.new(2018,1,1)]))
+        DateTime.new(2015,1,1),DateTime.new(2016,1,1),DateTime.new(2017,1,1),
+        DateTime.new(2018,1,1),DateTime.new(2019,1,1)]))
     end
 
     it "does not increment start date if it satisifies the anchor" do
