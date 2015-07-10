@@ -269,7 +269,7 @@ describe DateTimeIndex do
     it "supports time ranges with year and month specified" do
       index = DateTimeIndex.date_range(:start => '2016-4-3', periods: 100, freq: 'D')
       expect(index['2016-4'..'2016-5']).to eq(
-        DateTimeIndex.date_range(:start => '2016-4-3', periods: 58, freq: 'D'))
+        DateTimeIndex.date_range(:start => '2016-4-3', periods: 59, freq: 'D'))
     end
 
     it "supports time range with year, month and date specified" do
@@ -281,11 +281,7 @@ describe DateTimeIndex do
     it "supports time range with year, month, date and hours specified" do
       index = DateTimeIndex.date_range(:start => '2015-4-2', periods: 120, freq: 'H')
       expect(index['2015-4-3 00:00'..'2015-4-3 12:00']).to eq(
-        DateTimeIndex.date_range(:start => '2015-4-3', freq: 'H', periods: 12))
-    end
-
-    it "supports time ranges with year, month, date, hours and minutes specified" do
-
+        DateTimeIndex.date_range(:start => '2015-4-3', freq: 'H', periods: 13))
     end
 
     it "returns slice upto last element if overshoot in partial date" do
@@ -295,6 +291,31 @@ describe DateTimeIndex do
     end
 
     it "returns slice upto last element if overshoot in range" do
+      index = DateTimeIndex.date_range(:start => '2012-2-2', :periods => 50, 
+        freq: 'M')
+      expect(index['2012'..'2013']).to eq(DateTimeIndex.date_range(
+        :start => '2012-2-2',:periods => 50, freq: 'M'))
+    end
+  end
+
+  context "#slice" do
+    it "supports both DateTime objects" do
+      index = DateTimeIndex.date_range(:start => '2012', :periods => 50, 
+        :freq => 'M')
+      expect(index.slice(DateTime.new(2012,1,1), DateTime.new(2012,1,1,0,6))).to eq(
+        DateTimeIndex.date_range(:start => '2012', :periods => 7, :freq => 'M'))
+    end
+
+    it "supports single DateTime object on the left" do
+      index = DateTimeIndex.date_range(:start => '2012', :periods => 40, :freq => 'M')
+      expect(index.slice('2012', DateTime.new(2012,1,1,0,20))).to eq(
+        DateTimeIndex.date_range(:start => '2012', :periods => 21, :freq => 'M'))
+    end
+
+    it "supports single DateTime object on the right" do
+      index = DateTimeIndex.date_range(:start => '2012', :periods => 40, :freq => 'MONTH')
+      expect(index.slice(DateTime.new(2012), '2013')).to eq(
+        DateTimeIndex.date_range(:start => '2012', :periods => 24, :freq => 'MONTH'))
     end
   end
 
@@ -315,7 +336,6 @@ describe DateTimeIndex do
   end
 
   context "#shift" do
-    # TODO
     it "shifts all dates to the future by specified value" do
 
     end
@@ -327,13 +347,21 @@ describe DateTimeIndex do
     end
   end
 
-  context "#year" do
-    it "returns the year of all dates a Ruby array" do
+  [:year, :month, :day, :hour, :min, :sec].each do |meth|
+    dates = [
+      DateTime.new(2012,5,1,12,5,4), DateTime.new(2015,5,1,13,5),
+      DateTime.new(2012,8,1,12,5,3), DateTime.new(2015,1,4,16,5,44)
+    ]
+    curated = dates.inject([]) do |arr, e|
+      arr << e.send(meth)
+      arr
     end
-  end
 
-  context "#month" do 
-    it "returns month of all dates as Ruby array" do
+    context "##{meth}" do
+      it "returns #{meth} of all dates as an Array" do
+        index = DateTimeIndex.new(dates)
+        expect(index.send(meth)).to eq(curated)
+      end
     end
   end
 end

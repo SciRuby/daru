@@ -39,6 +39,7 @@ module Daru
       # * 'W-THU' - Week anchored on thursday
       # * 'W-FRI' - Week anchored on friday
       # * 'W-SAT' - Week anchored on saturday
+      # * 'MONTH' - Month
       # * 'MB'    - month begin
       # * 'ME'    - month end
       # * 'YB'    - year begin
@@ -137,7 +138,7 @@ module Daru
         searched[0] == date_time ? searched[1] : nil
       end
 
-      def find_date_string_bounds offset, date_string
+      def find_date_string_bounds date_string
         date_precision = determine_date_precision_of date_string
         date_time = date_time_from date_string, date_precision
         generate_bounds date_time, date_precision
@@ -223,9 +224,7 @@ module Daru
     include Enumerable
 
     def each(&block)
-      @data.each do |d|
-        yield d[0]
-      end
+      to_a.each(&block)
     end
 
     attr_reader :frequency, :offset, :periods
@@ -265,41 +264,60 @@ module Daru
       DateTimeIndex.new(data, :freq => offset)
     end
 
-    def [] key
-      if key.is_a?(Range)
-        first = key.first
-        last = key.last
-        # For a Range key, just take the first and last and do a bsearch of both,
-        # yielding the elements that will give us a demarcation and thereby serve
-        # for slicing the index.
+    def [] *key
+      helper = DateTimeIndexHelper
+      if key.size == 1
+        key = key[0] 
       else
-        helper = DateTimeIndexHelper
+        return slice(*key)
+      end
 
+      if key.is_a?(Range)
+        slice_begin = helper.find_date_string_bounds(key.first)[0]
+        slice_end   = helper.find_date_string_bounds(key.last)[1]
+      else
         if key.is_a?(DateTime)
           return helper.find_index_of_date(@data, key)
         else
-          slice_begin, slice_end = helper.find_date_string_bounds @offset, key
-          start    = @data.bsearch { |d| d[0] >= slice_begin }
-          after_en = @data.bsearch { |d| d[0] > slice_end }
-
-          result =
-          if @offset
-            en = after_en ? @data[after_en[1] - 1] : @data.last
-            return start[1] if start == en
-            DateTimeIndex.date_range :start => start[0], :end => en[0], freq: @offset
-          else
-            st = @data.index(start)
-            en = after_en ? @data.index(after_en) - 1 : @data.last[1]
-            return start[1] if st == en
-            DateTimeIndex.new(@data[st..en].transpose[0])
-          end
-
-          result
+          slice_begin, slice_end = helper.find_date_string_bounds key
         end
-      end 
+      end
+
+      slice slice_begin, slice_end
+    end
+
+    def slice first, last
+      helper = DateTimeIndexHelper
+
+      if first.is_a?(String) and last.is_a?(String)
+        self[first..last]
+      else
+        first_dt = first.is_a?(String) ? 
+          helper.find_date_string_bounds(first)[0] : first
+        last_dt = last.is_a?(String) ?
+          helper.find_date_string_bounds(last)[1]  : last
+
+        start    = @data.bsearch { |d| d[0] >= first_dt }
+        after_en = @data.bsearch { |d| d[0] > last_dt }
+
+        result =
+        if @offset
+          en = after_en ? @data[after_en[1] - 1] : @data.last
+          return start[1] if start == en
+          DateTimeIndex.date_range :start => start[0], :end => en[0], freq: @offset
+        else
+          st = @data.index(start)
+          en = after_en ? @data.index(after_en) - 1 : @data.last[1]
+          return start[1] if st == en
+          DateTimeIndex.new(@data[st..en].transpose[0])
+        end
+
+        result
+      end   
     end
 
     def to_a
+      return @data.sort_by { |d| d[1] }.transpose[0] unless @offset
       @data.transpose[0]
     end
 
@@ -309,6 +327,27 @@ module Daru
 
     def == other
       self.to_a == other.to_a
+    end
+
+    def inspect
+      
+    end
+
+    def shift distance
+      
+    end
+
+    def lag distance
+      
+    end
+
+    [:year, :month, :day, :hour, :min, :sec].each do |meth|
+      define_method(meth) do
+        self.inject([]) do |arr, d|
+          arr << d.send(meth)
+          arr
+        end
+      end
     end
   end
 end
