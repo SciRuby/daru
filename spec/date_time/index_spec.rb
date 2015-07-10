@@ -32,7 +32,7 @@ describe DateTimeIndex do
     end
   end
 
-  context ".date_range", focus: true do
+  context ".date_range" do
     it "creates DateTimeIndex with default options" do
       index = DateTimeIndex.date_range(:start => DateTime.new(2014,5,3),
         :end => DateTime.new(2014,5,10))
@@ -193,7 +193,7 @@ describe DateTimeIndex do
       expect(index[DateTime.new(2014,3,6)]).to eq(3)
     end
 
-    it "accepts only year specified as a string" do
+    it "accepts only year specified as a string",focus: true do
       index = DateTimeIndex.new([
         DateTime.new(2014,5),DateTime.new(2018,6),DateTime.new(2014,7),DateTime.new(2016,7),
         DateTime.new(2015,7),DateTime.new(2013,7)])
@@ -215,7 +215,9 @@ describe DateTimeIndex do
         DateTime.new(2014,7,3),DateTime.new(2014,7,4),DateTime.new(2014,7,5)])
       expect(index['2014-6']).to eq(DateTimeIndex.new([
         DateTime.new(2014,6,3),DateTime.new(2014,6,5)]))
+    end
 
+    it "accepts year and month for frequency data" do
       index = DateTimeIndex.date_range(start: '2014-1-1', periods: 100, freq: 'MB')
       expect(index['2015-3']).to eq(14)
     end

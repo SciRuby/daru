@@ -140,7 +140,7 @@ module Daru
       def find_date_string_bounds offset, date_string
         date_precision = determine_date_precision_of date_string
         date_time = date_time_from date_string, date_precision
-        generate_bounds date_time, date_precision, offset.freq_string
+        generate_bounds date_time, date_precision
       end
 
       def date_time_from date_string, date_precision
@@ -175,7 +175,7 @@ module Daru
         end
       end
 
-      def generate_bounds date_time, date_precision, frequency
+      def generate_bounds date_time, date_precision
         case date_precision
         when :year
           [
@@ -247,6 +247,7 @@ module Daru
 
       @frequency = @offset ? @offset.freq_string : nil
       @data      = data.zip(Array.new(data.size) { |i| i })
+      @data.sort_by! { |d| d[0] } if @offset.nil?
       @periods   = data.size
     end
 
@@ -274,27 +275,26 @@ module Daru
       else
         helper = DateTimeIndexHelper
 
-        if @offset
-          if key.is_a?(DateTime)
-            return helper.find_index_of_date(@data, key)
-          else
-            slice_begin, slice_end = helper.find_date_string_bounds @offset, key
-            start    = @data.bsearch { |d| d[0] >= slice_begin }
-            after_en = @data.bsearch { |d| d[0] > slice_end }
-
-            if after_en
-              en = @data[after_en[1] - 1]
-            else
-              en = @data.last
-            end
-
-
-            return start[1] if start == en
-
-            DateTimeIndex.date_range :start => start[0], :end => en[0], freq: @offset
-          end
+        if key.is_a?(DateTime)
+          return helper.find_index_of_date(@data, key)
         else
-          # TODO
+          slice_begin, slice_end = helper.find_date_string_bounds @offset, key
+          start    = @data.bsearch { |d| d[0] >= slice_begin }
+          after_en = @data.bsearch { |d| d[0] > slice_end }
+
+          result =
+          if @offset
+            en = after_en ? @data[after_en[1] - 1] : @data.last
+            return start[1] if start == en
+            DateTimeIndex.date_range :start => start[0], :end => en[0], freq: @offset
+          else
+            st = @data.index(start)
+            en = after_en ? @data.index(after_en) - 1 : @data.last[1]
+            return start[1] if st == en
+            DateTimeIndex.new(@data[st..en].transpose[0])
+          end
+
+          result
         end
       end 
     end
