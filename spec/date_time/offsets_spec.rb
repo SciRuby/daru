@@ -116,7 +116,7 @@ describe Offsets do
 
       context "#on_offset?" do
         it "checks if given DateTime is on the offset itself? (#{day_date[0]})" do
-          expect(offset.on_offset?(DAYS[day_date[1]])).to eq(true)
+          expect(offset.on_offset?(DAYS[day_date[0]])).to eq(true)
         end
       end
     end

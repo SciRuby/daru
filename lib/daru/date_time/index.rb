@@ -15,16 +15,6 @@ module Daru
         'YE' => Daru::Offsets::YearEnd
       }
 
-      DAYS_OF_WEEK = {
-        'SUN' => 0,
-        'MON' => 1,
-        'TUE' => 2,
-        'WED' => 3,
-        'THU' => 4,
-        'FRI' => 5,
-        'SAT' => 6
-      }
-
       TIME_INTERVALS = {
         Rational(1,1)     => Daru::Offsets::Day,
         Rational(1,24)    => Daru::Offsets::Hour,
@@ -71,9 +61,9 @@ module Daru
         raise ArgumentError,
           "Cannont interpret offset #{offset_string}" if offset_klass.nil?
 
-        if offset_string == 'W'
-          day = Regexp.new(DAYS_OF_WEEK.keys.join('|')).match frequency
-          return offset_klass.new(n, weekday: DAYS_OF_WEEK[day])
+        if offset_string.match(/W/)
+          day = Regexp.new(Daru::DAYS_OF_WEEK.keys.join('|')).match(frequency).to_s
+          return offset_klass.new(n, weekday: Daru::DAYS_OF_WEEK[day])
         end
 
         offset_klass.new(n)

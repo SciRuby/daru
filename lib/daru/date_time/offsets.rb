@@ -27,21 +27,6 @@ module Daru
   end
 
   module Offsets
-    MONTH_DAYS = {
-      1 => 31,
-      2 => 28,
-      3 => 31,
-      4 => 30,
-      5 => 31,
-      6 => 30,
-      7 => 31,
-      8 => 31,
-      9 => 30,
-      10 => 31,
-      11 => 30,
-      12 => 31
-    }
-
     class Tick < DateOffset
       def initialize n=1
         @n = n
@@ -105,19 +90,27 @@ module Daru
 
     class Week < DateOffset
       def initialize *args
-        
+        @n = !args[0].is_a?(Hash)? args[0] : 1
+        opts = args[-1]
+        @weekday = opts[:weekday] || 0
       end
 
       def + date_time
-        
+        wday = date_time.wday
+        distance = (@weekday - wday).abs
+        if @weekday > wday
+          date_time + distance + 7*(@n-1)
+        else
+          date_time + (7-distance) + 7*(@n -1)
+        end
       end
 
       def on_offset? date_time
-        
+        date_time.wday == @weekday
       end
 
       def freq_string
-        'W' + @weekday
+        'W' + '-' + Daru::DAYS_OF_WEEK.key(@weekday)
       end
     end
 
@@ -131,7 +124,7 @@ module Daru
       end
 
       def + date_time
-        days_of_month = MONTH_DAYS[date_time.month]
+        days_of_month = Daru::MONTH_DAYS[date_time.month]
         days_of_month += 1 if date_time.leap? and date_time.month == 2
 
         date_time + (days_of_month - date_time.day + 1)
@@ -153,7 +146,7 @@ module Daru
 
       def + date_time
         date_time     = date_time >> 1 if on_offset?(date_time)
-        days_of_month = MONTH_DAYS[date_time.month]
+        days_of_month = Daru::MONTH_DAYS[date_time.month]
         days_of_month += 1 if date_time.leap? and date_time.month == 2
 
         date_time + (days_of_month - date_time.day)

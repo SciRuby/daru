@@ -3,7 +3,7 @@ require 'spec_helper'
 include Daru
 
 describe DateTimeIndex do
-  context ".initialize", focus: true do
+  context ".initialize" do
     it "creates DateTimeIndex from Time objects" do
       index = DateTimeIndex.new([
         DateTime.new(2014,7,1),DateTime.new(2014,7,2),
@@ -98,9 +98,12 @@ describe DateTimeIndex do
     end
 
     it "creates a DateTimeIndex of (monday) weekly frequency" do
-      index = DateTimeIndex.date_range(:start => '2012-4-3', :periods => 5, 
+      index = DateTimeIndex.date_range(:start => '2015-7-6', :periods => 5, 
         :freq => 'W-MON')
-      pending
+      expect(index).to eq(DateTimeIndex.new([
+        DateTime.new(2015,7,6), DateTime.new(2015,7,13), DateTime.new(2015,7,20),
+        DateTime.new(2015,7,27), DateTime.new(2015,8,3)]))
+      expect(index.frequency).to eq('W-MON')
     end
 
     it "creates a DateTimeIndex of month begin frequency" do
