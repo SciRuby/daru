@@ -217,6 +217,10 @@ module Daru
       def possibly_convert_to_date_time data
         data[0].is_a?(String) ? data.map! { |e| DateTime.parse(e) } : data
       end
+
+      def last_date data
+        data.sort_by { |d| d[1] }.last
+      end
     end
   end
 
@@ -307,7 +311,7 @@ module Daru
           DateTimeIndex.date_range :start => start[0], :end => en[0], freq: @offset
         else
           st = @data.index(start)
-          en = after_en ? @data.index(after_en) - 1 : @data.last[1]
+          en = after_en ? @data.index(after_en) - 1 : helper.last_date(@data)[1]
           return start[1] if st == en
           DateTimeIndex.new(@data[st..en].transpose[0])
         end
@@ -330,7 +334,11 @@ module Daru
     end
 
     def inspect
-      
+      string = "#<DateTimeIndex:" + self.object_id.to_s + " offset=" + 
+        (@offset ? @offset.freq_string : 'nil') + ' periods=' + @periods.to_s + 
+        " data=[" + @data.first[0].to_s + "..." + @data.last[0].to_s + ']'+ '>'
+
+      string
     end
 
     # Shift all dates in the index by a positive number in the future. The dates
@@ -370,6 +378,11 @@ module Daru
           arr
         end
       end
+    end
+
+    def include? dt
+      result = @data.bsearch {|d| d[0] >= dt }
+      result == dt
     end
   end
 end

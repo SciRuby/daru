@@ -1992,14 +1992,24 @@ module Daru
             new_vectors, index: @index, order: pos)
         end
       else
-        return @data[@vectors[location]] unless names[1]
+        unless names[1]
+          pos = @vectors[location]
 
-        new_vcs = {}
-        names.each do |name|
-          name = name.to_sym unless name.is_a?(Integer)
-          new_vcs[name] = @data[@vectors[name]]
+          if pos.is_a?(Numeric)
+            return @data[pos]
+          else
+            names = pos
+          end
         end
-        Daru::DataFrame.new new_vcs, order: new_vcs.keys, index: @index, name: @name
+
+        new_vcs = []
+        names.each do |name|
+          new_vcs << @data[@vectors[name]]
+        end
+        
+        order = names.is_a?(Array) ? Daru::Index.new(names) : names
+        Daru::DataFrame.new(new_vcs, order: order, 
+          index: @index, name: @name)
       end
     end
 
@@ -2193,7 +2203,7 @@ module Daru
     end
 
     def set_name potential_name
-      potential_name.is_a?(Array) ? potential_name.join.to_sym : potential_name
+      potential_name.is_a?(Array) ? potential_name.join : potential_name
     end
 
     def symbolize arry

@@ -26,6 +26,9 @@ module Daru
       idx =
       if source and source[0].is_a?(Array)
         Daru::MultiIndex.from_tuples source
+      elsif source and source.is_a?(Array) and !source.empty? and 
+        source.all? { |e| e.is_a?(DateTime) }
+        Daru::DateTimeIndex.new(source, freq: :infer)
       else
         i = self.allocate
         i.send :initialize, *args, &block

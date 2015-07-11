@@ -35,7 +35,7 @@ describe Daru::Vector do
 
     it "returns a slice when range" do
       slice_index = Daru::DateTimeIndex.date_range(
-        :start => DateTime.new(2012,4,4), :end => DateTime.new(2012,4,5), freq: 'H')
+        :start => DateTime.new(2012,4,4), :end => DateTime.new(2012,4,5,23,), freq: 'H')
       expect(@vector['2012-4-4'..'2012-4-5']).to eq(
         Daru::Vector.new([23]*slice_index.size, index: slice_index))
     end
@@ -54,7 +54,7 @@ describe Daru::Vector do
         :freq => 'MB')
       vector         = Daru::Vector.new([1,2,3,4,5,6,7,8,9,10]*10, index: index)
       vector['2012'] = 666
-      arr            = [666]*10 + [1,2,3,4,5,6,7,8,9,10]*9
+      arr            = [666]*12 + [3,4,5,6,7,8,9,10] +  [1,2,3,4,5,6,7,8,9,10]*8
       expect(vector).to eq(Daru::Vector.new(arr, index: index))
     end
   end
@@ -68,26 +68,26 @@ describe Daru::DataFrame do
     @a     = [1,2,3,4,5]*20
     @b     = @a.map { |e| e*3 }
     @c     = @a.map(&:to_s)
-    @df    = Daru::DataFrame.new([@a, @b, @c], index: index, order: order)    
+    @df    = Daru::DataFrame.new([@a, @b, @c], index: @index, order: @order)    
   end
 
   context "#initialize" do
     it "accepts DateTimeIndex for index and order options" do
-      expect(@df.index).to eq(index)
-      expect(@df['2013-2-3']).to eq(Daru::Vector.new(arry.map { |e| e*3 }, index: index))
+      expect(@df.index).to eq(@index)
+      expect(@df['2013-2-3']).to eq(
+        Daru::Vector.new(@b, index: @index))
     end
   end
 
   context "#[]" do
     it "returns one Vector when complete index" do
-      expect(@df['2012-3-3']).to eq(@c)
+      expect(@df['2012-3-3']).to eq(Daru::Vector.new(@c, index: @index))
     end
 
     it "returns DataFrame when incomplete index" do
       answer = Daru::DataFrame.new(
-        [@a, @c], index: @index, order: Daru::DateTimeIndex.new([
-          DateTime.new(2012,1,3),DateTime.new(2012,3,3)])
-        )
+        [@a, @c], index: @index, order: Daru::DateTimeIndex.new([ 
+          DateTime.new(2012,1,3),DateTime.new(2012,3,3)]))
       expect(@df['2012']).to eq(answer)
     end
   end

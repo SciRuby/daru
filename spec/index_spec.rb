@@ -22,7 +22,11 @@ describe Daru::Index do
     end
 
     it "creates DateTimeIndex if date-like objects specified" do
-
+      i = Daru::Index.new([
+        DateTime.new(2012,2,4), DateTime.new(2012,2,5), DateTime.new(2012,2,6)])
+      expect(i.class).to eq(Daru::DateTimeIndex)
+      expect(i.to_a).to eq([DateTime.new(2012,2,4), DateTime.new(2012,2,5), DateTime.new(2012,2,6)])
+      expect(i.frequency).to eq('D')
     end
   end
 

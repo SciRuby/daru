@@ -193,7 +193,7 @@ describe DateTimeIndex do
       expect(index[DateTime.new(2014,3,6)]).to eq(3)
     end
 
-    it "accepts only year specified as a string",focus: true do
+    it "accepts only year specified as a string" do
       index = DateTimeIndex.new([
         DateTime.new(2014,5),DateTime.new(2018,6),DateTime.new(2014,7),DateTime.new(2016,7),
         DateTime.new(2015,7),DateTime.new(2013,7)])

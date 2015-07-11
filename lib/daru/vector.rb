@@ -227,7 +227,12 @@ module Daru
             last  = location.last
             indexes = @index.slice first, last
           else
-            return @data[@index[location]]
+            pos = @index[location]
+            if pos.is_a?(Numeric)
+              return @data[pos]
+            else
+              indexes = pos
+            end
           end
         else
           indexes = indexes.map { |e| named_index_for(e) }
@@ -263,10 +268,10 @@ module Daru
       location = location[0] unless @index.is_a?(MultiIndex)
       pos      = @index[location]
 
-      if pos.is_a?(MultiIndex)
-        pos.each { |tuple| self[tuple] = value }
-      else
+      if pos.is_a?(Numeric)
         @data[pos] = value
+      else
+        pos.each { |tuple| self[tuple] = value }
       end
 
       set_size
@@ -381,6 +386,7 @@ module Daru
     # last possible moment.    
     def type
       return @data.nm_dtype if dtype == :nmatrix
+      return :date if @index.is_a?(DateTimeIndex)
 
       if @type.nil? or @possibly_changed_type
         @type = :numeric
@@ -1132,8 +1138,8 @@ module Daru
     def set_name name
       @name = 
       if name.is_a?(Numeric)  then name 
-      elsif name.is_a?(Array) then name.join.to_sym # in case of MultiIndex tuple
-      elsif name              then name.to_sym # anything but Numeric or nil
+      elsif name.is_a?(Array) then name.join # in case of MultiIndex tuple
+      elsif name              then name # anything but Numeric or nil
       else
         nil
       end
