@@ -336,14 +336,20 @@ describe DateTimeIndex do
   end
 
   context "#shift" do
-    it "shifts all dates to the future by specified value" do
-
+    it "shifts all dates to the future by specified value (with offset)" do
+      index = DateTimeIndex.date_range(
+        :start => '2012-1-1', :freq => 'MB', :periods => 10)
+      expect(index.shift(3)).to eq(DateTimeIndex.date_range(
+        :start => '2012-4-1', :freq => 'MB', :periods => 10))
     end
   end
 
   context "#lag" do
-    it "shifts all dates to the past by specified value" do
-
+    it "shifts all dates to the past by specified value (with offset)" do
+      index = DateTimeIndex.date_range(
+        :start => '2012-5-5', :freq => 'D', :periods => 5)
+      expect(index.lag(2)).to eq(DateTimeIndex.date_range(
+        :start => '2012-5-3', :freq => 'D', :periods => 5))
     end
   end
 

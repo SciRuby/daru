@@ -333,12 +333,34 @@ module Daru
       
     end
 
+    # Shift all dates in the index by a positive number in the future. The dates
+    # are shifted by the same amount as that specified in the offset.
+    # 
+    # == Arguements
+    #
+    # * distance - Fixnum. Distance by which each date should be shifted.
     def shift distance
       
     end
 
+    # Shift all dates in the index to the past. The dates are shifted by the same
+    # amount as that specified in the offset.
+    # 
+    # == Arguments
+    #
+    # * distance - Fixnum. Distance by which each date should be shifted.
     def lag distance
       
+    end
+
+    def _dump depth
+      Marshal.dump({data: self.to_a, freq: @offset})
+    end
+
+    def self._load data
+      h = Marshal.load data
+
+      Daru::DateTimeIndex.new(h[:data], freq: h[:freq])
     end
 
     [:year, :month, :day, :hour, :min, :sec].each do |meth|

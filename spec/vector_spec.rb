@@ -533,29 +533,33 @@ describe Daru::Vector do
         end
       end
 
-      context "#reindex" do
-        context Daru::Index do
-          before do 
-            @dv = Daru::Vector.new [1,2,3,4,5], name: :dv, index: [:a, :b, :c, :d, :e]
-          end
-
-          it "recreates index with sequential numbers" do
-            a  = @dv.reindex(:seq)
-
-            expect(a).to eq(Daru::Vector.new([1,2,3,4,5], name: :dv, index: [0,1,2,3,4]))
-            expect(a).to_not eq(@dv)
-          end
-
-          it "accepts a new non-numeric index" do
-            a = @dv.reindex([:hello, :my, :name, :is, :ted])
-
-            expect(a).to eq(Daru::Vector.new([1,2,3,4,5], name: :dv, index: [:hello, :my, :name, :is, :ted]))
-            expect(a).to_not eq(@dv)
-          end
+      context "#index=" do
+        before do
+          @vector = Daru::Vector.new([1,2,3,4,5])
         end
 
-        context Daru::MultiIndex do
-          pending
+        it "simply reassigns index" do
+          index  = Daru::DateTimeIndex.date_range(:start => '2012', :periods => 5)
+          @vector.index = index
+
+          expect(@vector.index.class).to eq(DateTimeIndex)
+          expect(@vector['2012-1-1']).to eq(1)
+        end
+
+        it "raises error for index size != vector size" do
+          expect {
+            @vector.index = Daru::Index.new([4,2,6])
+          }.to raise_error
+        end
+      end
+
+      context "#reindex" do
+        it "intelligently reindexes" do
+          vector = Daru::Vector.new([1,2,3,4,5])
+          index = Daru::Index.new([3,4,1,0,6])
+
+          expect(vector.reindex(index)).to eq(
+            Daru::Vector.new([4,5,2,1,nil], index: index))
         end
       end
 
@@ -772,9 +776,11 @@ describe Daru::Vector do
 
   context "#type" do
     before(:each) do
-      @numeric = Daru::Vector.new([1,2,3,4,5])
-      @multi = Daru::Vector.new([1,2,3,'sameer','d'])
-      @with_nils = Daru::Vector.new([1,2,3,4,nil])
+      @numeric    = Daru::Vector.new([1,2,3,4,5])
+      @multi      = Daru::Vector.new([1,2,3,'sameer','d'])
+      @with_nils  = Daru::Vector.new([1,2,3,4,nil])
+      @with_dates = Daru::Vector.new([1,2,3,4], index: 
+        DateTimeIndex.date_range(:start => DateTime.new(2012,4,2), :periods => 4))
     end
 
     it "checks numeric data correctly" do
@@ -815,6 +821,10 @@ describe Daru::Vector do
     it "changes to :object when nil is reassigned to anything but a number" do
       @with_nils[4] = 'string'
       expect(@with_nils.type).to eq(:object)
+    end
+
+    it "reports type as :date when index is a DateTimeIndex" do
+      expect(@with_dates.type).to eq(:date)
     end
   end
 

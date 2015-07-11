@@ -1,7 +1,7 @@
 require 'spec_helper'
 include Daru
 
-describe DateOffset, focus: true do
+describe DateOffset do
   context "#initialize, #+" do
     it "creates a seconds offset" do
       offset = DateOffset.new(secs: 5)
@@ -142,6 +142,10 @@ describe Offsets do
     end
 
     context "#on_offset?" do
+      it "returns true if date is on the offset" do
+        offset = Offsets::MonthBegin.new
+        expect(offset.on_offset?(DateTime.new(2012,4,1))).to eq(true)
+      end
     end
   end
 
@@ -173,6 +177,10 @@ describe Offsets do
     end
 
     context "#on_offset?" do
+      it "checks if date is on the offset" do
+        expect(Offsets::YearBegin.new.on_offset?(DateTime.new(2012,1,1))).to eq(
+          true)
+      end
     end
   end
 
