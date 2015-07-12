@@ -1880,7 +1880,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#one_to_many" , focus: true do
+  context "#one_to_many" do
     it "" do
       rows = [
         ['1', 'george', 'red', 10, 'blue', 20, nil, nil],

@@ -289,8 +289,7 @@ module Daru
 
             if clone
               @vectors.each do |vector|
-                @data << Daru::Vector.new([], name: vector, index: @index)
-                v = @data[@vectors[vector]]
+                v = Daru::Vector.new([], name: vector, index: @index)
 
                 @index.each do |idx|
                   if source[vector].index.include? idx
@@ -299,6 +298,7 @@ module Daru
                     v[idx] = nil
                   end
                 end
+                @data << v
               end
             else
               @data.concat source.values
@@ -2006,7 +2006,7 @@ module Daru
         names.each do |name|
           new_vcs << @data[@vectors[name]]
         end
-        
+
         order = names.is_a?(Array) ? Daru::Index.new(names) : names
         Daru::DataFrame.new(new_vcs, order: order, 
           index: @index, name: @name)
@@ -2032,13 +2032,11 @@ module Daru
         end
       else
         if names[1].nil? 
-          if location.is_a?(Range)
-            names = @index[location]
-          else
-            row  = []
-            name = @index[location]
-            @vectors.each do |vector|
-              row << @data[@vectors[vector]][name]
+          names = @index[location]
+          if names.is_a?(Numeric)
+            row = []
+            @data.each do |vector|
+              row << vector[location]
             end
 
             return Daru::Vector.new(row, index: @vectors, name: set_name(location))
@@ -2067,7 +2065,7 @@ module Daru
 
       @vectors = @vectors | [name] if !@vectors.include?(name)
       v        = nil
-      
+
       if @index.empty?
         v = vector.is_a?(Daru::Vector) ? vector : Daru::Vector.new(vector.to_a)  
         @index = v.index
@@ -2193,7 +2191,7 @@ module Daru
     def all_vectors_have_equal_indexes? source
       idx = source.values[0].index
 
-      source.all? do |name, vector|
+      source.values.all? do |vector|
         idx == vector.index
       end
     end

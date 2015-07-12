@@ -84,24 +84,45 @@ describe Daru::DataFrame do
       expect(@df['2012-3-3']).to eq(Daru::Vector.new(@c, index: @index))
     end
 
+    it "returns a Vector when DateTime object specified" do
+      expect(@df[DateTime.new(2012,3,3)]).to eq(
+        Daru::Vector.new(@c, index: @index))
+    end
+
     it "returns DataFrame when incomplete index" do
       answer = Daru::DataFrame.new(
         [@a, @c], index: @index, order: Daru::DateTimeIndex.new([ 
           DateTime.new(2012,1,3),DateTime.new(2012,3,3)]))
       expect(@df['2012']).to eq(answer)
     end
+
+    it "returns Vector when single index specified as a number" do
+      expect(@df[1]).to eq(Daru::Vector.new(@b, index: @index))
+    end
   end
 
-  context "#[]=" do
+  context "#[]=", focus: true do
     it "assigns one Vector when complete index" do
       answer = Daru::DataFrame.new([@a, @b, @a], index: @index, order: @order)
       @df['2012-3-3'] = @a
       expect(@df).to eq(answer)
     end
 
+    it "assigns one Vector when index as DateTime object" do
+      answer = Daru::DataFrame.new([@a, @b, @a], index: @index, order: @order)
+      @df[DateTime.new(2012,3,3)] = @a
+      expect(@df).to eq(answer)
+    end
+
     it "assigns multiple vectors when incomplete index" do
       answer = Daru::DataFrame.new([@b,@b,@b], index: @index, order: @order)
       @df['2012'] = @b
+      expect(@df).to eq(answer)
+    end
+
+    it "assigns Vector when specified position index" do
+      answer = Daru::DataFrame.new([@a, @b, @a], index: @index, order: @order)
+      @df[2] = @a
       expect(@df).to eq(answer)
     end
   end
@@ -120,6 +141,10 @@ describe Daru::DataFrame do
       answer = Daru::DataFrame.new([a,b,c], index: i, order: @order)
 
       expect(@df.row['2012-2']).to eq(answer)
+    end
+
+    it "returns one row Vector when position index" do
+      expect(@df.row[2]).to eq(Daru::Vector.new([3,9,'3'], index: @order))
     end
   end
 

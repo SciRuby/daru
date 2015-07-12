@@ -296,6 +296,25 @@ describe DateTimeIndex do
       expect(index['2012'..'2013']).to eq(DateTimeIndex.date_range(
         :start => '2012-2-2',:periods => 50, freq: 'M'))
     end
+
+    it "returns nil if date is out of bounds" do
+      index = DateTimeIndex.date_range(:start => '2012-1', :periods => 5)
+      expect(index['2011']).to eq(nil)
+    end
+
+    it "raises error if date not present (exact date)" do
+      expect {
+        index = DateTimeIndex.date_range(:start => '2011', :periods => 5, :freq => 'MONTH')
+        index[DateTime.new(2013,1,4)]
+        }.to raise_error(ArgumentError)
+    end
+
+    it "raises error if date not present (string)" do
+      expect {
+        index = DateTimeIndex.date_range(:start => '2012-2-3', :periods => 10)
+        index['2012-2-4 12']
+      }.to raise_error(ArgumentError)
+    end
   end
 
   context "#slice" do
@@ -368,6 +387,14 @@ describe DateTimeIndex do
         index = DateTimeIndex.new(dates)
         expect(index.send(meth)).to eq(curated)
       end
+    end
+  end
+
+  context "#include?" do
+    it "returns true if an index is present" do
+      index = DateTimeIndex.date_range(:start => '2012-1-4', :periods => 100, :freq => 'D')
+      expect(index.include?(DateTime.new(2012,1,6))).to eq(true)
+      expect(index.include?(DateTime.new(2011,4,2))).to eq(false)
     end
   end
 end

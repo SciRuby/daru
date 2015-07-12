@@ -80,7 +80,7 @@ module Daru
           en, determine_date_precision_of(en)) : en
       end
 
-      def begin_from_zeroth offset, start
+      def begin_from_offset? offset, start
         if offset.kind_of?(Tick) or 
           (offset.respond_to?(:on_offset?) and offset.on_offset?(start))
           true
@@ -91,7 +91,7 @@ module Daru
 
       def generate_data start, en, offset, periods
         data = []
-        new_date = begin_from_zeroth(offset, start) ? start : offset + start
+        new_date = begin_from_offset?(offset, start) ? start : offset + start
 
         if periods.nil? # use end
           loop do
@@ -135,7 +135,7 @@ module Daru
 
       def find_index_of_date data, date_time
         searched = data.bsearch { |d| d[0] >= date_time }
-        searched[0] == date_time ? searched[1] : nil
+        (!searched.nil? and searched[0] == date_time) ? searched[1] : nil
       end
 
       def find_date_string_bounds date_string
@@ -298,7 +298,7 @@ module Daru
       else
         first_dt = first.is_a?(String) ? 
           helper.find_date_string_bounds(first)[0] : first
-        last_dt = last.is_a?(String) ?
+        last_dt  = last.is_a?(String) ?
           helper.find_date_string_bounds(last)[1]  : last
 
         start    = @data.bsearch { |d| d[0] >= first_dt }
@@ -380,9 +380,19 @@ module Daru
       end
     end
 
-    def include? dt
-      result = @data.bsearch {|d| d[0] >= dt }
-      result == dt
+    def include? date_time
+      helper = DateTimeIndexHelper
+      if date_time.is_a?(String)
+        date_precision = helper.determine_date_precision_of date_time
+        date_time = helper.date_time_from date_time, date_precision
+      end
+
+      result = @data.bsearch {|d| d[0] >= date_time }
+      result[0] == date_time
+    end
+
+    def empty?
+      @data.empty?
     end
   end
 end
