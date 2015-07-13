@@ -534,7 +534,6 @@ describe Daru::DataFrame do
       end
 
       it "assigns all sub-indexes when a top level index is specified" do
-        pending
         @df_mi[:a] = [100,200,300,400,100,200,300,400,100,200,300,400]
         
         expect(@df_mi).to eq(Daru::DataFrame.new([
@@ -752,20 +751,6 @@ describe Daru::DataFrame do
       expect(df[:b]).to eq(Daru::Vector.new([2,6]))
       expect(df[:c]).to eq(Daru::Vector.new([3,7]))
       expect(df.index).to eq(Daru::Index.new([0,1]))
-    end
-  end
-
-  context "#vector" do
-    context Daru::Index do
-      it "appends an Array as a Daru::Vector" do
-        @data_frame[:d] = [69,99,108,85,49]
-
-        expect(@data_frame.d.class).to eq(Daru::Vector)
-      end
-    end
-
-    context Daru::MultiIndex do
-
     end
   end
 

@@ -61,7 +61,7 @@ describe Daru::Vector do
 end
 
 describe Daru::DataFrame do
-  before do
+  before :each do
     @index = Daru::DateTimeIndex.date_range(:start => '2012-2-1', periods: 100)
     @order = Daru::DateTimeIndex.new([
       DateTime.new(2012,1,3),DateTime.new(2013,2,3),DateTime.new(2012,3,3)])
@@ -101,7 +101,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#[]=", focus: true do
+  context "#[]=" do
     it "assigns one Vector when complete index" do
       answer = Daru::DataFrame.new([@a, @b, @a], index: @index, order: @order)
       @df['2012-3-3'] = @a

@@ -135,7 +135,8 @@ module Daru
 
       def find_index_of_date data, date_time
         searched = data.bsearch { |d| d[0] >= date_time }
-        (!searched.nil? and searched[0] == date_time) ? searched[1] : nil
+        (!searched.nil? and searched[0] == date_time) ? searched[1] : 
+          raise(ArgumentError, "Cannot find #{date_time}")
       end
 
       def find_date_string_bounds date_string
@@ -271,7 +272,8 @@ module Daru
     def [] *key
       helper = DateTimeIndexHelper
       if key.size == 1
-        key = key[0] 
+        key = key[0]
+        return key if key.is_a?(Numeric)
       else
         return slice(*key)
       end
@@ -381,6 +383,7 @@ module Daru
     end
 
     def include? date_time
+      return false if !(date_time.is_a?(String) or date_time.is_a?(DateTime))
       helper = DateTimeIndexHelper
       if date_time.is_a?(String)
         date_precision = helper.determine_date_precision_of date_time

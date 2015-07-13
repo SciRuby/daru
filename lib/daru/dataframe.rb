@@ -2053,23 +2053,19 @@ module Daru
     end
 
     def populate_row_for pos
-      @vectors.map do |vector|
-        @data[@vectors[vector]][pos]
+      @data.map do |vector|
+        vector[pos]
       end
     end
 
     def insert_or_modify_vector name, vector
-      unless @vectors.is_a?(MultiIndex)   
-        name = name[0]
-      end
-
-      @vectors = @vectors | [name] if !@vectors.include?(name)
-      v        = nil
+      name = name[0] unless @vectors.is_a?(MultiIndex)   
+      v = nil
 
       if @index.empty?
         v = vector.is_a?(Daru::Vector) ? vector : Daru::Vector.new(vector.to_a)  
         @index = v.index
-        @data[@vectors[name]] = v
+        assign_or_add_vector name, v
         set_size
 
         @data.map! do |v|
@@ -2097,8 +2093,25 @@ module Daru
           v = Daru::Vector.new(vector, name: set_name(name), index: @index)
         end
 
-        @data[@vectors[name]] = v
+        assign_or_add_vector name, v
       end
+    end
+
+    def assign_or_add_vector name, v
+      #FIXME: fix this jugaad. need to make changes in Indexing itself.
+      pos = @vectors[name]
+
+      if !pos.kind_of?(Daru::Index) and pos == name and 
+        (@vectors.include?(name) or (pos.is_a?(Integer) and pos < @data.size))
+        @data[pos] = v
+      elsif pos.kind_of?(Daru::Index)
+        pos.each do |p|
+          @data[@vectors[p]] = v
+        end
+      else
+        @vectors = @vectors | [name] if !@vectors.include?(name)
+        @data[@vectors[name]] = v
+      end      
     end
 
     def insert_or_modify_row name, vector    

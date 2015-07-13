@@ -55,12 +55,9 @@ Docs can be found [here](https://rubygems.org/gems/daru).
 
 ## Roadmap
 
-* Automate testing for both MRI and JRuby.
 * Enable creation of DataFrame by only specifying an NMatrix/MDArray in initialize. Vector naming happens automatically (alphabetic) or is specified in an Array.
-* Completely test all functionality for MDArray.
 * Basic Data manipulation and analysis operations: 
     - DF concat
-* Option to express a DataFrame as an NMatrix or MDArray so as to use more efficient storage techniques.
 * Assignment of a column to a single number should set the entire column to that number.
 * == between daru_vector and string/number.
 * Multiple column assignment with []=
@@ -71,11 +68,10 @@ Docs can be found [here](https://rubygems.org/gems/daru).
 * Sort by index.
 * Statistics on DataFrame over rows and columns.
 * Cumulative sum.
-* Time series support.
 * Calculate percentage change.
 * Have some sample data sets for users to play around with. Should be able to load these from the code itself.
 * Sorting with missing data present.
-* re_index should re establish previous index values in the newly supplied index.
+* Change internals of indexes to raise errors when a particular index is missing and the passed key is a Fixnum. Right now we just return the Fixnum for convienience.
 
 ## Contributing
 
