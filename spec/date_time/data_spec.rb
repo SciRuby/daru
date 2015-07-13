@@ -132,6 +132,11 @@ describe Daru::DataFrame do
       expect(@df.row['2012-2-1']).to eq(Daru::Vector.new([1,3,"1"], index: @order))
     end
 
+    it "returns one row when complete DateTime specified" do
+      expect(@df.row[DateTime.new(2012,2,1)]).to eq(
+        Daru::Vector.new([1,3,"1"], index: @order))
+    end
+
     it "returns DataFrame when incomplete index" do
       range = 0..28
       a = @a[range]
@@ -150,11 +155,25 @@ describe Daru::DataFrame do
 
   context "#row[]=" do
     it "assigns one row Vector when complete index" do
-      # TODO
+      @df.row['2012-2-4'] = [666,999,0]
+      expect(@df.row['2012-2-4']).to eq(Daru::Vector.new([666,999,0], index: @order))
+    end
+
+    it "assigns one row Vector when complete index as DateTime" do
+      @df.row[DateTime.new(2012,2,5)] = [1,2,3]
+      expect(@df.row[DateTime.new(2012,2,5)]).to eq(
+        Daru::Vector.new([1,2,3], index: @order))
     end
 
     it "assigns multiple rows when incomplete index" do
-      # TODO
+      a = [666]*29
+      b = [999]*29
+      c = [0]*29
+      index = Daru::DateTimeIndex.date_range(:start => '2012-2-1', :periods => 29)
+      answer = Daru::DataFrame.new([a,b,c], index: index, order: @order)
+      @df.row['2012-2'] = [666,999,0]
+
+      expect(@df.row['2012-2']).to eq(answer)
     end
   end
 end

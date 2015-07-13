@@ -1261,61 +1261,9 @@ describe Daru::DataFrame do
         @df_mi.sort([[:a,:one,:bar]])
       end
     end
-  end 
-
-  context "#reindex" do
-    it "sets a new sequential index for DF and its underlying vectors" do
-      a = @data_frame.reindex(:seq)
-
-      expect(a).to eq(Daru::DataFrame.new({b: [11,12,13,14,15], 
-        a: [1,2,3,4,5], c: [11,22,33,44,55]}, order: [:a, :b, :c]))
-      expect(a).to_not eq(@data_frame)
-
-      expect(a.a.index).to eq(Daru::Index.new(5))
-      expect(a.b.index).to eq(Daru::Index.new(5))
-      expect(a.c.index).to eq(Daru::Index.new(5))
-    end
-
-    it "sets a new index for the data frame and its underlying vectors" do
-      a = @data_frame.reindex([:a,:b,:c,:d,:e])
-
-      expect(a).to eq(Daru::DataFrame.new(
-        {b: [11,12,13,14,15], a: [1,2,3,4,5], c: [11,22,33,44,55]}, 
-        order: [:a, :b, :c], index: [:a,:b,:c,:d,:e]))
-      expect(a).to_not eq(@data_frame)
-
-      expect(a.a.index).to eq(Daru::Index.new([:a,:b,:c,:d,:e]))
-      expect(a.b.index).to eq(Daru::Index.new([:a,:b,:c,:d,:e]))
-      expect(a.c.index).to eq(Daru::Index.new([:a,:b,:c,:d,:e]))
-    end
   end
 
-  context "#reindex!" do
-    context Daru::Index do
-      it "sets a new sequential index for DF and its underlying vectors" do
-        expect(@data_frame.reindex!(:seq)).to eq(Daru::DataFrame.new({b: [11,12,13,14,15], 
-          a: [1,2,3,4,5], c: [11,22,33,44,55]}, order: [:a, :b, :c]))
-        expect(@data_frame.a.index).to eq(Daru::Index.new(5))
-        expect(@data_frame.b.index).to eq(Daru::Index.new(5))
-        expect(@data_frame.c.index).to eq(Daru::Index.new(5))
-      end
-
-      it "sets a new index for the data frame and its underlying vectors" do
-        expect(@data_frame.reindex!([:a,:b,:c,:d,:e])).to eq(Daru::DataFrame.new(
-          {b: [11,12,13,14,15], a: [1,2,3,4,5], c: [11,22,33,44,55]}, 
-          order: [:a, :b, :c], index: [:a,:b,:c,:d,:e]))
-        expect(@data_frame.a.index).to eq(Daru::Index.new([:a,:b,:c,:d,:e]))
-        expect(@data_frame.b.index).to eq(Daru::Index.new([:a,:b,:c,:d,:e]))
-        expect(@data_frame.c.index).to eq(Daru::Index.new([:a,:b,:c,:d,:e]))
-      end  
-    end
-
-    context Daru::MultiIndex do
-      pending "feature manually tested. write tests"
-    end  
-  end
-
-  context "#reindex_vectors!" do
+  context "#index=" do
     before :each do
       @df = Daru::DataFrame.new({
         a: [1,2,3,4,5],
@@ -1324,17 +1272,50 @@ describe Daru::DataFrame do
       })
     end
 
-    it "changes names of vectors" do
-      pending "soon"
-      ans = Daru::DataFrame.new({
+    it "simply reassigns the index" do
+      @df.index = Daru::Index.new(['4','foo', :bar, 0, 23])
+      expect(@df.row['foo']).to eq(Daru::Vector.new([2,22,'b'], index: [:a,:b,:c]))
+    end
+
+    it "raises error for improper length index" do
+      expect {
+        @df.index = Daru::Index.new([1,2])
+      }.to raise_error(ArgumentError)
+    end
+  end
+
+  context "#vectors=" do
+    before :each do
+      @df = Daru::DataFrame.new({
         a: [1,2,3,4,5],
         b: [11,22,33,44,55],
         c: %w(a b c d e)
-      }, order: [:b, :c, :a])
+      })
+    end
 
-      expect(@df.reindex_vectors!([:b,:c,:a])).to eq(Daru::Index.new([:b,:c,:a]))
-      expect(@df[:a]).to eq(Daru::Vector.new([1,2,3,4,5]))
-      expect(@df[:c]).to eq(Daru::Vector.new(%w(a b c d e)))
+    it "simply reassigns vectors" do
+      @df.vectors = Daru::Index.new(['b',0,'m'])
+
+      expect(@df.vectors).to eq(Daru::Index.new(['b',0,'m']))
+      expect(@df['b']).to eq(Daru::Vector.new([1,2,3,4,5]))
+    end
+
+    it "raises error for improper lenght index" do
+      expect {
+        @df.vectors = Daru::Index.new([1,2,'3',4,'5'])
+      }.to raise_error(ArgumentError)
+    end
+  end
+
+  context "#reindex!" do
+    it "destructively re indexes and aligns accordingly" do
+      # TODO
+    end
+  end
+
+  context "#reindex_vectors!" do
+    it "destructively re indexes vectors and aligns accordingly" do
+      # TODO
     end
   end
 
