@@ -81,7 +81,7 @@ module Daru
       end
 
       def begin_from_offset? offset, start
-        if offset.kind_of?(Tick) or 
+        if offset.kind_of?(Daru::Offsets::Tick) or 
           (offset.respond_to?(:on_offset?) and offset.on_offset?(start))
           true
         else
