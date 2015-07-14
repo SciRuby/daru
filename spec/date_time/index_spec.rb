@@ -302,6 +302,13 @@ describe DateTimeIndex do
       expect(index['2011']).to eq(nil)
     end
 
+    it "returns a slice when given a numeric range" do
+      index = DateTimeIndex.date_range(
+        :start => DateTime.new(2012,3,1), :periods => 50)
+      expect(index[4..10]).to eq(
+        DateTimeIndex.date_range(:start => DateTime.new(2012,3,5), :periods => 7))
+    end
+
     it "raises error if date not present (exact date)" do
       expect {
         index = DateTimeIndex.date_range(:start => '2011', :periods => 5, :freq => 'MONTH')

@@ -39,6 +39,17 @@ describe Daru::Vector do
       expect(@vector['2012-4-4'..'2012-4-5']).to eq(
         Daru::Vector.new([23]*slice_index.size, index: slice_index))
     end
+
+    it "returns a slice when numeric range" do
+      slice_index = Daru::DateTimeIndex.date_range(
+        :start => DateTime.new(2012,4,4), :periods => 20, :freq => 'H')
+      expect(@vector[0..19]).to eq(
+        Daru::Vector.new([23]*slice_index.size, index: slice_index))
+    end
+
+    it "returns the element when number" do
+      expect(@vector[32]).to eq(23)
+    end
   end
 
   context "#[]=" do
@@ -47,6 +58,15 @@ describe Daru::Vector do
       vector = Daru::Vector.new([1,2,3,4,5], index: index)
       vector['2012-1-4'] = 666
       expect(vector).to eq(Daru::Vector.new([1,2,3,666,5], index: index))
+    end
+
+    it "assigns single element when specified a number for indexing" do
+      index = Daru::DateTimeIndex.date_range(:start => '2012', :periods => 5, :freq => 'D')
+      vector = Daru::Vector.new([1,2,3,4,5], index: index)
+
+      vector[2] = 666
+      expect(vector).to eq(
+        Daru::Vector.new([1,2,666,4,5], index: index))
     end
 
     it "assigns multiple elements when index incomplete" do

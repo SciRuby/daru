@@ -279,6 +279,9 @@ module Daru
       end
 
       if key.is_a?(Range)
+        return slice(key.first, key.last) if 
+          key.first.is_a?(Fixnum) and key.last.is_a?(Fixnum)
+
         slice_begin = helper.find_date_string_bounds(key.first)[0]
         slice_end   = helper.find_date_string_bounds(key.last)[1]
       else
@@ -297,6 +300,8 @@ module Daru
 
       if first.is_a?(String) and last.is_a?(String)
         self[first..last]
+      elsif first.is_a?(Fixnum) and last.is_a?(Fixnum)
+        DateTimeIndex.new(self.to_a[first..last], freq: @offset)
       else
         first_dt = first.is_a?(String) ? 
           helper.find_date_string_bounds(first)[0] : first
@@ -348,9 +353,19 @@ module Daru
     # 
     # == Arguements
     #
-    # * distance - Fixnum. Distance by which each date should be shifted.
+    # * distance - Fixnum or Daru::DateOffset. Distance by which each date 
+    # should be shifted. Returns a new DateTimeIndex object.
     def shift distance
-      
+      if distance.is_a?(Fixnum)
+        if @offset
+          start = @data[0][0]
+          distance.times { start = @offset + start }
+          return DateTimeIndex.date_range(
+            :start => start, :periods => @periods, freq: @offset)
+        else
+          raise IndexError, "To shift non-freq time series pass a DateOffset."
+        end
+      end
     end
 
     # Shift all dates in the index to the past. The dates are shifted by the same
@@ -358,7 +373,8 @@ module Daru
     # 
     # == Arguments
     #
-    # * distance - Fixnum. Distance by which each date should be shifted.
+    # * distance - Fixnum or Daru::DateOffset. Distance by which each date 
+    # should be shifted. Returns a new DateTimeIndex object.
     def lag distance
       
     end
