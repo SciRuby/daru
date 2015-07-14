@@ -1,20 +1,25 @@
 # 0.2.0
 
 * Enhancements
+    - Added a new class Daru::Offsets for providing a uniform API to jump between dates.
     - Vector
         - #concat now compulsorily requires a second index argument.
+        - Added new method #index= to change the index directly.
     - Indexing
         - Changed Index so that it now accepts all sorts of data (not restricted to only Symbols as it was previously).
         - Re wrote MultiIndex in levels and labels form so that its faster and more accomodative of different kinds of index levels.
         - Changed .new to return appropriate index object based on data passed.
         - Added .from_tuple and .from_array methods to MultiIndex.
         - Added union and intersection behaviour to Index and MultiIndex.
+        - Added a new index, DateTimeIndex for indexing with time-based data.
     - DataFrame
         - Removed the DataFrameByVector class and the #vector function. Now only
         way to access a Vector in a DF is by using the #[] operator.
+        - Added new method #index= and #vectors= for changing row and column indexes directly.
 * Changes
     - Removed the + operator overload from Index and replaced in with union.
     - Removed the second 'values' argument from Daru::Index because it's redundant.
+    - Changed behaviour of Vector#reindex and DataFrame#reindex and #reindex_vectors to preserve indexing of original data when possible.
 
 # 0.1.0
 

@@ -798,13 +798,31 @@ module Daru
       content
     end
 
-    # Create a new vector with a different index.
-    # 
-    # @param new_index [Symbol, Array, Daru::Index] The new index. Passing *:seq*
-    #   will reindex with sequential numbers from 0 to (n-1).
+    # Create a new vector with a different index, and preserve the indexing of
+    # current elements.
     def reindex new_index
-      index = Daru::Index.new(new_index == :seq ? @size : new_index)
-      Daru::Vector.new @data.to_a, index: index, name: name, dtype: @dtype
+      vector = Daru::Vector.new([], index: new_index, name: @name)
+
+      new_index.each do |idx|
+        if @index.include?(idx)
+          vector[idx] = self[idx]
+        else
+          vector[idx] = nil
+        end
+      end
+
+      vector
+    end
+
+    def index= idx
+      raise ArgumentError, 
+        "Size of supplied index #{index.size} does not match size of DataFrame" if 
+        idx.size != self.size
+      raise ArgumentError, "Can only assign type Index and its subclasses." unless 
+        idx.kind_of?(Daru::Index)
+        
+      @index = idx
+      self
     end
 
     # Give the vector a new name

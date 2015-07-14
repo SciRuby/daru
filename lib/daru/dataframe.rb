@@ -1182,30 +1182,31 @@ module Daru
       Daru::Core::GroupBy.new(self, vectors)
     end
 
-    def reindex_vectors! new_vectors
-      raise ArgumentError, "Number of vectors passed into function (#{new_vectors.size}) should equal that present in the DataFrame (#{@vectors.size})" if 
-        @vectors.size != new_vectors.size
-
-      @vectors = Daru::Index.new new_vectors, new_vectors.map { |e| @vectors[e] }
+    def reindex_vectors new_vectors
     end
 
     # Change the index of the DataFrame and its underlying vectors. Destructive.
     # 
     # @param [Symbol, Array] new_index Specify an Array if 
-    def reindex! new_index
-      raise ArgumentError, "Index size must equal dataframe size" if new_index.is_a?(Array) and new_index.size != @size
+    def reindex new_index
+      # self.dup.reindex! new_index
+    end
 
-      @index = possibly_multi_index?(new_index == :seq ? @size : new_index)
-      @data.map! do |vector|
-        vector.reindex possibly_multi_index?(@index.to_a)
-      end
+    def index= idx
+      @data.each { |vec| vec.index = idx}
+      @index = idx
 
       self
     end
 
-    # Non-destructive version of #reindex!
-    def reindex new_index
-      self.dup.reindex! new_index
+    def vectors= idx
+      raise ArgumentError, "Can only reindex with Index and its subclasses" unless 
+        index.kind_of?(Daru::Index)
+      raise ArgumentError, "Specified index length #{idx.size} not equal to"\
+        "dataframe size #{ncols}" if idx.size != ncols
+
+      @vectors = idx
+      self
     end
 
     # Return the indexes of all the numeric vectors. Will include vectors with nils
@@ -1293,9 +1294,11 @@ module Daru
 
       opts[:by]        = create_logic_blocks vector_order, opts[:by]
       opts[:ascending] = sort_order_array vector_order, opts[:ascending]
-      index = @index.to_a
-      send(opts[:type], vector_order, index, opts[:by], opts[:ascending])
-      reindex! index
+      idx = @index.to_a
+      send(opts[:type], vector_order, idx, opts[:by], opts[:ascending])
+      self.index = Daru::Index.new(idx)
+
+      self
     end
 
     # Non-destructive version of #sort!

@@ -1298,24 +1298,48 @@ describe Daru::DataFrame do
 
       expect(@df.vectors).to eq(Daru::Index.new(['b',0,'m']))
       expect(@df['b']).to eq(Daru::Vector.new([1,2,3,4,5]))
+      expect(@df[0]).to eq(Daru::Vector.new([11,22,33,44,55]))
+      expect(@df['m']).to eq(Daru::Vector.new(%w(a b c d e)))
     end
 
-    it "raises error for improper lenght index" do
+    it "raises error for improper length index" do
       expect {
         @df.vectors = Daru::Index.new([1,2,'3',4,'5'])
       }.to raise_error(ArgumentError)
     end
   end
 
-  context "#reindex!" do
-    it "destructively re indexes and aligns accordingly" do
-      # TODO
+  context "#reindex" do
+    it "re indexes and aligns accordingly" do
+      df = Daru::DataFrame.new({
+        a: [1,2,3,4,5],
+        b: [11,22,33,44,55],
+        c: %w(a b c d e)
+      })
+      
+      ans = df.reindex(Daru::Index.new([1,3,0,8,2]))
+      expect(ans).to eq(Daru::DataFrame.new({
+        a: [2,4,1,nil,3],
+        b: [22,44,11,nil,33],
+        c: ['b','d','a',nil,'c']
+        }, index: Daru::Index.new([1,3,0,8,2])))
     end
   end
 
-  context "#reindex_vectors!" do
-    it "destructively re indexes vectors and aligns accordingly" do
-      # TODO
+  context "#reindex_vectors" do
+    it "re indexes vectors and aligns accordingly" do
+      df = Daru::DataFrame.new({
+        a: [1,2,3,4,5],
+        b: [11,22,33,44,55],
+        c: %w(a b c d e)
+      })
+
+      ans = df.reindex_vectors(Daru::Index.new([:b, 'a', :a]))
+      expect(ans).to eq(Daru::DataFrame.new({
+        :b  => [11,22,33,44,55],
+        'a' => [nil, nil, nil, nil, nil],
+        :a  => [1,2,3,4,5]
+      }))
     end
   end
 
