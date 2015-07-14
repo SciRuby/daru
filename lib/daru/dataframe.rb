@@ -1183,13 +1183,38 @@ module Daru
     end
 
     def reindex_vectors new_vectors
+      raise ArgumentError, "Must pass the new index of type Index or its "\
+        "subclasses, not #{new_index.class}" unless new_vectors.kind_of?(Daru::Index)
+
+      cl = Daru::DataFrame.new({}, order: new_vectors, index: @index, name: @name)
+      new_vectors.each do |vec|
+        if @vectors.include?(vec)
+          cl[vec] = self[vec]
+        else
+          cl[vec] = [nil]*nrows
+        end
+      end
+
+      cl
     end
 
     # Change the index of the DataFrame and its underlying vectors. Destructive.
     # 
     # @param [Symbol, Array] new_index Specify an Array if 
     def reindex new_index
-      # self.dup.reindex! new_index
+      raise ArgumentError, "Must pass the new index of type Index or its "\
+        "subclasses, not #{new_index.class}" unless new_index.kind_of?(Daru::Index)
+
+      cl = Daru::DataFrame.new({}, order: @vectors, index: new_index, name: @name)
+      new_index.each do |idx|
+        if @index.include?(idx)
+          cl.row[idx] = self.row[idx]
+        else
+          self.row[idx] = [nil]*ncols
+        end
+      end
+
+      cl
     end
 
     def index= idx

@@ -1339,7 +1339,7 @@ describe Daru::DataFrame do
         :b  => [11,22,33,44,55],
         'a' => [nil, nil, nil, nil, nil],
         :a  => [1,2,3,4,5]
-      }))
+      }, order: [:b, 'a', :a]))
     end
   end
 
