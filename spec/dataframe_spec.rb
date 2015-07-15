@@ -1323,6 +1323,7 @@ describe Daru::DataFrame do
         b: [22,44,11,nil,33],
         c: ['b','d','a',nil,'c']
         }, index: Daru::Index.new([1,3,0,8,2])))
+      expect(ans).to_not eq(df)
     end
   end
 

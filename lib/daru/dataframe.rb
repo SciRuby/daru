@@ -1210,7 +1210,7 @@ module Daru
         if @index.include?(idx)
           cl.row[idx] = self.row[idx]
         else
-          self.row[idx] = [nil]*ncols
+          cl.row[idx] = [nil]*ncols
         end
       end
 
