@@ -297,16 +297,18 @@ describe DateTimeIndex do
         :start => '2012-2-2',:periods => 50, freq: 'M'))
     end
 
-    it "returns nil if date is out of bounds" do
-      index = DateTimeIndex.date_range(:start => '2012-1', :periods => 5)
-      expect(index['2011']).to eq(nil)
-    end
-
     it "returns a slice when given a numeric range" do
       index = DateTimeIndex.date_range(
         :start => DateTime.new(2012,3,1), :periods => 50)
       expect(index[4..10]).to eq(
         DateTimeIndex.date_range(:start => DateTime.new(2012,3,5), :periods => 7))
+    end
+
+    it "raises error if key out of bounds" do
+      index = DateTimeIndex.date_range(:start => '2012-1', :periods => 5)
+      expect{
+        index['2011']
+      }.to raise_error(ArgumentError)
     end
 
     it "raises error if date not present (exact date)" do
@@ -320,6 +322,13 @@ describe DateTimeIndex do
       expect {
         index = DateTimeIndex.date_range(:start => '2012-2-3', :periods => 10)
         index['2012-2-4 12']
+      }.to raise_error(ArgumentError)
+    end
+
+    it "raises error for out of bounds range" do
+      expect {
+        index = DateTimeIndex.date_range(:start => '2012', :periods => 100)
+        index['2001'..'2005']
       }.to raise_error(ArgumentError)
     end
   end

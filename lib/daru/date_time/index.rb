@@ -161,13 +161,13 @@ module Daru
       def determine_date_precision_of date_string
         case date_string
         when /\d\d\d\d\-\d?\d\-\d?\d \d?\d:\d?\d:\d?\d/
-          :second
+          :sec
         when /\d\d\d\d\-\d?\d\-\d?\d \d?\d:\d?\d/
-          :minute
+          :min
         when /\d\d\d\d\-\d?\d\-\d?\d \d?\d/
           :hour
         when /\d\d\d\d\-\d?\d\-\d?\d/
-          :date
+          :day
         when /\d\d\d\d\-\d?\d/
           :month
         when /\d\d\d\d/
@@ -190,21 +190,18 @@ module Daru
             DateTime.new(date_time.year, date_time.month, ((date_time >> 1) - 1).day,
               23,59,59)
           ]
-        when :date
-        # when (:date and !frequency.match(/D/))
+        when :day
           [
             date_time,
             DateTime.new(date_time.year, date_time.month, date_time.day,23,59,59)
           ]
         when :hour
-        # when (:hour and !frequency.match(/H/))
           [
             date_time,
             DateTime.new(date_time.year, date_time.month, date_time.day, 
             date_time.hour,59,59)
           ]
-        when :minute
-        # when (:minute and !frequency.match(/M/))
+        when :min
           [
             date_time,
             DateTime.new(date_time.year, date_time.month, date_time.day, 
@@ -221,6 +218,18 @@ module Daru
 
       def last_date data
         data.sort_by { |d| d[1] }.last
+      end
+
+      def key_out_of_bounds? key, data
+        precision = determine_date_precision_of key
+        date_time = date_time_from key, precision
+        case precision
+        when :year
+          date_time.year < data[0][0].year or date_time.year > data[-1][0].year
+        when :month
+          (date_time.year < data[0][0].year and date_time.month < data[0][0].month) or
+          (date_time.year > data[-1][0].year and date_time.month > data[-1][0].month)
+        end
       end
     end
   end
@@ -279,15 +288,23 @@ module Daru
       end
 
       if key.is_a?(Range)
-        return slice(key.first, key.last) if 
-          key.first.is_a?(Fixnum) and key.last.is_a?(Fixnum)
+        first = key.first
+        last = key.last
+        return slice(first, last) if 
+          first.is_a?(Fixnum) and last.is_a?(Fixnum)
 
-        slice_begin = helper.find_date_string_bounds(key.first)[0]
-        slice_end   = helper.find_date_string_bounds(key.last)[1]
+        raise ArgumentError, "Keys #{first} and #{last} are out of bounds" if 
+          helper.key_out_of_bounds?(first, @data) and helper.key_out_of_bounds?(last, @data)
+
+        slice_begin = helper.find_date_string_bounds(first)[0]
+        slice_end   = helper.find_date_string_bounds(last)[1]
       else
         if key.is_a?(DateTime)
           return helper.find_index_of_date(@data, key)
         else
+          raise ArgumentError, "Key #{key} is out of bounds" if 
+            helper.key_out_of_bounds?(key, @data)
+
           slice_begin, slice_end = helper.find_date_string_bounds key
         end
       end
@@ -411,6 +428,8 @@ module Daru
       end
     end
 
+    # Check if a date exists in the index. Will be inferred from string in case 
+    # you pass a string. Recommened specifying the full date as a DateTime object.
     def include? date_time
       return false if !(date_time.is_a?(String) or date_time.is_a?(DateTime))
       helper = DateTimeIndexHelper
@@ -423,6 +442,7 @@ module Daru
       result[0] == date_time
     end
 
+    # Return true if the DateTimeIndex is empty.
     def empty?
       @data.empty?
     end
