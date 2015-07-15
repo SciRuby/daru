@@ -366,7 +366,7 @@ module Daru
           raise IndexError, "To shift non-freq date time index pass a DateOffset."
         end
       else # its a Daru::Offset/DateOffset
-
+        DateTimeIndex.new(self.to_a.map { |e| distance + e }, freq: :infer)
       end
     end
 
@@ -387,6 +387,8 @@ module Daru
         else
           raise IndexError, "To lag non-freq date time index pass a DateOffset."
         end
+      else
+        DateTimeIndex.new(self.to_a.map { |e| distance - e }, freq: :infer)
       end
     end
 

@@ -368,6 +368,15 @@ describe DateTimeIndex do
       expect(index.shift(3)).to eq(DateTimeIndex.date_range(
         :start => '2012-4-1', :freq => 'MB', :periods => 10))
     end
+
+    it "shifts all dates by the given offset" do
+      offset = Daru::Offsets::Minute.new
+      index = DateTimeIndex.date_range(
+        :start => '2012-3-1', :freq => 'D', :periods => 10)
+      expect(index.shift(offset)).to eq(
+        DateTimeIndex.date_range(
+          :start => '2012-3-1 00:01', :freq => 'D', :periods => 10))
+    end
   end
 
   context "#lag" do
@@ -376,6 +385,14 @@ describe DateTimeIndex do
         :start => '2012-5-5', :freq => 'D', :periods => 5)
       expect(index.lag(2)).to eq(DateTimeIndex.date_range(
         :start => '2012-5-3', :freq => 'D', :periods => 5))
+    end
+
+    it "lags all dates by the given offset" do
+      offset = Daru::Offsets::Month.new
+      index = DateTimeIndex.date_range(
+        :start => '2012-4-5', :freq => 'MONTH', :periods => 10)
+      expect(index.lag(offset)).to eq(
+        DateTimeIndex.date_range(:start => '2012-3-5', :periods => 10, freq: offset))
     end
   end
 
