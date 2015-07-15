@@ -24,6 +24,10 @@ module Daru
     def + date_time
       @offset + date_time
     end
+
+    def - date_time
+      @offset - date_time
+    end
   end
 
   module Offsets
@@ -34,6 +38,10 @@ module Daru
 
       def + date_time
         date_time + @n*multiplier
+      end
+
+      def - date_time
+        date_time - @n*multiplier
       end
     end
 
@@ -86,6 +94,10 @@ module Daru
       def + date_time
         date_time >> @n
       end
+
+      def - date_time
+        date_time << @n
+      end
     end
 
     class Week < DateOffset
@@ -102,6 +114,16 @@ module Daru
           date_time + distance + 7*(@n-1)
         else
           date_time + (7-distance) + 7*(@n -1)
+        end
+      end
+
+      def - date_time
+        wday = date_time.wday
+        distance = (@weekday - wday).abs
+        if @weekday >= wday
+          date_time - ((7 - distance) + 7*(@n -1))
+        else
+          date_time - (distance + 7*(@n-1))
         end
       end
 
@@ -124,10 +146,14 @@ module Daru
       end
 
       def + date_time
-        days_of_month = Daru::MONTH_DAYS[date_time.month]
-        days_of_month += 1 if date_time.leap? and date_time.month == 2
+        days_in_month = Daru::MONTH_DAYS[date_time.month]
+        days_in_month += 1 if date_time.leap? and date_time.month == 2
+        date_time + (days_in_month - date_time.day + 1)
+      end
 
-        date_time + (days_of_month - date_time.day + 1)
+      def - date_time
+        date_time      = date_time << 1 if on_offset?(date_time)
+        DateTime.new(date_time.year, date_time.month, 1)
       end
 
       def on_offset? date_time
@@ -146,10 +172,18 @@ module Daru
 
       def + date_time
         date_time     = date_time >> 1 if on_offset?(date_time)
-        days_of_month = Daru::MONTH_DAYS[date_time.month]
-        days_of_month += 1 if date_time.leap? and date_time.month == 2
+        days_in_month = Daru::MONTH_DAYS[date_time.month]
+        days_in_month += 1 if date_time.leap? and date_time.month == 2
 
-        date_time + (days_of_month - date_time.day)
+        date_time + (days_in_month - date_time.day)
+      end
+
+      def - date_time
+        date_time = date_time << 1
+        days_in_month = Daru::MONTH_DAYS[date_time.month]
+        days_in_month += 1 if date_time.leap? and date_time.month == 2
+
+        date_time + (days_in_month - date_time.day)
       end
 
       def on_offset? date_time
@@ -168,6 +202,14 @@ module Daru
 
       def + date_time
         DateTime.new(date_time.year + 1)
+      end
+
+      def - date_time
+        if on_offset?(date_time)
+          DateTime.new(date_time.year - 1, 1, 1)
+        else
+          DateTime.new(date_time.year, 1, 1)
+        end
       end
 
       def on_offset? date_time
@@ -190,6 +232,10 @@ module Daru
         else
           DateTime.new(date_time.year, 12, 31)
         end
+      end
+
+      def - date_time
+        DateTime.new(date_time.year - 1, 12, 31)
       end
 
       def on_offset? date_time

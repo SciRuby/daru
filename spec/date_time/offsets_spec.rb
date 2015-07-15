@@ -52,10 +52,13 @@ end
 include Daru::Offsets
 describe Offsets do
   describe Second do
+    before do
+      @offset = Offsets::Second.new(5)
+    end
+
     context "#initialize" do
-      it "creates a seconds offset" do
-        offset = Offsets::Second.new(5)
-        expect(offset + DateTime.new(2012,3,4,23,4,00)).to eq(
+      it "creates a seconds offset" do    
+        expect(@offset + DateTime.new(2012,3,4,23,4,00)).to eq(
           DateTime.new(2012,3,4,23,4,05))
       end
     end
@@ -65,6 +68,8 @@ describe Offsets do
 
     context "#-" do
       it "reduces by seconds" do
+        expect(@offset - DateTime.new(2012,2,3,12,4,23)).to eq(
+          DateTime.new(2012,2,3,12,4,18))
       end
     end
   end
@@ -157,7 +162,7 @@ describe Offsets do
 
       DAYS_RETREAT.each.with_index do |day_date, i|
         it "decreases the date to nearest preceding #{day_date[0]}" do
-          offset = Offsets::Week.new(i)
+          offset = Offsets::Week.new(weekday: i)
           expect(offset - date).to eq(day_date[1])
         end
       end

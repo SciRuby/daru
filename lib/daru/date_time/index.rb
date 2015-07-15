@@ -363,8 +363,10 @@ module Daru
           return DateTimeIndex.date_range(
             :start => start, :periods => @periods, freq: @offset)
         else
-          raise IndexError, "To shift non-freq time series pass a DateOffset."
+          raise IndexError, "To shift non-freq date time index pass a DateOffset."
         end
+      else # its a Daru::Offset/DateOffset
+
       end
     end
 
@@ -376,7 +378,16 @@ module Daru
     # * distance - Fixnum or Daru::DateOffset. Distance by which each date 
     # should be shifted. Returns a new DateTimeIndex object.
     def lag distance
-      
+      if distance.is_a?(Fixnum)
+        if @offset
+          start = @data[0][0]
+          distance.times { start = @offset - start }
+          return DateTimeIndex.date_range(
+            :start => start, :periods => @periods, freq: @offset)
+        else
+          raise IndexError, "To lag non-freq date time index pass a DateOffset."
+        end
+      end
     end
 
     def _dump depth
