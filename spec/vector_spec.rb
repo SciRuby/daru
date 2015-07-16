@@ -999,4 +999,21 @@ describe Daru::Vector do
       }))
     end
   end
+
+  context "#lag" do
+    it "lags the vector by specified amount" do
+      xiu = Daru::Vector.new([17.28, 17.45, 17.84, 17.74, 17.82, 17.85, 17.36, 17.3, 17.56, 17.49, 17.46, 17.4, 17.03, 17.01,
+        16.86, 16.86, 16.56, 16.36, 16.66, 16.77])
+      lag1 = xiu.lag
+
+      expect(lag1[lag1.size - 1]).to be_within(0.001).of(16.66)
+      expect(lag1[lag1.size - 2]).to be_within(0.001).of(16.36)
+
+      #test with different lagging unit
+      lag2 = xiu.lag(2)
+
+      expect(lag2[lag2.size - 1]).to be_within(0.001).of(16.36)
+      expect(lag2[lag2.size - 2]).to be_within(0.001).of(16.56)
+    end
+  end
 end if mri?

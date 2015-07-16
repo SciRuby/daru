@@ -344,4 +344,97 @@ describe Daru::Vector do
       expect_correct_vector_in_delta(exp, ds[:mean], 1e-13)
     end
   end
+
+  before do
+    # daily closes of iShares XIU on the TSX
+    @shares = Daru::Vector.new([17.28, 17.45, 17.84, 17.74, 17.82, 17.85, 17.36, 17.3, 17.56, 17.49, 17.46, 17.4, 17.03, 17.01,
+      16.86, 16.86, 16.56, 16.36, 16.66, 16.77])
+  end
+
+  context "#acf" do
+    it "calculates autocorrelation co-efficients" do
+      acf = @shares.acf
+
+      expect(acf.length).to eq(14)
+
+      # test the first few autocorrelations
+      expect(acf[0]).to be_within(0.0001).of(1.0)
+      expect(acf[1]).to be_within(0.001) .of(0.852)
+      expect(acf[2]).to be_within(0.001) .of(0.669)
+      expect(acf[3]).to be_within(0.001) .of(0.486)
+    end
+  end
+
+  context "#diff" do
+    it "performs the difference of the series" do
+      diff = @shares.diff
+
+      expect(diff[@shares.size - 1]).to be_within(0.001).of( 0.11)
+      expect(diff[@shares.size - 2]).to be_within(0.001).of( 0.30)
+      expect(diff[@shares.size - 3]).to be_within(0.001).of(-0.20)
+    end
+  end
+
+  context "#ma" do
+    it "calculates moving average" do
+      # test default
+      ma10 = @shares.ma
+
+      expect(ma10[-1]) .to be_within(0.001).of(16.897)
+      expect(ma10[-5]) .to be_within(0.001).of(17.233)
+      expect(ma10[-10]).to be_within(0.001).of(17.587)
+
+      # test with a different lookback period
+      ma5 = @shares.ma 5
+
+      expect(ma5[-1]).to be_within(0.001).of(16.642)
+      expect(ma5[-10]).to be_within(0.001).of(17.434)
+      expect(ma5[-15]).to be_within(0.001).of(17.74)
+    end
+  end
+
+  context "#ema" do
+    it "calculates exponential moving average" do
+      # test default
+      ema10 = @shares.ema
+
+      expect(ema10[-1]) .to be_within(0.00001).of( 16.87187)
+      expect(ema10[-5]) .to be_within(0.00001).of( 17.19187)
+      expect(ema10[-10]).to be_within(0.00001).of( 17.54918)
+
+      # test with a different lookback period
+      ema5 = @shares.ema 5
+
+      expect(ema5[-1]) .to be_within( 0.0001).of(16.71299)
+      expect(ema5[-10]).to be_within( 0.0001).of(17.49079)
+      expect(ema5[-15]).to be_within( 0.0001).of(17.70067)
+
+      # test with a different smoother
+      ema_w = @shares.ema 10, true
+
+      expect(ema_w[-1]) .to be_within(0.00001).of(17.08044)
+      expect(ema_w[-5]) .to be_within(0.00001).of(17.33219)
+      expect(ema_w[-10]).to be_within(0.00001).of(17.55810)
+    end
+  end
+
+  context "#macd" do
+    it "calculates moving average convergence divergence" do
+      # MACD uses a lot more data than the other ones, so we need a bigger vector
+      data = Daru::Vector.new(
+        File.readlines("spec/fixtures/stock_data.csv").map(&:to_f))
+
+      macd, signal = data.macd
+
+      # check the MACD
+      expect(macd[-1]).to be_within(1e-6).of(3.12e-4)
+      expect(macd[-10]).to be_within(1e-4).of(-1.07e-2)
+      expect(macd[-20]).to be_within(1e-5).of(-5.65e-3)
+
+      # check the signal
+      expect(signal[-1]).to be_within(1e-5).of(-0.00628)
+      expect(signal[-10]).to be_within(1e-5).of(-0.00971)
+      expect(signal[-20]).to be_within(1e-5).of(-0.00338)
+    end
+  end
 end
