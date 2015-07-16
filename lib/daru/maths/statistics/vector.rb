@@ -354,6 +354,158 @@ module Daru
           end
         end
 
+        # Performs the difference of the series.
+        # Note: The first difference of series is X(t) - X(t-1)
+        # But, second difference of series is NOT X(t) - X(t-2)
+        # It is the first difference of the first difference
+        # => (X(t) - X(t-1)) - (X(t-1) - X(t-2))
+        #
+        # == Arguments
+        #
+        #* *max_lags*: integer, (default: 1), number of differences reqd.
+        #
+        # == Usage
+        #
+        #   ts = Daru::Vector.new((1..10).map { rand })
+        #            # => [0.69, 0.23, 0.44, 0.71, ...]
+        #
+        #   ts.diff   # => [nil, -0.46, 0.21, 0.27, ...]
+        #
+        # == Returns
+        #
+        #   Daru::Vector
+        def diff(max_lags = 1)
+          ts = self
+          difference = []
+          max_lags.times do
+            difference = ts - ts.lag
+            ts = difference
+          end
+          difference
+        end
+
+        # Moving Average.
+        #
+        # Calculates the moving average of the series using the provided
+        # lookback argument. The lookback defaults to 10 periods.
+        #
+        # == Parameters
+        #* *n*: integer, (default = 10) - loopback argument
+        #
+        # == Usage
+        #
+        #   ts = Daru::Vector.new((1..100).map { rand })
+        #            # => [0.69, 0.23, 0.44, 0.71, ...]
+        #
+        #   # first 9 observations are nil
+        #   ts.ma    # => [ ... nil, 0.484... , 0.445... , 0.513 ... , ... ]
+        #
+        # == Returns
+        # 
+        #   Resulting moving average timeseries object
+        def ma(n = 10)
+          return mean if n >= size
+
+          Daru::Vector.new(
+            [nil] * (n - 1) + 
+            (0..(size - n)).map do |i|
+              @data[i...(i + n)].inject(&:+) / n
+            end
+          )
+        end
+
+        #=Exponential Moving Average
+        # Calculates an exponential moving average of the series using a
+        # specified parameter. If wilder is false (the default) then the EMA
+        # uses a smoothing value of 2 / (n + 1), if it is true then it uses the
+        # Welles Wilder smoother of 1 / n.
+        #
+        # Warning for EMA usage: EMAs are unstable for small series, as they
+        # use a lot more than n observations to calculate. The series is stable
+        # if the size of the series is >= 3.45 * (n + 1)
+        #
+        # == Parameters
+        #
+        #* *n*: integer, (default = 10)
+        #* *wilder*: boolean, (default = false), if true, 1/n value is used for smoothing; if false, uses 2/(n+1) value
+        #
+        # == Usage
+        #
+        #   ts = (1..100).map { rand }.to_ts
+        #            # => [0.69, 0.23, 0.44, 0.71, ...]
+        #
+        #   # first 9 observations are nil
+        #   ts.ema   # => [ ... nil, 0.509... , 0.433..., ... ]
+        #
+        # == Returns
+        #
+        # EMA Daru::Vector
+        def ema(n = 10, wilder = false)
+          smoother = wilder ? 1.0 / n : 2.0 / (n + 1)
+          # need to start everything from the first non-nil observation
+          start = @data.index { |i| i != nil }
+          # first n - 1 observations are nil
+          base = [nil] * (start + n - 1)
+          # nth observation is just a moving average
+          base << @data[start...(start + n)].inject(0.0) { |s, a| a.nil? ? s : s + a } / n
+          (start + n).upto size - 1 do |i|
+            base << self[i] * smoother + (1 - smoother) * base.last
+          end
+
+          Daru::Vector.new(base)
+        end
+
+        # == Moving Average Convergence-Divergence
+        # Calculates the MACD (moving average convergence-divergence) of the time
+        # series - this is a comparison of a fast EMA with a slow EMA.
+        #
+        # == Arguments
+        #* *fast*: integer, (default = 12) - fast component of MACD
+        #* *slow*: integer, (default = 26) - slow component of MACD
+        #* *signal*: integer, (default = 9) - signal component of MACD
+        #
+        # == Usage
+        #
+        #   ts = (1..100).map { rand }.to_ts
+        #            # => [0.69, 0.23, 0.44, 0.71, ...]
+        #   ts.macd(13)
+        #
+        # == Returns
+        #
+        # Array of two Daru::Vectors - comparison of fast EMA with slow and EMA with 
+        # signal value
+        def macd(fast = 12, slow = 26, signal = 9)
+          series = ema(fast) - ema(slow)
+          [series, series.ema(signal)]
+        end
+
+        # Calculates the autocorrelation coefficients of the series.
+        #
+        # The first element is always 1, since that is the correlation
+        # of the series with itself.
+        #
+        # Usage:
+        #
+        #  ts = Daru::Vector.new((1..100).map { rand })
+        #
+        #  ts.acf   # => array with first 21 autocorrelations
+        #  ts.acf 3 # => array with first 3 autocorrelations
+        #
+        def acf(max_lags = nil)
+          max_lags ||= (10 * Math.log10(size)).to_i
+
+          (0..max_lags).map do |i|
+            if i == 0
+              1.0
+            else
+              m = self.mean
+              # can't use Pearson coefficient since the mean for the lagged series should
+              # be the same as the regular series
+              ((self - m) * (self.lag(i) - m)).sum / self.variance_sample / (self.size - 1)
+            end
+          end
+        end
+
         alias :sdp :standard_deviation_population
         alias :sds :standard_deviation_sample
         alias :std :sds

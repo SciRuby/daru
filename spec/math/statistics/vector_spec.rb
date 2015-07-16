@@ -369,6 +369,7 @@ describe Daru::Vector do
     it "performs the difference of the series" do
       diff = @shares.diff
 
+      expect(diff.class).to eq(Daru::Vector)
       expect(diff[@shares.size - 1]).to be_within(0.001).of( 0.11)
       expect(diff[@shares.size - 2]).to be_within(0.001).of( 0.30)
       expect(diff[@shares.size - 3]).to be_within(0.001).of(-0.20)

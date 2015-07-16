@@ -636,6 +636,29 @@ module Daru
       self
     end
 
+    # Lags the series by k periods.
+    #
+    # The convention is to set the oldest observations (the first ones
+    # in the series) to nil so that the size of the lagged series is the
+    # same as the original.
+    #
+    # Usage:
+    #
+    #   ts = Daru::Vector.new((1..10).map { rand })
+    #           # => [0.69, 0.23, 0.44, 0.71, ...]
+    #
+    #   ts.lag   # => [nil, 0.69, 0.23, 0.44, ...]
+    #   ts.lag(2) # => [nil, nil, 0.69, 0.23, ...]
+    def lag k=1
+      return self.dup if k == 0
+
+      dat = @data.to_a.dup
+      (dat.size - 1).downto(k) { |i| dat[i] = dat[i - k] }
+      (0...k).each { |i| dat[i] = nil }
+
+      Daru::Vector.new(dat, index: @index, name: @name)
+    end
+
     def detach_index
       Daru::DataFrame.new({
         index: @index.to_a,

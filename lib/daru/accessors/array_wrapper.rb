@@ -45,8 +45,8 @@ module Daru
         set_size
       end
 
-      def index key
-        @data.index key
+      def index *args, &block
+        @data.index(*args, &block)
       end
 
       def << element
