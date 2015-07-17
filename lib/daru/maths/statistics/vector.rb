@@ -506,6 +506,43 @@ module Daru
           end
         end
 
+        # Provides autocovariance.
+        #
+        # == Options
+        # 
+        #* *:demean* = true; optional. Supply false if series is not to be demeaned
+        #* *:unbiased* = true; optional. true/false for unbiased/biased form of autocovariance
+        #
+        # == Returns
+        #
+        # Autocovariance value
+        def acvf(demean = true, unbiased = true)
+          opts = {
+            demean: true,
+            unbaised: true
+          }.merge(opts)
+
+          demean   = opts[:demean]
+          unbiased = opts[:unbiased]
+          if demean
+            demeaned_series = self - self.mean
+          else
+            demeaned_series = self
+          end
+
+          n = (10 * Math.log10(size)).to_i + 1
+          m = self.mean
+          if unbiased
+            d = Array.new(self.size, self.size)
+          else
+            d = ((1..self.size).to_a.reverse)[0..n]
+          end
+
+          0.upto(n - 1).map do |i|
+            (demeaned_series * (self.lag(i) - m)).sum / d[i]
+          end
+        end
+
         alias :sdp :standard_deviation_population
         alias :sds :standard_deviation_sample
         alias :std :sds
