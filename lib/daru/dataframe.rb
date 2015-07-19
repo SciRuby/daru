@@ -274,6 +274,7 @@ module Daru
             if !index.nil?
               @index = try_create_index index
             elsif all_vectors_have_equal_indexes?(source)
+              vectors_have_same_index = true
               @index = source.values[0].index.dup
             else
               all_indexes = []
@@ -289,13 +290,19 @@ module Daru
 
             if clone
               @vectors.each do |vector|
-                v = Daru::Vector.new([], name: vector, index: @index)
+                # avoids matching indexes of vectors if all the supplied vectors
+                # have the same index.
+                if vectors_have_same_index 
+                  v = source[vector].dup
+                else
+                  v = Daru::Vector.new([], name: vector, index: @index)
 
-                @index.each do |idx|
-                  if source[vector].index.include? idx
-                    v[idx] = source[vector][idx]
-                  else
-                    v[idx] = nil
+                  @index.each do |idx|
+                    if source[vector].index.include? idx
+                      v[idx] = source[vector][idx]
+                    else
+                      v[idx] = nil
+                    end
                   end
                 end
                 @data << v
