@@ -2110,12 +2110,16 @@ module Daru
         end
       else
         if vector.is_a?(Daru::Vector)
-          v = Daru::Vector.new [], name: set_name(name), index: @index
-          @index.each do |idx|
-            if vector.index.include? idx
-              v[idx] = vector[idx]
-            else
-              v[idx] = nil
+          if vector.index == @index # so that index-by-index assignment is avoided when possible.
+            v = vector.dup
+          else
+            v = Daru::Vector.new [], name: set_name(name), index: @index
+            @index.each do |idx|
+              if vector.index.include? idx
+                v[idx] = vector[idx]
+              else
+                v[idx] = nil
+              end
             end
           end
         else
