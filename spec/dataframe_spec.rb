@@ -1048,10 +1048,10 @@ describe Daru::DataFrame do
 
   context "#delete_row" do
     it "deletes the specified row" do
-      @data_frame.delete_row :one
+      @data_frame.delete_row :three
 
-      expect(@data_frame).to eq(Daru::DataFrame.new({b: [12,13,14,15], a: [2,3,4,5], 
-      c: [22,33,44,55]}, order: [:a, :b, :c], index: [:two, :three, :four, :five]))
+      expect(@data_frame).to eq(Daru::DataFrame.new({b: [11,12,14,15], a: [1,2,4,5], 
+      c: [11,22,44,55]}, order: [:a, :b, :c], index: [:one, :two, :four, :five]))
     end
   end
 
