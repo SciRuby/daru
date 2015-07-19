@@ -18,6 +18,8 @@ else
   require 'nmatrix'
 end
 
+RSpec::Expectations.configuration.warn_about_potential_false_positives = false
+
 
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))

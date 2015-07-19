@@ -318,6 +318,11 @@ module Daru
       update
     end
 
+    def vector *args
+      $stderr.puts "#vector has been deprecated in favour of #[]. Please use that."
+      self[*names]
+    end
+
     # Access row or vector. Specify name of row/vector followed by axis(:row, :vector).
     # Defaults to *:vector*. Use of this method is not recommended for accessing 
     # rows or vectors. Use df.row[:a] for accessing row with index ':a' or 
@@ -394,16 +399,9 @@ module Daru
     def dup vectors_to_dup=nil
       vectors_to_dup = @vectors.to_a unless vectors_to_dup
 
-      if vectors.is_a?(MultiIndex)
-        src = []
-        vectors_to_dup.each do |vec|
-          src << @data[@vectors[vec]].dup
-        end
-      else
-        src = {}
-        vectors_to_dup.each do |vector|
-          src[vector] = @data[@vectors[vector]].dup
-        end
+      src = []
+      vectors_to_dup.each do |vec|
+        src << @data[@vectors[vec]].to_a
       end
       new_order = Daru::Index.new(vectors_to_dup)
 
@@ -2032,7 +2030,7 @@ module Daru
 
         new_vcs = []
         names.each do |name|
-          new_vcs << @data[@vectors[name]]
+          new_vcs << @data[@vectors[name]].to_a
         end
 
         order = names.is_a?(Array) ? Daru::Index.new(names) : names
