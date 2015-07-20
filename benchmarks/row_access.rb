@@ -33,10 +33,9 @@ Benchmark.bm do |x|
   end
 end
 
-#                   ====== Benchmarks ======
-#
+#                     ==== Benchmarks ====
 #                         user     system      total        real
-# Access single row    0.000000   0.000000   0.000000 (  0.000061)
-# Access rows by comma 1.150000   0.000000   1.150000 (  1.159109)
-# Individual rows      1.170000   0.000000   1.170000 (  1.180245)
-# Access rows by range 122.960000   0.000000 122.960000 (123.074147)
+# Access single row     0.000000   0.000000   0.000000 (  0.000059)
+# Access rows by comma  1.410000   0.010000   1.420000 (  1.420426)
+# Individual rows       1.480000   0.000000   1.480000 (  1.488531)
+# Access rows by range  1.440000   0.010000   1.450000 (  1.436750)
