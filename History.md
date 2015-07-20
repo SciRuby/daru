@@ -13,6 +13,7 @@
         - Added .from_tuple and .from_array methods to MultiIndex.
         - Added union and intersection behaviour to Index and MultiIndex.
         - Added a new index, DateTimeIndex for indexing with time-based data.
+        - Optimized range search for Index.
     - DataFrame
         - Removed the DataFrameByVector class and the #vector function. Now only
         way to access a Vector in a DF is by using the #[] operator.
