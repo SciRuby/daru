@@ -60,6 +60,7 @@ module Daru
       end
 
       @relation_hash.freeze
+      @keys = @relation_hash.keys
       @size = @relation_hash.size
     end
 
@@ -94,21 +95,12 @@ module Daru
       indexes = []
 
       if start.is_a?(Integer) and en.is_a?(Integer)
-        (start..en).each do |idx|
-          indexes << @relation_hash.key(idx)
-        end
-
-        Index.new indexes
+        Index.new @keys[start..en]
       else
-        keys      = @relation_hash.keys
-        start_idx = keys.index(start)
-        en_idx    = keys.index(en)
+        start_idx = @relation_hash[start]
+        en_idx    = @relation_hash[en]
 
-        for i in start_idx..en_idx
-          indexes << keys[i]
-        end
-
-        Index.new indexes
+        Index.new @keys[start_idx..en_idx]
       end
     end
 

@@ -2,6 +2,7 @@
 
 * Enhancements
     - Added a new class Daru::Offsets for providing a uniform API to jump between dates.
+    - Added benchmarking scripts
     - Vector
         - #concat now compulsorily requires a second index argument.
         - Added new method #index= to change the index directly.
@@ -16,10 +17,13 @@
         - Removed the DataFrameByVector class and the #vector function. Now only
         way to access a Vector in a DF is by using the #[] operator.
         - Added new method #index= and #vectors= for changing row and column indexes directly.
+        - Optimized Vector value setting and retreival.
 * Changes
     - Removed the + operator overload from Index and replaced in with union.
     - Removed the second 'values' argument from Daru::Index because it's redundant.
     - Changed behaviour of Vector#reindex and DataFrame#reindex and #reindex_vectors to preserve indexing of original data when possible.
+* Fixes
+    - Fixed DataFrame#delete_row.
 
 # 0.1.0
 

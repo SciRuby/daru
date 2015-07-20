@@ -2078,10 +2078,10 @@ module Daru
         # Access multiple rows
         rows = []
         names.each do |name|
-          rows << self.row[name]
+          rows << self.row[name].to_a
         end
         
-        Daru::DataFrame.rows rows, index: names ,name: @name        
+        Daru::DataFrame.rows rows, index: names ,name: @name, order: @vectors        
       end
     end
 
@@ -2164,17 +2164,13 @@ module Daru
         end
 
         if @index.include? name
-          @vectors.each do |vector|
-            if v.index.include? vector
-              @data[@vectors[vector]][name] = v[vector]
-            else
-              @data[@vectors[vector]][name] = nil
-            end
+          self.each_vector_with_index do |vector,i|
+            vector[name] = v.index.include?(i) ? v[i] : nil
           end
         else
           @index = @index | [name]
-          @vectors.each do |vector|
-            @data[@vectors[vector]].concat v[vector], name
+          self.each_vector_with_index do |vector,i|
+            vector.concat((v.index.include?(i) ? v[i] : nil), name)
           end
         end
 
