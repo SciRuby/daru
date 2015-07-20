@@ -586,6 +586,12 @@ describe Daru::DataFrame do
         expect(@df.row[:one]).to eq([49, 99, 59].dv(:one, [:a, :b, :c]))
       end
 
+      it "assigns correct elements when Vector of different index" do
+        @df.row[:one] = Daru::Vector.new([44,62,11], index: [:b,:f,:a])
+
+        expect(@df.row[:one]).to eq(Daru::Vector.new([11,44,nil], index: [:a,:b,:c]))
+      end
+
       it "creates a new row from an Array" do
         @df.row[:patekar] = [9,2,11]
 
