@@ -2078,10 +2078,10 @@ module Daru
         # Access multiple rows
         rows = []
         names.each do |name|
-          rows << self.row[name]
+          rows << self.row[name].to_a
         end
         
-        Daru::DataFrame.rows rows, index: names ,name: @name        
+        Daru::DataFrame.rows rows, index: names ,name: @name, order: @vectors        
       end
     end
 

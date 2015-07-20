@@ -95,6 +95,7 @@ module Daru
 
       if start.is_a?(Integer) and en.is_a?(Integer)
         (start..en).each do |idx|
+          # TODO: Make this faster
           indexes << @relation_hash.key(idx)
         end
 
