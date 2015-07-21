@@ -5,6 +5,7 @@ describe "Arel-like syntax" do
     describe Daru::Vector do
       before do
         @vector = Daru::Vector.new([23,51,1214,352,32,11])
+        @comparator = Daru::Vector.new([45,22,1214,55,32,9])
       end
 
       context "#eq" do
@@ -13,6 +14,7 @@ describe "Arel-like syntax" do
         end
 
         it "accepts vector and compares corrensponding elements" do
+          expect(@vector.eq(@comparator)).to eq([false,false,true,false,true,false])
         end
       end
 
@@ -22,6 +24,8 @@ describe "Arel-like syntax" do
         end
 
         it "accepts vector and compares corrensponding elements" do
+          expect(@vector.not_eq(@comparator)).to eq(
+            [true, true, false, true, false, true])
         end
       end
 
@@ -31,6 +35,8 @@ describe "Arel-like syntax" do
         end
 
         it "accepts vector and compares corrensponding elements" do
+          expect(@vector.lt(@comparator)).to eq(
+            [true,false,false,false,false,false])
         end
       end
 
@@ -40,6 +46,8 @@ describe "Arel-like syntax" do
         end
 
         it "accepts vector and compares corrensponding elements" do
+          expect(@vector.lteq(@comparator)).to eq(
+            [true,false,true,false,true,false])
         end
       end
 
@@ -49,6 +57,7 @@ describe "Arel-like syntax" do
         end
 
         it "accepts vector and compares corrensponding elements" do
+          expect(@vector.mt(@comparator)).to eq([false,true,false,true,false,true])
         end
       end
 
@@ -58,16 +67,14 @@ describe "Arel-like syntax" do
         end
 
         it "accepts vector and compares corrensponding elements" do
+          expect(@vector.mteq(@comparator)).to eq([false,true,true,true,true,true])
         end
       end
 
       context "#in" do
-        it "accepts scalar value" do
+        it "checks if any of elements in the arg are present in the vector" do
           expect(@vector.in([23,55,1,33,32])).to eq(
             [true, false, false, false, true, false])
-        end
-
-        it "accepts vector and compares corrensponding elements" do
         end
       end
     end
@@ -94,7 +101,14 @@ describe "Arel-like syntax" do
       end
 
       it "accepts somewhat complex comparison operator chaining" do
-
+        answer = Daru::DataFrame.new({
+          number: [3,4],
+          sym: [:three, :four],
+          names: ['james', 'omisha']
+        }, index: Daru::Index.new([2,3]))
+        expect(
+          @df.where (@df[:names].eq('james') or @df[:sym].eq(:four))
+          ).to eq(answer)
       end
 
       it "allows chaining of where clauses" do
@@ -117,15 +131,20 @@ describe "Arel-like syntax" do
       end
 
       it "accepts a simple single statement" do
-
+        expect(@vector.where(@vector.lt(10))).to eq(
+          Daru::Vector.new([2,5,1,4], index: Daru::Index.new([0,1,2,5])))
       end
 
       it "accepts somewhat complex operator chaining" do
-        
+        expect(@vector.where (@vector.lt(6) or @vector.eq(51))).to eq(
+          Daru::Vector.new([2,1,51,4], index: Daru::Index.new([0,2,4,5])))
       end
 
       it "allows chaining of where clauses" do
-
+        expect(
+          @vector.where(@vector.lt(20))
+                 .where(@vector.gt(3))).to 
+        eq(Daru::Vector.new([5,4], index: Daru::Index.new([1,5])))
       end
     end
   end
