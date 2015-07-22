@@ -319,7 +319,7 @@ module Daru
           self[index] == other[index]
         end
       else
-        #where (self.eq(other))
+        super
       end
     end
 
@@ -343,6 +343,8 @@ module Daru
         end
       end
     end
+    alias :gt :mt
+    alias :gteq :mteq 
 
     def in other
       other = Hash[other.zip(Array.new(other.size, 0))]

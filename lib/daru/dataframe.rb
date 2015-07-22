@@ -603,7 +603,7 @@ module Daru
     #
     # Recode works similarly to #map, but an important difference between 
     # the two is that recode returns a modified Daru::DataFrame instead 
-    # of an Array. For this reason, #recodeexpects that every run of the 
+    # of an Array. For this reason, #recode expects that every run of the 
     # block to return a Daru::Vector.
     #
     # Just like map and each, recode also accepts an optional _axis_ argument.
@@ -1863,6 +1863,11 @@ module Daru
       content += "\n"
 
       content
+    end
+
+    # Query a DataFrame by passing a Daru::Core::Query::BoolArray object.
+    def where bool_array
+      Daru::Core::Query.df_where self, bool_array
     end
 
     def == other

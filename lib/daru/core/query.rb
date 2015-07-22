@@ -31,6 +31,10 @@ module Daru
         def == other
           @barry == other.barry
         end
+
+        def to_a
+          @barry
+        end
       end
 
       class << self
@@ -53,13 +57,18 @@ module Daru
         end
 
         def df_where data_frame, bool_array
-          
+          vecs = data_frame.map do |vector|
+            vector.where(bool_array)
+          end
+
+          Daru::DataFrame.new(
+            vecs, order: data_frame.vectors, index: vecs[0].index, clone: false)
         end
 
         def vector_where data, index ,bool_array
           new_data = []
           new_index = []
-          bool_array.barry.each_with_index do |b, i|
+          bool_array.to_a.each_with_index do |b, i|
             if b
               new_data << data[i]
               new_index << index[i]
