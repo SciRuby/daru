@@ -319,7 +319,7 @@ module Daru
           self[index] == other[index]
         end
       else
-        where (self.eq(other))
+        #where (self.eq(other))
       end
     end
 
@@ -346,14 +346,16 @@ module Daru
 
     def in other
       other = Hash[other.zip(Array.new(other.size, 0))]
-      @data.inject([]) do |memo, d|
-        memo << (other.has_key?(d) ? true : false)
-        memo
-      end
+      Daru::Core::Query::BoolArray.new(
+        @data.inject([]) do |memo, d|
+          memo << (other.has_key?(d) ? true : false)
+          memo
+        end
+      )
     end
 
     def where bool_arry
-      Daru::Core::Query.vector_where @data, bool_arry
+      Daru::Core::Query.vector_where @data.to_a, @index.to_a, bool_arry
     end
 
     def head q=10
