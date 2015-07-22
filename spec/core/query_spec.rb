@@ -157,11 +157,6 @@ describe "Arel-like syntax" do
         expect(@vector.where((@vector.lt(6) | @vector.eq(51)))).to eq(
           Daru::Vector.new([2,5,1,51,4], index: Daru::Index.new([0,1,2,4,5])))
       end
-
-      it "" do
-        v = Daru::Vector.new([2,5,1,4], index: Daru::Index.new([0,1,2,5]))
-        v.where(v.mt(3))
-      end
     end
   end
 end

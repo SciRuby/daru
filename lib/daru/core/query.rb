@@ -18,6 +18,8 @@ module Daru
           BoolArray.new(new_bool)
         end
 
+        alias :and :&
+
         def | other
           new_bool = []
           other_barry = other.barry
@@ -27,6 +29,8 @@ module Daru
 
           BoolArray.new(new_bool)
         end
+
+        alias :or :|
 
         def == other
           @barry == other.barry

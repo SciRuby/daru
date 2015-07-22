@@ -460,6 +460,14 @@ module Daru
       (vecs.nil? ? self : dup(vecs)).row[*(row_indexes - rows_with_nil)]
     end
 
+    # Iterate over each index of the DataFrame.
+    def each_index &block
+      return to_enum(:each_index) unless block_given?
+
+      @index.each(&block)
+      self
+    end
+
     # Iterate over each vector
     def each_vector(&block)
       return to_enum(:each_vector) unless block_given?
@@ -1463,7 +1471,7 @@ module Daru
     # @return {Daru::DataFrame}
     def join(other_ds,fields_1=[],fields_2=[],type=:left)
       fields_new = other_ds.vectors.to_a - fields_2
-      fields     =     self.vectors.to_a + fields_new
+      fields     = (self.vectors.to_a + fields_new).recode_repeated
 
       other_ds_hash = {}
       other_ds.each_row do |row|

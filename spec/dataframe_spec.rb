@@ -2046,4 +2046,39 @@ describe Daru::DataFrame do
       end
     end
   end
+
+  context "#join" do
+    before do
+      @left = Daru::DataFrame.new({
+        :id   => [1,2,3,4],
+        :name => ['Pirate', 'Monkey', 'Ninja', 'Spaghetti']
+      })
+      @right = Daru::DataFrame.new({
+        :id => [1,2,3,4],
+        :name => ['Rutabaga', 'Pirate', 'Darth Vader', 'Ninja']
+      })
+    end
+
+    it "performs an inner join of two dataframes" do
+      answer = Daru::DataFrame.new({
+        'id_1'   => [1,3],
+        'name_1' => ['Pirate', 'Ninja'],
+        'id_2'   => [2,4],
+        'name_2' => ['Pirate', 'Ninja']
+      })
+      expect(@left.join(@right, how: :inner)).to eq(answer)
+    end
+
+    it "performs a full outer join" do
+
+    end
+
+    it "performs a left outer join" do
+
+    end
+
+    it "performs a right outer join" do
+
+    end
+  end
 end if mri?
