@@ -319,8 +319,41 @@ module Daru
           self[index] == other[index]
         end
       else
-        # TODO: Compare against some other obj (string, number, etc.)
+        where (self.eq(other))
       end
+    end
+
+    # Define the comparator methods with metaprogramming. See documentation
+    # written above for functionality of each method. Use these methods with the
+    # `where` method to obtain the corresponding Vector/DataFrame.
+    {
+      :eq     => :==,
+      :not_eq => :!=,
+      :lt     => :<,
+      :lteq   => :<=,
+      :mt     => :>,
+      :mteq   => :>=,
+    }.each do |method, operator|
+      define_method(method) do |other|
+        mod = Daru::Core::Query
+        if other.is_a?(Daru::Vector)
+          mod.apply_vector_operator operator, self, other
+        else
+          mod.apply_scalar_operator operator, @data,other  
+        end
+      end
+    end
+
+    def in other
+      other = Hash[other.zip(Array.new(other.size, 0))]
+      @data.inject([]) do |memo, d|
+        memo << (other.has_key?(d) ? true : false)
+        memo
+      end
+    end
+
+    def where bool_arry
+      Daru::Core::Query.vector_where @data, bool_arry
     end
 
     def head q=10
