@@ -2061,24 +2061,38 @@ describe Daru::DataFrame do
 
     it "performs an inner join of two dataframes" do
       answer = Daru::DataFrame.new({
-        'id_1'   => [1,3],
-        'name_1' => ['Pirate', 'Ninja'],
-        'id_2'   => [2,4],
-        'name_2' => ['Pirate', 'Ninja']
+        :id_1   => [1,3],
+        :name => ['Pirate', 'Ninja'],
+        :id_2   => [2,4]
       })
-      expect(@left.join(@right, how: :inner)).to eq(answer)
+      expect(@left.join(@right, how: :inner, on: [:name])).to eq(answer)
     end
 
     it "performs a full outer join" do
-
+      answer = Daru::DataFrame.new({
+        :id_1 => [1,2,3,4,nil,nil],
+        :name => ['Pirate', 'Monkey', 'Ninja', 'Spaghetti','Rutabaga', 'Darth Vader'],
+        :id_2 => [2,nil,4,nil,1,3]
+      })
+      expect(@left.join(@right, how: :outer, on: [:name])).to eq(answer)
     end
 
     it "performs a left outer join" do
-
+      answer = Daru::DataFrame.new({
+        :id_1 => [1,2,3,4],
+        :name => ['Pirate', 'Monkey', 'Ninja', 'Spaghetti'],
+        :id_2 => [2,nil,4,nil]
+      })
+      expect(@left.join(@right, how: :left, on: [:name])).to eq(answer)
     end
 
     it "performs a right outer join" do
-
+      answer = Daru::DataFrame.new({
+        :id_1 => [1,3,nil,nil],
+        :name => ['Pirate', 'Ninja', 'Rutabaga', 'Darth Vader'],
+        :id_2 => [2,4,1,3]
+      })
+      expect(@left.join(@right, how: :right, on: [:name])).to eq(answer)
     end
   end
 end if mri?
