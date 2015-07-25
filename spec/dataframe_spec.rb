@@ -2064,7 +2064,7 @@ describe Daru::DataFrame do
         :id_1   => [1,3],
         :name => ['Pirate', 'Ninja'],
         :id_2   => [2,4]
-      })
+      }, order: [:id_1, :name, :id_2])
       expect(@left.join(@right, how: :inner, on: [:name])).to eq(answer)
     end
 

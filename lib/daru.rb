@@ -73,6 +73,7 @@ require 'daru/monkeys.rb'
 
 require 'daru/core/group_by.rb'
 require 'daru/core/query.rb'
+require 'daru/core/merge.rb'
 
 require 'daru/date_time/offsets.rb'
 require 'daru/date_time/index.rb'
