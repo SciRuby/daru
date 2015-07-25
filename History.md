@@ -3,6 +3,7 @@
 * Enhancements
     - Added a new class Daru::Offsets for providing a uniform API to jump between dates.
     - Added benchmarking scripts
+    - Added a new Arel-like querying syntax for Vector and DataFrame. This will allow faster and more intuitive lookup of data than using loops such as filter.
     - Vector
         - #concat now compulsorily requires a second index argument.
         - Added new method #index= to change the index directly.
@@ -19,6 +20,7 @@
         way to access a Vector in a DF is by using the #[] operator.
         - Added new method #index= and #vectors= for changing row and column indexes directly.
         - Optimized Vector value setting and retreival.
+        - Added inner, outer, left outer and right outer joins with the #join method.
 * Changes
     - Removed the + operator overload from Index and replaced in with union.
     - Removed the second 'values' argument from Daru::Index because it's redundant.
