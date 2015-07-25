@@ -53,16 +53,73 @@ module Daru
           Daru::DataFrame.new(joined_hash, order: joined_hash.keys)
         end
 
-        def full_outer_join df_hash1, df_hash2, on
+        def full_outer_join df1, df2, df_hash1, df_hash2, on
           
         end
 
-        def left_outer_join df_hash1, df_hash2, on
+        def left_outer_join df1, df2, df_hash1, df_hash2, on
+          joined_hash = {}
+          ((df_hash1.keys - on) | on | (df_hash2.keys - on)).each do |k|
+            joined_hash[k] = []
+          end
+
           
+          (0...df1.size).each do |id1|
+            joined = false
+            (0...df2.size).each do |id2|
+              if on.all? { |n| df_hash1[n][id1] == df_hash2[n][id2] }
+                joined = true
+                joined_hash.each do |k,v|
+                  v << (df_hash1.has_key?(k) ? df_hash1[k][id1] : df_hash2[k][id2])
+                end
+              end
+            end
+
+            unless joined
+              df_hash1.keys.each do |k|
+                joined_hash[k] << df_hash1[k][id1]
+              end
+
+              (joined_hash.keys - df_hash1.keys).each do |k|
+                joined_hash[k] << nil
+              end
+              joined = false
+            end
+          end
+
+          Daru::DataFrame.new(joined_hash, order: joined_hash.keys)
         end
 
-        def right_outer_join df_hash1, df_hash2, on
-          
+        def right_outer_join df1, df2, df_hash1, df_hash2, on
+          joined_hash = {}
+          ((df_hash1.keys - on) | on | (df_hash2.keys - on)).each do |k|
+            joined_hash[k] = []
+          end
+
+          (0...df2.size).each do |id1|
+            joined = false
+            (0...df1.size).each do |id2|
+              if on.all? { |n| df_hash2[n][id1] == df_hash1[n][id2] }
+                joined = true
+                joined_hash.each do |k,v|
+                  v << (df_hash2.has_key?(k) ? df_hash2[k][id1] : df_hash1[k][id2])
+                end
+              end
+            end
+
+            unless joined
+              df_hash2.keys.each do |k|
+                joined_hash[k] << df_hash2[k][id1]
+              end
+
+              (joined_hash.keys - df_hash2.keys).each do |k|
+                joined_hash[k] << nil
+              end
+              joined = false
+            end
+          end
+
+          Daru::DataFrame.new(joined_hash, order: joined_hash.keys)
         end
 
         def verify_dataframes df_hash1, df_hash2, on
@@ -91,11 +148,11 @@ module Daru
           when :inner
             helper.inner_join df1, df2, df_hash1, df_hash2, on
           when :outer
-            helper.full_outer_join df_hash1, df_hash2, on
+            helper.full_outer_join df1, df2, df_hash1, df_hash2, on
           when :left
-            helper.left_outer_join df_hash1, df_hash2, on
+            helper.left_outer_join df1, df2, df_hash1, df_hash2, on
           when :right
-            helper.right_outer_join df_hash1, df_hash2, on
+            helper.right_outer_join df1, df2, df_hash1, df_hash2, on
           else
             raise ArgumentError, "Unrecognized option in :how => #{opts[:how]}"
           end

@@ -2073,25 +2073,25 @@ describe Daru::DataFrame do
         :id_1 => [1,2,3,4,nil,nil],
         :name => ['Pirate', 'Monkey', 'Ninja', 'Spaghetti','Rutabaga', 'Darth Vader'],
         :id_2 => [2,nil,4,nil,1,3]
-      })
+      }, order: [:id_1, :name, :id_2])
       expect(@left.join(@right, how: :outer, on: [:name])).to eq(answer)
     end
 
-    it "performs a left outer join" do
+    it "performs a left outer join", focus: true do
       answer = Daru::DataFrame.new({
         :id_1 => [1,2,3,4],
         :name => ['Pirate', 'Monkey', 'Ninja', 'Spaghetti'],
         :id_2 => [2,nil,4,nil]
-      })
+      }, order: [:id_1, :name, :id_2])
       expect(@left.join(@right, how: :left, on: [:name])).to eq(answer)
     end
 
     it "performs a right outer join" do
       answer = Daru::DataFrame.new({
-        :id_1 => [1,3,nil,nil],
-        :name => ['Pirate', 'Ninja', 'Rutabaga', 'Darth Vader'],
-        :id_2 => [2,4,1,3]
-      })
+        :id_1 => [nil,1,nil,3],
+        :name => ['Rutabaga','Pirate', 'Darth Vader', 'Ninja'],
+        :id_2 => [1,2,3,4]
+      }, order: [:id_1, :name, :id_2])
       expect(@left.join(@right, how: :right, on: [:name])).to eq(answer)
     end
   end
