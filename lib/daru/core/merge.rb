@@ -54,10 +54,14 @@ module Daru
         end
 
         def full_outer_join df1, df2, df_hash1, df_hash2, on
-          
+          left  = left_outer_join df1, df2, df_hash1, df_hash2, on, true
+          right = right_outer_join df1, df2, df_hash1, df_hash2, on, true
+
+          Daru::DataFrame.rows(
+            (left.values.transpose | right.values.transpose), order: left.keys)
         end
 
-        def left_outer_join df1, df2, df_hash1, df_hash2, on
+        def left_outer_join df1, df2, df_hash1, df_hash2, on, as_hash=false
           joined_hash = {}
           ((df_hash1.keys - on) | on | (df_hash2.keys - on)).each do |k|
             joined_hash[k] = []
@@ -87,10 +91,11 @@ module Daru
             end
           end
 
+          return joined_hash if as_hash
           Daru::DataFrame.new(joined_hash, order: joined_hash.keys)
         end
 
-        def right_outer_join df1, df2, df_hash1, df_hash2, on
+        def right_outer_join df1, df2, df_hash1, df_hash2, on, as_hash=false
           joined_hash = {}
           ((df_hash1.keys - on) | on | (df_hash2.keys - on)).each do |k|
             joined_hash[k] = []
@@ -119,6 +124,7 @@ module Daru
             end
           end
 
+          return joined_hash if as_hash
           Daru::DataFrame.new(joined_hash, order: joined_hash.keys)
         end
 
