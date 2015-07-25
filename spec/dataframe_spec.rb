@@ -1054,10 +1054,10 @@ describe Daru::DataFrame do
 
   context "#delete_row" do
     it "deletes the specified row" do
-      @data_frame.delete_row :one
+      @data_frame.delete_row :three
 
-      expect(@data_frame).to eq(Daru::DataFrame.new({b: [12,13,14,15], a: [2,3,4,5], 
-      c: [22,33,44,55]}, order: [:a, :b, :c], index: [:two, :three, :four, :five]))
+      expect(@data_frame).to eq(Daru::DataFrame.new({b: [11,12,14,15], a: [1,2,4,5], 
+      c: [11,22,44,55]}, order: [:a, :b, :c], index: [:one, :two, :four, :five]))
     end
   end
 
@@ -2044,6 +2044,55 @@ describe Daru::DataFrame do
 
         expect(@df.only_numerics).to eq(answer)
       end
+    end
+  end
+
+  context "#join" do
+    before do
+      @left = Daru::DataFrame.new({
+        :id   => [1,2,3,4],
+        :name => ['Pirate', 'Monkey', 'Ninja', 'Spaghetti']
+      })
+      @right = Daru::DataFrame.new({
+        :id => [1,2,3,4],
+        :name => ['Rutabaga', 'Pirate', 'Darth Vader', 'Ninja']
+      })
+    end
+
+    it "performs an inner join of two dataframes" do
+      answer = Daru::DataFrame.new({
+        :id_1   => [1,3],
+        :name => ['Pirate', 'Ninja'],
+        :id_2   => [2,4]
+      }, order: [:id_1, :name, :id_2])
+      expect(@left.join(@right, how: :inner, on: [:name])).to eq(answer)
+    end
+
+    it "performs a full outer join" do
+      answer = Daru::DataFrame.new({
+        :id_1 => [1,2,3,4,nil,nil],
+        :name => ['Pirate', 'Monkey', 'Ninja', 'Spaghetti','Rutabaga', 'Darth Vader'],
+        :id_2 => [2,nil,4,nil,1,3]
+      }, order: [:id_1, :name, :id_2])
+      expect(@left.join(@right, how: :outer, on: [:name])).to eq(answer)
+    end
+
+    it "performs a left outer join", focus: true do
+      answer = Daru::DataFrame.new({
+        :id_1 => [1,2,3,4],
+        :name => ['Pirate', 'Monkey', 'Ninja', 'Spaghetti'],
+        :id_2 => [2,nil,4,nil]
+      }, order: [:id_1, :name, :id_2])
+      expect(@left.join(@right, how: :left, on: [:name])).to eq(answer)
+    end
+
+    it "performs a right outer join" do
+      answer = Daru::DataFrame.new({
+        :id_1 => [nil,1,nil,3],
+        :name => ['Rutabaga','Pirate', 'Darth Vader', 'Ninja'],
+        :id_2 => [1,2,3,4]
+      }, order: [:id_1, :name, :id_2])
+      expect(@left.join(@right, how: :right, on: [:name])).to eq(answer)
     end
   end
 end if mri?

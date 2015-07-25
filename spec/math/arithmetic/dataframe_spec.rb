@@ -66,7 +66,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#round" do
+  context "#round", focus: true do
     it "rounds to precision" do
       df = Daru::DataFrame.new({
         a: [1.3434,2.4332,5.6655,12.3344,32.233],

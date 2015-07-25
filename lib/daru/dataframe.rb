@@ -460,6 +460,14 @@ module Daru
       (vecs.nil? ? self : dup(vecs)).row[*(row_indexes - rows_with_nil)]
     end
 
+    # Iterate over each index of the DataFrame.
+    def each_index &block
+      return to_enum(:each_index) unless block_given?
+
+      @index.each(&block)
+      self
+    end
+
     # Iterate over each vector
     def each_vector(&block)
       return to_enum(:each_vector) unless block_given?
@@ -603,7 +611,7 @@ module Daru
     #
     # Recode works similarly to #map, but an important difference between 
     # the two is that recode returns a modified Daru::DataFrame instead 
-    # of an Array. For this reason, #recodeexpects that every run of the 
+    # of an Array. For this reason, #recode expects that every run of the 
     # block to return a Daru::Vector.
     #
     # Just like map and each, recode also accepts an optional _axis_ argument.
@@ -1461,41 +1469,8 @@ module Daru
     # Untested! Use at your own risk.
     # 
     # @return {Daru::DataFrame}
-    def join(other_ds,fields_1=[],fields_2=[],type=:left)
-      fields_new = other_ds.vectors.to_a - fields_2
-      fields     =     self.vectors.to_a + fields_new
-
-      other_ds_hash = {}
-      other_ds.each_row do |row|
-        key = row.to_hash.select { |k,v| fields_2.include?(k) }.values
-        value = row.to_hash.select { |k,v| fields_new.include?(k) }
-
-        if other_ds_hash[key].nil?
-          other_ds_hash[key] = [value]
-        else
-          other_ds_hash[key] << value
-        end
-      end
-
-      new_ds = DataFrame.new({}, order: fields)
-
-      self.each_row do |row|
-        key = row.to_hash.select{|k,v| fields_1.include?(k)}.values
-        new_case = row.to_hash
-
-        if other_ds_hash[key].nil?
-          if type == :left
-            fields_new.each{|field| new_case[field] = nil}
-            new_ds.add_row(Daru::Vector.new(new_case))
-          end
-        else
-          other_ds_hash[key].each do |new_values|
-            new_ds.add_row(Daru::Vector.new(new_case.merge(new_values)))
-          end
-        end
-      end
-
-      new_ds
+    def join(other_df,opts={})
+      Daru::Core::Merge.join(self, other_df, opts)
     end
 
 
@@ -1863,6 +1838,11 @@ module Daru
       content += "\n"
 
       content
+    end
+
+    # Query a DataFrame by passing a Daru::Core::Query::BoolArray object.
+    def where bool_array
+      Daru::Core::Query.df_where self, bool_array
     end
 
     def == other
