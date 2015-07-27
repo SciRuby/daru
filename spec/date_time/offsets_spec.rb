@@ -245,6 +245,26 @@ describe Offsets do
     end
   end
 
+  describe Year do
+    before do
+      @offset = Offsets::Year.new
+    end
+
+    context "#+" do
+      it "increaes date by a year" do
+        expect(@offset + DateTime.new(2012,5,2)).to eq(
+          DateTime.new(2013,5,2))
+      end
+    end
+
+    context "#-" do
+      it "decreases date by a year" do
+        expect(@offset - DateTime.new(2011,6,25)).to eq(
+          DateTime.new(2010,6,25))
+      end
+    end
+  end
+
   describe YearBegin do
     before do
       @offset = Offsets::YearBegin.new

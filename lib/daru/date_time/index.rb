@@ -11,6 +11,7 @@ module Daru
         'MONTH' => Daru::Offsets::Month,
         'MB' => Daru::Offsets::MonthBegin,
         'ME' => Daru::Offsets::MonthEnd,
+        'YEAR' => Daru::Offsets::Year,
         'YB' => Daru::Offsets::YearBegin,
         'YE' => Daru::Offsets::YearEnd
       }
@@ -51,7 +52,7 @@ module Daru
         frequency = 'D' if frequency.nil?
         return frequency if frequency.kind_of?(Daru::DateOffset)
 
-        matched = /([0-9]*)(MONTH|S|H|MB|ME|M|D|W|YB|YE)/.match(frequency)
+        matched = /([0-9]*)(MONTH|YEAR|S|H|MB|ME|M|D|W|YB|YE)/.match(frequency)
         raise ArgumentError, 
           "Invalid frequency string #{frequency}" if matched.nil?
 

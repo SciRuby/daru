@@ -100,6 +100,20 @@ module Daru
       end
     end
 
+    class Year < Tick
+      def freq_string
+        'YEAR'
+      end
+
+      def + date_time
+        date_time >> @n*12
+      end
+
+      def - date_time
+        date_time << @n*12
+      end
+    end
+
     class Week < DateOffset
       def initialize *args
         @n = !args[0].is_a?(Hash)? args[0] : 1
