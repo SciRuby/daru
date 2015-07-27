@@ -196,12 +196,16 @@ describe Offsets do
   describe MonthBegin do
     before do
       @offset = Offsets::MonthBegin.new
+      @n_offset = Offsets::MonthBegin.new(3)
     end
 
-    context "#initialize" do
-      it "creates a month begin offset" do 
+    context "#+" do
+      it "offsets to beginning of next month" do 
         expect(@offset + DateTime.new(2012,3,25)).to eq(
           DateTime.new(2012,4,1))
+
+        expect(@n_offset + DateTime.new(2011,3,1,5)).to eq(
+          DateTime.new(2011,6,1,5))
       end
     end
 
@@ -215,11 +219,17 @@ describe Offsets do
       it "decreases to beginning of the current month if not on offset" do
         expect(@offset - DateTime.new(2012,4,5)).to eq(
           DateTime.new(2012,4,1))
+
+        expect(@n_offset - DateTime.new(2012,5,3)).to eq(
+          DateTime.new(2012,3,1))
       end
 
       it "decreases to beginning of the previous month if on offset" do
         expect(@offset - DateTime.new(2012,5,1)).to eq(
           DateTime.new(2012,4,1))
+
+        expect(@n_offset - DateTime.new(2012,6,1)).to eq(
+          DateTime.new(2012,3,1))
       end
     end
   end
@@ -227,19 +237,24 @@ describe Offsets do
   describe MonthEnd do
     before do
       @offset = Offsets::MonthEnd.new
-    end
-
-    context "#initialize" do
-      it "creates a month end offset" do 
-        expect(@offset + DateTime.new(2012,3,25)).to eq(
-          DateTime.new(2012,3,31))
-      end
+      @n_offset = Offsets::MonthEnd.new(2)
     end
 
     context "#+" do
-      it "increases on offset date to end of next month" do
+      it "increases date to end of next month if on offset" do
         expect(@offset + DateTime.new(2012,2,29)).to eq(
           DateTime.new(2012,3,31))
+
+        expect(@n_offset + DateTime.new(2012,2,29)).to eq(
+          DateTime.new(2012,4,30))
+      end
+
+      it "increases date to end of this month if not on offset" do
+        expect(@offset + DateTime.new(2012,4,4)).to eq(
+          DateTime.new(2012,4,30))
+
+        expect(@n_offset + DateTime.new(2012,5,2)).to eq(
+          DateTime.new(2012,6,30))
       end
     end
 
@@ -247,6 +262,9 @@ describe Offsets do
       it "decreases to end of the previous month" do
         expect(@offset - DateTime.new(2012,2,29)).to eq(
           DateTime.new(2012,1,31))
+
+        expect(@n_offset - DateTime.new(2015,3,3)).to eq(
+          DateTime.new(2015,1,31))
       end
     end
   end
@@ -273,12 +291,13 @@ describe Offsets do
 
   describe YearBegin do
     before do
-      @offset = Offsets::YearBegin.new(2)
+      @offset = Offsets::YearBegin.new
+      @n_offset = Offsets::YearBegin.new(2)
     end
 
-    context "#initialize" do
-      it "creates a year begin offset" do 
-        expect(@offset + DateTime.new(2012,3,25)).to eq(
+    context "#+" do
+      it "offsets date to future" do 
+        expect(@n_offset + DateTime.new(2012,3,25)).to eq(
           DateTime.new(2014,1,1))
       end
     end
@@ -294,10 +313,16 @@ describe Offsets do
       it "decreases to beginning of the year if not on offset" do
         expect(@offset - DateTime.new(2012,4,2)).to eq(
           DateTime.new(2012,1,1))
+
+        expect(@n_offset - DateTime.new(2012,5,5)).to eq(
+          DateTime.new(2011,1,1))
       end
 
       it "decreases to beginning of previous year if on offset" do
         expect(@offset - DateTime.new(2012,1,1)).to eq(
+          DateTime.new(2011,1,1))
+
+        expect(@n_offset - DateTime.new(2013,1,1)).to eq(
           DateTime.new(2011,1,1))
       end
     end
@@ -305,22 +330,34 @@ describe Offsets do
 
   describe YearEnd do
     before do
-      @offset = Offsets::YearEnd.new(2)
-    end
-
-    context "#initialize" do
-      it "creates a year end offset" do 
-        expect(@offset + DateTime.new(2012,2,29)).to eq(
-          DateTime.new(2013,12,31))
-      end
+      @offset = Offsets::YearEnd.new
+      @n_offset = Offsets::YearEnd.new(2)
     end
 
     context "#+" do
+      it "increases to end of same year if not on offset" do
+        expect(@offset + DateTime.new(2011,5,2,4,2)).to eq(
+          DateTime.new(2011,12,31,4,2))
+
+        expect(@n_offset + DateTime.new(2011,5,2,4,2)).to eq(
+          DateTime.new(2012,12,31,4,2))
+      end
+
+      it "increases to end of next year if on offset" do
+        expect(@offset + DateTime.new(2012,12,31,4)).to eq(
+          DateTime.new(2013,12,31,4))
+
+        expect(@n_offset + DateTime.new(2012,12,31,4)).to eq(
+          DateTime.new(2014,12,31,4))
+      end
     end
 
     context "#-" do
       it "decreases to end of previous year" do
         expect(@offset - DateTime.new(2012,2,3)).to eq(
+          DateTime.new(2011,12,31))
+
+        expect(@n_offset - DateTime.new(2011,5,6)).to eq(
           DateTime.new(2010,12,31))
       end
     end

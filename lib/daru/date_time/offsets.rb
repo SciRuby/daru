@@ -220,14 +220,23 @@ module Daru
       end
 
       def + date_time
-        days_in_month = Daru::MONTH_DAYS[date_time.month]
-        days_in_month += 1 if date_time.leap? and date_time.month == 2
-        date_time + (days_in_month - date_time.day + 1)
+        @n.times do
+          days_in_month = Daru::MONTH_DAYS[date_time.month]
+          days_in_month += 1 if date_time.leap? and date_time.month == 2
+          date_time = date_time + (days_in_month - date_time.day + 1)
+        end
+
+        date_time
       end
 
       def - date_time
-        date_time      = date_time << 1 if on_offset?(date_time)
-        DateTime.new(date_time.year, date_time.month, 1)
+        @n.times do
+          date_time = date_time << 1 if on_offset?(date_time)
+          date_time = DateTime.new(date_time.year, date_time.month, 1, 
+            date_time.hour, date_time.min, date_time.sec)
+        end
+
+        date_time
       end
 
       def on_offset? date_time
@@ -245,19 +254,27 @@ module Daru
       end
 
       def + date_time
-        date_time     = date_time >> 1 if on_offset?(date_time)
-        days_in_month = Daru::MONTH_DAYS[date_time.month]
-        days_in_month += 1 if date_time.leap? and date_time.month == 2
+        @n.times do 
+          date_time     = date_time >> 1 if on_offset?(date_time)
+          days_in_month = Daru::MONTH_DAYS[date_time.month]
+          days_in_month += 1 if date_time.leap? and date_time.month == 2
 
-        date_time + (days_in_month - date_time.day)
+          date_time = date_time + (days_in_month - date_time.day)
+        end
+
+        date_time
       end
 
       def - date_time
-        date_time = date_time << 1
-        days_in_month = Daru::MONTH_DAYS[date_time.month]
-        days_in_month += 1 if date_time.leap? and date_time.month == 2
+        @n.times do 
+          date_time = date_time << 1
+          days_in_month = Daru::MONTH_DAYS[date_time.month]
+          days_in_month += 1 if date_time.leap? and date_time.month == 2
 
-        date_time + (days_in_month - date_time.day)
+          date_time = date_time + (days_in_month - date_time.day)
+        end
+
+        date_time
       end
 
       def on_offset? date_time
@@ -275,14 +292,16 @@ module Daru
       end
 
       def + date_time
-        DateTime.new(date_time.year+1,1, 1)
+        DateTime.new(date_time.year + @n, 1, 1,
+          date_time.hour,date_time.min, date_time.sec)
       end
 
       def - date_time
         if on_offset?(date_time)
-          DateTime.new(date_time.year-1, 1, 1)
+          DateTime.new(date_time.year - @n, 1, 1, 
+            date_time.hour,date_time.min, date_time.sec)
         else
-          DateTime.new(date_time.year, 1, 1)
+          DateTime.new(date_time.year - (@n-1), 1, 1)
         end
       end
 
@@ -302,9 +321,11 @@ module Daru
 
       def + date_time
         if on_offset?(date_time)
-          DateTime.new(date_time.year + 1, 12, 31)
+          DateTime.new(date_time.year + @n, 12, 31,
+            date_time.hour, date_time.min, date_time.sec)
         else
-          DateTime.new(date_time.year, 12, 31)
+          DateTime.new(date_time.year + (@n-1), 12, 31,
+            date_time.hour, date_time.min, date_time.sec)
         end
       end
 
