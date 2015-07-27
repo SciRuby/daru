@@ -1,6 +1,38 @@
 module Daru
-  # Generic class for generating data offsets.
+  # Generic class for generating date offsets.
   class DateOffset
+    # A Daru::DateOffset object is created by a passing certain options
+    # to the constructor, which determine the kind of offset the object
+    # will support.
+    #
+    # You can pass one of the following options followed by their number
+    # to the DateOffset constructor:
+    #
+    # * :secs - Create a seconds offset
+    # * :mins - Create a minutes offset
+    # * :hours - Create an hours offset
+    # * :days  - Create a days offset
+    # * :weeks - Create a weeks offset
+    # * :months - Create a months offset
+    # * :years - Create a years offset
+    # 
+    # Additionaly, passing the `:n` option will apply the offset that many times.
+    #
+    # @example Usage of DateOffset
+    #   # Create an offset of 3 weeks.
+    #   offset = Daru::DateOffset.new(weeks: 3)
+    #   offset + DateTime.new(2012,5,3)
+    #   #=> #<DateTime: 2012-05-24T00:00:00+00:00 ((2456072j,0s,0n),+0s,2299161j)>
+    #  
+    #   # Create an offset of 5 hours
+    #   offset = Daru::DateOffset.new(hours: 5)
+    #   offset + DateTime.new(2015,3,3,23,5,1)
+    #   #=> #<DateTime: 2015-03-04T04:05:01+00:00 ((2457086j,14701s,0n),+0s,2299161j)>
+    #
+    #   # Create an offset of 2 minutes, applied 5 times
+    #   offset = Daru::DateOffset.new(mins: 2, n: 5)
+    #   offset + DateTime.new(2011,5,3,3,5)
+    #   #=> #<DateTime: 2011-05-03T03:15:00+00:00 ((2455685j,11700s,0n),+0s,2299161j)>
     def initialize opts={}
       n = opts[:n] || 1
 
@@ -18,20 +50,35 @@ module Daru
         Offsets::Day.new(7*n*opts[:weeks])
       when opts[:months]
         Offsets::Month.new(n*opts[:months])
+      when opts[:years]
+        Offsets::Year.new(n*opts[:years])
       end
     end
 
+    # Offset a DateTime forward.
+    #
+    # @param date_time [DateTime] A DateTime object which is to offset.
     def + date_time
       @offset + date_time
     end
 
+    # Offset a DateTime backward.
+    #
+    # @param date_time [DateTime] A DateTime object which is to offset.
     def - date_time
       @offset - date_time
     end
   end
 
   module Offsets
+    # Private superclass for Offsets with equal inter-frequencies.
+    # @abstract
+    # @private
     class Tick < DateOffset
+      # Initialize one of the subclasses of Tick with the number of the times
+      # the offset should be applied, which is the supplied as the argument.
+      #
+      # @param n [Integer] The number of times an offset should be applied.
       def initialize n=1
         @n = n
       end
@@ -45,7 +92,13 @@ module Daru
       end
     end
 
-    # Class for creating a seconds offset
+    # Create a seconds offset
+    # 
+    # @param n [Integer] The number of times an offset should be applied.
+    # @example Create a Seconds offset
+    #   offset = Daru::Offsets::Second.new(5)
+    #   offset + DateTime.new(2012,5,1,4,3)
+    #   #=> #<DateTime: 2012-05-01T04:03:05+00:00 ((2456049j,14585s,0n),+0s,2299161j)>
     class Second < Tick
       def multiplier
         1.1574074074074073e-05
@@ -56,6 +109,13 @@ module Daru
       end
     end
 
+    # Create a minutes offset
+    # 
+    # @param n [Integer] The number of times an offset should be applied.
+    # @example Create a Minutes offset
+    #   offset = Daru::Offsets::Minute.new(8)
+    #   offset + DateTime.new(2012,5,1,4,3)
+    #   #=> #<DateTime: 2012-05-01T04:11:00+00:00 ((2456049j,15060s,0n),+0s,2299161j)>
     class Minute < Tick
       def multiplier
         0.0006944444444444445
@@ -215,12 +275,12 @@ module Daru
       end
 
       def + date_time
-        DateTime.new(date_time.year + 1)
+        DateTime.new(date_time.year+1,1, 1)
       end
 
       def - date_time
         if on_offset?(date_time)
-          DateTime.new(date_time.year - 1, 1, 1)
+          DateTime.new(date_time.year-1, 1, 1)
         else
           DateTime.new(date_time.year, 1, 1)
         end

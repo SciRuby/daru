@@ -41,6 +41,12 @@ describe DateOffset do
         DateTime.new(2012,4,1))
     end
 
+    it "creates a years offset" do
+      offset = DateOffset.new(years: 2)
+      expect(offset + DateTime.new(2012,5,30)).to eq(
+        DateTime.new(2014,5,30))
+    end
+
     it "supports 'n' option to apply same offset multiple times" do
       offset = DateOffset.new(days: 3, n: 4)
       expect(offset + DateTime.new(2012,3,1)).to eq(
@@ -267,13 +273,13 @@ describe Offsets do
 
   describe YearBegin do
     before do
-      @offset = Offsets::YearBegin.new
+      @offset = Offsets::YearBegin.new(2)
     end
 
     context "#initialize" do
       it "creates a year begin offset" do 
         expect(@offset + DateTime.new(2012,3,25)).to eq(
-          DateTime.new(2013,1,1))
+          DateTime.new(2014,1,1))
       end
     end
 
@@ -299,13 +305,13 @@ describe Offsets do
 
   describe YearEnd do
     before do
-      @offset = Offsets::YearEnd.new
+      @offset = Offsets::YearEnd.new(2)
     end
 
     context "#initialize" do
       it "creates a year end offset" do 
         expect(@offset + DateTime.new(2012,2,29)).to eq(
-          DateTime.new(2012,12,31))
+          DateTime.new(2013,12,31))
       end
     end
 
@@ -315,7 +321,7 @@ describe Offsets do
     context "#-" do
       it "decreases to end of previous year" do
         expect(@offset - DateTime.new(2012,2,3)).to eq(
-          DateTime.new(2011,12,31))
+          DateTime.new(2010,12,31))
       end
     end
 
