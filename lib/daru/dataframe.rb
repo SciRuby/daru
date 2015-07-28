@@ -1187,7 +1187,9 @@ module Daru
     #   # ["foo", "one", 3]=>[6],
     #   # ["foo", "three", 8]=>[7],
     #   # ["foo", "two", 3]=>[2, 4]}
+    #why not *vectors?
     def group_by vectors
+      #validate arguments more?
       vectors = [vectors] if vectors.is_a?(Symbol)
       vectors.each { |v| raise(ArgumentError, "Vector #{v} does not exist") unless
         has_vector?(v) }
@@ -1323,6 +1325,13 @@ module Daru
     #   # 3          4          1 
     #   df.sort([:a], by: { a: lambda { |a,b| a.abs <=> b.abs } })  
     def sort! vector_order, opts={}
+      #I don't really have any brilliant ideas what to do here. It sounds
+      #like what you want is a fast sort function that doesn't just let you define
+      #the comparison function, but also the swap function, which sounds not
+      #impossible. Have you tried the approach of transforming the whole
+      #dataframe into an array of rows, then using the Array#sort! with
+      #a custom comparison, then recreating the whole dataframe? It would be
+      #interesting to see how this performs compared to your implementation.
       raise ArgumentError, "Required atleast one vector name" if vector_order.size < 1
       opts = {
         ascending: true,
