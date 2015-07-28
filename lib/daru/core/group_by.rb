@@ -84,9 +84,12 @@ module Daru
 
       # Returns one of the selected groups as a DataFrame.
       def get_group group
+        #raise a helpful error if group doesn't exist
         indexes   = @groups[group]
         elements  = []
 
+        #do you do it like this because iterating over vectors is faster than
+        #iterating over rows? Otherwise, it would be clearer the other way.
         @context.each_vector do |vector|
           elements << vector.to_a
         end
