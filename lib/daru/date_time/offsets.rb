@@ -105,7 +105,7 @@ module Daru
       end
 
       def freq_string
-        'S'
+        (@n == 1 ? '' : @n.to_s) + 'S'
       end
     end
 
@@ -122,33 +122,54 @@ module Daru
       end
 
       def freq_string
-        'M'
+        (@n == 1 ? '' : @n.to_s) + 'M'
       end
     end
 
+    # Create an hours offset
+    # 
+    # @param n [Integer] The number of times an offset should be applied.
+    # @example Create a Hour offset
+    #   offset = Daru::Offsets::Hour.new(8)
+    #   offset + DateTime.new(2012,5,1,4,3)
+    #   #=> #<DateTime: 2012-05-01T12:03:00+00:00 ((2456049j,43380s,0n),+0s,2299161j)>
     class Hour < Tick
       def multiplier
         0.041666666666666664
       end
       
       def freq_string
-        'H'
+        (@n == 1 ? '' : @n.to_s) + 'H'
       end
     end
 
+    # Create an days offset
+    # 
+    # @param n [Integer] The number of times an offset should be applied.
+    # @example Create a Day offset
+    #   offset = Daru::Offsets::Day.new(2)
+    #   offset + DateTime.new(2012,5,1,4,3)
+    #   #=> #<DateTime: 2012-05-03T04:03:00+00:00 ((2456051j,14580s,0n),+0s,2299161j)>
     class Day < Tick
       def multiplier
         1.0
       end
 
       def freq_string
-        'D'
+        (@n == 1 ? '' : @n.to_s) + 'D'
       end
     end
 
+    # Create an months offset
+    # 
+    # @param n [Integer] The number of times an offset should be applied.
+    # @example Create a Month offset
+    #   offset = Daru::Offsets::Month.new(5)
+    #   offset + DateTime.new(2012,5,1,4,3)
+    #   #=> #<DateTime: 2012-10-01T04:03:00+00:00 ((2456202j,14580s,0n),+0s,2299161j)>
     class Month < Tick
       def freq_string
-        'MONTH'
+        (@n == 1 ? '' : @n.to_s) + 'MONTH'
       end
 
       def + date_time
@@ -160,9 +181,16 @@ module Daru
       end
     end
 
+    # Create a years offset
+    # 
+    # @param n [Integer] The number of times an offset should be applied.
+    # @example Create a Year offset
+    #   offset = Daru::Offsets::Year.new(2)
+    #   offset + DateTime.new(2012,5,1,4,3)
+    #   #=> #<DateTime: 2014-05-01T04:03:00+00:00 ((2456779j,14580s,0n),+0s,2299161j)>
     class Year < Tick
       def freq_string
-        'YEAR'
+        (@n == 1 ? '' : @n.to_s) + 'YEAR'
       end
 
       def + date_time
@@ -206,17 +234,24 @@ module Daru
       end
 
       def freq_string
-        'W' + '-' + Daru::DAYS_OF_WEEK.key(@weekday)
+        (@n == 1 ? '' : @n.to_s) + 'W' + '-' + Daru::DAYS_OF_WEEK.key(@weekday)
       end
     end
 
+    # Create a month begin offset
+    # 
+    # @param n [Integer] The number of times an offset should be applied.
+    # @example Create a MonthBegin offset
+    #   offset = Daru::Offsets::MonthBegin.new(2)
+    #   offset + DateTime.new(2012,5,5)
+    #   #=> #<DateTime: 2012-07-01T00:00:00+00:00 ((2456110j,0s,0n),+0s,2299161j)>
     class MonthBegin < DateOffset
       def initialize n=1
         @n = n
       end
 
       def freq_string
-        'MB'
+        (@n == 1 ? '' : @n.to_s) + "MB"
       end
 
       def + date_time
@@ -244,13 +279,20 @@ module Daru
       end
     end
 
+    # Create a month end offset
+    # 
+    # @param n [Integer] The number of times an offset should be applied.
+    # @example Create a MonthEnd offset
+    #   offset = Daru::Offsets::MonthEnd.new
+    #   offset + DateTime.new(2012,5,5)
+    #   #=> #<DateTime: 2012-05-31T00:00:00+00:00 ((2456079j,0s,0n),+0s,2299161j)>
     class MonthEnd < DateOffset
       def initialize n=1
         @n = n
       end
 
       def freq_string
-        'ME'
+        (@n == 1 ? '' : @n.to_s) + 'ME'
       end
 
       def + date_time
@@ -282,13 +324,20 @@ module Daru
       end
     end
 
+    # Create a year begin offset
+    # 
+    # @param n [Integer] The number of times an offset should be applied.
+    # @example Create a YearBegin offset
+    #   offset = Daru::Offsets::YearBegin.new(3)
+    #   offset + DateTime.new(2012,5,5)
+    #   #=> #<DateTime: 2015-01-01T00:00:00+00:00 ((2457024j,0s,0n),+0s,2299161j)>
     class YearBegin < DateOffset
       def initialize n=1
         @n = n
       end
 
       def freq_string
-        'YB'
+        (@n == 1 ? '' : @n.to_s) + 'YB'
       end
 
       def + date_time
@@ -310,13 +359,20 @@ module Daru
       end
     end
 
+    # Create a year end offset
+    # 
+    # @param n [Integer] The number of times an offset should be applied.
+    # @example Create a YearEnd offset
+    #   offset = Daru::Offsets::YearEnd.new
+    #   offset + DateTime.new(2012,5,5)
+    #   #=> #<DateTime: 2012-12-31T00:00:00+00:00 ((2456293j,0s,0n),+0s,2299161j)>
     class YearEnd < DateOffset
       def initialize n=1
         @n = n
       end
 
       def freq_string
-        'YE'
+        (@n == 1 ? '' : @n.to_s) + 'YE'
       end
 
       def + date_time

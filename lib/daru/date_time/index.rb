@@ -1,5 +1,6 @@
 module Daru
   # Private module for storing helper functions for DateTimeIndex.
+  # @private
   module DateTimeIndexHelper
     class << self
       OFFSETS_HASH = {
@@ -26,28 +27,6 @@ module Daru
       # Generates a Daru::DateOffset object for generic offsets or one of the
       # specialized classed within Daru::Offsets depending on the 'frequency'
       # string.
-      #
-      # The 'frequency' argument can denote one of the following:
-      # * 'S'     - seconds
-      # * 'M'     - minutes
-      # * 'H'     - hours
-      # * 'D'     - days
-      # * 'W'     - Week (default) anchored on sunday
-      # * 'W-SUN' - Same as 'W'
-      # * 'W-MON' - Week anchored on monday
-      # * 'W-TUE' - Week anchored on tuesday
-      # * 'W-WED' - Week anchored on wednesday
-      # * 'W-THU' - Week anchored on thursday
-      # * 'W-FRI' - Week anchored on friday
-      # * 'W-SAT' - Week anchored on saturday
-      # * 'MONTH' - Month
-      # * 'MB'    - month begin
-      # * 'ME'    - month end
-      # * 'YB'    - year begin
-      # * 'YE'    - year end
-      # 
-      # Multiples of these can also be specified. For example '2S' for 2 seconds
-      # or '2MS' for two month end offsets.
       def offset_from_frequency frequency
         frequency = 'D' if frequency.nil?
         return frequency if frequency.kind_of?(Daru::DateOffset)
@@ -267,6 +246,62 @@ module Daru
 
     # Create a date range by specifying the start, end, periods and frequency
     # of the data.
+    # 
+    # @param [Hash] opts Options hash to create the date range with
+    # @option opts [String, DateTime] :start A DateTime object or date-like 
+    #   string that defines the start of the date range.
+    # @option opts [String, DateTime] :end A DateTime object or date-like string 
+    #   that defines the end of the date range.
+    # @option opts [String, Daru::DateOffset, Daru::Offsets::*] :freq The interval 
+    #   between each date in the index. This can either be a string specifying 
+    #   the frequency (i.e. one of the frequency aliases) or an offset object.
+    # @option opts [Fixnum] :periods The number of periods that should go into 
+    #   this index. Takes precedence over `:end`.
+    # @return [DateTimeIndex] DateTimeIndex object of the specified parameters.
+    #
+    # == Notes
+    #
+    # If you specify :start and :end options as strings, they can be complete or 
+    # partial dates and daru will intelligently infer the date from the string 
+    # directly. However, note that the date-like string must be in the format 
+    # `YYYY-MM-DD HH:MM:SS`. 
+    #
+    # The string aliases supported by the :freq option are as follows:
+    # 
+    # * 'S'     - seconds
+    # * 'M'     - minutes
+    # * 'H'     - hours
+    # * 'D'     - days
+    # * 'W'     - Week (default) anchored on sunday
+    # * 'W-SUN' - Same as 'W'
+    # * 'W-MON' - Week anchored on monday
+    # * 'W-TUE' - Week anchored on tuesday
+    # * 'W-WED' - Week anchored on wednesday
+    # * 'W-THU' - Week anchored on thursday
+    # * 'W-FRI' - Week anchored on friday
+    # * 'W-SAT' - Week anchored on saturday
+    # * 'MONTH' - Month
+    # * 'YEAR'  - One year
+    # * 'MB'    - month begin
+    # * 'ME'    - month end
+    # * 'YB'    - year begin
+    # * 'YE'    - year end
+    # 
+    # Multiples of these can also be specified. For example '2S' for 2 seconds
+    # or '2ME' for two month end offsets.
+    #
+    # Currently the precision of DateTimeIndex is upto seconds only, though this
+    # will improve in the future.
+    #
+    # @example Creating date ranges
+    #   Daru::DateTimeIndex.date_range(
+    #     :start => DateTime.new(2014,5,1), 
+    #     :end   => DateTime.new(2014,5,2), :freq => '6H')
+    #   #=>#<DateTimeIndex:83600130 offset=H periods=5 data=[2014-05-01T00:00:00+00:00...2014-05-02T00:00:00+00:00]>
+    #
+    #   Daru::DateTimeIndex.date_range(
+    #     :start => '2012-5-2', :periods => 50, :freq => 'ME')
+    #   #=> #<DateTimeIndex:83549940 offset=ME periods=50 data=[2012-05-31T00:00:00+00:00...2016-06-30T00:00:00+00:00]>
     def self.date_range opts={}
       helper = DateTimeIndexHelper
 
@@ -279,6 +314,10 @@ module Daru
       DateTimeIndex.new(data, :freq => offset)
     end
 
+    # Retreive a slice or a an individual index number from the index.
+    #
+    # @param [String, DateTime] Specify a date partially (as a String) or 
+    #   completely to retrieve.
     def [] *key
       helper = DateTimeIndexHelper
       if key.size == 1
@@ -313,6 +352,10 @@ module Daru
       slice slice_begin, slice_end
     end
 
+    # Retrive a slice of the index by specifying first and last members of the slice.
+    #
+    # @param [String, DateTime] first Start of the slice as a string or DateTime.
+    # @param [String, DateTime] last End of the slice as a string or DateTime.
     def slice first, last
       helper = DateTimeIndexHelper
 
@@ -345,11 +388,14 @@ module Daru
       end   
     end
 
+    # Return the DateTimeIndex as an Array of DateTime objects.
+    # @return [Array<DateTime>] Array of containing DateTimes.
     def to_a
       return @data.sort_by { |d| d[1] }.transpose[0] unless @offset
       @data.transpose[0]
     end
 
+    # Size of index.
     def size
       @periods
     end
@@ -369,10 +415,8 @@ module Daru
     # Shift all dates in the index by a positive number in the future. The dates
     # are shifted by the same amount as that specified in the offset.
     # 
-    # == Arguements
-    #
-    # * distance - Fixnum or Daru::DateOffset. Distance by which each date 
-    # should be shifted. Returns a new DateTimeIndex object.
+    # @param [Fixnum, Daru::DateOffset, Daru::Offsets::*] distance Distance by 
+    #   which each date should be shifted. Returns a new DateTimeIndex object.
     def shift distance
       if distance.is_a?(Fixnum)
         if @offset
@@ -391,10 +435,9 @@ module Daru
     # Shift all dates in the index to the past. The dates are shifted by the same
     # amount as that specified in the offset.
     # 
-    # == Arguments
-    #
-    # * distance - Fixnum or Daru::DateOffset. Distance by which each date 
-    # should be shifted. Returns a new DateTimeIndex object.
+    # @param [Fixnum, Daru::DateOffset, Daru::Offsets::*] distance Fixnum or 
+    #   Daru::DateOffset. Distance by which each date should be shifted. Returns 
+    #   a new DateTimeIndex object.
     def lag distance
       if distance.is_a?(Fixnum)
         if @offset
