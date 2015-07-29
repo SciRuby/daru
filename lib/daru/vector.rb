@@ -423,7 +423,6 @@ module Daru
     # last possible moment.    
     def type
       return @data.nm_dtype if dtype == :nmatrix
-      return :date if @index.is_a?(DateTimeIndex)
 
       if @type.nil? or @possibly_changed_type
         @type = :numeric

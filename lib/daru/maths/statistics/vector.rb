@@ -558,6 +558,7 @@ module Daru
           end
         end
 
+        # Calculate cumulative sum of Vector
         def cumsum
           result = []
           acc = 0

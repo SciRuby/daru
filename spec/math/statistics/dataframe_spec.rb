@@ -107,4 +107,15 @@ describe Daru::DataFrame do
       ))
     end
   end
+
+  context "#cumsum" do
+    it "calculates cumulative sum of numeric vectors" do
+      answer = Daru::DataFrame.new({
+        d: [1,3,5,8,11,15,20,26,33],
+        e: [2,6,10,16,22,30,40,52,66],
+        f: [10,30,50,80,110,150,200,260,330]
+        })
+      expect(@df.cumsum).to eq(answer)
+    end
+  end
 end

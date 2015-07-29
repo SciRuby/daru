@@ -59,7 +59,6 @@ Docs can be found [here](https://rubygems.org/gems/daru).
 * Basic Data manipulation and analysis operations: 
     - DF concat
 * Assignment of a column to a single number should set the entire column to that number.
-* == between daru_vector and string/number.
 * Multiple column assignment with []=
 * Multiple value assignment for vectors with []=.
 * #find\_max function which will evaluate a block and return the row for the value of the block is max.
@@ -67,7 +66,6 @@ Docs can be found [here](https://rubygems.org/gems/daru).
 * Create a new vector in map_rows if any of the already present rows dont match the one assigned in the block.
 * Sort by index.
 * Statistics on DataFrame over rows and columns.
-* Cumulative sum.
 * Calculate percentage change.
 * Have some sample data sets for users to play around with. Should be able to load these from the code itself.
 * Sorting with missing data present.

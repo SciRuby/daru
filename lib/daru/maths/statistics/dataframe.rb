@@ -37,13 +37,14 @@ module Daru
           compute_stats :product
         end
 
-        def standardize
-          df = self.only_numerics clone: true
-          df.map! do |v|
-            v.standardize
-          end
+        # Calculate cumulative sum of numeric vectors.
+        def cumsum
+          apply_method_to_numerics :cumsum
+        end
 
-          df
+        # Standardize values of all numeric vectors
+        def standardize
+          apply_method_to_numerics :standardize
         end
 
         # Create a summary of mean, standard deviation, count, max and min of 
@@ -104,6 +105,15 @@ module Daru
         alias :corr :correlation
 
        private
+
+        def apply_method_to_numerics method
+          df = self.only_numerics clone: true
+          df.map! do |v|
+            v.send(method)
+          end
+
+          df          
+        end
 
         def vector_cov v1a, v2a
           sum_of_squares(v1a,v2a) / (v1a.size - 1)
