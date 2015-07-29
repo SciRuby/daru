@@ -7,6 +7,7 @@
     - Vector
         - #concat now compulsorily requires a second index argument.
         - Added new method #index= to change the index directly.
+        - Added basic functions for rolling statistics - mean, std, count, etc.
     - Indexing
         - Changed Index so that it now accepts all sorts of data (not restricted to only Symbols as it was previously).
         - Re wrote MultiIndex in levels and labels form so that its faster and more accomodative of different kinds of index levels.

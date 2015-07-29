@@ -364,16 +364,14 @@ module Daru
         #
         #* *max_lags*: integer, (default: 1), number of differences reqd.
         #
-        # == Usage
+        # @example Using #diff
         #
         #   ts = Daru::Vector.new((1..10).map { rand })
         #            # => [0.69, 0.23, 0.44, 0.71, ...]
         #
         #   ts.diff   # => [nil, -0.46, 0.21, 0.27, ...]
         #
-        # == Returns
-        #
-        #   Daru::Vector
+        # @return [Daru::Vector]
         def diff(max_lags = 1)
           ts = self
           difference = []
@@ -384,60 +382,58 @@ module Daru
           difference
         end
 
-        def rolling function, *args
-          self.send("rolling_#{function}".to_sym, *args)
-        end
-
-        # Moving Average.
+        # Calculate the rolling function for a loopback value.
         #
-        # Calculates the moving average of the series using the provided
-        # lookback argument. The lookback defaults to 10 periods.
-        #
-        # @param [Integer] n (10) Loopback argument
-        # @example Usage of rolling mean
+        # @param [Symbol] function The rolling function to be applied. Can be 
+        #   any function applicatble to Daru::Vector (:mean, :median, :count, 
+        #   :min, :max, etc.)
+        # @param [Integer] n (10) A non-negative value which serves as the loopback length.
+        # @return [Daru::Vector] Vector containin rolling calculations.
+        # @example Using #rolling
         #   ts = Daru::Vector.new((1..100).map { rand })
         #            # => [0.69, 0.23, 0.44, 0.71, ...]
-        #
         #   # first 9 observations are nil
-        #   ts.rolling_mean    # => [ ... nil, 0.484... , 0.445... , 0.513 ... , ... ]
-        # @return [Daru::Vector] Vector with moving averages.
-        def rolling_mean n=10
-          return mean if n >= size
-
+        #   ts.rolling(:mean)    # => [ ... nil, 0.484... , 0.445... , 0.513 ... , ... ]
+        def rolling function, n=10
           Daru::Vector.new(
             [nil] * (n - 1) + 
             (0..(size - n)).map do |i|
-              @data[i...(i + n)].inject(&:+) / n
+              Daru::Vector.new(@data[i...(i + n)]).send(function)
             end, index: @index
           )
         end
 
-        # Rolling median
-        def rolling_median n=10
-          
+        # @!method rolling_mean 
+        #   Calculate rolling average
+        #   @param [Integer] n (10) Loopback length
+        # @!method rolling_median 
+        #   Calculate rolling median
+        #   @param [Integer] n (10) Loopback length
+        # @!method rolling_count
+        #   Calculate rolling non-missing count
+        #   @param [Integer] n (10) Loopback length
+        # @!method rolling_max
+        #   Calculate rolling max value
+        #   @param [Integer] n (10) Loopback length
+        # @!method rolling_min 
+        #   Calculate rolling min value
+        #   @param [Integer] n (10) Loopback length
+        # @!method rolling_sum
+        #   Calculate rolling sum
+        #   @param [Integer] n (10) Loopback length
+        # @!method rolling_std
+        #   Calculate rolling standard deviation
+        #   @param [Integer] n (10) Loopback length
+        # @!method rolling_variance
+        #   Calculate rolling variance
+        #   @param [Integer] n (10) Loopback length
+        [:count, :mean, :median, :max, :min, :sum, :std, :variance].each do |meth|
+          define_method("rolling_#{meth}".to_sym) do |n=10|
+            rolling(meth, n)
+          end
         end
 
-        def rolling_max n=10
-          
-        end
-
-        def rolling_min n=10
-          
-        end
-
-        def rolling_sum n=10
-
-        end
-
-        def rolling_std n=10
-          
-        end
-
-        def rolling_variance n=10
-          
-        end
-
-        #=Exponential Moving Average
+        # Exponential Moving Average.
         # Calculates an exponential moving average of the series using a
         # specified parameter. If wilder is false (the default) then the EMA
         # uses a smoothing value of 2 / (n + 1), if it is true then it uses the
@@ -452,7 +448,7 @@ module Daru
         #* *n*: integer, (default = 10)
         #* *wilder*: boolean, (default = false), if true, 1/n value is used for smoothing; if false, uses 2/(n+1) value
         #
-        # == Usage
+        # @example Using ema
         #
         #   ts = (1..100).map { rand }.to_ts
         #            # => [0.69, 0.23, 0.44, 0.71, ...]
@@ -460,9 +456,7 @@ module Daru
         #   # first 9 observations are nil
         #   ts.ema   # => [ ... nil, 0.509... , 0.433..., ... ]
         #
-        # == Returns
-        #
-        # EMA Daru::Vector
+        # @return [Daru::Vector] Contains EMA
         def ema(n = 10, wilder = false)
           smoother = wilder ? 1.0 / n : 2.0 / (n + 1)
           # need to start everything from the first non-nil observation
@@ -478,7 +472,7 @@ module Daru
           Daru::Vector.new(base, index: @index)
         end
 
-        # == Moving Average Convergence-Divergence
+        # Moving Average Convergence-Divergence.
         # Calculates the MACD (moving average convergence-divergence) of the time
         # series - this is a comparison of a fast EMA with a slow EMA.
         #
