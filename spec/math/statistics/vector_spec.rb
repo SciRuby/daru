@@ -347,8 +347,7 @@ describe Daru::Vector do
 
   before do
     # daily closes of iShares XIU on the TSX
-    @shares = Daru::Vector.new([17.28, 17.45, 17.84, 17.74, 17.82, 17.85, 17.36, 17.3, 17.56, 17.49, 17.46, 17.4, 17.03, 17.01,
-      16.86, 16.86, 16.56, 16.36, 16.66, 16.77])
+    @shares = Daru::Vector.new([17.28, 17.45, 17.84, 17.74, 17.82, 17.85, 17.36, 17.3, 17.56, 17.49, 17.46, 17.4, 17.03, 17.01,16.86, 16.86, 16.56, 16.36, 16.66, 16.77])
   end
 
   context "#acf" do
@@ -376,21 +375,68 @@ describe Daru::Vector do
     end
   end
 
-  context "#ma" do
-    it "calculates moving average" do
-      # test default
-      ma10 = @shares.ma
+  context "#rolling" do
+    it "calculates rolling mean" do
+      ma10 = @shares.rolling(:mean)
 
       expect(ma10[-1]) .to be_within(0.001).of(16.897)
       expect(ma10[-5]) .to be_within(0.001).of(17.233)
       expect(ma10[-10]).to be_within(0.001).of(17.587)
 
       # test with a different lookback period
-      ma5 = @shares.ma 5
+      ma5 = @shares.rolling :mean, 5
 
       expect(ma5[-1]).to be_within(0.001).of(16.642)
       expect(ma5[-10]).to be_within(0.001).of(17.434)
-      expect(ma5[-15]).to be_within(0.001).of(17.74)
+      expect(ma5[-15]).to be_within(0.001).of(17.74)      
+    end
+
+    it "calculates rolling median" do
+      me10 = @shares.rolling(:median)
+      expect(me10).to eq(Daru::Vector.new([nil,nil,nil,nil,nil,nil,nil,nil,nil,17.525,17.525,17.525,17.475,17.430,17.380,17.330,17.165,17.020,16.935,16.860]))
+
+      me5 = @shares.rolling(:median, 5)
+      expect(me5).to eq(Daru::Vector.new([nil,nil,nil,nil,17.74,17.82,17.82,17.74,17.56,17.49,17.46,17.46,17.46,17.40,17.03,17.01,16.86,16.86,16.66,16.66]))
+    end
+
+    it "calculates rolling max" do
+      max10 = @shares.rolling(:max)
+      expect(max10).to eq(Daru::Vector.new([nil,nil,nil,nil,nil,nil,nil,nil,nil,17.85,17.85,17.85,17.85,17.85,17.85,17.56,17.56,17.56,17.49,17.46]))
+
+      max5 = @shares.rolling(:max, 5)
+      expect(max5).to eq(Daru::Vector.new([nil,  nil,  nil,  nil,17.84,17.85,17.85,17.85,17.85,17.85,17.56,17.56,17.56,17.49,17.46,17.40,17.03,17.01,16.86,16.86]))
+    end
+
+    it "calculates rolling min" do
+      min10 = @shares.rolling(:min)
+      expect(min10).to eq(Daru::Vector.new([nil,nil,nil,nil,nil,nil,nil,nil,nil,17.28,17.30,17.30,17.03,17.01,16.86,16.86,16.56,16.36,16.36,16.36]))
+
+      min5 = @shares.rolling(:min, 5)
+      expect(min5).to eq(Daru::Vector.new([nil,nil,nil,nil,17.28,17.45,17.36,17.30,17.30,17.30,17.30,17.30,17.03,17.01,16.86,16.86,16.56,16.36,16.36,16.36]))
+    end
+
+    it "calculates rolling sum" do
+      sum10 = @shares.rolling(:sum)
+      expect(sum10).to eq(Daru::Vector.new([nil,nil,nil,nil,nil,nil,nil,nil,nil,175.69,175.87,175.82,175.01,174.28,173.32,172.33,171.53,170.59,169.69,168.97]))
+
+      sum5 = @shares.rolling(:sum, 5)
+      expect(sum5).to eq(Daru::Vector.new([nil,nil,nil,nil,88.13,88.70,88.61,88.07,87.89,87.56,87.17,87.21,86.94,86.39,85.76,85.16,84.32,83.65,83.30,83.21]))
+    end
+
+    it "calculates rolling std" do
+      std10 = @shares.rolling(:std)
+      expect(std10).to eq(Daru::Vector.new([nil,nil,nil,nil,nil,nil,nil,nil,nil,0.227227,0.208116,0.212331,0.253485,0.280666,0.295477,0.267127,0.335826,0.412834,0.388886,0.345995]))
+
+      std5 = @shares.rolling(:std, 5)
+      expect(std5).to eq(Daru::Vector.new([nil,nil,nil,nil,0.248556,0.167780,0.206930,0.263211,0.253811,0.215105,0.103827,0.098082,0.208255,0.237844,0.263002,0.220839,0.187963,0.263629,0.212132,0.193959]))
+    end
+
+    it "calculates rolling variance" do
+      var10 = @shares.rolling(:var)
+      expect(var10).to eq(Daru::Vector.new([nil,nil,nil,nil,nil,nil,nil,nil,nil,0.051632,0.043312,0.045084,0.064254,0.078773,0.087307,0.071357,0.112779,0.170432,0.151232,0.119712]))
+
+      var5 = @shares.rolling(:var, 5)
+      expect(var5).to eq(Daru::Vector.new([nil,nil,nil,nil,0.06178,0.02815,0.04282,0.06928,0.06442,0.04627,0.01078,0.00962,0.04337,0.05657,0.06917,0.04877,0.03533,0.06950,0.04500,0.03762]))
     end
   end
 

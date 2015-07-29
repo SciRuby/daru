@@ -384,34 +384,57 @@ module Daru
           difference
         end
 
+        def rolling function, *args
+          self.send("rolling_#{function}".to_sym, *args)
+        end
+
         # Moving Average.
         #
         # Calculates the moving average of the series using the provided
         # lookback argument. The lookback defaults to 10 periods.
         #
-        # == Parameters
-        #* *n*: integer, (default = 10) - loopback argument
-        #
-        # == Usage
-        #
+        # @param [Integer] n (10) Loopback argument
+        # @example Usage of rolling mean
         #   ts = Daru::Vector.new((1..100).map { rand })
         #            # => [0.69, 0.23, 0.44, 0.71, ...]
         #
         #   # first 9 observations are nil
-        #   ts.ma    # => [ ... nil, 0.484... , 0.445... , 0.513 ... , ... ]
-        #
-        # == Returns
-        # 
-        #   Resulting moving average timeseries object
-        def ma(n = 10)
+        #   ts.rolling_mean    # => [ ... nil, 0.484... , 0.445... , 0.513 ... , ... ]
+        # @return [Daru::Vector] Vector with moving averages.
+        def rolling_mean n=10
           return mean if n >= size
 
           Daru::Vector.new(
             [nil] * (n - 1) + 
             (0..(size - n)).map do |i|
               @data[i...(i + n)].inject(&:+) / n
-            end
+            end, index: @index
           )
+        end
+
+        # Rolling median
+        def rolling_median n=10
+          
+        end
+
+        def rolling_max n=10
+          
+        end
+
+        def rolling_min n=10
+          
+        end
+
+        def rolling_sum n=10
+
+        end
+
+        def rolling_std n=10
+          
+        end
+
+        def rolling_variance n=10
+          
         end
 
         #=Exponential Moving Average
@@ -452,7 +475,7 @@ module Daru
             base << self[i] * smoother + (1 - smoother) * base.last
           end
 
-          Daru::Vector.new(base)
+          Daru::Vector.new(base, index: @index)
         end
 
         # == Moving Average Convergence-Divergence
@@ -466,7 +489,7 @@ module Daru
         #
         # == Usage
         #
-        #   ts = (1..100).map { rand }.to_ts
+        #   ts = Daru::Vector.new((1..100).map { rand })
         #            # => [0.69, 0.23, 0.44, 0.71, ...]
         #   ts.macd(13)
         #
