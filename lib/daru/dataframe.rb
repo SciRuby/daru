@@ -1739,7 +1739,7 @@ module Daru
         html += '</tr>'
         if num > threshold
           html += '<tr>'
-          (@vectors + 1).size.times { html += '<td>...</td>' }
+          (@vectors.size + 1).size.times { html += '<td>...</td>' }
           html += '</tr>'
 
           last_index = @index.to_a.last

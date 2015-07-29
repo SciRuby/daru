@@ -501,13 +501,11 @@ module Daru
         # The first element is always 1, since that is the correlation
         # of the series with itself.
         #
-        # Usage:
+        # @example
+        #   ts = Daru::Vector.new((1..100).map { rand })
         #
-        #  ts = Daru::Vector.new((1..100).map { rand })
-        #
-        #  ts.acf   # => array with first 21 autocorrelations
-        #  ts.acf 3 # => array with first 3 autocorrelations
-        #
+        #   ts.acf   # => array with first 21 autocorrelations
+        #   ts.acf 3 # => array with first 3 autocorrelations
         def acf(max_lags = nil)
           max_lags ||= (10 * Math.log10(size)).to_i
 
@@ -558,6 +556,17 @@ module Daru
           0.upto(n - 1).map do |i|
             (demeaned_series * (self.lag(i) - m)).sum / d[i]
           end
+        end
+
+        def cumsum
+          result = []
+          acc = 0
+          @data.each do |d|
+            acc += d
+            result << acc
+          end
+
+          Daru::Vector.new(result, index: @index)
         end
 
         alias :sdp :standard_deviation_population

@@ -488,4 +488,12 @@ describe Daru::Vector do
       expect(signal[-20]).to be_within(1e-5).of(-0.00338)
     end
   end
-end
+
+  context "#cumsum" do
+    it "calculates cumulative sum" do
+      vector = Daru::Vector.new([1,2,3,4,5,6,7,8,9,10])
+      expect(vector.cumsum).to eq(
+        Daru::Vector.new([1,3,6,10,15,21,28,36,45,55]))
+    end
+  end
+end 
