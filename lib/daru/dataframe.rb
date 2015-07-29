@@ -1094,6 +1094,15 @@ module Daru
       @vectors.include? vector
     end
 
+    # Works like Array#any?.
+    #
+    # @param [Symbol] axis (:vector) The axis to iterate over. Can be :vector or
+    #   :row. A Daru::Vector object is yielded in the block.
+    # @example Using any?
+    #   df = Daru::DataFrame.new({a: [1,2,3,4,5], b: ['a', 'b', 'c', 'd', 'e']})
+    #   df.any?(:row) do |row|
+    #     row[:a] < 3 and row[:b] == 'b' 
+    #   end #=> true
     def any? axis=:vector, &block
       if axis == :vector or axis == :column
         @data.any?(&block)
@@ -1107,6 +1116,15 @@ module Daru
       end
     end
 
+    # Works like Array#all?
+    #
+    # @param [Symbol] axis (:vector) The axis to iterate over. Can be :vector or
+    #   :row. A Daru::Vector object is yielded in the block.
+    # @example Using all?
+    #   df = Daru::DataFrame.new({a: [1,2,3,4,5], b: ['a', 'b', 'c', 'd', 'e']})
+    #   df.all?(:row) do |row|
+    #     row[:a] < 10 
+    #   end #=> true
     def all? axis=:vector, &block
       if axis == :vector or axis == :column
         @data.all?(&block)
@@ -1187,8 +1205,8 @@ module Daru
     #   # ["foo", "one", 3]=>[6],
     #   # ["foo", "three", 8]=>[7],
     #   # ["foo", "two", 3]=>[2, 4]}
-    def group_by vectors
-      vectors = [vectors] if vectors.is_a?(Symbol)
+    def group_by *vectors
+      vectors.flatten!
       vectors.each { |v| raise(ArgumentError, "Vector #{v} does not exist") unless
         has_vector?(v) }
         
@@ -1211,9 +1229,28 @@ module Daru
       cl
     end
 
-    # Change the index of the DataFrame and its underlying vectors. Destructive.
+    # Change the index of the DataFrame and preserve the labels of the previous
+    # indexing. New index can be Daru::Index or any of its subclasses.
     # 
-    # @param [Symbol, Array] new_index Specify an Array if 
+    # @param [Daru::Index] new_index The new Index for reindexing the DataFrame.
+    # @example Reindexing DataFrame
+    #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [11,22,33,44]}, 
+    #     index: ['a','b','c','d'])
+    #   #=> 
+    #   ##<Daru::DataFrame:83278130 @name = b19277b8-c548-41da-ad9a-2ad8c060e273 @size = 4>
+    #   #                    a          b 
+    #   #         a          1         11 
+    #   #         b          2         22 
+    #   #         c          3         33 
+    #   #         d          4         44 
+    #   df.reindex Daru::Index.new(['b', 0, 'a', 'g'])
+    #   #=> 
+    #   ##<Daru::DataFrame:83177070 @name = b19277b8-c548-41da-ad9a-2ad8c060e273 @size = 4>
+    #   #                    a          b 
+    #   #         b          2         22 
+    #   #         0        nil        nil 
+    #   #         a          1         11 
+    #   #         g        nil        nil
     def reindex new_index
       raise ArgumentError, "Must pass the new index of type Index or its "\
         "subclasses, not #{new_index.class}" unless new_index.kind_of?(Daru::Index)
@@ -1230,6 +1267,17 @@ module Daru
       cl
     end
 
+    # Reassign index with a new index of type Daru::Index or any of its subclasses.
+    #
+    # @param [Daru::Index] idx New index object on which the rows of the dataframe
+    #   are to be indexed.
+    # @example Reassgining index of a DataFrame
+    #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [11,22,33,44]})
+    #   df.index.to_a #=> [0,1,2,3]
+    # 
+    #   df.index = Daru::Index.new(['a','b','c','d'])
+    #   df.index.to_a #=> ['a','b','c','d']
+    #   df.row['a'].to_a #=> [1,11] 
     def index= idx
       @data.each { |vec| vec.index = idx}
       @index = idx
@@ -1237,6 +1285,16 @@ module Daru
       self
     end
 
+    # Reassign vectors with a new index of type Daru::Index or any of its subclasses.
+    # 
+    # @param [Daru::Index] idx The new index object on which the vectors are to
+    #   be indexed. Must of the same size as ncols.
+    # @example Reassigning vectors of a DataFrame
+    #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [:a,:b,:c,:d], c: [11,22,33,44]})
+    #   df.vectors.to_a #=> [:a, :b, :c]
+    # 
+    #   df.vectors = Daru::Index.new([:foo, :bar, :baz])
+    #   df.vectors.to_a #=> [:foo, :bar, :baz]
     def vectors= idx
       raise ArgumentError, "Can only reindex with Index and its subclasses" unless 
         index.kind_of?(Daru::Index)

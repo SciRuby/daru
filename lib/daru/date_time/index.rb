@@ -223,6 +223,30 @@ module Daru
 
     attr_reader :frequency, :offset, :periods
 
+    # Create a DateTimeIndex with or without a frequency in data. The constructor
+    # should be used for creating DateTimeIndex by directly passing in DateTime
+    # objects or date-like strings, typically in cases where values with frequency
+    # are not needed.
+    # 
+    # @param [Array<String>, Array<DateTime>] data Array of date-like Strings or
+    #   actual DateTime objects for creating the DateTimeIndex.
+    # @param [Hash] opts Hash of options for configuring index.
+    # @option opts [Symbol, NilClass, String, Daru::DateOffset, Daru::Offsets::*] freq
+    #   Option for specifying the frequency of data, if applicable. If `:infer` is
+    #   passed to this option, daru will try to infer the frequency of the data
+    #   by itself.
+    # 
+    # @example Usage of DateTimeIndex constructor
+    #   index = Daru::DateTimeIndex.new(
+    #     [DateTime.new(2012,4,5), DateTime.new(2012,4,6), 
+    #      DateTime.new(2012,4,7), DateTime.new(2012,4,8)])
+    #   #=>#<DateTimeIndex:84232240 offset=nil periods=4 data=[2012-04-05T00:00:00+00:00...2012-04-08T00:00:00+00:00]>
+    #
+    #   index = Daru::DateTimeIndex.new([
+    #     DateTime.new(2012,4,5), DateTime.new(2012,4,6), DateTime.new(2012,4,7), 
+    #     DateTime.new(2012,4,8), DateTime.new(2012,4,9), DateTime.new(2012,4,10), 
+    #     DateTime.new(2012,4,11), DateTime.new(2012,4,12)], freq: :infer)
+    #   #=>#<DateTimeIndex:84198340 offset=D periods=8 data=[2012-04-05T00:00:00+00:00...2012-04-12T00:00:00+00:00]>
     def initialize *args
       helper = DateTimeIndexHelper
 
@@ -252,7 +276,7 @@ module Daru
     #   string that defines the start of the date range.
     # @option opts [String, DateTime] :end A DateTime object or date-like string 
     #   that defines the end of the date range.
-    # @option opts [String, Daru::DateOffset, Daru::Offsets::*] :freq The interval 
+    # @option opts [String, Daru::DateOffset, Daru::Offsets::*] :freq ('D') The interval 
     #   between each date in the index. This can either be a string specifying 
     #   the frequency (i.e. one of the frequency aliases) or an offset object.
     # @option opts [Fixnum] :periods The number of periods that should go into 
@@ -416,16 +440,32 @@ module Daru
     # are shifted by the same amount as that specified in the offset.
     # 
     # @param [Fixnum, Daru::DateOffset, Daru::Offsets::*] distance Distance by 
-    #   which each date should be shifted. Returns a new DateTimeIndex object.
+    #   which each date should be shifted. Passing an offset object to #shift 
+    #   will offset each data point by the offset value. Passing a positive 
+    #   integer will offset each data point by the same offset that it was 
+    #   created with.
+    # @return [DateTimeIndex] Returns a new, shifted DateTimeIndex object.
+    # @example Using the shift method
+    #   index = Daru::DateTimeIndex.date_range(
+    #     :start => '2012', :periods => 10, :freq => 'YEAR')
+    #   
+    #   # Passing a offset to shift
+    #   index.shift(Daru::Offsets::Hour.new(3))
+    #   #=>#<DateTimeIndex:84038960 offset=nil periods=10 data=[2012-01-01T03:00:00+00:00...2021-01-01T03:00:00+00:00]>
+    # 
+    #   # Pass an integer to shift
+    #   index.shift(4)
+    #   #=>#<DateTimeIndex:83979630 offset=YEAR periods=10 data=[2016-01-01T00:00:00+00:00...2025-01-01T00:00:00+00:00]>
     def shift distance
       if distance.is_a?(Fixnum)
+        raise IndexError, "Distance #{distance} cannot be negative" if distance < 0
         if @offset
           start = @data[0][0]
           distance.times { start = @offset + start }
           return DateTimeIndex.date_range(
             :start => start, :periods => @periods, freq: @offset)
         else
-          raise IndexError, "To shift non-freq date time index pass a DateOffset."
+          raise IndexError, "To shift non-freq date time index pass an offset."
         end
       else # its a Daru::Offset/DateOffset
         DateTimeIndex.new(self.to_a.map { |e| distance + e }, freq: :infer)
@@ -436,17 +476,21 @@ module Daru
     # amount as that specified in the offset.
     # 
     # @param [Fixnum, Daru::DateOffset, Daru::Offsets::*] distance Fixnum or 
-    #   Daru::DateOffset. Distance by which each date should be shifted. Returns 
-    #   a new DateTimeIndex object.
+    #   Daru::DateOffset. Distance by which each date should be shifted. Passing 
+    #   an offset object to #lag will offset each data point by the offset value. 
+    #   Passing a positive integer will offset each data point by the same offset 
+    #   that it was created with.
+    # @return [DateTimeIndex] A new lagged DateTimeIndex object.
     def lag distance
       if distance.is_a?(Fixnum)
+        raise IndexError, "Distance #{distance} cannot be negative" if distance < 0
         if @offset
           start = @data[0][0]
           distance.times { start = @offset - start }
           return DateTimeIndex.date_range(
             :start => start, :periods => @periods, freq: @offset)
         else
-          raise IndexError, "To lag non-freq date time index pass a DateOffset."
+          raise IndexError, "To lag non-freq date time index pass an offset."
         end
       else
         DateTimeIndex.new(self.to_a.map { |e| distance - e }, freq: :infer)
@@ -463,6 +507,18 @@ module Daru
       Daru::DateTimeIndex.new(h[:data], freq: h[:freq])
     end
 
+    # @!method year
+    #   @return [Array<Fixnum>] Array containing year of each index.
+    # @!method month
+    #   @return [Array<Fixnum>] Array containing month of each index.
+    # @!method day
+    #   @return [Array<Fixnum>] Array containing day of each index.
+    # @!method hour
+    #   @return [Array<Fixnum>] Array containing hour of each index.
+    # @!method min
+    #   @return [Array<Fixnum>] Array containing minutes of each index.
+    # @!method sec
+    #   @return [Array<Fixnum>] Array containing seconds of each index.
     [:year, :month, :day, :hour, :min, :sec].each do |meth|
       define_method(meth) do
         self.inject([]) do |arr, d|

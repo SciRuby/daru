@@ -34,6 +34,8 @@ module Daru
       end
  
       def []= index, value
+        raise ArgumentError, "Index #{index} does not exist" if 
+          index > @size and index < @data.size
         resize     if index >= @data.size
         @size += 1 if index == @size
         
@@ -42,7 +44,7 @@ module Daru
       end 
  
       def == other
-        @data == other and @size == other.size
+        @data[0...@size] == other[0...@size] and @size == other.size
       end
  
       def delete_at index
@@ -59,8 +61,6 @@ module Daru
       def << element
         resize if @size >= @data.size
         self[@size] = element
-
-        @size += 1
       end
  
       def to_a
@@ -74,7 +74,7 @@ module Daru
       def resize size = @size*2
         raise ArgumentError, "Size must be greater than current size" if size < @size
 
-        @data = NMatrix.new [size], @data.to_a
+        @data = NMatrix.new [size], @data.to_a, dtype: @nm_dtype
       end
 
       def mean
@@ -90,11 +90,11 @@ module Daru
       end
 
       def max
-        @data.max
+        @data[0...@size].max
       end
 
       def min
-        @data.min
+        @data[0...@size].min
       end
     end
   end
