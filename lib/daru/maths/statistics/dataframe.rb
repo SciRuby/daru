@@ -37,14 +37,45 @@ module Daru
           compute_stats :product
         end
 
-        # Calculate cumulative sum of numeric vectors.
-        def cumsum
-          apply_method_to_numerics :cumsum
-        end
-
-        # Standardize values of all numeric vectors
-        def standardize
-          apply_method_to_numerics :standardize
+        # @!method cumsum
+        #   Calculate cumulative sum of each numeric Vector
+        # @!method standardize
+        #   Standardize each Vector
+        # @!method acf
+        #   Calculate Autocorrelation coefficient
+        #   @param [Integer] max_lags (nil) Number of initial lags
+        # @!method ema
+        #   Calculate exponential moving average.
+        #   @param [Integer] n (10) Loopback length.
+        #   @param [TrueClass, FalseClass, NilClass] wilder (false) If true, 
+        #     1/n value is  used for smoothing; if false, uses 2/(n+1) value.
+        # @!method rolling_mean
+        #   Calculate moving averages
+        #   @param [Integer] n (10) Loopback length. Default to 10.
+        # @!method rolling_median
+        #   Calculate moving median
+        #   @param [Integer] n (10) Loopback length. Default to 10.
+        # @!method rolling_max
+        #   Calculate moving max
+        #   @param [Integer] n (10) Loopback length. Default to 10.
+        # @!method rolling_min
+        #   Calculate moving min
+        #   @param [Integer] n (10) Loopback length. Default to 10.
+        # @!method rolling_count
+        #   Calculate moving non-missing count
+        #   @param [Integer] n (10) Loopback length. Default to 10.
+        # @!method rolling_std
+        #   Calculate moving standard deviation
+        #   @param [Integer] n (10) Loopback length. Default to 10.
+        # @!method rolling_variance
+        #   Calculate moving variance
+        #   @param [Integer] n (10) Loopback length. Default to 10.
+        [:cumsum,:standardize,:acf,:ema,:rolling_mean,:rolling_median,:rolling_max,
+         :rolling_min,:rolling_count,:rolling_std,:rolling_variance, :rolling_sum
+        ].each do |meth|
+          define_method(meth) do |*args|
+            apply_method_to_numerics meth, *args
+          end
         end
 
         # Create a summary of mean, standard deviation, count, max and min of 
@@ -106,10 +137,10 @@ module Daru
 
        private
 
-        def apply_method_to_numerics method
+        def apply_method_to_numerics method, *args
           df = self.only_numerics clone: true
           df.map! do |v|
-            v.send(method)
+            v.send(method, *args)
           end
 
           df          

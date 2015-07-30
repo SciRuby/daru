@@ -118,4 +118,23 @@ describe Daru::DataFrame do
       expect(@df.cumsum).to eq(answer)
     end
   end
+
+  context "#rolling_mean" do
+    it "calculates rolling mean" do
+      v = Daru::Vector.new([17.28, 17.45, 17.84, 17.74, 17.82, 17.85, 17.36, 17.3, 17.56, 17.49, 17.46, 17.4, 17.03, 17.01,16.86, 16.86, 16.56, 16.36, 16.66, 16.77])
+      df = Daru::DataFrame.new({ a: v, b: v, c: v })
+      answer = df.rolling_mean
+
+      expect(answer[:a][-1]) .to be_within(0.001).of(16.897)
+      expect(answer[:b][-5]) .to be_within(0.001).of(17.233)
+      expect(answer[:c][-10]).to be_within(0.001).of(17.587)
+    end
+  end
+
+  context "#standardize" do
+    it "standardizes" do
+      # TODO: Write this test.
+      @df.standardize
+    end
+  end
 end

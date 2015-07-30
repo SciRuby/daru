@@ -443,10 +443,9 @@ module Daru
         # use a lot more than n observations to calculate. The series is stable
         # if the size of the series is >= 3.45 * (n + 1)
         #
-        # == Parameters
-        #
-        #* *n*: integer, (default = 10)
-        #* *wilder*: boolean, (default = false), if true, 1/n value is used for smoothing; if false, uses 2/(n+1) value
+        # @param [Integer] n (10) Loopback length.
+        # @param [TrueClass, FalseClass] wilder (false) If true, 1/n value is 
+        #   used for smoothing; if false, uses 2/(n+1) value
         #
         # @example Using ema
         #
@@ -563,8 +562,12 @@ module Daru
           result = []
           acc = 0
           @data.each do |d|
-            acc += d
-            result << acc
+            if @missing_values.has_key?(d)
+              result << nil
+            else
+              acc += d
+              result << acc
+            end
           end
 
           Daru::Vector.new(result, index: @index)
