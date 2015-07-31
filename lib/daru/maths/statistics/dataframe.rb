@@ -138,12 +138,17 @@ module Daru
        private
 
         def apply_method_to_numerics method, *args
-          df = self.only_numerics clone: true
-          df.map! do |v|
-            v.send(method, *args)
+          order = []
+          computed = @vectors.to_a.inject([]) do |memo, n|
+            v = @data[@vectors[n]]
+            if v.type == :numeric
+              memo << v.send(method, *args)
+              order << n
+            end
+            memo
           end
-
-          df          
+          
+          Daru::DataFrame.new(computed, index: @index, order: order ,clone: false) 
         end
 
         def vector_cov v1a, v2a
