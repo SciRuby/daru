@@ -33,6 +33,8 @@ Benchmark.bm do |x|
   end
 end
 
+# FIXME: MASSIVE SPEEDUP NECESSARY!
+
 #                                         ===== Benchamarks =====
 #                                                                             user      system      total      real
 # Sort a Vector without any args                                           0.130000    0.000000 0.130000    (  0.128006)
