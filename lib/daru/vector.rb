@@ -436,7 +436,7 @@ module Daru
     #   # 13   5
     #   # 15   1
     def where bool_arry
-      Daru::Core::Query.vector_where @data.to_a, @index.to_a, bool_arry
+      Daru::Core::Query.vector_where @data.to_a, @index.to_a, bool_arry, self.dtype
     end
 
     def head q=10
@@ -602,8 +602,30 @@ module Daru
       self
     end
 
+    # Delete an element if block returns true. Destructive.
     def delete_if &block
       return to_enum(:delete_if) unless block_given?
+
+      keep_e = []
+      keep_i = []
+      each_with_index do |n, i|
+        unless yield(n)
+          keep_e << n
+          keep_i << i
+        end
+      end
+
+      @data = cast_vector_to @dtype, keep_e
+      @index = Daru::Index.new(keep_i)
+      set_missing_positions unless Daru.lazy_update
+      set_size
+
+      self
+    end
+
+    # Keep an element if block returns true. Destructive.
+    def keep_if &block
+      return to_enum(:keep_if) unless block_given?
 
       keep_e = []
       keep_i = []

@@ -2,21 +2,30 @@ require 'spec_helper'
 
 describe Daru::Core::Query::BoolArray do
   before do
-    @left = Daru::Core::Query::BoolArray.new([true, true, true, false, false, true])
-    @right = Daru::Core::Query::BoolArray.new([false, false, false, false, true, false])
+    @klass = Daru::Core::Query::BoolArray 
+    @left = @klass.new([true, true, true, false, false, true])
+    @right = @klass.new([false, false, false, false, true, false])
   end
 
   context "#&" do
     it "computes and logic of each element in the array" do
       expect(@left & @right).to eq(
-        Daru::Core::Query::BoolArray.new([false, false, false, false, false, false]))
+        @klass.new([false, false, false, false, false, false]))
     end
   end
 
   context "#|" do
     it "computes or logic of each element in arrays" do
       expect(@left | @right).to eq(
-        Daru::Core::Query::BoolArray.new([true, true, true, false, true, true]))
+        @klass.new([true, true, true, false, true, true]))
+    end
+  end
+
+  context "#!" do
+    it "computes not logic of each element" do
+      expect(!@left).to eq(
+        @klass.new([false, false, false, true, true, false])
+        )
     end
   end
 end

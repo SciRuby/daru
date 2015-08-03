@@ -32,6 +32,10 @@ module Daru
 
         alias :or :|
 
+        def !
+          BoolArray.new(@barry.map { |b| !b })
+        end
+
         def == other
           @barry == other.barry
         end
@@ -73,7 +77,7 @@ module Daru
             vecs, order: data_frame.vectors, index: vecs[0].index, clone: false)
         end
 
-        def vector_where data, index ,bool_array
+        def vector_where data, index, bool_array, dtype
           new_data = []
           new_index = []
           bool_array.to_a.each_with_index do |b, i|
@@ -83,7 +87,7 @@ module Daru
             end
           end
 
-          Daru::Vector.new(new_data, index: new_index)
+          Daru::Vector.new(new_data, index: new_index, dtype: dtype)
         end
       end
     end

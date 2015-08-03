@@ -374,11 +374,22 @@ describe Daru::Vector do
       context "#delete_if" do
         it "deletes elements if block evaluates to true" do
           v = Daru::Vector.new [1,22,33,45,65,32,524,656,123,99,77], dtype: dtype
-          ret = v.delete_if { |d| d % 11 != 0 }
+          ret = v.delete_if { |d| d % 11 == 0 }
           expect(ret).to eq(
             Daru::Vector.new([1,45,65,32,524,656,123], 
               index: [0,3,4,5,6,7,8], dtype: dtype))
           expect(ret.dtype).to eq(dtype)
+        end
+      end
+
+      context "#keep_if" do
+        it "keeps elements if block returns true" do
+          v = Daru::Vector.new([1,22,33,45,65,32,524,656,123,99,77], dtype: dtype)
+          ret = v.keep_if { |d| d < 35 }
+
+          expect(ret).to eq(
+            Daru::Vector.new([1,22,33,32], index: [0,1,2,5], dtype: dtype))
+          expect(v.dtype).to eq(ret.dtype)
         end
       end
 
