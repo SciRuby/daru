@@ -1521,12 +1521,31 @@ module Daru
       df_new
     end
 
-    # Join 2 DataFrames by given fields
-    # type is one of :left and :inner, default is :left
-    #
-    # Untested! Use at your own risk.
+    # Join 2 DataFrames with SQL style joins. Currently supports inner, left 
+    # outer, right outer and full outer joins.
     # 
-    # @return {Daru::DataFrame}
+    # @param [Daru::DataFrame] other_df Another DataFrame on which the join is
+    #   to be performed.
+    # @param [Hash] opts Options Hash
+    # @option :how [Symbol] Can be one of :inner, :left, :right or :outer.
+    # @option :on [Array] The columns on which the join is to be performed.
+    #   Column names specified here must be common to both DataFrames.
+    # @return [Daru::DataFrame]
+    # @example Inner Join
+    #   left = Daru::DataFrame.new({
+    #     :id   => [1,2,3,4],
+    #     :name => ['Pirate', 'Monkey', 'Ninja', 'Spaghetti']
+    #   })
+    #   right = Daru::DataFrame.new({
+    #     :id => [1,2,3,4],
+    #     :name => ['Rutabaga', 'Pirate', 'Darth Vader', 'Ninja']
+    #   })
+    #   left.join(right, how: :inner, on: [:name])
+    #   #=> 
+    #   ##<Daru::DataFrame:82416700 @name = 74c0811b-76c6-4c42-ac93-e6458e82afb0 @size = 2>
+    #   #                 id_1       name       id_2 
+    #   #         0          1     Pirate          2 
+    #   #         1          3      Ninja          4 
     def join(other_df,opts={})
       Daru::Core::Merge.join(self, other_df, opts)
     end

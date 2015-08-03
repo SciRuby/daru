@@ -138,6 +138,7 @@ module Daru
     end
     # Private module containing methods for join, merge, concat operations on
     # dataframes and vectors.
+    # @private
     module Merge
       class << self
         def join df1, df2, opts={}
