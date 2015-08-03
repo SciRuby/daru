@@ -994,7 +994,7 @@ module Daru
         return
       end
       
-      @name = new_name.to_sym
+      @name = new_name
     end
 
     # Duplicate elements and indexes

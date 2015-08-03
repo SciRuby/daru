@@ -1,4 +1,4 @@
-# 0.2.0
+# 0.1.1
 
 * Enhancements
     - Added a new class Daru::Offsets for providing a uniform API to jump between dates.
@@ -9,6 +9,7 @@
         - Added new method #index= to change the index directly.
         - Added basic functions for rolling statistics - mean, std, count, etc.
         - Added cumulative sum function.
+        - Added #keep_if.
     - Indexing
         - Changed Index so that it now accepts all sorts of data (not restricted to only Symbols as it was previously).
         - Re wrote MultiIndex in levels and labels form so that its faster and more accomodative of different kinds of index levels.
@@ -28,7 +29,8 @@
     - Removed the second 'values' argument from Daru::Index because it's redundant.
     - Changed behaviour of Vector#reindex and DataFrame#reindex and #reindex_vectors to preserve indexing of original data when possible.
 * Fixes
-    - Fixed DataFrame#delete_row.
+    - Fixed DataFrame#delete_row and Vector#delete_if.
+    - Fixed Vector#rename.
 
 # 0.1.0
 
