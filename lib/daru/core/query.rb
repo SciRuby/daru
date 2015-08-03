@@ -39,6 +39,10 @@ module Daru
         def to_a
           @barry
         end
+
+        def inspect
+          "(#{self.class}:#{self.object_id} bool_arry=#{@barry})"
+        end
       end
 
       class << self
