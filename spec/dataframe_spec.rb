@@ -1429,16 +1429,16 @@ describe Daru::DataFrame do
       expect(@df.pivot_table(index: [:a])).to eq(Daru::DataFrame.new({
         d: [5.5,2.2],
         e: [11.0,4.4]
-      }, index: [:bar, :foo]))
+      }, index: ['bar', 'foo']))
     end
 
     it "creates row index as per (double) index argument and default aggregates to mean" do
       agg_mi = Daru::MultiIndex.from_tuples(
         [        
-          [:bar, :large],
-          [:bar, :small],
-          [:foo, :large],
-          [:foo, :small]
+          ['bar', 'large'],
+          ['bar', 'small'],
+          ['foo', 'large'],
+          ['foo', 'small']
         ]
       )
       expect(@df.pivot_table(index: [:a, :c]).round(2)).to eq(Daru::DataFrame.new({

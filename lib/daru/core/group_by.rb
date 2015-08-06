@@ -21,9 +21,9 @@ module Daru
       def size
         index = 
         if multi_indexed_grouping?
-          Daru::MultiIndex.from_tuples symbolize(@groups.keys)
+          Daru::MultiIndex.from_tuples @groups.keys
         else
-          Daru::Index.new symbolize(@groups.keys.flatten)
+          Daru::Index.new @groups.keys.flatten
         end
 
         values = @groups.values.map { |e| e.size }
@@ -139,9 +139,9 @@ module Daru
             (method_type == :numeric and @context[ngvec].type == :numeric)
         end
 
-        index = symbolize @groups.keys
+        index = @groups.keys
         index = multi_index ? Daru::MultiIndex.from_tuples(index) : Daru::Index.new(index.flatten)
-        order = Daru::Index.new(symbolize(order))
+        order = Daru::Index.new(order)
         Daru::DataFrame.new(rows.transpose, index: index, order: order)
       end
 
@@ -155,20 +155,6 @@ module Daru
           end
         end
         indexes
-      end
-
-      def symbolize arry
-        symbolized_arry =
-        if arry.all? { |e| e.is_a?(Array) }
-          arry.map do |sub_arry|
-            sub_arry.map do |e|
-              e.is_a?(Numeric) ? e : e.to_sym
-            end
-          end
-        else
-          arry.map { |e| e.is_a?(Numeric) ? e : e.to_sym }
-        end
-        symbolized_arry
       end
 
       def multi_indexed_grouping?

@@ -213,7 +213,7 @@ module Daru
       key.flatten!
       case
       when key[0].is_a?(Range) then retrieve_from_range(key[0])
-      when key[0].is_a?(Integer) then try_retrieve_from_integer(key[0])
+      when (key[0].is_a?(Integer) and key.size == 1) then try_retrieve_from_integer(key[0])
       else retrieve_from_tuples(key)
       end
     end

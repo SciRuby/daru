@@ -13,23 +13,23 @@ describe Daru::Core::GroupBy do
     @dl_group = @df.group_by([:a, :b])
     @tl_group = @df.group_by([:a,:b,:c])
 
-    @sl_index = Daru::Index.new([:bar, :foo])
+    @sl_index = Daru::Index.new(['bar', 'foo'])
     @dl_multi_index = Daru::MultiIndex.from_tuples([
-      [:bar, :one],
-      [:bar, :three],
-      [:bar, :two],
-      [:foo, :one],
-      [:foo, :three],
-      [:foo, :two]
+      ['bar', 'one'],
+      ['bar', 'three'],
+      ['bar', 'two'],
+      ['foo', 'one'],
+      ['foo', 'three'],
+      ['foo', 'two']
     ])
     @tl_multi_index = Daru::MultiIndex.from_tuples([
-      [:bar, :one  , 2],
-      [:bar, :three, 1],
-      [:bar, :two  , 6],
-      [:foo, :one  , 1],
-      [:foo, :one  , 3],
-      [:foo, :three, 8],
-      [:foo, :two  , 3]
+      ['bar', 'one'  , 2],
+      ['bar', 'three', 1],
+      ['bar', 'two'  , 6],
+      ['foo', 'one'  , 1],
+      ['foo', 'one'  , 3],
+      ['foo', 'three', 8],
+      ['foo', 'two'  , 3]
     ])
   end
 

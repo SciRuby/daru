@@ -3,6 +3,7 @@ require 'matrix'
 require 'awesome_print'
 require 'distribution'
 require 'tempfile'
+require 'pry-byebug'
 
 def mri?
   RUBY_ENGINE == 'ruby'

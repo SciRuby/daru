@@ -204,7 +204,7 @@ describe Daru::MultiIndex do
       ]))
     end
 
-    it "returns MI when first level is int and so is key" do
+    it "works with numerical first levels" do
       mi = Daru::MultiIndex.from_tuples([
         [2000, 'M'],
         [2000, 'F'],
@@ -216,6 +216,8 @@ describe Daru::MultiIndex do
         [2000, 'M'],
         [2000, 'F']
         ]))
+
+      expect(mi[2000,'M']).to eq(0)
     end
   end
 
