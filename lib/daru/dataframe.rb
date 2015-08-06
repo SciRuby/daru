@@ -1229,6 +1229,18 @@ module Daru
       cl
     end
 
+    # Concatenate another DataFrame along corresponding columns.
+    # Very premature implementation. Use with caution.
+    def concat other_df
+      vectors = []
+      @vectors.each do |v|
+        vectors << self[v].to_a.concat(other_df[v].to_a)
+      end
+
+      Daru::DataFrame.new(vectors, order: @vectors)
+    end
+
+    # Set a particular column as the new DF
     def set_index new_index, opts={}
       raise ArgumentError if @size != self[new_index].uniq.size
       
@@ -1328,8 +1340,8 @@ module Daru
     def numeric_vector_names
       numerics = []
 
-      each_vector do |vec, i|
-        numerics << vec.name if(vec.type == :numeric)
+      @vectors.each do |v|
+        numerics << v if (self[v].type == :numeric)
       end
       numerics
     end
@@ -1489,18 +1501,21 @@ module Daru
           end
         end
 
-        df_index = Daru::MultiIndex.from_tuples symbolize(super_hash.keys)
+        # df_index = Daru::MultiIndex.from_tuples symbolize(super_hash.keys)
+        df_index = Daru::MultiIndex.from_tuples super_hash.keys
 
         vector_indexes = []
         super_hash.each_value do |sub_hash|
           vector_indexes.concat sub_hash.keys
         end
-        df_vectors = Daru::MultiIndex.from_tuples symbolize(vector_indexes.uniq)
+        # df_vectors = Daru::MultiIndex.from_tuples symbolize(vector_indexes.uniq)
+        df_vectors = Daru::MultiIndex.from_tuples vector_indexes.uniq
         pivoted_dataframe = Daru::DataFrame.new({}, index: df_index, order: df_vectors)
 
         super_hash.each do |row_index, sub_h|
           sub_h.each do |vector_index, val|
-            pivoted_dataframe[symbolize(vector_index)][symbolize(row_index)] = val
+            # pivoted_dataframe[symbolize(vector_index)][symbolize(row_index)] = val
+            pivoted_dataframe[vector_index][row_index] = val
           end
         end
         return pivoted_dataframe

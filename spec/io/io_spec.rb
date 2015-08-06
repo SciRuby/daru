@@ -7,24 +7,25 @@ describe Daru::IO do
         df = Daru::DataFrame.from_csv('spec/fixtures/matrix_test.csv', 
           col_sep: ' ', headers: true)
 
+        df.vectors = [:image_resolution, :mls, :true_transform].to_index
         expect(df.vectors).to eq([:image_resolution, :mls, :true_transform].to_index)
         expect(df[:image_resolution].first).to eq(6.55779)
         expect(df[:true_transform].first).to eq("-0.2362347,0.6308649,0.7390552,0,0.6523478,-0.4607318,0.6018043,0,0.7201635,0.6242881,-0.3027024,4262.65,0,0,0,1")
       end
 
       it "works properly for repeated headers" do
-        df = Daru::DataFrame.from_csv('spec/fixtures/repeated_fields.csv')
-        expect(df.vectors.to_a).to eq([:a1, :age_1, :age_2, :city, :id, :name_1, :name_2])
+        df = Daru::DataFrame.from_csv('spec/fixtures/repeated_fields.csv',header_converters: :symbol)
+        expect(df.vectors.to_a).to eq(['a1', 'age_1', 'age_2', 'city', 'id', 'name_1', 'name_2'])
 
         age = Daru::Vector.new([3, 4, 5, 6, nil, 8])
-        expect(df[:age_2]).to eq(age)
+        expect(df['age_2']).to eq(age)
       end
 
       it "accepts scientific notation as float" do
         ds = Daru::DataFrame.from_csv('spec/fixtures/scientific_notation.csv')
-        expect(ds.vectors.to_a).to eq([:x, :y])
+        expect(ds.vectors.to_a).to eq(['x', 'y'])
         y = [9.629587310436753e+127, 1.9341543147883677e+129, 3.88485279048245e+130]
-        y.zip(ds[:y]).each do |y_expected, y_ds|
+        y.zip(ds['y']).each do |y_expected, y_ds|
           expect(y_ds).to be_within(0.001).of(y_expected)
         end
       end
@@ -33,10 +34,10 @@ describe Daru::IO do
     context "#write_csv" do
       it "writes DataFrame to a CSV file" do
         df = Daru::DataFrame.new({
-          a: [1,2,3,4,5], 
-          b: [11,22,33,44,55],
-          c: ['a', 'g', 4, 5,'addadf'],
-          d: [nil, 23, 4,'a','ff']})
+          'a' => [1,2,3,4,5], 
+          'b' => [11,22,33,44,55],
+          'c' => ['a', 'g', 4, 5,'addadf'],
+          'd' => [nil, 23, 4,'a','ff']})
         t = Tempfile.new('data.csv')
         df.write_csv t.path
 

@@ -58,7 +58,6 @@ module Daru
       end
 
       # Functions for loading/writing CSV files
-
       def from_csv path, opts={}
         opts[:col_sep]           ||= ','
         opts[:converters]        ||= :numeric
@@ -79,7 +78,7 @@ module Daru
           yield csv if block_given?
 
           csv_as_arrays = csv.to_a
-          headers       = csv_as_arrays[0].recode_repeated.map(&:to_sym)
+          headers       = csv_as_arrays[0].recode_repeated.map
           csv_as_arrays.delete_at 0
           csv_as_arrays = csv_as_arrays.transpose
 

@@ -1449,15 +1449,15 @@ describe Daru::DataFrame do
  
     it "creates row and vector index as per (single) index and (single) vectors args" do
       agg_vectors = Daru::MultiIndex.from_tuples([
-        [:d, :one],
-        [:d, :two],
-        [:e, :one],
-        [:e, :two]
+        [:d, 'one'],
+        [:d, 'two'],
+        [:e, 'one'],
+        [:e, 'two']
       ])
       agg_index = Daru::MultiIndex.from_tuples(
         [
-          [:bar],
-          [:foo]
+          ['bar'],
+          ['foo']
         ]
       )
       
@@ -1475,21 +1475,21 @@ describe Daru::DataFrame do
     it "creates row and vector index as per (single) index and (double) vector args" do
       agg_vectors = Daru::MultiIndex.from_tuples(
         [
-          [:d, :one, :large],
-          [:d, :one, :small],
-          [:d, :two, :large],
-          [:d, :two, :small],
-          [:e, :one, :large],
-          [:e, :one, :small],
-          [:e, :two, :large],
-          [:e, :two, :small]
+          [:d, 'one', 'large'],
+          [:d, 'one', 'small'],
+          [:d, 'two', 'large'],
+          [:d, 'two', 'small'],
+          [:e, 'one', 'large'],
+          [:e, 'one', 'small'],
+          [:e, 'two', 'large'],
+          [:e, 'two', 'small']
         ]
       )
 
       agg_index = Daru::MultiIndex.from_tuples(
         [
-          [:bar],
-          [:foo]
+          ['bar'],
+          ['foo']
         ]
       )
 
@@ -1509,20 +1509,20 @@ describe Daru::DataFrame do
 
     it "creates row and vector index with (double) index and (double) vector args" do
       agg_index = Daru::MultiIndex.from_tuples([
-        [:bar, 4],
-        [:bar, 5],
-        [:bar, 6],
-        [:bar, 7],
-        [:foo, 1],
-        [:foo, 2],
-        [:foo, 3]
+        ['bar', 4],
+        ['bar', 5],
+        ['bar', 6],
+        ['bar', 7],
+        ['foo', 1],
+        ['foo', 2],
+        ['foo', 3]
       ])
 
       agg_vectors = Daru::MultiIndex.from_tuples([
-        [:e, :one, :large],
-        [:e, :one, :small],
-        [:e, :two, :large],
-        [:e, :two, :small]
+        [:e, 'one', 'large'],
+        [:e, 'one', 'small'],
+        [:e, 'two', 'large'],
+        [:e, 'two', 'small']
       ])
 
       expect(@df.pivot_table(index: [:a, :d], vectors: [:b, :c])).to eq(
@@ -1539,16 +1539,16 @@ describe Daru::DataFrame do
     it "only aggregates over the vector specified in the values argument" do
       agg_vectors = Daru::MultiIndex.from_tuples(
         [
-          [:e, :one, :large],
-          [:e, :one, :small],
-          [:e, :two, :large],
-          [:e, :two, :small]
+          [:e, 'one', 'large'],
+          [:e, 'one', 'small'],
+          [:e, 'two', 'large'],
+          [:e, 'two', 'small']
         ]
       )
       agg_index = Daru::MultiIndex.from_tuples(
         [
-          [:bar],
-          [:foo]
+          ['bar'],
+          ['foo']
         ]
       )
       expect(@df.pivot_table(index: [:a], vectors: [:b, :c], values: :e)).to eq(
@@ -1566,16 +1566,16 @@ describe Daru::DataFrame do
     it "overrides default aggregate function to aggregate over sum" do
       agg_vectors = Daru::MultiIndex.from_tuples(
         [
-          [:e, :one, :large],
-          [:e, :one, :small],
-          [:e, :two, :large],
-          [:e, :two, :small]
+          [:e, 'one', 'large'],
+          [:e, 'one', 'small'],
+          [:e, 'two', 'large'],
+          [:e, 'two', 'small']
         ]
       )
       agg_index = Daru::MultiIndex.from_tuples(
         [
-          [:bar],
-          [:foo]
+          ['bar'],
+          ['foo']
         ]
       )
       expect(@df.pivot_table(index: [:a], vectors: [:b, :c], values: :e, agg: :sum)).to eq(

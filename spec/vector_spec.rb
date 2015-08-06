@@ -769,7 +769,24 @@ describe Daru::Vector do
     end
 
     context Daru::MultiIndex do
-      pending
+      it "returns indexes of nils" do
+        mi = Daru::MultiIndex.from_tuples([
+          ['M', 2000],
+          ['M', 2001],
+          ['M', 2002],
+          ['M', 2003],
+          ['F', 2000],
+          ['F', 2001],
+          ['F', 2002],
+          ['F', 2003]
+          ])
+        vector = Daru::Vector.new([nil,2,4,5,3,nil,2,nil], index: mi)
+        expect(vector.missing_positions).to eq([
+          ['M',2000], 
+          ['F',2001],
+          ['F',2003]
+        ])
+      end
     end
   end
 
