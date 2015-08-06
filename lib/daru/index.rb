@@ -219,7 +219,7 @@ module Daru
     end
 
     def try_retrieve_from_integer int
-      return retrieve_from_tuples(int) if @levels[0].has_key?(int)
+      return retrieve_from_tuples([int]) if @levels[0].has_key?(int)
       int
     end
 

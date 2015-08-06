@@ -1501,14 +1501,13 @@ module Daru
           end
         end
 
-        # df_index = Daru::MultiIndex.from_tuples symbolize(super_hash.keys)
         df_index = Daru::MultiIndex.from_tuples super_hash.keys
 
         vector_indexes = []
         super_hash.each_value do |sub_hash|
           vector_indexes.concat sub_hash.keys
         end
-        # df_vectors = Daru::MultiIndex.from_tuples symbolize(vector_indexes.uniq)
+        
         df_vectors = Daru::MultiIndex.from_tuples vector_indexes.uniq
         pivoted_dataframe = Daru::DataFrame.new({}, index: df_index, order: df_vectors)
 

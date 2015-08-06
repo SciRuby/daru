@@ -142,7 +142,6 @@ module Daru
         index = symbolize @groups.keys
         index = multi_index ? Daru::MultiIndex.from_tuples(index) : Daru::Index.new(index.flatten)
         order = Daru::Index.new(symbolize(order))
-      
         Daru::DataFrame.new(rows.transpose, index: index, order: order)
       end
 

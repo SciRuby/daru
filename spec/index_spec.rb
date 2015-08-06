@@ -203,6 +203,20 @@ describe Daru::MultiIndex do
         [:b,:two,:baz]
       ]))
     end
+
+    it "returns MI when first level is int and so is key" do
+      mi = Daru::MultiIndex.from_tuples([
+        [2000, 'M'],
+        [2000, 'F'],
+        [2001, 'M'],
+        [2001, 'F']
+      ])
+
+      expect(mi[2000]).to eq(Daru::MultiIndex.from_tuples([
+        [2000, 'M'],
+        [2000, 'F']
+        ]))
+    end
   end
 
   context "#include?" do
