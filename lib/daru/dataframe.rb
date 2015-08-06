@@ -1229,6 +1229,15 @@ module Daru
       cl
     end
 
+    def set_index new_index, opts={}
+      raise ArgumentError if @size != self[new_index].uniq.size
+      
+      self.index = Daru::Index.new(self[new_index].to_a)
+      self.delete_vector(new_index) unless opts[:keep]
+
+      self
+    end
+
     # Change the index of the DataFrame and preserve the labels of the previous
     # indexing. New index can be Daru::Index or any of its subclasses.
     # 

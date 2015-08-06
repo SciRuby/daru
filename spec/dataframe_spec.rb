@@ -2046,4 +2046,45 @@ describe Daru::DataFrame do
       end
     end
   end
+
+  context "#set_index" do
+    before(:each) do
+      @df = Daru::DataFrame.new({
+        a: [1,2,3,4,5],
+        b: ['a','b','c','d','e'],
+        c: [11,22,33,44,55]
+        })
+    end
+
+    it "sets a particular column as the index and deletes that column" do
+      @df.set_index(:b)
+      expect(@df).to eq(
+        Daru::DataFrame.new({
+          a: [1,2,3,4,5],
+          c: [11,22,33,44,55]
+          }, index: ['a','b','c','d','e'])
+        )
+    end
+
+    it "sets a particular column as index but keeps that column" do
+      expect(@df.set_index(:c, keep: true)).to eq(
+        Daru::DataFrame.new({
+          a: [1,2,3,4,5],
+          b: ['a','b','c','d','e'],
+          c: [11,22,33,44,55]
+          }, index: [11,22,33,44,55]))
+      expect(@df[:c]).to eq(@df[:c])
+    end
+
+    it "raises error if all elements in the column aren't unique" do
+      jholu = Daru::DataFrame.new({
+        a: ['a','b','a'],
+        b: [1,2,4]
+        })
+
+      expect {
+        jholu.set_index(:a)
+      }.to raise_error(ArgumentError)
+    end
+  end
 end if mri?

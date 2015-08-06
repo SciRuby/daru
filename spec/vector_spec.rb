@@ -952,7 +952,7 @@ describe Daru::Vector do
 
     it "stores name as a symbol" do
       @v.rename "This is a vector"
-      expect(@v.name).to eq(:"This is a vector")
+      expect(@v.name).to eq("This is a vector")
     end
   end
 

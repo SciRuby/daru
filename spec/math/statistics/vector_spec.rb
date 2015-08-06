@@ -111,6 +111,16 @@ describe Daru::Vector do
         end
       end
 
+      context "#value_counts" do
+        it "counts number of unique values in the Vector" do
+          vector = Daru::Vector.new(
+            ["America","America","America","America","America", 
+              "India","India", "China", "India", "China"])
+          expect(vector.value_counts).to eq(
+            Daru::Vector.new([5,3,2], index: ["America", "India", "China"]))
+        end
+      end
+
       context "#coefficient_of_variation" do
         it "calculates coefficient_of_variation" do
           @dv.coefficient_of_variation

@@ -10,6 +10,7 @@
         - Added basic functions for rolling statistics - mean, std, count, etc.
         - Added cumulative sum function.
         - Added #keep_if.
+        - Added #count_values.
     - Indexing
         - Changed Index so that it now accepts all sorts of data (not restricted to only Symbols as it was previously).
         - Re wrote MultiIndex in levels and labels form so that its faster and more accomodative of different kinds of index levels.
@@ -24,6 +25,7 @@
         - Added new method #index= and #vectors= for changing row and column indexes directly.
         - Optimized Vector value setting and retreival.
         - Added inner, outer, left outer and right outer joins with the #join method.
+        - Added #set_index.
 * Changes
     - Removed the + operator overload from Index and replaced in with union.
     - Removed the second 'values' argument from Daru::Index because it's redundant.

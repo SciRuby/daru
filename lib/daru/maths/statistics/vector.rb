@@ -122,6 +122,16 @@ module Daru
           end
         end
 
+        # Count number of occurences of each value in the Vector
+        def value_counts
+          values = {}
+          @data.each do |d|
+            values[d] ? values[d] += 1 : values[d] = 1
+          end
+
+          Daru::Vector.new(values)
+        end
+
         def proportion value=1
           frequencies[value].quo(n_valid).to_f
         end
