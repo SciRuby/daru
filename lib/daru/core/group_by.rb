@@ -4,6 +4,14 @@ module Daru
 
       attr_reader :groups
 
+      # Yield over each group created by group_by. A DataFrame is yielded in
+      # block.
+      def each_group &block
+        groups.keys.each do |k|
+          yield get_group(k)
+        end
+      end
+
       def initialize context, names
         @groups = {}
         @non_group_vectors = context.vectors.to_a - names

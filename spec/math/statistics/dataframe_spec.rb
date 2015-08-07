@@ -49,7 +49,15 @@ describe Daru::DataFrame do
   end
 
   context "#max" do
-    # TODO
+    it "returns the row that has max" do
+      df = Daru::DataFrame.new({
+        a: [1,2,3,4,5],
+        b: ['aa','aaa','a','','dfffdf'],
+        c: [11,22,33,44,55]
+      })
+      expect(df.max(vector: :b)).to eq(
+        Daru::Vector.new([5,'dfffdf',55], index: [:a, :b, :c]))
+    end
   end
 
   context "#min" do

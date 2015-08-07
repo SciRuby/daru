@@ -27,6 +27,9 @@ Benchmark.bm do |x|
       c: Daru::Vector.new(100000.times.map { rand })
     }, clone: false)
   end
+
+  x.report("Create by row from Arrays") do
+  end
 end
 
 #                           ===== Benchmarks =====

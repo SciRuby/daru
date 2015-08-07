@@ -23,8 +23,12 @@ module Daru
         end
 
         # Calculate the maximum value of each numeric vector.
-        def max
-          compute_stats :max
+        def max opts={}
+          if opts[:vector]
+            self.row[*self[opts[:vector]].max_index.index.to_a]
+          else
+            compute_stats :max
+          end
         end
 
         # Calculate the minimmum value of each numeric vector.

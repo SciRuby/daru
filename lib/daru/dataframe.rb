@@ -1242,7 +1242,8 @@ module Daru
 
     # Set a particular column as the new DF
     def set_index new_index, opts={}
-      raise ArgumentError if @size != self[new_index].uniq.size
+      raise ArgumentError, "All elements in new index must be unique." if 
+        @size != self[new_index].uniq.size
       
       self.index = Daru::Index.new(self[new_index].to_a)
       self.delete_vector(new_index) unless opts[:keep]
@@ -1507,7 +1508,7 @@ module Daru
         super_hash.each_value do |sub_hash|
           vector_indexes.concat sub_hash.keys
         end
-        
+
         df_vectors = Daru::MultiIndex.from_tuples vector_indexes.uniq
         pivoted_dataframe = Daru::DataFrame.new({}, index: df_index, order: df_vectors)
 
@@ -1781,7 +1782,7 @@ module Daru
         html += '</tr>'
         if num > threshold
           html += '<tr>'
-          (@vectors.size + 1).size.times { html += '<td>...</td>' }
+          (@vectors.size + 1).times { html += '<td>...</td>' }
           html += '</tr>'
 
           last_index = @index.to_a.last
