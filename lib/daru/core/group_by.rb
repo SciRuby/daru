@@ -4,7 +4,7 @@ module Daru
 
       attr_reader :groups
 
-      # Yield over each group created by group_by. A DataFrame is yielded in
+      # Iterate over each group created by group_by. A DataFrame is yielded in
       # block.
       def each_group &block
         groups.keys.each do |k|
@@ -26,6 +26,7 @@ module Daru
         @groups.freeze
       end
 
+      # Get a Daru::Vector of the size of each group.
       def size
         index = 
         if multi_indexed_grouping?
@@ -38,23 +39,79 @@ module Daru
         Daru::Vector.new(values, index: index, name: :size)
       end
 
+      # Get the first group
       def first
         head(1)
       end
 
+      # Get the last group
       def last
         tail(1)
       end
 
+      # Get the top 'n' groups
+      # @param quantity [Fixnum] (5) The number of groups.
+      # @example Usage of head
+      #   df = Daru::DataFrame.new({
+      #     a: %w{foo bar foo bar   foo bar foo foo},
+      #     b: %w{one one two three two two one three},
+      #     c:   [1  ,2  ,3  ,1    ,3  ,6  ,3  ,8],
+      #     d:   [11 ,22 ,33 ,44   ,55 ,66 ,77 ,88]
+      #   })
+      #   df.group_by([:a, :b]).head(1)
+      #   # => 
+      #   # #<Daru::DataFrame:82745170 @name = d7003f75-5eb9-4967-9303-c08dd9160224 @size = 6>
+      #   #                     a          b          c          d 
+      #   #          1        bar        one          2         22 
+      #   #          3        bar      three          1         44 
+      #   #          5        bar        two          6         66 
+      #   #          0        foo        one          1         11 
+      #   #          7        foo      three          8         88 
+      #   #          2        foo        two          3         33  
       def head quantity=5
         select_groups_from :first, quantity
       end
 
+      # Get the bottom 'n' groups
+      # @param quantity [Fixnum] (5) The number of groups.
+      # @example Usage of tail
+      #   df = Daru::DataFrame.new({
+      #     a: %w{foo bar foo bar   foo bar foo foo},
+      #     b: %w{one one two three two two one three},
+      #     c:   [1  ,2  ,3  ,1    ,3  ,6  ,3  ,8],
+      #     d:   [11 ,22 ,33 ,44   ,55 ,66 ,77 ,88]
+      #   })
+      #   # df.group_by([:a, :b]).tail(1)
+      #   # => 
+      #   # #<Daru::DataFrame:82378270 @name = 0623db46-5425-41bd-a843-99baac3d1d9a @size = 6>
+      #   #                     a          b          c          d 
+      #   #          1        bar        one          2         22 
+      #   #          3        bar      three          1         44 
+      #   #          5        bar        two          6         66 
+      #   #          6        foo        one          3         77 
+      #   #          7        foo      three          8         88 
+      #   #          4        foo        two          3         55
       def tail quantity=5
         select_groups_from :last, quantity
       end
 
       # Calculate mean of numeric groups, excluding missing values.
+      # @example Usage of mean
+      #   df = Daru::DataFrame.new({
+      #     a: %w{foo bar foo bar   foo bar foo foo},
+      #     b: %w{one one two three two two one three},
+      #     c:   [1  ,2  ,3  ,1    ,3  ,6  ,3  ,8],
+      #     d:   [11 ,22 ,33 ,44   ,55 ,66 ,77 ,88]
+      #   df.group_by([:a, :b]).mean
+      #   # => 
+      #   # #<Daru::DataFrame:81097450 @name = 0c32983f-3e06-451f-a9c9-051cadfe7371 @size = 6>
+      #   #                         c          d 
+      #   # ["bar", "one"]          2         22 
+      #   # ["bar", "three"]        1         44 
+      #   # ["bar", "two"]          6         66 
+      #   # ["foo", "one"]        2.0       44.0 
+      #   # ["foo", "three"]        8         88 
+      #   # ["foo", "two"]        3.0       44.0 
       def mean
         apply_method :numeric, :mean
       end
@@ -69,6 +126,24 @@ module Daru
         apply_method :numeric, :sum
       end
 
+      # Count groups, excludes missing values.
+      # @example Using count
+      #   df = Daru::DataFrame.new({    
+      #     a: %w{foo bar foo bar   foo bar foo foo},      
+      #     b: %w{one one two three two two one three},      
+      #     c:   [1  ,2  ,3  ,1    ,3  ,6  ,3  ,8],      
+      #     d:   [11 ,22 ,33 ,44   ,55 ,66 ,77 ,88]      
+      #   })        
+      #   df.group_by([:a, :b]).count
+      #   # => 
+      #   # #<Daru::DataFrame:76900210 @name = 7b9cf55d-17f8-48c7-b03a-2586c6e5ec5a @size = 6>
+      #   #                           c          d 
+      #   # ["bar", "one"]            1          1 
+      #   # ["bar", "two"]            1          1 
+      #   # ["bar", "three"]          1          1 
+      #   # ["foo", "one"]            2          2 
+      #   # ["foo", "three"]          1          1 
+      #   # ["foo", "two"]            2          2 
       def count
         width = @non_group_vectors.size
         Daru::DataFrame.new([size]*width, order: @non_group_vectors)
@@ -91,6 +166,21 @@ module Daru
       end
 
       # Returns one of the selected groups as a DataFrame.
+      # @param group [Array] The group that is to be selected from those grouped.
+      #
+      # @example Getting a group
+      #
+      #   df = Daru::DataFrame.new({
+      #         a: %w{foo bar foo bar   foo bar foo foo},
+      #         b: %w{one one two three two two one three},
+      #         c:   [1  ,2  ,3  ,1    ,3  ,6  ,3  ,8],
+      #         d:   [11 ,22 ,33 ,44   ,55 ,66 ,77 ,88]
+      #       })
+      #   df.group_by([:a, :b]).get_group ['bar','two']
+      #   #=> 
+      #   ##<Daru::DataFrame:83258980 @name = 687ee3f6-8874-4899-97fa-9b31d84fa1d5 @size = 1>
+      #   #                    a          b          c          d 
+      #   #         5        bar        two          6         66
       def get_group group
         indexes   = @groups[group]
         elements  = []
