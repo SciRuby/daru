@@ -1587,7 +1587,7 @@ module Daru
     # to new dataset, and fields which responds to second
     # pattern will be added one case for each different %n.
     # 
-    # == Usage
+    # @example
     #   cases=[
     #     ['1','george','red',10,'blue',20,nil,nil],
     #     ['2','fred','green',15,'orange',30,'white',20],
@@ -1595,14 +1595,13 @@ module Daru
     #   ]
     #   ds=Daru::DataFrame.rows(cases, order: [:id, :name, :car_color1, :car_value1, :car_color2, :car_value2, :car_color3, :car_value3])
     #   ds.one_to_many([:id],'car_%v%n').to_matrix
-    #   => Matrix[
-    #      ["red", "1", 10],
-    #      ["blue", "1", 20],
-    #      ["green", "2", 15],
-    #      ["orange", "2", 30],
-    #      ["white", "2", 20]
-    #      ]
-    #
+    #   #=> Matrix[
+    #   #   ["red", "1", 10],
+    #   #   ["blue", "1", 20],
+    #   #   ["green", "2", 15],
+    #   #   ["orange", "2", 30],
+    #   #   ["white", "2", 20]
+    #   #   ]
     def one_to_many(parent_fields, pattern)
       re      = Regexp.new pattern.gsub("%v","(.+?)").gsub("%n","(\\d+?)")
       ds_vars = parent_fields.dup
@@ -1670,14 +1669,14 @@ module Daru
     # * table - String specifying name of the table that will created in SQL.
     # * charset - Character set. Default is "UTF8".
     # 
-    # == Usage
+    # @example
     #
     #  ds = Daru::DataFrame.new({
     #   :id   => Daru::Vector.new([1,2,3,4,5]),
     #   :name => Daru::Vector.new(%w{Alex Peter Susan Mary John})
     #  })
     #  ds.create_sql('names')
-    #   ==>"CREATE TABLE names (id INTEGER,\n name VARCHAR (255)) CHARACTER SET=UTF8;"
+    #   #=>"CREATE TABLE names (id INTEGER,\n name VARCHAR (255)) CHARACTER SET=UTF8;"
     #
     def create_sql(table,charset="UTF8")
       sql    = "CREATE TABLE #{table} ("
@@ -1740,6 +1739,8 @@ module Daru
       arry
     end
 
+    # Convert to json. If no_index is false then the index will NOT be included
+    # in the JSON thus created.
     def to_json no_index=true
       if no_index
         self.to_a[0].to_json
@@ -1814,12 +1815,9 @@ module Daru
       @data.each { |v| v.update } if Daru.lazy_update
     end
 
+    # Rename the DataFrame.
     def rename new_name
-      if new_name.is_a?(Numeric)
-        @name = new_name 
-        return
-      end
-      @name = new_name.to_sym
+      @name = new_name
     end
 
     # Write this DataFrame to a CSV file.

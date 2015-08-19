@@ -5,11 +5,11 @@ require 'daru/version.rb'
 
 Daru::DESCRIPTION = <<MSG
 Daru (Data Analysis in RUby) is a library for analysis, manipulation and visualization
-of data.
+of data. Daru works seamlessly accross interpreters and leverages interpreter-specific
+optimizations whenever they are available.
 
-Daru works with Ruby arrays and NMatrix, thus working seamlessly accross
-ruby interpreters, at the same time providing speed for those who need it, while 
-making working with data super simple and intuitive.
+It is the default data storage gem for all the statsample gems (glm, timeseries, etc.)
+and can be used with many others like mixed_models, gnuplotrb, nyaplot and iruby.
 MSG
 
 Gem::Specification.new do |spec|
@@ -26,6 +26,28 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
+
+  spec.post_install_message = <<-EOF
+*************************************************************************
+Thank you for installing daru!
+
+  oOOOOOo 
+ ,|    oO
+//|     |
+\\|     |
+ `|     |
+  `-----`
+
+
+Hope you love daru! For enhanced interactivity and better visualizations, 
+consider using gnuplotrb and nyaplot with iruby. For statistics use the 
+statsample family.
+
+Read the README for interesting use cases and examples.
+
+Cheers!
+*************************************************************************
+EOF
 
   spec.add_runtime_dependency 'reportbuilder', '~> 1.4'
   spec.add_runtime_dependency 'spreadsheet', '~> 1.0.3'
