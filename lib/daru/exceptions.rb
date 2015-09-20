@@ -1,0 +1,2 @@
+class SizeError < StandardError
+end
