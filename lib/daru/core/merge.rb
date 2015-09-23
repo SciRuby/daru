@@ -42,7 +42,26 @@ module Daru
           return col_names, values
         end
 
-        def inner_join df1, df2, on
+        def inner_join df1, df2, df_hash1, df_hash2, on
+          joined_hash = {}
+          ((df_hash1.keys - on) | on | (df_hash2.keys - on)).each do |k|
+            joined_hash[k] = []
+          end
+
+          (0...df1.size).each do |id1|
+            (0...df2.size).each do |id2|
+              if on.all? { |n| df_hash1[n][id1] == df_hash2[n][id2] }
+                joined_hash.each do |k,v|
+                  v << (df_hash1.has_key?(k) ? df_hash1[k][id1] : df_hash2[k][id2])
+                end
+              end
+            end
+          end
+
+          Daru::DataFrame.new(joined_hash, order: joined_hash.keys)
+        end
+
+        def bf_inner_join df1, df2, on
           col_names1, table1 = arrayify df1
           col_names2, table2 = arrayify df2
 
@@ -188,7 +207,11 @@ module Daru
 
           case opts[:how]
           when :inner
-            helper.inner_join df1, df2, on
+            if Daru.has_bloomfilter_rb?
+              helper.bf_inner_join df1, df2, on
+            else
+              helper.inner_join df1, df2, df_hash1, df_hash2, on
+            end
           when :outer
             helper.full_outer_join df1, df2, df_hash1, df_hash2, on
           when :left

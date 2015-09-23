@@ -51,7 +51,6 @@ EOF
 
   spec.add_runtime_dependency 'reportbuilder', '~> 1.4'
   spec.add_runtime_dependency 'spreadsheet', '~> 1.0.3'
-  spec.add_runtime_dependency 'bloomfilter-rb', '~> 2.1'
 
   spec.add_development_dependency 'bundler', '~> 1.10'
   spec.add_development_dependency 'rake'
@@ -64,4 +63,5 @@ EOF
   spec.add_development_dependency 'nmatrix', '~> 0.1.0'
   spec.add_development_dependency 'distribution', '~> 0.7'
   spec.add_development_dependency 'rb-gsl', '~>1.16'
+  spec.add_development_dependency 'bloomfilter-rb', '~> 2.1'
 end
