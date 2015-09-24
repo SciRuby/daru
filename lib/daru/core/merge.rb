@@ -98,7 +98,7 @@ module Daru
             end
           end
             .reduce({}) {|h,pairs| pairs.each {|k,v| (h[k] ||= []) << v}; h}
-            .map{|ind1, inds2| inds2.flatten.flat_map{|ind2| [table1[ind1], table2[ind2]].flatten} if inds2.flatten.size > 0}
+            .flat_map{|ind1, inds2| inds2.flatten.map{|ind2| [table1[ind1], table2[ind2]].flatten} if inds2.flatten.size > 0}
 
           joined_cols = [col_names1, col_names2].flatten
           df = Daru::DataFrame.rows(joined_new.compact, order: joined_cols)

@@ -11,6 +11,10 @@ describe Daru::DataFrame do
         :id => [1,2,3,4],
         :name => ['Rutabaga', 'Pirate', 'Darth Vader', 'Ninja']
       })
+      @right_many = Daru::DataFrame.new({
+        :id => [1,1,1,1],
+        :name => ['Rutabaga', 'Pirate', 'Darth Vader', 'Ninja']
+      })
     end
 
     it "performs an inner join of two dataframes" do
@@ -20,6 +24,15 @@ describe Daru::DataFrame do
         :id_2   => [2,4]
       }, order: [:id_1, :name, :id_2])
       expect(@left.join(@right, how: :inner, on: [:name])).to eq(answer)
+    end
+
+    it "performs an inner join of two dataframes that has one to many mapping" do
+      answer = Daru::DataFrame.new({
+        :id => [1,1,1,1],
+        :name_1 => ['Pirate', 'Pirate', 'Pirate', 'Pirate'],
+        :name_2 => ['Rutabaga', 'Pirate', 'Darth Vader', 'Ninja']
+      }, order: [:id, :name_1, :name_2])
+      expect(@left.join(@right_many, how: :inner, on: [:id])).to eq(answer)
     end
 
     it "performs a full outer join" do
