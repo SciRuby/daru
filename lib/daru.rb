@@ -38,8 +38,9 @@ module Daru
     attr_accessor :lazy_update
     
     def create_has_library(library)
-      define_singleton_method("has_#{library}?") do
-        cv = "@@#{library}"
+      lib_underscore = library.to_s.gsub(/-/, '_')
+      define_singleton_method("has_#{lib_underscore}?") do
+        cv = "@@#{lib_underscore}"
         unless class_variable_defined? cv
           begin
             require library.to_s
@@ -56,6 +57,7 @@ module Daru
   create_has_library :gsl
   create_has_library :nmatrix
   create_has_library :nyaplot
+  create_has_library :'bloomfilter-rb'
 end
 
 autoload :Spreadsheet, 'spreadsheet'
