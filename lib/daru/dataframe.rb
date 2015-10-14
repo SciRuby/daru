@@ -909,7 +909,6 @@ module Daru
       values = to_a[0].map{|h| h.values}
       index = @index.to_a
 
-      arr_index = index.length - 1
       index.reverse.each do |i|
         keep_row = yield access_row(i)
         unless keep_row
