@@ -13,6 +13,7 @@ module Daru
     include Daru::Maths::Arithmetic::Vector
     include Daru::Maths::Statistics::Vector
     include Daru::Plotting::Vector if Daru.has_nyaplot?
+    include Daru::ReportBuilder if Daru.has_reportbuilder?
 
     def each(&block)
       return to_enum(:each) unless block_given?
@@ -896,11 +897,6 @@ module Daru
 
     def to_s
       to_html
-    end
-
-    # Create a summary of the Vector using Report Builder.
-    def summary(method = :to_text)
-      ReportBuilder.new(no_title: true).add(self).send(method)
     end
 
     def report_building b

@@ -49,7 +49,6 @@ Cheers!
 *************************************************************************
 EOF
 
-  spec.add_runtime_dependency 'reportbuilder', '~> 1.4'
   spec.add_runtime_dependency 'spreadsheet', '~> 1.0.3'
 
   spec.add_development_dependency 'bundler', '~> 1.10'
@@ -60,6 +59,7 @@ EOF
   spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'awesome_print'
   spec.add_development_dependency 'nyaplot', '~> 0.1.5'
+  spec.add_development_dependency 'reportbuilder', '~> 1.4'
   spec.add_development_dependency 'nmatrix', '~> 0.1.0'
   spec.add_development_dependency 'distribution', '~> 0.7'
   spec.add_development_dependency 'rb-gsl', '~>1.16'

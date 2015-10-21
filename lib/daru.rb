@@ -58,6 +58,7 @@ module Daru
   create_has_library :nmatrix
   create_has_library :nyaplot
   create_has_library :'bloomfilter-rb'
+  create_has_library :reportbuilder
 end
 
 autoload :Spreadsheet, 'spreadsheet'
@@ -65,7 +66,6 @@ autoload :CSV, 'csv'
 
 require 'matrix'
 require 'securerandom'
-require 'reportbuilder'
 
 require 'daru/version.rb'
 require 'daru/index.rb'
