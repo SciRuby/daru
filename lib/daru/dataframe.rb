@@ -12,6 +12,7 @@ module Daru
     include Daru::Maths::Arithmetic::DataFrame
     include Daru::Maths::Statistics::DataFrame
     include Daru::Plotting::DataFrame if Daru.has_nyaplot?
+    include Daru::ReportBuilder if Daru.has_reportbuilder?
 
     class << self
       # Load data from a CSV file. Specify an optional block to grab the CSV 
@@ -1360,11 +1361,6 @@ module Daru
 
       order = Index.new(nv)
       Daru::DataFrame.new(arry, clone: cln, order: order, index: @index)
-    end
-
-    # Generate a summary of this DataFrame with ReportBuilder.
-    def summary(method = :to_text)
-      ReportBuilder.new(no_title: true).add(self).send(method)
     end
 
     def report_building(b) # :nodoc: #
