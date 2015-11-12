@@ -85,8 +85,26 @@ describe Daru::IO do
     end
 
     context ".from_sql" do
+
+      let(:db) { DBI.connect("DBI:SQLite3:daru_test") }
+
+      subject { Daru::DataFrame.from_sql(db, "select * from accounts") }
+
+      before do
+        require "dbi"
+        db.do "create table accounts(id integer, name varchar)"
+        db.do "insert into accounts values(1, 'Homer')"
+        db.do "insert into accounts values(2, 'Marge')"
+      end
+
+      after { FileUtils.rm("daru_test") }
+
       it "loads data from an SQL database" do
-        # TODO: write these tests
+        accounts = subject
+        expect(accounts.class).to eq Daru::DataFrame
+        expect(accounts.nrows).to eq 2
+        expect(accounts.row[0][:id]).to eq 1
+        expect(accounts.row[0][:name]).to eq "Homer"
       end
     end
 

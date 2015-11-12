@@ -120,24 +120,33 @@ module Daru
         writer.close
       end
 
-      # Loading/writing from SQL databases
+      # Execute a query and create a data frame from the result
+      #
+      # @param dbh [DBI::DatabaseHandle] A DBI connection to be used to run the query
+      # @param query [String] The query to be executed
+      #
+      # @return A dataframe containing the data resulting from the query
 
       def from_sql dbh, query
-        require 'dbi'
         sth     = dbh.execute(query)
         vectors = {}
-        fields  = []
-        sth.column_info.each do |c|
-          vectors[c[:name]] = Daru::Vector.new([])
-          vectors[c[:name]].rename c[:name]
-          fields.push(c[:name].to_sym)
+        fields = []
+        sth.column_names.each do |column_name|
+          name = column_name.to_sym
+          vectors[name] = Daru::Vector.new([])
+          vectors[name].rename name
+          fields.push name
         end
-        ds=Daru::DataFrame.new(vectors,order: fields)
+
+        df = Daru::DataFrame.new(vectors, order: fields)
+
         sth.fetch do |row|
-          ds.add_row(row.to_a)
+          df.add_row(row.to_a)
         end
-        ds.update
-        ds
+
+        df.update
+
+        df
       end
 
       def dataframe_write_sql ds, dbh, table
