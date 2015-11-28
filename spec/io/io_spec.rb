@@ -85,26 +85,58 @@ describe Daru::IO do
     end
 
     context ".from_sql" do
-
-      let(:db) { DBI.connect("DBI:SQLite3:daru_test") }
-
-      subject { Daru::DataFrame.from_sql(db, "select * from accounts") }
-
-      before do
-        require "dbi"
-        db.do "create table accounts(id integer, name varchar)"
-        db.do "insert into accounts values(1, 'Homer')"
-        db.do "insert into accounts values(2, 'Marge')"
+      let(:db_name) do
+        'daru_test'
       end
 
-      after { FileUtils.rm("daru_test") }
+      before do
+        require 'sqlite3'
+        SQLite3::Database.new(db_name).tap do |db|
+          db.execute "create table accounts(id integer, name varchar)"
+          db.execute "insert into accounts values(1, 'Homer')"
+          db.execute "insert into accounts values(2, 'Marge')"
+        end
+      end
 
-      it "loads data from an SQL database" do
-        accounts = subject
-        expect(accounts.class).to eq Daru::DataFrame
-        expect(accounts.nrows).to eq 2
-        expect(accounts.row[0][:id]).to eq 1
-        expect(accounts.row[0][:name]).to eq "Homer"
+      after do
+        FileUtils.rm(db_name)
+      end
+
+      context 'with a database handler of DBI' do
+        let(:db) do
+          require "dbi"
+          DBI.connect("DBI:SQLite3:#{db_name}")
+        end
+
+        subject { Daru::DataFrame.from_sql(db, "select * from accounts") }
+
+        it "loads data from an SQL database" do
+          accounts = subject
+          expect(accounts.class).to eq Daru::DataFrame
+          expect(accounts.nrows).to eq 2
+          expect(accounts.row[0][:id]).to eq 1
+          expect(accounts.row[0][:name]).to eq "Homer"
+        end
+      end
+
+      context 'with a database connection of ActiveRecord' do
+        let(:connection) do
+          require 'active_record'
+          ActiveRecord::Base.establish_connection("sqlite3:#{db_name}")
+          ActiveRecord::Base.connection
+        end
+
+        subject do
+          Daru::DataFrame.from_sql(connection, "select * from accounts")
+        end
+
+        it "loads data from an SQL database" do
+          accounts = subject
+          expect(accounts.class).to eq Daru::DataFrame
+          expect(accounts.nrows).to eq 2
+          expect(accounts.row[0][:id]).to eq 1
+          expect(accounts.row[0][:name]).to eq "Homer"
+        end
       end
     end
 
