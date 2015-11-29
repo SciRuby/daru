@@ -128,60 +128,9 @@ module Daru
       # @return A dataframe containing the data resulting from the query
 
       def from_sql(db, query)
-        case db
-        when DBI::DatabaseHandle
-          from_dbi(db, query)
-        when ActiveRecord::ConnectionAdapters::AbstractAdapter
-          from_activerecord(db, query)
-        else
-          raise ArgumentError, 'unknown database type'
-        end
+        require 'daru/io/sql_data_source'
+        SqlDataSource.make_dataframe(db, query)
       end
-
-      def from_dbi(dbh, query)
-        sth     = dbh.execute(query)
-        vectors = {}
-        fields = []
-        sth.column_names.each do |column_name|
-          name = column_name.to_sym
-          vectors[name] = Daru::Vector.new([])
-          vectors[name].rename name
-          fields.push name
-        end
-
-        df = Daru::DataFrame.new(vectors, order: fields)
-
-        sth.fetch do |row|
-          df.add_row(row.to_a)
-        end
-
-        df.update
-
-        df
-      end
-      private :from_dbi
-
-      def from_activerecord(connection, query)
-        result = connection.exec_query(query)
-        vectors = {}
-        fields = []
-        result.columns.each do |column_name|
-          name = column_name.to_sym
-          vectors[name] = Daru::Vector.new([])
-          vectors[name].rename name
-          fields.push name
-        end
-
-        df = Daru::DataFrame.new(vectors, order: fields)
-        result.each do |row|
-          df.add_row(row.values)
-        end
-
-        df.update
-
-        df
-      end
-      private :from_activerecord
 
       def dataframe_write_sql ds, dbh, table
         require 'dbi'
