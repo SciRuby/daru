@@ -127,26 +127,9 @@ module Daru
       #
       # @return A dataframe containing the data resulting from the query
 
-      def from_sql dbh, query
-        sth     = dbh.execute(query)
-        vectors = {}
-        fields = []
-        sth.column_names.each do |column_name|
-          name = column_name.to_sym
-          vectors[name] = Daru::Vector.new([])
-          vectors[name].rename name
-          fields.push name
-        end
-
-        df = Daru::DataFrame.new(vectors, order: fields)
-
-        sth.fetch do |row|
-          df.add_row(row.to_a)
-        end
-
-        df.update
-
-        df
+      def from_sql(db, query)
+        require 'daru/io/sql_data_source'
+        SqlDataSource.make_dataframe(db, query)
       end
 
       def dataframe_write_sql ds, dbh, table
@@ -155,6 +138,36 @@ module Daru
         sth   =  dbh.prepare(query)
         ds.each_row { |c| sth.execute(*c.to_a) }
         return true
+      end
+
+      # Load dataframe from AR::Relation
+      #
+      # @param relation [ActiveRecord::Relation] A relation to be used to load the contents of dataframe
+      #
+      # @return A dataframe containing the data in the given relation
+      def from_activerecord(relation, *fields)
+        if fields.empty?
+          records = relation.map do |record|
+            record.attributes.symbolize_keys
+          end
+          return Daru::DataFrame.new(records)
+        else
+          fields = fields.map(&:to_sym)
+        end
+
+        vectors = Hash[*fields.map { |name|
+          [
+            name,
+            Daru::Vector.new([]).tap {|v| v.rename name }
+          ]
+        }.flatten]
+
+        Daru::DataFrame.new(vectors, order: fields).tap do |df|
+          relation.pluck(*fields).each do |record|
+            df.add_row(Array(record))
+          end
+          df.update
+        end
       end
 
       # Loading data from plain text files

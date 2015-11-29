@@ -85,32 +85,92 @@ describe Daru::IO do
     end
 
     context ".from_sql" do
+      include_context 'with accounts table in sqlite3 database'
 
-      let(:db) { DBI.connect("DBI:SQLite3:daru_test") }
+      context 'with a database handler of DBI' do
+        let(:db) do
+          DBI.connect("DBI:SQLite3:#{db_name}")
+        end
 
-      subject { Daru::DataFrame.from_sql(db, "select * from accounts") }
+        subject { Daru::DataFrame.from_sql(db, "select * from accounts") }
 
-      before do
-        require "dbi"
-        db.do "create table accounts(id integer, name varchar)"
-        db.do "insert into accounts values(1, 'Homer')"
-        db.do "insert into accounts values(2, 'Marge')"
+        it "loads data from an SQL database" do
+          accounts = subject
+          expect(accounts.class).to eq Daru::DataFrame
+          expect(accounts.nrows).to eq 2
+          expect(accounts.row[0][:id]).to eq 1
+          expect(accounts.row[0][:name]).to eq "Homer"
+        end
       end
 
-      after { FileUtils.rm("daru_test") }
+      context 'with a database connection of ActiveRecord' do
+        let(:connection) do
+          Daru::RSpec::Account.establish_connection "sqlite3:#{db_name}"
+          Daru::RSpec::Account.connection
+        end
 
-      it "loads data from an SQL database" do
-        accounts = subject
-        expect(accounts.class).to eq Daru::DataFrame
-        expect(accounts.nrows).to eq 2
-        expect(accounts.row[0][:id]).to eq 1
-        expect(accounts.row[0][:name]).to eq "Homer"
+        subject do
+          Daru::DataFrame.from_sql(connection, "select * from accounts")
+        end
+
+        it "loads data from an SQL database" do
+          accounts = subject
+          expect(accounts.class).to eq Daru::DataFrame
+          expect(accounts.nrows).to eq 2
+          expect(accounts.row[0][:id]).to eq 1
+          expect(accounts.row[0][:name]).to eq "Homer"
+        end
       end
     end
 
     context "#write_sql" do
       it "writes the DataFrame to an SQL database" do
         # TODO: write these tests
+      end
+    end
+
+    context '.from_activerecord' do
+      include_context 'with accounts table in sqlite3 database'
+
+      context 'with ActiveRecord::Relation' do
+        before do
+          Daru::RSpec::Account.establish_connection "sqlite3:#{db_name}"
+        end
+
+        let(:relation) do
+          Daru::RSpec::Account.all
+        end
+
+        context 'without specifying field names' do
+          subject do
+            Daru::DataFrame.from_activerecord(relation)
+          end
+
+          it 'loads data from an AR::Relation object' do
+            accounts = subject
+            expect(accounts.class).to eq Daru::DataFrame
+            expect(accounts.nrows).to eq 2
+            expect(accounts.vectors.to_a).to eq [:id, :name, :age]
+            expect(accounts.row[0][:id]).to eq 1
+            expect(accounts.row[0][:name]).to eq 'Homer'
+            expect(accounts.row[0][:age]).to eq 20
+          end
+        end
+
+        context 'with specifying field names in parameters' do
+          subject do
+            Daru::DataFrame.from_activerecord(relation, :name, :age)
+          end
+
+          it 'loads data from an AR::Relation object' do
+            accounts = subject
+            expect(accounts.class).to eq Daru::DataFrame
+            expect(accounts.nrows).to eq 2
+            expect(accounts.vectors.to_a).to eq [:name, :age]
+            expect(accounts.row[0][:name]).to eq 'Homer'
+            expect(accounts.row[0][:age]).to eq 20
+          end
+        end
       end
     end
 
