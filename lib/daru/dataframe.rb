@@ -76,6 +76,26 @@ module Daru
         Daru::IO.from_sql dbh, query
       end
 
+      # Read a dataframe from AR::Relation
+      #
+      # @param relation [ActiveRecord::Relation] An AR::Relation object from which data is loaded
+      # @params fields [Array] Field names to be loaded (optional)
+      #
+      # @return A dataframe containing the data loaded from the relation
+      #
+      # USE:
+      #
+      #   # When Post model is defined as:
+      #   class Post < ActiveRecord::Base
+      #     scope :active, -> { where.not(published_at: nil) }
+      #   end
+      #
+      #   # You can load active posts into a dataframe by:
+      #   Daru::DataFrame.from_activerecord(Post.active, :title, :published_at)
+      def from_activerecord relation, *fields
+        Daru::IO.from_activerecord relation, *fields
+      end
+
       # Read the database from a plaintext file. For this method to work,
       # the data should be present in a plain text file in columns. See
       # spec/fixtures/bank2.dat for an example.

@@ -85,26 +85,10 @@ describe Daru::IO do
     end
 
     context ".from_sql" do
-      let(:db_name) do
-        'daru_test'
-      end
-
-      before do
-        require 'sqlite3'
-        SQLite3::Database.new(db_name).tap do |db|
-          db.execute "create table accounts(id integer, name varchar)"
-          db.execute "insert into accounts values(1, 'Homer')"
-          db.execute "insert into accounts values(2, 'Marge')"
-        end
-      end
-
-      after do
-        FileUtils.rm(db_name)
-      end
+      include_context 'with accounts table in sqlite3 database'
 
       context 'with a database handler of DBI' do
         let(:db) do
-          require "dbi"
           DBI.connect("DBI:SQLite3:#{db_name}")
         end
 
@@ -121,9 +105,8 @@ describe Daru::IO do
 
       context 'with a database connection of ActiveRecord' do
         let(:connection) do
-          require 'active_record'
-          ActiveRecord::Base.establish_connection("sqlite3:#{db_name}")
-          ActiveRecord::Base.connection
+          Daru::RSpec::Account.establish_connection "sqlite3:#{db_name}"
+          Daru::RSpec::Account.connection
         end
 
         subject do
@@ -143,6 +126,51 @@ describe Daru::IO do
     context "#write_sql" do
       it "writes the DataFrame to an SQL database" do
         # TODO: write these tests
+      end
+    end
+
+    context '.from_activerecord' do
+      include_context 'with accounts table in sqlite3 database'
+
+      context 'with ActiveRecord::Relation' do
+        before do
+          Daru::RSpec::Account.establish_connection "sqlite3:#{db_name}"
+        end
+
+        let(:relation) do
+          Daru::RSpec::Account.all
+        end
+
+        context 'without specifying field names' do
+          subject do
+            Daru::DataFrame.from_activerecord(relation)
+          end
+
+          it 'loads data from an AR::Relation object' do
+            accounts = subject
+            expect(accounts.class).to eq Daru::DataFrame
+            expect(accounts.nrows).to eq 2
+            expect(accounts.vectors.to_a).to eq [:id, :name, :age]
+            expect(accounts.row[0][:id]).to eq 1
+            expect(accounts.row[0][:name]).to eq 'Homer'
+            expect(accounts.row[0][:age]).to eq 20
+          end
+        end
+
+        context 'with specifying field names in parameters' do
+          subject do
+            Daru::DataFrame.from_activerecord(relation, :name, :age)
+          end
+
+          it 'loads data from an AR::Relation object' do
+            accounts = subject
+            expect(accounts.class).to eq Daru::DataFrame
+            expect(accounts.nrows).to eq 2
+            expect(accounts.vectors.to_a).to eq [:name, :age]
+            expect(accounts.row[0][:name]).to eq 'Homer'
+            expect(accounts.row[0][:age]).to eq 20
+          end
+        end
       end
     end
 

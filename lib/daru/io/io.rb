@@ -140,6 +140,36 @@ module Daru
         return true
       end
 
+      # Load dataframe from AR::Relation
+      #
+      # @param relation [ActiveRecord::Relation] A relation to be used to load the contents of dataframe
+      #
+      # @return A dataframe containing the data in the given relation
+      def from_activerecord(relation, *fields)
+        if fields.empty?
+          records = relation.map do |record|
+            record.attributes.symbolize_keys
+          end
+          return Daru::DataFrame.new(records)
+        else
+          fields = fields.map(&:to_sym)
+        end
+
+        vectors = Hash[*fields.map { |name|
+          [
+            name,
+            Daru::Vector.new([]).tap {|v| v.rename name }
+          ]
+        }.flatten]
+
+        Daru::DataFrame.new(vectors, order: fields).tap do |df|
+          relation.pluck(*fields).each do |record|
+            df.add_row(Array(record))
+          end
+          df.update
+        end
+      end
+
       # Loading data from plain text files
 
       def from_plaintext filename, fields

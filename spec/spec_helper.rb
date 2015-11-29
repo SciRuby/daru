@@ -41,3 +41,5 @@ def expect_correct_df_in_delta df1, df2, delta
     expect_correct_vector_in_delta vector, df2[i], delta
   end
 end
+
+Dir[File.expand_path('../support/**/*.rb', __FILE__)].each {|f| require f }
