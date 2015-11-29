@@ -14,6 +14,9 @@ shared_context 'with accounts table in sqlite3 database' do
   end
 
   before do
+    # just in case
+    FileUtils.rm(db_name) if File.file?(db_name)
+
     SQLite3::Database.new(db_name).tap do |db|
       db.execute "create table accounts(id integer, name varchar, age integer, primary key(id))"
       db.execute "insert into accounts values(1, 'Homer', 20)"
