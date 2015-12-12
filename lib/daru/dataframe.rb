@@ -14,30 +14,30 @@ module Daru
     include Daru::Plotting::DataFrame if Daru.has_nyaplot?
 
     class << self
-      # Load data from a CSV file. Specify an optional block to grab the CSV 
-      # object and pre-condition it (for example use the `convert` or 
+      # Load data from a CSV file. Specify an optional block to grab the CSV
+      # object and pre-condition it (for example use the `convert` or
       # `header_convert` methods).
-      # 
+      #
       # == Arguments
-      # 
+      #
       # * path - Path of the file to load specified as a String.
-      # 
+      #
       # == Options
-      # 
+      #
       # Accepts the same options as the Daru::DataFrame constructor and CSV.open()
       # and uses those to eventually construct the resulting DataFrame.
       #
       # == Verbose Description
       #
-      # You can specify all the options to the `.from_csv` function that you 
+      # You can specify all the options to the `.from_csv` function that you
       # do to the Ruby `CSV.read()` function, since this is what is used internally.
       #
-      # For example, if the columns in your CSV file are separated by something 
-      # other that commas, you can use the `:col_sep` option. If you want to 
-      # convert numeric values to numbers and not keep them as strings, you can 
+      # For example, if the columns in your CSV file are separated by something
+      # other that commas, you can use the `:col_sep` option. If you want to
+      # convert numeric values to numbers and not keep them as strings, you can
       # use the `:converters` option and set it to `:numeric`.
       #
-      # The `.from_csv` function uses the following defaults for reading CSV files 
+      # The `.from_csv` function uses the following defaults for reading CSV files
       # (that are passed into the `CSV.read()` function):
       #
       #   {
@@ -45,19 +45,19 @@ module Daru
       #     :converters        => :numeric
       #   }
       def from_csv path, opts={}, &block
-        Daru::IO.from_csv path, opts, &block      
+        Daru::IO.from_csv path, opts, &block
       end
 
       # Read data from an Excel file into a DataFrame.
-      # 
+      #
       # == Arguments
-      # 
+      #
       # * path - Path of the file to be read.
-      # 
+      #
       # == Options
-      # 
+      #
       # *:worksheet_id - ID of the worksheet that is to be read.
-      def from_excel path, opts={}, &block      
+      def from_excel path, opts={}, &block
         Daru::IO.from_excel path, opts, &block
       end
 
@@ -99,14 +99,14 @@ module Daru
       # Read the database from a plaintext file. For this method to work,
       # the data should be present in a plain text file in columns. See
       # spec/fixtures/bank2.dat for an example.
-      # 
+      #
       # == Arguments
-      # 
+      #
       # * path - Path of the file to be read.
       # * fields - Vector names of the resulting database.
-      # 
+      #
       # == Usage
-      # 
+      #
       #   df = Daru::DataFrame.from_plaintext 'spec/fixtures/bank2.dat', [:v1,:v2,:v3,:v4,:v5,:v6]
       def from_plaintext path, fields
         Daru::IO.from_plaintext path, fields
@@ -162,15 +162,15 @@ module Daru
       #
       # Useful to process outputs from databases
       def crosstab_by_assignation rows, columns, values
-        raise "Three vectors should be equal size" if 
+        raise "Three vectors should be equal size" if
           rows.size != columns.size or rows.size!=values.size
 
         cols_values = columns.factors
         cols_n      = cols_values.size
 
-        h_rows = rows.factors.inject({}) do |a,v| 
-          a[v] = cols_values.inject({}) do |a1,v1| 
-            a1[v1]=nil 
+        h_rows = rows.factors.inject({}) do |a,v|
+          a[v] = cols_values.inject({}) do |a1,v1|
+            a1[v1]=nil
             a1
           end
           a
@@ -211,38 +211,38 @@ module Daru
     # These objects are indexed by row and column by vectors and index Index objects.
     #
     # == Arguments
-    # 
+    #
     # * source - Source from the DataFrame is to be initialized. Can be a Hash
     # of names and vectors (array or Daru::Vector), an array of arrays or
     # array of Daru::Vectors.
-    # 
+    #
     # == Options
-    # 
-    # +:order+ - An *Array*/*Daru::Index*/*Daru::MultiIndex* containing the order in 
+    #
+    # +:order+ - An *Array*/*Daru::Index*/*Daru::MultiIndex* containing the order in
     # which Vectors should appear in the DataFrame.
-    # 
+    #
     # +:index+ - An *Array*/*Daru::Index*/*Daru::MultiIndex* containing the order
     # in which rows of the DataFrame will be named.
-    # 
+    #
     # +:name+  - A name for the DataFrame.
     #
     # +:clone+ - Specify as *true* or *false*. When set to false, and Vector
     # objects are passed for the source, the Vector objects will not duplicated
-    # when creating the DataFrame. Will have no effect if Array is passed in 
-    # the source, or if the passed Daru::Vectors have different indexes. 
+    # when creating the DataFrame. Will have no effect if Array is passed in
+    # the source, or if the passed Daru::Vectors have different indexes.
     # Default to *true*.
-    # 
+    #
     # == Usage
-    #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [6,7,8,9]}, order: [:b, :a], 
+    #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [6,7,8,9]}, order: [:b, :a],
     #     index: [:a, :b, :c, :d], name: :spider_man)
-    # 
-    #   # => 
+    #
+    #   # =>
     #   # <Daru::DataFrame:80766980 @name = spider_man @size = 4>
-    #   #             b          a 
-    #   #  a          6          1 
-    #   #  b          7          2 
-    #   #  c          8          3 
-    #   #  d          9          4 
+    #   #             b          a
+    #   #  a          6          1
+    #   #  b          7          2
+    #   #  c          8          3
+    #   #  d          9          4
     def initialize source, opts={}
       vectors = opts[:order]
       index   = opts[:index]
@@ -317,7 +317,7 @@ module Daru
               @vectors.each do |vector|
                 # avoids matching indexes of vectors if all the supplied vectors
                 # have the same index.
-                if vectors_have_same_index 
+                if vectors_have_same_index
                   v = source[vector].dup
                 else
                   v = Daru::Vector.new([], name: vector, index: @index)
@@ -356,8 +356,8 @@ module Daru
     end
 
     # Access row or vector. Specify name of row/vector followed by axis(:row, :vector).
-    # Defaults to *:vector*. Use of this method is not recommended for accessing 
-    # rows or vectors. Use df.row[:a] for accessing row with index ':a' or 
+    # Defaults to *:vector*. Use of this method is not recommended for accessing
+    # rows or vectors. Use df.row[:a] for accessing row with index ':a' or
     # df.vector[:vec] for accessing vector with index *:vec*.
     def [](*names)
       if names[-1] == :vector or names[-1] == :row
@@ -379,7 +379,7 @@ module Daru
     # Insert a new row/vector of the specified name or modify a previous row.
     # Instead of using this method directly, use df.row[:a] = [1,2,3] to set/create
     # a row ':a' to [1,2,3], or df.vector[:vec] = [1,2,3] for vectors.
-    # 
+    #
     # In case a Daru::Vector is specified after the equality the sign, the indexes
     # of the vector will be matched against the row/vector indexes of the DataFrame
     # before an insertion is performed. Unmatched indexes will be set to nil.
@@ -393,7 +393,7 @@ module Daru
 
       if axis == :vector
         insert_or_modify_vector name, vector
-      elsif axis == :row        
+      elsif axis == :row
         insert_or_modify_row name, vector
       else
         raise IndexError, "Expected axis to be row or vector, not #{axis}."
@@ -414,7 +414,7 @@ module Daru
     end
 
     # Access a row or set/create a row. Refer #[] and #[]= docs for details.
-    # 
+    #
     # == Usage
     #   df.row[:a] # access row named ':a'
     #   df.row[:b] = [1,2,3] # set row ':b' to [1,2,3]
@@ -423,17 +423,17 @@ module Daru
     end
 
     # Duplicate the DataFrame entirely.
-    # 
+    #
     # == Arguments
-    # 
-    # * +vectors_to_dup+ - An Array specifying the names of Vectors to 
+    #
+    # * +vectors_to_dup+ - An Array specifying the names of Vectors to
     # be duplicated. Will duplicate the entire DataFrame if not specified.
     def dup vectors_to_dup=nil
       vectors_to_dup = @vectors.to_a unless vectors_to_dup
 
       src = []
       vectors_to_dup.each do |vec|
-        src << @data[@vectors[vec]].to_a
+        src << @data[@vectors[vec]].to_a.dup
       end
       new_order = Daru::Index.new(vectors_to_dup)
 
@@ -447,9 +447,9 @@ module Daru
 
     # Returns a 'view' of the DataFrame, i.e the object ID's of vectors are
     # preserved.
-    # 
+    #
     # == Arguments
-    # 
+    #
     # +vectors_to_clone+ - Names of vectors to clone. Optional. Will return
     # a view of the whole data frame otherwise.
     def clone *vectors_to_clone
@@ -463,7 +463,7 @@ module Daru
       Daru::DataFrame.new(h, clone: false)
     end
 
-    # Returns a 'shallow' copy of DataFrame if missing data is not present, 
+    # Returns a 'shallow' copy of DataFrame if missing data is not present,
     # or a full copy of only valid data if missing data is present.
     def clone_only_valid
       if has_missing_data?
@@ -473,7 +473,7 @@ module Daru
       end
     end
 
-    # Creates a new duplicate dataframe containing only rows 
+    # Creates a new duplicate dataframe containing only rows
     # without a single missing value.
     def dup_only_valid vecs=nil
       rows_with_nil = @data.inject([]) do |memo, vector|
@@ -510,7 +510,7 @@ module Daru
 
       @vectors.each do |vector|
         yield @data[@vectors[vector]], vector
-      end 
+      end
 
       self
     end
@@ -543,12 +543,12 @@ module Daru
     #
     # == Description
     #
-    # `#each` works exactly like Array#each. The default mode for `each` 
-    # is to iterate over the columns of the DataFrame. To iterate over 
+    # `#each` works exactly like Array#each. The default mode for `each`
+    # is to iterate over the columns of the DataFrame. To iterate over
     # rows you must pass the axis, i.e `:row` as an argument.
-    # 
+    #
     # == Arguments
-    # 
+    #
     # * +axis+ - The axis to iterate over. Can be :vector (or :column)
     # or :row. Default to :vector.
     def each axis=:vector, &block
@@ -566,14 +566,14 @@ module Daru
     #
     # == Description
     #
-    # The #collect iterator works similar to #map, the only difference 
-    # being that it returns a Daru::Vector comprising of the results of 
-    # each block run. The resultant Vector has the same index as that 
-    # of the axis over which collect has iterated. It also accepts the 
+    # The #collect iterator works similar to #map, the only difference
+    # being that it returns a Daru::Vector comprising of the results of
+    # each block run. The resultant Vector has the same index as that
+    # of the axis over which collect has iterated. It also accepts the
     # optional axis argument.
     #
     # == Arguments
-    # 
+    #
     # * +axis+ - The axis to iterate over. Can be :vector (or :column)
     # or :row. Default to :vector.
     def collect axis=:vector, &block
@@ -590,16 +590,16 @@ module Daru
     # the argument specified. Will return an Array of the resulting
     # elements. To map over each row/vector and get a DataFrame,
     # see #recode.
-    # 
+    #
     # == Description
-    # 
-    # The #map iterator works like Array#map. The value returned by 
-    # each run of the block is added to an Array and the Array is 
-    # returned. This method also accepts an axis argument, like #each. 
+    #
+    # The #map iterator works like Array#map. The value returned by
+    # each run of the block is added to an Array and the Array is
+    # returned. This method also accepts an axis argument, like #each.
     # The default is :vector.
-    # 
+    #
     # == Arguments
-    # 
+    #
     # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
     # Default to :vector.
     def map axis=:vector, &block
@@ -615,9 +615,9 @@ module Daru
     # Destructive map. Modifies the DataFrame. Each run of the block
     # must return a Daru::Vector. You can specify the axis to map over
     # as the argument. Default to :vector.
-    # 
+    #
     # == Arguments
-    # 
+    #
     # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
     # Default to :vector.
     def map! axis=:vector, &block
@@ -634,15 +634,15 @@ module Daru
     #
     # == Description
     #
-    # Recode works similarly to #map, but an important difference between 
-    # the two is that recode returns a modified Daru::DataFrame instead 
-    # of an Array. For this reason, #recode expects that every run of the 
+    # Recode works similarly to #map, but an important difference between
+    # the two is that recode returns a modified Daru::DataFrame instead
+    # of an Array. For this reason, #recode expects that every run of the
     # block to return a Daru::Vector.
     #
     # Just like map and each, recode also accepts an optional _axis_ argument.
-    # 
+    #
     # == Arguments
-    # 
+    #
     # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
     # Default to :vector.
     def recode axis=:vector, &block
@@ -654,22 +654,22 @@ module Daru
     end
 
     # Retain vectors or rows if the block returns a truthy value.
-    # 
+    #
     # == Description
-    # 
-    # For filtering out certain rows/vectors based on their values, 
-    # use the #filter method. By default it iterates over vectors and 
-    # keeps those vectors for which the block returns true. It accepts 
-    # an optional axis argument which lets you specify whether you want 
+    #
+    # For filtering out certain rows/vectors based on their values,
+    # use the #filter method. By default it iterates over vectors and
+    # keeps those vectors for which the block returns true. It accepts
+    # an optional axis argument which lets you specify whether you want
     # to iterate over vectors or rows.
-    # 
+    #
     # == Arguments
-    # 
+    #
     # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
     # Default to :vector.
-    # 
+    #
     # == Usage
-    # 
+    #
     #   # Filter vectors
     #
     #   df.filter do |vector|
@@ -690,12 +690,12 @@ module Daru
     end
 
     def recode_vectors &block
-      block_given? or return to_enum(:recode_vectors) 
+      block_given? or return to_enum(:recode_vectors)
 
       df = self.dup
       df.each_vector_with_index do |v, i|
         ret = yield v
-        ret.is_a?(Daru::Vector) or 
+        ret.is_a?(Daru::Vector) or
           raise TypeError, "Every iteration must return Daru::Vector not #{ret.class}"
         df[*i] = ret
       end
@@ -788,7 +788,7 @@ module Daru
       self
     end
 
-    # Retrieves a Daru::Vector, based on the result of calculation 
+    # Retrieves a Daru::Vector, based on the result of calculation
     # performed on each row.
     def collect_rows &block
       return to_enum(:collect_rows) unless block_given?
@@ -903,15 +903,15 @@ module Daru
 
         deletion << index unless keep_row
       end
-      deletion.each { |idx| 
-        delete_row idx 
+      deletion.each { |idx|
+        delete_row idx
       }
     end
 
     def keep_vector_if &block
       @vectors.each do |vector|
         keep_vector = yield @data[@vectors[vector]], vector
-        
+
         delete_vector vector unless keep_vector
       end
     end
@@ -950,7 +950,7 @@ module Daru
     # true for that vector.
     def filter_vectors &block
       return to_enum(:filter_vectors) unless block_given?
-      
+
       df = self.dup
       df.keep_vector_if &block
 
@@ -959,7 +959,7 @@ module Daru
 
     # Test each row with one or more tests. Each test is a Proc with the form
     # *Proc.new {|row| row[:age] > 0}*
-    # 
+    #
     # The function returns an array with all errors.
     def verify(*tests)
       if(tests[0].is_a? Symbol)
@@ -988,9 +988,9 @@ module Daru
 
     # DSL for yielding each row and returning a Daru::Vector based on the
     # value each run of the block returns.
-    # 
+    #
     # == Usage
-    # 
+    #
     #   a1 = Daru::Vector.new([1, 2, 3, 4, 5, 6, 7])
     #   a2 = Daru::Vector.new([10, 20, 30, 40, 50, 60, 70])
     #   a3 = Daru::Vector.new([100, 200, 300, 400, 500, 600, 700])
@@ -1016,10 +1016,10 @@ module Daru
 
     # Returns a vector, based on a string with a calculation based
     # on vector.
-    # 
+    #
     # The calculation will be eval'ed, so you can put any variable
     # or expression valid on ruby.
-    # 
+    #
     # For example:
     #   a = Daru::Vector.new [1,2]
     #   b = Daru::Vector.new [3,4]
@@ -1028,14 +1028,14 @@ module Daru
     #   => Vector [4,6]
     def compute text, &block
       return instance_eval(&block) if block_given?
-      instance_eval(text) 
+      instance_eval(text)
     end
 
     # Return a vector with the number of missing values in each row.
-    # 
+    #
     # == Arguments
-    # 
-    # * +missing_values+ - An Array of the values that should be 
+    #
+    # * +missing_values+ - An Array of the values that should be
     # treated as 'missing'. The default missing value is *nil*.
     def missing_values_rows missing_values=[nil]
       number_of_missing = []
@@ -1056,9 +1056,9 @@ module Daru
 
     alias :flawed? :has_missing_data?
 
-    # Return a nested hash using vector names as keys and an array constructed of 
+    # Return a nested hash using vector names as keys and an array constructed of
     # hashes with other values. If block provided, is used to provide the
-    # values, with parameters +row+ of dataset, +current+ last hash on 
+    # values, with parameters +row+ of dataset, +current+ last hash on
     # hierarchy and +name+ of the key to include
     def nest *tree_keys, &block
       tree_keys = tree_keys[0] if tree_keys[0].is_a? Array
@@ -1126,7 +1126,7 @@ module Daru
     # @example Using any?
     #   df = Daru::DataFrame.new({a: [1,2,3,4,5], b: ['a', 'b', 'c', 'd', 'e']})
     #   df.any?(:row) do |row|
-    #     row[:a] < 3 and row[:b] == 'b' 
+    #     row[:a] < 3 and row[:b] == 'b'
     #   end #=> true
     def any? axis=:vector, &block
       if axis == :vector or axis == :column
@@ -1148,7 +1148,7 @@ module Daru
     # @example Using all?
     #   df = Daru::DataFrame.new({a: [1,2,3,4,5], b: ['a', 'b', 'c', 'd', 'e']})
     #   df.all?(:row) do |row|
-    #     row[:a] < 10 
+    #     row[:a] < 10
     #   end #=> true
     def all? axis=:vector, &block
       if axis == :vector or axis == :column
@@ -1171,13 +1171,13 @@ module Daru
     end
 
     # The last ten elements of the DataFrame
-    # 
+    #
     # @param [Fixnum] quantity (10) The number of elements to display from the bottom.
     def tail quantity=10
       self[(@size - quantity)..(@size-1), :row]
     end
 
-    # Returns a vector with sum of all vectors specified in the argument. 
+    # Returns a vector with sum of all vectors specified in the argument.
     # Tf vecs parameter is empty, sum all numeric vector.
     def vector_sum vecs=nil
       vecs ||= numeric_vectors
@@ -1191,9 +1191,9 @@ module Daru
     end
 
     # Calculate mean of the rows of the dataframe.
-    # 
+    #
     # == Arguments
-    # 
+    #
     # * +max_missing+ - The maximum number of elements in the row that can be
     # zero for the mean calculation to happen. Default to 0.
     def vector_mean max_missing=0
@@ -1206,16 +1206,16 @@ module Daru
       mean_vec
     end
 
-    # Group elements by vector to perform operations on them. Returns a 
+    # Group elements by vector to perform operations on them. Returns a
     # Daru::Core::GroupBy object.See the Daru::Core::GroupBy docs for a detailed
     # list of possible operations.
-    # 
+    #
     # == Arguments
-    # 
+    #
     # * vectors - An Array contatining names of vectors to group by.
-    # 
+    #
     # == Usage
-    # 
+    #
     #   df = Daru::DataFrame.new({
     #     a: %w{foo bar foo bar   foo bar foo foo},
     #     b: %w{one one two three two two one three},
@@ -1234,7 +1234,7 @@ module Daru
       vectors.flatten!
       vectors.each { |v| raise(ArgumentError, "Vector #{v} does not exist") unless
         has_vector?(v) }
-        
+
       Daru::Core::GroupBy.new(self, vectors)
     end
 
@@ -1267,9 +1267,9 @@ module Daru
 
     # Set a particular column as the new DF
     def set_index new_index, opts={}
-      raise ArgumentError, "All elements in new index must be unique." if 
+      raise ArgumentError, "All elements in new index must be unique." if
         @size != self[new_index].uniq.size
-      
+
       self.index = Daru::Index.new(self[new_index].to_a)
       self.delete_vector(new_index) unless opts[:keep]
 
@@ -1278,25 +1278,25 @@ module Daru
 
     # Change the index of the DataFrame and preserve the labels of the previous
     # indexing. New index can be Daru::Index or any of its subclasses.
-    # 
+    #
     # @param [Daru::Index] new_index The new Index for reindexing the DataFrame.
     # @example Reindexing DataFrame
-    #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [11,22,33,44]}, 
+    #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [11,22,33,44]},
     #     index: ['a','b','c','d'])
-    #   #=> 
+    #   #=>
     #   ##<Daru::DataFrame:83278130 @name = b19277b8-c548-41da-ad9a-2ad8c060e273 @size = 4>
-    #   #                    a          b 
-    #   #         a          1         11 
-    #   #         b          2         22 
-    #   #         c          3         33 
-    #   #         d          4         44 
+    #   #                    a          b
+    #   #         a          1         11
+    #   #         b          2         22
+    #   #         c          3         33
+    #   #         d          4         44
     #   df.reindex Daru::Index.new(['b', 0, 'a', 'g'])
-    #   #=> 
+    #   #=>
     #   ##<Daru::DataFrame:83177070 @name = b19277b8-c548-41da-ad9a-2ad8c060e273 @size = 4>
-    #   #                    a          b 
-    #   #         b          2         22 
-    #   #         0        nil        nil 
-    #   #         a          1         11 
+    #   #                    a          b
+    #   #         b          2         22
+    #   #         0        nil        nil
+    #   #         a          1         11
     #   #         g        nil        nil
     def reindex new_index
       raise ArgumentError, "Must pass the new index of type Index or its "\
@@ -1321,10 +1321,10 @@ module Daru
     # @example Reassgining index of a DataFrame
     #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [11,22,33,44]})
     #   df.index.to_a #=> [0,1,2,3]
-    # 
+    #
     #   df.index = Daru::Index.new(['a','b','c','d'])
     #   df.index.to_a #=> ['a','b','c','d']
-    #   df.row['a'].to_a #=> [1,11] 
+    #   df.row['a'].to_a #=> [1,11]
     def index= idx
       @data.each { |vec| vec.index = idx}
       @index = idx
@@ -1333,17 +1333,17 @@ module Daru
     end
 
     # Reassign vectors with a new index of type Daru::Index or any of its subclasses.
-    # 
+    #
     # @param [Daru::Index] idx The new index object on which the vectors are to
     #   be indexed. Must of the same size as ncols.
     # @example Reassigning vectors of a DataFrame
     #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [:a,:b,:c,:d], c: [11,22,33,44]})
     #   df.vectors.to_a #=> [:a, :b, :c]
-    # 
+    #
     #   df.vectors = Daru::Index.new([:foo, :bar, :baz])
     #   df.vectors.to_a #=> [:foo, :bar, :baz]
     def vectors= idx
-      raise ArgumentError, "Can only reindex with Index and its subclasses" unless 
+      raise ArgumentError, "Can only reindex with Index and its subclasses" unless
         index.kind_of?(Daru::Index)
       raise ArgumentError, "Specified index length #{idx.size} not equal to"\
         "dataframe size #{ncols}" if idx.size != ncols
@@ -1402,9 +1402,9 @@ module Daru
       end
     end
 
-    # Sorts a dataframe (ascending/descending)according to the given sequence of 
+    # Sorts a dataframe (ascending/descending)according to the given sequence of
     # vectors, using the attributes provided in the blocks.
-    # 
+    #
     # @param order [Array] The order of vector names in which the DataFrame
     #   should be sorted.
     # @param [Hash] opts The options to sort with.
@@ -1412,21 +1412,21 @@ module Daru
     #   or descending order. Specify Array corresponding to *order* for multiple
     #   sort orders.
     # @option opts [Hash] :by ({|a,b| a <=> b}) Specify attributes of objects to
-    #   to be used for sorting, for each vector name in *order* as a hash of 
+    #   to be used for sorting, for each vector name in *order* as a hash of
     #   vector name and lambda pairs. In case a lambda for a vector is not
     #   specified, the default will be used.
-    # 
+    #
     # == Usage
-    #   
+    #
     #   df = Daru::DataFrame.new({a: [-3,2,-1,4], b: [4,3,2,1]})
-    #   
+    #
     #   #<Daru::DataFrame:140630680 @name = 04e00197-f8d5-4161-bca2-93266bfabc6f @size = 4>
-    #   #            a          b 
-    #   # 0         -3          4 
-    #   # 1          2          3 
-    #   # 2         -1          2 
-    #   # 3          4          1 
-    #   df.sort([:a], by: { a: lambda { |a,b| a.abs <=> b.abs } })  
+    #   #            a          b
+    #   # 0         -3          4
+    #   # 1          2          3
+    #   # 2         -1          2
+    #   # 3          4          1
+    #   df.sort([:a], by: { a: lambda { |a,b| a.abs <=> b.abs } })
     def sort! vector_order, opts={}
       raise ArgumentError, "Required atleast one vector name" if vector_order.size < 1
       opts = {
@@ -1451,46 +1451,46 @@ module Daru
 
     # Pivots a data frame on specified vectors and applies an aggregate function
     # to quickly generate a summary.
-    # 
+    #
     # == Options
-    # 
+    #
     # +:index+ - Keys to group by on the pivot table row index. Pass vector names
     # contained in an Array.
-    # 
+    #
     # +:vectors+ - Keys to group by on the pivot table column index. Pass vector
     # names contained in an Array.
-    # 
+    #
     # +:agg+ - Function to aggregate the grouped values. Default to *:mean*. Can
-    # use any of the statistics functions applicable on Vectors that can be found in 
+    # use any of the statistics functions applicable on Vectors that can be found in
     # the Daru::Statistics::Vector module.
-    # 
-    # +:values+ - Columns to aggregate. Will consider all numeric columns not 
+    #
+    # +:values+ - Columns to aggregate. Will consider all numeric columns not
     # specified in *:index* or *:vectors*. Optional.
-    # 
+    #
     # == Usage
-    # 
+    #
     #   df = Daru::DataFrame.new({
-    #     a: ['foo'  ,  'foo',  'foo',  'foo',  'foo',  'bar',  'bar',  'bar',  'bar'], 
+    #     a: ['foo'  ,  'foo',  'foo',  'foo',  'foo',  'bar',  'bar',  'bar',  'bar'],
     #     b: ['one'  ,  'one',  'one',  'two',  'two',  'one',  'one',  'two',  'two'],
     #     c: ['small','large','large','small','small','large','small','large','small'],
     #     d: [1,2,2,3,3,4,5,6,7],
     #     e: [2,4,4,6,6,8,10,12,14]
     #   })
     #   df.pivot_table(index: [:a], vectors: [:b], agg: :sum, values: :e)
-    # 
-    #   #=> 
+    #
+    #   #=>
     #   # #<Daru::DataFrame:88342020 @name = 08cdaf4e-b154-4186-9084-e76dd191b2c9 @size = 2>
-    #   #            [:e, :one] [:e, :two] 
-    #   #     [:bar]         18         26 
-    #   #     [:foo]         10         12 
+    #   #            [:e, :one] [:e, :two]
+    #   #     [:bar]         18         26
+    #   #     [:foo]         10         12
     def pivot_table opts={}
-      raise ArgumentError, 
+      raise ArgumentError,
         "Specify grouping index" if !opts[:index] or opts[:index].empty?
 
       index   = opts[:index]
       vectors = opts[:vectors] || []
       aggregate_function = opts[:agg] || :mean
-      values = 
+      values =
       if opts[:values].is_a?(Symbol)
         [opts[:values]]
       elsif opts[:values].is_a?(Array)
@@ -1498,7 +1498,7 @@ module Daru
       else # nil
         (@vectors.to_a - (index | vectors)) & numeric_vector_names
       end
-      
+
       raise IndexError, "No numeric vectors to aggregate" if values.empty?
 
       grouped  = group_by(index)
@@ -1549,7 +1549,7 @@ module Daru
       end
     end
 
-    # Merge vectors from two DataFrames. In case of name collision, 
+    # Merge vectors from two DataFrames. In case of name collision,
     # the vectors names are changed to x_1, x_2 ....
     #
     # @return {Daru::DataFrame}
@@ -1570,9 +1570,9 @@ module Daru
       df_new
     end
 
-    # Join 2 DataFrames with SQL style joins. Currently supports inner, left 
+    # Join 2 DataFrames with SQL style joins. Currently supports inner, left
     # outer, right outer and full outer joins.
-    # 
+    #
     # @param [Daru::DataFrame] other_df Another DataFrame on which the join is
     #   to be performed.
     # @param [Hash] opts Options Hash
@@ -1590,11 +1590,11 @@ module Daru
     #     :name => ['Rutabaga', 'Pirate', 'Darth Vader', 'Ninja']
     #   })
     #   left.join(right, how: :inner, on: [:name])
-    #   #=> 
+    #   #=>
     #   ##<Daru::DataFrame:82416700 @name = 74c0811b-76c6-4c42-ac93-e6458e82afb0 @size = 2>
-    #   #                 id_1       name       id_2 
-    #   #         0          1     Pirate          2 
-    #   #         1          3      Ninja          4 
+    #   #                 id_1       name       id_2
+    #   #         0          1     Pirate          2
+    #   #         1          3      Ninja          4
     def join(other_df,opts={})
       Daru::Core::Merge.join(self, other_df, opts)
     end
@@ -1611,7 +1611,7 @@ module Daru
     # the field of first parameters will be copied verbatim
     # to new dataset, and fields which responds to second
     # pattern will be added one case for each different %n.
-    # 
+    #
     # @example
     #   cases=[
     #     ['1','george','red',10,'blue',20,nil,nil],
@@ -1632,9 +1632,9 @@ module Daru
       ds_vars = parent_fields.dup
       vars    = []
       max_n   = 0
-      h       = parent_fields.inject({}) { |a,v| 
+      h       = parent_fields.inject({}) { |a,v|
         a[v] = Daru::Vector.new([])
-        a 
+        a
       }
       # Adding _row_id
       h['_col_id'] = Daru::Vector.new([])
@@ -1688,12 +1688,12 @@ module Daru
     end
 
     # Create a sql, basen on a given Dataset
-    # 
+    #
     # == Arguments
-    # 
+    #
     # * table - String specifying name of the table that will created in SQL.
     # * charset - Character set. Default is "UTF8".
-    # 
+    #
     # @example
     #
     #  ds = Daru::DataFrame.new({
@@ -1742,17 +1742,17 @@ module Daru
     def to_nmatrix
       numerics_as_arrays = []
       each_vector do |vector|
-        numerics_as_arrays << vector.to_a if(vector.type == :numeric and 
+        numerics_as_arrays << vector.to_a if(vector.type == :numeric and
           vector.missing_positions.size == 0)
       end
 
       numerics_as_arrays.transpose.to_nm
     end
-    
+
     # Converts the DataFrame into an array of hashes where key is vector name
-    # and value is the corresponding element. The 0th index of the array contains 
-    # the array of hashes while the 1th index contains the indexes of each row 
-    # of the dataframe. Each element in the index array corresponds to its row 
+    # and value is the corresponding element. The 0th index of the array contains
+    # the array of hashes while the 1th index contains the indexes of each row
+    # of the dataframe. Each element in the index array corresponds to its row
     # in the array of hashes, which has the same index.
     def to_a
       arry = [[],[]]
@@ -1787,10 +1787,10 @@ module Daru
 
     # Convert to html for IRuby.
     def to_html threshold=30
-      html = "<table>" + 
+      html = "<table>" +
         "<tr>" +
-          "<th colspan=\"#{@vectors.size+1}\">" + 
-            "Daru::DataFrame:#{self.object_id} " + " rows: #{nrows} " + " cols: #{ncols}" 
+          "<th colspan=\"#{@vectors.size+1}\">" +
+            "Daru::DataFrame:#{self.object_id} " + " rows: #{nrows} " + " cols: #{ncols}"
           "</th>" +
         "</tr>"
       html +='<tr><th></th>'
@@ -1816,7 +1816,7 @@ module Daru
           html += '<tr>'
           html += "<td>" + last_index.to_s + "</td>"
           (0..(ncols - 1)).to_a.each do |i|
-            html += '<td>' + last_row[i].to_s + '</td>' 
+            html += '<td>' + last_row[i].to_s + '</td>'
           end
           html += '</tr>'
           break
@@ -1850,21 +1850,21 @@ module Daru
     # == Arguements
     #
     # * filename - Path of CSV file where the DataFrame is to be saved.
-    # 
+    #
     # == Options
-    # 
+    #
     # * convert_comma - If set to *true*, will convert any commas in any
     # of the data to full stops ('.').
-    # All the options accepted by CSV.read() can also be passed into this 
+    # All the options accepted by CSV.read() can also be passed into this
     # function.
     def write_csv filename, opts={}
       Daru::IO.dataframe_write_csv self, filename, opts
     end
 
     # Write this dataframe to an Excel Spreadsheet
-    # 
+    #
     # == Arguments
-    # 
+    #
     # * filename - The path of the file where the DataFrame should be written.
     def write_excel filename, opts={}
       Daru::IO.dataframe_write_excel self, filename, opts
@@ -1873,10 +1873,10 @@ module Daru
     # Insert each case of the Dataset on the selected table
     #
     # == Arguments
-    # 
+    #
     # * dbh - DBI database connection object.
     # * query - Query string.
-    # 
+    #
     # == Usage
     #
     #  ds = Daru::DataFrame.new({:id=>Daru::Vector.new([1,2,3]), :name=>Daru::Vector.new(["a","b","c"])})
@@ -1894,8 +1894,8 @@ module Daru
 
     def _dump depth
       Marshal.dump({
-        data:  @data, 
-        index: @index.to_a, 
+        data:  @data,
+        index: @index.to_a,
         order: @vectors.to_a,
         name:  @name
         })
@@ -1903,14 +1903,14 @@ module Daru
 
     def self._load data
       h = Marshal.load data
-      Daru::DataFrame.new(h[:data], 
-        index: h[:index], 
+      Daru::DataFrame.new(h[:data],
+        index: h[:index],
         order: h[:order],
         name:  h[:name])
     end
 
     # Change dtypes of vectors by supplying a hash of :vector_name => :new_dtype
-    # 
+    #
     # == Usage
     #   df = Daru::DataFrame.new({a: [1,2,3], b: [1,2,3], c: [1,2,3]})
     #   df.recast a: :nmatrix, c: :nmatrix
@@ -1933,7 +1933,7 @@ module Daru
     # Pretty print in a nice table format for the command line (irb/pry/iruby)
     def inspect spacing=10, threshold=15
       longest = [@name.to_s.size,
-                 (@vectors.map(&:to_s).map(&:size).max || 0), 
+                 (@vectors.map(&:to_s).map(&:size).max || 0),
                  (@index  .map(&:to_s).map(&:size).max || 0),
                  (@data   .map{ |v| v.map(&:to_s).map(&:size).max}.max || 0)].max
 
@@ -1943,7 +1943,7 @@ module Daru
       formatter = "\n"
 
       (@vectors.size + 1).times { formatter += "%#{longest}.#{longest}s " }
-      content += "\n#<" + self.class.to_s + ":" + self.object_id.to_s + " @name = " + 
+      content += "\n#<" + self.class.to_s + ":" + self.object_id.to_s + " @name = " +
                     name.to_s + " @size = " + @size.to_s + ">"
       content += sprintf formatter, "" , *@vectors.map(&:to_s)
       row_num  = 1
@@ -1970,10 +1970,10 @@ module Daru
     end
 
     def == other
-      self.class == other.class   and 
-      @size      == other.size    and 
+      self.class == other.class   and
+      @size      == other.size    and
       @index     == other.index   and
-      @vectors   == other.vectors and 
+      @vectors   == other.vectors and
       @vectors.to_a.all? { |v| self[v] == other[v] }
     end
 
@@ -2002,9 +2002,9 @@ module Daru
     end
 
     # == Arguments
-    # 
-    # vector_order - 
-    # index - 
+    #
+    # vector_order -
+    # index -
     # by -
     # ascending -
     # left_lower -
@@ -2145,7 +2145,7 @@ module Daru
         end
 
         order = names.is_a?(Array) ? Daru::Index.new(names) : names
-        Daru::DataFrame.new(new_vcs, order: order, 
+        Daru::DataFrame.new(new_vcs, order: order,
           index: @index, name: @name)
       end
     end
@@ -2159,7 +2159,7 @@ module Daru
           return Daru::Vector.new(populate_row_for(pos), index: @vectors, name: pos)
         else
           new_rows = pos.map { |tuple| populate_row_for(tuple) }
-          
+
           if !location.is_a?(Range) and names.size < @index.width
             pos = pos.drop_left_level names.size
           end
@@ -2168,7 +2168,7 @@ module Daru
             new_rows, order: @vectors, name: @name, index: pos)
         end
       else
-        if names[1].nil? 
+        if names[1].nil?
           names = @index[location]
           if names.is_a?(Numeric)
             row = []
@@ -2184,8 +2184,8 @@ module Daru
         names.each do |name|
           rows << self.row[name].to_a
         end
-        
-        Daru::DataFrame.rows rows, index: names ,name: @name, order: @vectors        
+
+        Daru::DataFrame.rows rows, index: names ,name: @name, order: @vectors
       end
     end
 
@@ -2196,11 +2196,11 @@ module Daru
     end
 
     def insert_or_modify_vector name, vector
-      name = name[0] unless @vectors.is_a?(MultiIndex)   
+      name = name[0] unless @vectors.is_a?(MultiIndex)
       v = nil
 
       if @index.empty?
-        v = vector.is_a?(Daru::Vector) ? vector : Daru::Vector.new(vector.to_a)  
+        v = vector.is_a?(Daru::Vector) ? vector : Daru::Vector.new(vector.to_a)
         @index = v.index
         assign_or_add_vector name, v
         set_size
@@ -2242,7 +2242,7 @@ module Daru
       #FIXME: fix this jugaad. need to make changes in Indexing itself.
       pos = @vectors[name]
 
-      if !pos.kind_of?(Daru::Index) and pos == name and 
+      if !pos.kind_of?(Daru::Index) and pos == name and
         (@vectors.include?(name) or (pos.is_a?(Integer) and pos < @data.size))
         @data[pos] = v
       elsif pos.kind_of?(Daru::Index)
@@ -2252,10 +2252,10 @@ module Daru
       else
         @vectors = @vectors | [name] if !@vectors.include?(name)
         @data[@vectors[name]] = v
-      end      
+      end
     end
 
-    def insert_or_modify_row name, vector    
+    def insert_or_modify_row name, vector
       if index.is_a?(MultiIndex)
         # TODO
       else
@@ -2289,7 +2289,7 @@ module Daru
     end
 
     def validate_labels
-      raise IndexError, "Expected equal number of vector names (#{@vectors.size}) for number of vectors (#{@data.size})." if 
+      raise IndexError, "Expected equal number of vector names (#{@vectors.size}) for number of vectors (#{@data.size})." if
         @vectors and @vectors.size != @data.size
 
       raise IndexError, "Expected number of indexes same as number of rows" if
@@ -2355,7 +2355,7 @@ module Daru
     end
 
     def symbolize arry
-      symbolized_arry = 
+      symbolized_arry =
       if arry.all? { |e| e.is_a?(Array) }
         arry.map do |sub_arry|
           sub_arry.map do |e|
