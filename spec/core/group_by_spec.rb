@@ -5,7 +5,7 @@ describe Daru::Core::GroupBy do
     @df = Daru::DataFrame.new({
       a: %w{foo bar foo bar   foo bar foo foo},
       b: %w{one one two three two two one three},
-      c:   [1  ,2  ,3  ,1    ,3  ,6  ,3  ,8],
+      c:   [1  ,2   ,3  ,1     ,3   ,6  ,3  ,8],
       d:   [11 ,22 ,33 ,44   ,55 ,66 ,77 ,88]
     })
 
@@ -31,6 +31,16 @@ describe Daru::Core::GroupBy do
       ['foo', 'three', 8],
       ['foo', 'two'  , 3]
     ])
+  end
+
+  context 'with nil values' do
+    before do
+      @df[:w_nils] = Daru::Vector.new([11 ,nil ,33 ,nil   ,nil ,66 ,77 ,88])
+    end
+
+    it 'groups by nil values' do
+      expect(@df.group_by(:w_nils).groups[[nil]]).to eq([1,3,4])
+    end
   end
 
   context "#initialize" do

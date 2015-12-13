@@ -18,7 +18,7 @@ module Daru
         @context = context
         vectors = names.map { |vec| context[vec].to_a }
         tuples  = vectors[0].zip(*vectors[1..-1])
-        keys    = tuples.uniq.sort
+        keys    = tuples.uniq.sort { |a,b| a && b ? a.compact <=> b.compact : a ? 1 : -1 }
 
         keys.each do |key|
           @groups[key] = all_indices_for(tuples, key)
@@ -28,7 +28,7 @@ module Daru
 
       # Get a Daru::Vector of the size of each group.
       def size
-        index = 
+        index =
         if multi_indexed_grouping?
           Daru::MultiIndex.from_tuples @groups.keys
         else
@@ -59,15 +59,15 @@ module Daru
       #     d:   [11 ,22 ,33 ,44   ,55 ,66 ,77 ,88]
       #   })
       #   df.group_by([:a, :b]).head(1)
-      #   # => 
+      #   # =>
       #   # #<Daru::DataFrame:82745170 @name = d7003f75-5eb9-4967-9303-c08dd9160224 @size = 6>
-      #   #                     a          b          c          d 
-      #   #          1        bar        one          2         22 
-      #   #          3        bar      three          1         44 
-      #   #          5        bar        two          6         66 
-      #   #          0        foo        one          1         11 
-      #   #          7        foo      three          8         88 
-      #   #          2        foo        two          3         33  
+      #   #                     a          b          c          d
+      #   #          1        bar        one          2         22
+      #   #          3        bar      three          1         44
+      #   #          5        bar        two          6         66
+      #   #          0        foo        one          1         11
+      #   #          7        foo      three          8         88
+      #   #          2        foo        two          3         33
       def head quantity=5
         select_groups_from :first, quantity
       end
@@ -82,14 +82,14 @@ module Daru
       #     d:   [11 ,22 ,33 ,44   ,55 ,66 ,77 ,88]
       #   })
       #   # df.group_by([:a, :b]).tail(1)
-      #   # => 
+      #   # =>
       #   # #<Daru::DataFrame:82378270 @name = 0623db46-5425-41bd-a843-99baac3d1d9a @size = 6>
-      #   #                     a          b          c          d 
-      #   #          1        bar        one          2         22 
-      #   #          3        bar      three          1         44 
-      #   #          5        bar        two          6         66 
-      #   #          6        foo        one          3         77 
-      #   #          7        foo      three          8         88 
+      #   #                     a          b          c          d
+      #   #          1        bar        one          2         22
+      #   #          3        bar      three          1         44
+      #   #          5        bar        two          6         66
+      #   #          6        foo        one          3         77
+      #   #          7        foo      three          8         88
       #   #          4        foo        two          3         55
       def tail quantity=5
         select_groups_from :last, quantity
@@ -103,15 +103,15 @@ module Daru
       #     c:   [1  ,2  ,3  ,1    ,3  ,6  ,3  ,8],
       #     d:   [11 ,22 ,33 ,44   ,55 ,66 ,77 ,88]
       #   df.group_by([:a, :b]).mean
-      #   # => 
+      #   # =>
       #   # #<Daru::DataFrame:81097450 @name = 0c32983f-3e06-451f-a9c9-051cadfe7371 @size = 6>
-      #   #                         c          d 
-      #   # ["bar", "one"]          2         22 
-      #   # ["bar", "three"]        1         44 
-      #   # ["bar", "two"]          6         66 
-      #   # ["foo", "one"]        2.0       44.0 
-      #   # ["foo", "three"]        8         88 
-      #   # ["foo", "two"]        3.0       44.0 
+      #   #                         c          d
+      #   # ["bar", "one"]          2         22
+      #   # ["bar", "three"]        1         44
+      #   # ["bar", "two"]          6         66
+      #   # ["foo", "one"]        2.0       44.0
+      #   # ["foo", "three"]        8         88
+      #   # ["foo", "two"]        3.0       44.0
       def mean
         apply_method :numeric, :mean
       end
@@ -128,28 +128,28 @@ module Daru
 
       # Count groups, excludes missing values.
       # @example Using count
-      #   df = Daru::DataFrame.new({    
-      #     a: %w{foo bar foo bar   foo bar foo foo},      
-      #     b: %w{one one two three two two one three},      
-      #     c:   [1  ,2  ,3  ,1    ,3  ,6  ,3  ,8],      
-      #     d:   [11 ,22 ,33 ,44   ,55 ,66 ,77 ,88]      
-      #   })        
+      #   df = Daru::DataFrame.new({
+      #     a: %w{foo bar foo bar   foo bar foo foo},
+      #     b: %w{one one two three two two one three},
+      #     c:   [1  ,2  ,3  ,1    ,3  ,6  ,3  ,8],
+      #     d:   [11 ,22 ,33 ,44   ,55 ,66 ,77 ,88]
+      #   })
       #   df.group_by([:a, :b]).count
-      #   # => 
+      #   # =>
       #   # #<Daru::DataFrame:76900210 @name = 7b9cf55d-17f8-48c7-b03a-2586c6e5ec5a @size = 6>
-      #   #                           c          d 
-      #   # ["bar", "one"]            1          1 
-      #   # ["bar", "two"]            1          1 
-      #   # ["bar", "three"]          1          1 
-      #   # ["foo", "one"]            2          2 
-      #   # ["foo", "three"]          1          1 
-      #   # ["foo", "two"]            2          2 
+      #   #                           c          d
+      #   # ["bar", "one"]            1          1
+      #   # ["bar", "two"]            1          1
+      #   # ["bar", "three"]          1          1
+      #   # ["foo", "one"]            2          2
+      #   # ["foo", "three"]          1          1
+      #   # ["foo", "two"]            2          2
       def count
         width = @non_group_vectors.size
         Daru::DataFrame.new([size]*width, order: @non_group_vectors)
       end
 
-      # Calculate sample standard deviation of numeric vector groups, excluding 
+      # Calculate sample standard deviation of numeric vector groups, excluding
       # missing values.
       def std
         apply_method :numeric, :std
@@ -177,9 +177,9 @@ module Daru
       #         d:   [11 ,22 ,33 ,44   ,55 ,66 ,77 ,88]
       #       })
       #   df.group_by([:a, :b]).get_group ['bar','two']
-      #   #=> 
+      #   #=>
       #   ##<Daru::DataFrame:83258980 @name = 687ee3f6-8874-4899-97fa-9b31d84fa1d5 @size = 1>
-      #   #                    a          b          c          d 
+      #   #                    a          b          c          d
       #   #         5        bar        two          6         66
       def get_group group
         indexes   = @groups[group]
@@ -198,7 +198,7 @@ module Daru
           rows, index: @context.index[indexes], order: @context.vectors)
       end
 
-     private 
+     private
 
       def select_groups_from method, quantity
         selection     = @context
@@ -227,7 +227,7 @@ module Daru
               slice = vec[*indexes]
               single_row << (slice.is_a?(Numeric) ? slice : slice.send(method))
             end
-          end 
+          end
 
           rows << single_row
         end
