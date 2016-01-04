@@ -38,7 +38,7 @@ RSpec.describe Daru::IO::SqlDataSource do
       end
     end
 
-    context 'with DBI::DatabaseHandle' do
+    context 'with ActiveRecord::Connection' do
       it 'returns a dataframe' do
         result = Daru::IO::SqlDataSource.make_dataframe(active_record_connection, query)
         expect(result).to be_a(Daru::DataFrame)
