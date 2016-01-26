@@ -1,18 +1,17 @@
-daru
-====
-
-Data Analysis in RUby
+# daru - Data Analysis in RUby
 
 [![Gem Version](https://badge.fury.io/rb/daru.svg)](http://badge.fury.io/rb/daru)
 [![Build Status](https://travis-ci.org/v0dro/daru.svg)](https://travis-ci.org/v0dro/daru)
 
+## Table of Contents
+
+
+
 ## Introduction
 
-daru (Data Analysis in RUby) is a library for storage, analysis, manipulation and visualization of data.
+daru (Data Analysis in RUby) is a library for storage, analysis, manipulation and visualization of data in Ruby.
 
-daru is inspired by pandas, a very mature solution in Python.
-
-Written in pure Ruby so should work with all ruby implementations. Tested with MRI 2.0, 2.1, 2.2.
+daru makes it easy and intuituive to process data predominantly through 2 data structures: `Daru::DataFrame` and `Daru::Vector`. Written in pure Ruby works with all ruby implementations. Tested with MRI 2.0, 2.1, 2.2 and 2.3.
 
 ## Features
 
@@ -28,7 +27,56 @@ Written in pure Ruby so should work with all ruby implementations. Tested with M
 * Optional speed and space optimization on MRI with [NMatrix](https://github.com/SciRuby/nmatrix) and GSL.
 * Easy splitting, aggregation and grouping of data.
 * Quickly reducing data with pivot tables for quick data summary.
-* Import and export data from and to Excel, CSV, SQL Databases and plain text files.
+* Import and export data from and to Excel, CSV, SQL Databases, ActiveRecord and plain text files.
+
+## Basic Usage
+
+daru exposes two major data structures: `DataFrame` and `Vector`. The Vector is a basic 1-D structure corresponding to an Array, while the `DataFrame` - daru's primary data structure - is 2-D spreadsheet-like structure for manipulating and storing data sets.
+
+Basic DataFrame intitialization.
+
+``` ruby
+data_frame = Daru::DataFrame.new(
+  {
+    'Beer' => ['Kingfisher', 'Snow', 'Bud Light', 'Tiger Beer', 'Budweiser'],
+    'Gallons sold' => [500, 400, 450, 200, 250]
+  }
+  index: ['India', 'China', 'USA', 'Malaysia', 'Canada']
+)
+data_frame
+```
+![init0](images/init0.png)
+
+
+Load data from CSV files.
+``` ruby
+df = Daru::DataFrame.from_csv('TradeoffData.csv')
+```
+![init1](images/init1.png)
+
+*Basic Data Manipulation*
+
+Selecting columns.
+``` ruby
+data_frame['Beer']
+```
+![man0](images/man0.png)
+
+Selecting rows.
+``` ruby
+data_frame.row['USA']
+```
+![man1](images/man1.png)
+
+A range of rows.
+``` ruby
+data_frame.row['India'..'USA']
+```
+![man2](images/man2.png)
+
+The first 2 rows.
+``` ruby
+data_frame.first(2)
 
 ## Notebooks
 

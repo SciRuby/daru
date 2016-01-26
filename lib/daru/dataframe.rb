@@ -1170,12 +1170,16 @@ module Daru
       self[0..(quantity-1), :row]
     end
 
+    alias :first :head
+
     # The last ten elements of the DataFrame
     #
     # @param [Fixnum] quantity (10) The number of elements to display from the bottom.
     def tail quantity=10
       self[(@size - quantity)..(@size-1), :row]
     end
+
+    alias :last :tail
 
     # Returns a vector with sum of all vectors specified in the argument.
     # Tf vecs parameter is empty, sum all numeric vector.

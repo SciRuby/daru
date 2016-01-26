@@ -1,3 +1,16 @@
+# 0.1.2
+
+* Enhancements
+    - New method `DataFrame.from_activerecord` for importing data sets from ActiveRecord. (by @mrkn)
+    - Better importing of data from SQL databases by extracting that functionality into a separate class called `Daru::IO::SqlDataSource` (by @mrkn).
+    - Faster algorithm for performing inner joins by using the bloomfilter-rb gem. Available only for MRI. (by Peter Tung)
+    - Added exception `SizeError` (by Peter Tung).
+    - Removed outdated dependencies and build scripts.
+* Fixes
+    - Fix column creation for `Dataframe.from_sql` (by @dansbits).
+    - group_by can now be performed on DataFrames with nils (@gnilrets).
+    - Bug fix for DataFrame Vectors not duplicating when calling `DataFrame#dup` (by @gnilrets).
+
 # 0.1.1
 
 * Enhancements

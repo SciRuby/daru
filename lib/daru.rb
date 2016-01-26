@@ -43,6 +43,7 @@ module Daru
         cv = "@@#{lib_underscore}"
         unless class_variable_defined? cv
           begin
+            library = 'nmatrix/nmatrix' if library == :nmatrix
             require library.to_s
             class_variable_set(cv, true)
           rescue LoadError

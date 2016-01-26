@@ -1,13 +1,11 @@
 language:
   ruby
 
-env:
-  - CPLUS_INCLUDE_PATH=/usr/include/atlas C_INCLUDE_PATH=/usr/include/atlas
-
 rvm:
   - '2.0'
   - '2.1'
   - '2.2'
+  - '2.3'
 
 matrix:
   fast_finish:
@@ -17,11 +15,9 @@ script: "bundle exec rspec"
 
 install:
   - gem install bundler
-  - ./.build.sh
   - bundle install
 
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq libatlas-base-dev
   - sudo apt-get install -y libgsl0-dev r-base r-base-dev
   - sudo Rscript -e "install.packages(c('Rserve','irr'),,'http://cran.us.r-project.org')"

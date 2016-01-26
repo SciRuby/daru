@@ -2,25 +2,16 @@
 
 ## Installing daru development dependencies
 
-If you want to run the full rspec suite, you will need the latest unreleased nmatrix gem. They will released upstream soon but please follow this procedure for now.
-
-Keep in mind that either nmatrix or rb-gsl are NOT NECESSARY for using daru. They are just required for an optional speed up and for running the test suite.
+Either nmatrix or rb-gsl are NOT NECESSARY for using daru. They are just required for an optional speed up and for running the test suite.
 
 To install dependencies, execute the following commands:
 
-  `export CPLUS_INCLUDE_PATH=/usr/include/atlas` 
-  `export C_INCLUDE_PATH=/usr/include/atlas`
   `sudo apt-get update -qq`
-  `sudo apt-get install -qq libatlas-base-dev`
-  `sudo apt-get --purge remove liblapack-dev liblapack3 liblapack3gf`
   `sudo apt-get install -y libgsl0-dev r-base r-base-dev`
   `sudo Rscript -e "install.packages(c('Rserve','irr'),,'http://cran.us.r-project.org')"`
 
-Then execute the [.build.sh script](https://github.com/v0dro/daru/blob/master/.build.sh) to clone and install the latest nmatrix system:
 
-  `./.build.sh`
-
-Then finally install remaining dependencies:
+Then install remaining dependencies:
 
   `bundle install`
 
