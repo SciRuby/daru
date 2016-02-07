@@ -34,7 +34,7 @@ Thank you for installing daru!
   oOOOOOo 
  ,|    oO
 //|     |
-\\|     |
+\\\\|     |
  `|     |
   `-----`
 
