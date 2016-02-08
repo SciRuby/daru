@@ -16,7 +16,7 @@ end
 if jruby?
   require 'mdarray'
 else
-  require 'nmatrix'
+  require 'nmatrix/nmatrix'
 end
 
 RSpec::Expectations.configuration.warn_about_potential_false_positives = false
