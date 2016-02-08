@@ -220,6 +220,10 @@ module Daru
 
         return result
       else
+      raise TypeError, "Invalid index type #{location.inspect}.\
+        \nUsage: v[:a, :b] gives elements with keys :a and :b for vector v." \
+        if location.is_a? Array
+
         unless indexes[1]
           case location
           when Range
@@ -238,9 +242,13 @@ module Daru
           indexes = indexes.map { |e| named_index_for(e) }
         end
 
-        Daru::Vector.new(
-          indexes.map { |loc| @data[@index[loc]] }, 
-          name: @name, index: indexes, dtype: @dtype)
+        begin
+          Daru::Vector.new(
+            indexes.map { |loc| @data[@index[loc]] },
+            name: @name, index: indexes, dtype: @dtype)
+        rescue NoMethodError
+          raise IndexError, "Specified index #{pos.inspect} does not exist."
+        end
       end
     end
 
@@ -271,7 +279,11 @@ module Daru
       if pos.is_a?(Numeric)
         @data[pos] = value
       else
-        pos.each { |tuple| self[tuple] = value }
+        begin
+          pos.each { |tuple| self[tuple] = value }
+        rescue NoMethodError
+          raise IndexError, "Specified index #{pos.inspect} does not exist."
+        end
       end
 
       set_size
