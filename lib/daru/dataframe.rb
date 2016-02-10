@@ -2204,7 +2204,8 @@ module Daru
       v = nil
 
       if @index.empty?
-        v = vector.is_a?(Daru::Vector) ? vector : Daru::Vector.new(vector.to_a)
+        v = vector.is_a?(Daru::Vector) ? vector :
+                            Daru::Vector.new(vector.to_a, name: set_name(name))
         @index = v.index
         assign_or_add_vector name, v
         set_size

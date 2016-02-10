@@ -521,6 +521,15 @@ describe Daru::DataFrame do
           }.to raise_error
       end
 
+    it "assigns correct name given empty dataframe" do
+      df_empty = Daru::DataFrame.new({})
+      df_empty[:a] = 1..5
+      df_empty[:b] = 1..5
+
+      expect(df_empty[:a].name).to equal(:a)
+      expect(df_empty[:b].name).to equal(:b)
+    end
+
       it "appends multiple vectors at a time" do
         # TODO
       end
@@ -560,6 +569,13 @@ describe Daru::DataFrame do
         @df_mi[:c,:one,:bar] = [100,200,300,400,100,200,300,400,100,200,300,400]
 
         expect(@df_mi).to eq(answer)
+      end
+
+      it "assigns correct name given empty dataframe" do
+        df_empty = Daru::DataFrame.new([], index: @multi_index, order: @order_mi)
+        df_empty[:c, :one, :bar] = 1..12
+
+        expect(df_empty[:c, :one, :bar].name).to eq "conebar"
       end
     end
   end
