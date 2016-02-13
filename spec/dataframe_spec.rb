@@ -2088,4 +2088,34 @@ describe Daru::DataFrame do
       }.to raise_error(ArgumentError)
     end
   end
+
+  context "#concat" do
+    before do
+      @df1 = Daru::DataFrame.new({
+        a: [1, 2, 3]
+      })
+
+      @df2 = Daru::DataFrame.new({
+        a: [4, 5, 6]
+      })
+    end
+
+    it 'does not modify the original dataframes' do
+      df1_a = @df1[:a].to_a.dup
+      df2_a = @df2[:a].to_a.dup
+
+      df_concat = @df1.concat @df2
+      expect(@df1[:a].to_a).to eq df1_a
+      expect(@df2[:a].to_a).to eq df2_a
+    end
+
+    it 'creates a new dataframe that is a concatenation of the two dataframe arguments' do
+      df1_a = @df1[:a].to_a.dup
+      df2_a = @df2[:a].to_a.dup
+
+      df_concat = @df1.concat @df2
+      expect(df_concat[:a].to_a).to eq df1_a + df2_a
+    end
+
+  end
 end if mri?

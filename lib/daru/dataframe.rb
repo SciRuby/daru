@@ -1263,7 +1263,7 @@ module Daru
     def concat other_df
       vectors = []
       @vectors.each do |v|
-        vectors << self[v].to_a.concat(other_df[v].to_a)
+        vectors << self[v].to_a.dup.concat(other_df[v].to_a)
       end
 
       Daru::DataFrame.new(vectors, order: @vectors)
