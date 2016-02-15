@@ -61,33 +61,33 @@ module Daru
     attr_accessor :labels
 
     # Create a Vector object.
-    # 
+    #
     # == Arguments
-    # 
-    # @param source[Array,Hash] - Supply elements in the form of an Array or a 
-    # Hash. If Array, a numeric index will be created if not supplied in the 
-    # options. Specifying more index elements than actual values in *source* 
-    # will insert *nil* into the surplus index elements. When a Hash is specified, 
-    # the keys of the Hash are taken as the index elements and the corresponding 
+    #
+    # @param source[Array,Hash] - Supply elements in the form of an Array or a
+    # Hash. If Array, a numeric index will be created if not supplied in the
+    # options. Specifying more index elements than actual values in *source*
+    # will insert *nil* into the surplus index elements. When a Hash is specified,
+    # the keys of the Hash are taken as the index elements and the corresponding
     # values as the values that populate the vector.
-    # 
+    #
     # == Options
-    # 
+    #
     # * +:name+  - Name of the vector
-    # 
+    #
     # * +:index+ - Index of the vector
-    # 
-    # * +:dtype+ - The underlying data type. Can be :array, :nmatrix or :gsl. 
+    #
+    # * +:dtype+ - The underlying data type. Can be :array, :nmatrix or :gsl.
     # Default :array.
-    # 
+    #
     # * +:nm_dtype+ - For NMatrix, the data type of the numbers. See the NMatrix docs for
     # further information on supported data type.
-    # 
+    #
     # * +:missing_values+ - An Array of the values that are to be treated as 'missing'.
     # nil is the default missing value.
-    # 
+    #
     # == Usage
-    # 
+    #
     #   vecarr = Daru::Vector.new [1,2,3,4], index: [:a, :e, :i, :o]
     #   vechsh = Daru::Vector.new({a: 1, e: 2, i: 3, o: 4})
     def initialize source, opts={}
@@ -104,7 +104,7 @@ module Daru
 
       @data  = cast_vector_to(opts[:dtype] || :array, source, opts[:nm_dtype])
       @index = try_create_index(index || @data.size)
-      
+
       if @index.size > @data.size
         cast(dtype: :array) # NM with nils seg faults
         (@index.size - @data.size).times { @data << nil }
@@ -120,11 +120,11 @@ module Daru
 
     # Create a new vector by specifying the size and an optional value
     # and block to generate values.
-    # 
+    #
     # == Description
     #
     # The *new_with_size* class method lets you create a Daru::Vector
-    # by specifying the size as the argument. The optional block, if 
+    # by specifying the size as the argument. The optional block, if
     # supplied, is run once for populating each element in the Vector.
     #
     # The result of each run of the block is the value that is ultimately
@@ -149,15 +149,15 @@ module Daru
     # * Range: transformed using to_a
     # * Daru::Vector
     # * Numeric and string values
-    # 
+    #
     # == Description
     #
     # The `Vector.[]` class method creates a vector from almost any
     # object that has a `#to_a` method defined on it. It is similar
     # to R's `c` method.
-    # 
+    #
     # == Usage
-    # 
+    #
     #   a = Daru::Vector[1,2,3,4,6..10]
     #   #=>
     #   # <Daru::Vector:99448510 @name = nil @size = 9 >
@@ -189,21 +189,21 @@ module Daru
     end
 
     # Get one or more elements with specified index or a range.
-    # 
+    #
     # == Usage
     #   # For vectors employing single layer Index
-    # 
+    #
     #   v[:one, :two] # => Daru::Vector with indexes :one and :two
     #   v[:one]       # => Single element
     #   v[:one..:three] # => Daru::Vector with indexes :one, :two and :three
-    # 
+    #
     #   # For vectors employing hierarchial multi index
-    #   
+    #
     def [](*indexes)
       location = indexes[0]
       if @index.is_a?(MultiIndex)
         sub_index = @index[indexes]
-        result = 
+        result =
         if sub_index.is_a?(Integer)
           @data[sub_index]
         else
@@ -239,19 +239,19 @@ module Daru
         end
 
         Daru::Vector.new(
-          indexes.map { |loc| @data[@index[loc]] }, 
+          indexes.map { |loc| @data[@index[loc]] },
           name: @name, index: indexes, dtype: @dtype)
       end
     end
 
     # Just like in Hashes, you can specify the index label of the Daru::Vector
     # and assign an element an that place in the Daru::Vector.
-    # 
+    #
     # == Usage
-    # 
+    #
     #   v = Daru::Vector.new([1,2,3], index: [:a, :b, :c])
     #   v[:a] = 999
-    #   #=> 
+    #   #=>
     #   ##<Daru::Vector:90257920 @name = nil @size = 3 >
     #   #    nil
     #   #  a 999
@@ -260,7 +260,7 @@ module Daru
     def []=(*location, value)
       cast(dtype: :array) if value.nil? and dtype != :array
 
-      @possibly_changed_type = true if @type == :object  and (value.nil? or 
+      @possibly_changed_type = true if @type == :object  and (value.nil? or
         value.is_a?(Numeric))
       @possibly_changed_type = true if @type == :numeric and (!value.is_a?(Numeric) and
         !value.nil?)
@@ -281,17 +281,17 @@ module Daru
     # The values to be treated as 'missing'. *nil* is the default missing
     # type. To set missing values see the missing_values= method.
     def missing_values
-      @missing_values.keys  
+      @missing_values.keys
     end
 
     # Assign an Array to treat certain values as 'missing'.
-    # 
+    #
     # == Usage
-    # 
+    #
     #   v = Daru::Vector.new [1,2,3,4,5]
     #   v.missing_values = [3]
     #   v.update
-    #   v.missing_positions 
+    #   v.missing_positions
     #   #=> [2]
     def missing_values= values
       set_missing_values values
@@ -370,12 +370,12 @@ module Daru
         if other.is_a?(Daru::Vector)
           mod.apply_vector_operator operator, self, other
         else
-          mod.apply_scalar_operator operator, @data,other  
+          mod.apply_scalar_operator operator, @data,other
         end
       end
     end
     alias :gt :mt
-    alias :gteq :mteq 
+    alias :gteq :mteq
 
     # Comparator for checking if any of the elements in *other* exist in self.
     #
@@ -384,7 +384,7 @@ module Daru
     # @example Usage of `in`.
     #   vector = Daru::Vector.new([1,2,3,4,5])
     #   vector.where(vector.in([3,5]))
-    #   #=> 
+    #   #=>
     #   ##<Daru::Vector:82215960 @name = nil @size = 2 >
     #   #    nil
     #   #  2   3
@@ -400,10 +400,10 @@ module Daru
     end
 
     # Return a new vector based on the contents of a boolean array. Use with the
-    # comparator methods to obtain meaningful results. See this notebook for 
+    # comparator methods to obtain meaningful results. See this notebook for
     # a good overview of using #where.
     #
-    # @param [Daru::Core::Query::BoolArray, Array<TrueClass, FalseClass>] bool_arry The 
+    # @param [Daru::Core::Query::BoolArray, Array<TrueClass, FalseClass>] bool_arry The
     #   collection containing the true of false values. Each element in the Vector
     #   corresponding to a `true` in the bool_arry will be returned alongwith it's
     #   index.
@@ -412,7 +412,7 @@ module Daru
     #
     #   # Simple logic statement passed to #where.
     #   vector.where(vector.eq(5).or(vector.eq(1)))
-    #   # => 
+    #   # =>
     #   ##<Daru::Vector:77626210 @name = nil @size = 7 >
     #   #    nil
     #   #  2   5
@@ -422,10 +422,10 @@ module Daru
     #   # 11   5
     #   # 13   5
     #   # 15   1
-    # 
+    #
     #   # A somewhat more complex logic statement
     #   vector.where((vector.eq(5) | vector.lteq(1)) & vector.in([4,5,1]))
-    #   #=> 
+    #   #=>
     #   ##<Daru::Vector:81072310 @name = nil @size = 7 >
     #   #    nil
     #   #  2   5
@@ -464,17 +464,17 @@ module Daru
       set_size
       set_missing_positions unless Daru.lazy_update
     end
-    alias :push :concat 
+    alias :push :concat
     alias :<< :concat
 
     # Cast a vector to a new data type.
-    # 
+    #
     # == Options
-    # 
+    #
     # * +:dtype+ - :array for Ruby Array. :nmatrix for NMatrix.
     def cast opts={}
       dt = opts[:dtype]
-      raise ArgumentError, "Unsupported dtype #{opts[:dtype]}" unless 
+      raise ArgumentError, "Unsupported dtype #{opts[:dtype]}" unless
         dt == :array or dt == :nmatrix or dt == :gsl
 
       @data = cast_vector_to dt unless @dtype == dt
@@ -482,7 +482,7 @@ module Daru
 
     # Delete an element by value
     def delete element
-      self.delete_at index_of(element)      
+      self.delete_at index_of(element)
     end
 
     # Delete element by index
@@ -497,9 +497,9 @@ module Daru
     # The type of data contained in the vector. Can be :object or :numeric. If
     # the underlying dtype is an NMatrix, this method will return the data type
     # of the NMatrix object.
-    #   
+    #
     # Running through the data to figure out the kind of data is delayed to the
-    # last possible moment.    
+    # last possible moment.
     def type
       return @data.nm_dtype if dtype == :nmatrix
 
@@ -527,8 +527,8 @@ module Daru
     # Keep only unique elements of the vector alongwith their indexes.
     def uniq
       uniq_vector = @data.uniq
-      new_index   = uniq_vector.inject([]) do |acc, element|  
-        acc << index_of(element) 
+      new_index   = uniq_vector.inject([]) do |acc, element|
+        acc << index_of(element)
         acc
       end
 
@@ -544,18 +544,18 @@ module Daru
     end
 
     # Sorts a vector according to its values. If a block is specified, the contents
-    # will be evaluated and data will be swapped whenever the block evaluates 
+    # will be evaluated and data will be swapped whenever the block evaluates
     # to *true*. Defaults to ascending order sorting. Any missing values will be
     # put at the end of the vector. Preserves indexing. Default sort algorithm is
     # quick sort.
-    # 
+    #
     # == Options
-    # 
+    #
     # * +:ascending+ - if false, will sort in descending order. Defaults to true.
-    # 
+    #
     # * +:type+ - Specify the sorting algorithm. Only supports quick_sort for now.
     # == Usage
-    # 
+    #
     #   v = Daru::Vector.new ["My first guitar", "jazz", "guitar"]
     #   # Say you want to sort these strings by length.
     #   v.sort(ascending: false) { |a,b| a.length <=> b.length }
@@ -565,8 +565,16 @@ module Daru
         type: :quick_sort
       }.merge(opts)
 
-      block = lambda { |a,b| a <=> b } unless block
-    
+      block = lambda { |a,b|
+        if a.nil? && b.nil?
+          0
+        elsif a.nil? || b.nil?
+          1
+        else
+          a <=> b
+        end
+      } unless block
+
       order = opts[:ascending] ? :ascending : :descending
       vector, index = send(opts[:type], @data.to_a.dup, @index.to_a, order, &block)
       index = Daru::Index.new index
@@ -574,7 +582,7 @@ module Daru
       Daru::Vector.new(vector, index: index, name: @name, dtype: @dtype)
     end
 
-    # Just sort the data and get an Array in return using Enumerable#sort. 
+    # Just sort the data and get an Array in return using Enumerable#sort.
     # Non-destructive.
     def sorted_data &block
       @data.to_a.sort(&block)
@@ -728,12 +736,12 @@ module Daru
 
     # Returns a vector which has *true* in the position where the element in self
     # is nil, and false otherwise.
-    # 
+    #
     # == Usage
-    # 
+    #
     #   v = Daru::Vector.new([1,2,4,nil])
     #   v.is_nil?
-    #   # => 
+    #   # =>
     #   #<Daru::Vector:89421000 @name = nil @size = 4 >
     #   #      nil
     #   #  0  false
@@ -761,9 +769,9 @@ module Daru
 
     # Replace all nils in the vector with the value passed as an argument. Destructive.
     # See #replace_nils for non-destructive version
-    # 
+    #
     # == Arguments
-    # 
+    #
     # * +replacement+ - The value which should replace all nils
     def replace_nils! replacement
       missing_positions.each do |idx|
@@ -819,9 +827,9 @@ module Daru
     end
 
     # Convert Vector to a horizontal or vertical Ruby Matrix.
-    # 
+    #
     # == Arguments
-    # 
+    #
     # * +axis+ - Specify whether you want a *:horizontal* or a *:vertical* matrix.
     def to_matrix axis=:horizontal
       if axis == :horizontal
@@ -861,28 +869,28 @@ module Daru
     end
 
     # Convert the hash from to_hash to json
-    def to_json *args 
+    def to_json *args
       self.to_hash.to_json
     end
 
     # Convert to html for iruby
     def to_html threshold=30
       name = @name || 'nil'
-      html = "<table>" + 
+      html = "<table>" +
         "<tr>" +
-          "<th colspan=\"2\">" + 
-            "Daru::Vector:#{self.object_id} " + " size: #{size}" + 
+          "<th colspan=\"2\">" +
+            "Daru::Vector:#{self.object_id} " + " size: #{size}" +
           "</th>" +
         "</tr>"
       html += '<tr><th> </th><th>' + name.to_s + '</th></tr>'
       @index.each_with_index do |index, num|
         html += '<tr><td>' + index.to_s + '</td>' + '<td>' + self[index].to_s + '</td></tr>'
-    
+
         if num > threshold
           html += '<tr><td>...</td><td>...</td></tr>'
 
           last_index = @index.to_a.last
-          html += '<tr>' + 
+          html += '<tr>' +
                     '<td>' + last_index.to_s       + '</td>' +
                     '<td>' + self[last_index].to_s + '</td>' +
                   '</tr>'
@@ -935,7 +943,7 @@ module Daru
     # Over rides original inspect for pretty printing in irb
     def inspect spacing=20, threshold=15
       longest = [@name.to_s.size,
-                 (@index.to_a.map(&:to_s).map(&:size).max || 0), 
+                 (@index.to_a.map(&:to_s).map(&:size).max || 0),
                  (@data    .map(&:to_s).map(&:size).max || 0),
                  'nil'.size].max
 
@@ -975,30 +983,30 @@ module Daru
     end
 
     def index= idx
-      raise ArgumentError, 
-        "Size of supplied index #{index.size} does not match size of DataFrame" if 
+      raise ArgumentError,
+        "Size of supplied index #{index.size} does not match size of DataFrame" if
         idx.size != self.size
-      raise ArgumentError, "Can only assign type Index and its subclasses." unless 
+      raise ArgumentError, "Can only assign type Index and its subclasses." unless
         idx.kind_of?(Daru::Index)
-        
+
       @index = idx
       self
     end
 
     # Give the vector a new name
-    # 
+    #
     # @param new_name [Symbol] The new name.
     def rename new_name
       if new_name.is_a?(Numeric)
-        @name = new_name 
+        @name = new_name
         return
       end
-      
+
       @name = new_name
     end
 
     # Duplicate elements and indexes
-    def dup 
+    def dup
       Daru::Vector.new @data.dup, name: @name, index: @index.dup
     end
 
@@ -1082,15 +1090,15 @@ module Daru
     end
 
     # Creates a new vector consisting only of non-nil data
-    # 
+    #
     # == Arguments
-    # 
+    #
     # @as_a [Symbol] Passing :array will return only the elements
     # as an Array. Otherwise will return a Daru::Vector.
-    # 
+    #
     # @duplicate [Symbol] In case no missing data is found in the
     # vector, setting this to false will return the same vector.
-    # Otherwise, a duplicate will be returned irrespective of 
+    # Otherwise, a duplicate will be returned irrespective of
     # presence of missing data.
     def only_valid as_a=:vector, duplicate=true
       return self.dup if !has_missing_data? and as_a == :vector and duplicate
@@ -1103,7 +1111,7 @@ module Daru
       end
 
       return new_vector if as_a != :vector
-      
+
       Daru::Vector.new new_vector, index: new_index, name: @name, dtype: dtype
     end
 
@@ -1149,9 +1157,9 @@ module Daru
     end
 
     # Save the vector to a file
-    # 
+    #
     # == Arguments
-    # 
+    #
     # * filename - Path of file where the vector is to be saved
     def save filename
       Daru::IO.save self, filename
@@ -1159,16 +1167,16 @@ module Daru
 
     def _dump(depth) # :nodoc:
       Marshal.dump({
-        data:  @data.to_a, 
-        dtype: @dtype, 
-        name:  @name, 
+        data:  @data.to_a,
+        dtype: @dtype,
+        name:  @name,
         index: @index,
         missing_values: @missing_values})
     end
 
     def self._load(data) # :nodoc:
       h = Marshal.load(data)
-      Daru::Vector.new(h[:data], index: h[:index], 
+      Daru::Vector.new(h[:data], index: h[:index],
         name: h[:name], dtype: h[:dtype], missing_values: h[:missing_values])
     end
 
@@ -1261,9 +1269,8 @@ module Daru
     end
 
     def keep? a, b, order, &block
-      return false if a.nil? or b.nil?
       eval = block.call(a,b)
-      if order == :ascending 
+      if order == :ascending
         return true  if eval == -1
         return false if eval == 1
       elsif order == :descending
@@ -1278,7 +1285,7 @@ module Daru
     def cast_vector_to dtype, source=nil, nm_dtype=nil
       source = @data.to_a if source.nil?
 
-      new_vector = 
+      new_vector =
       case dtype
       when :array   then Daru::Accessors::ArrayWrapper.new(source, self)
       when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source, self, nm_dtype)
@@ -1314,8 +1321,8 @@ module Daru
     end
 
     def set_name name
-      @name = 
-      if name.is_a?(Numeric)  then name 
+      @name =
+      if name.is_a?(Numeric)  then name
       elsif name.is_a?(Array) then name.join # in case of MultiIndex tuple
       elsif name              then name # anything but Numeric or nil
       else

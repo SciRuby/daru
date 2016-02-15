@@ -5,16 +5,16 @@ describe Daru::Vector do
     describe dtype.to_s do
       before do
         @common_all_dtypes =  Daru::Vector.new(
-          [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99], 
+          [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99],
           dtype: dtype, name: :common_all_dtypes)
       end
 
       context "#initialize" do
         before do
           @tuples = [
-            [:a, :one, :foo], 
-            [:a, :two, :bar], 
-            [:b, :one, :bar], 
+            [:a, :one, :foo],
+            [:a, :two, :bar],
+            [:b, :one, :bar],
             [:b, :two, :baz]
           ]
 
@@ -22,7 +22,7 @@ describe Daru::Vector do
         end
 
         it "initializes from an Array" do
-          dv = Daru::Vector.new [1,2,3,4,5], name: :ravan, 
+          dv = Daru::Vector.new [1,2,3,4,5], name: :ravan,
             index: [:ek, :don, :teen, :char, :pach], dtype: dtype
 
           expect(dv.name) .to eq(:ravan)
@@ -51,7 +51,7 @@ describe Daru::Vector do
 
           expect {
             idx = Daru::Index.new [:i, :j, :k]
-            dv  = Daru::Vector.new [1,2,3,4,5], name: :yoda, index: idx, dtype: dtype 
+            dv  = Daru::Vector.new [1,2,3,4,5], name: :yoda, index: idx, dtype: dtype
           }.to raise_error
         end
 
@@ -122,7 +122,7 @@ describe Daru::Vector do
       context "#[]" do
         context Daru::Index do
           before :each do
-            @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, 
+            @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga,
               index: [:yoda, :anakin, :obi, :padme, :r2d2], dtype: dtype
           end
 
@@ -135,22 +135,22 @@ describe Daru::Vector do
           end
 
           it "returns a vector with given indices for multiple indices" do
-            expect(@dv[:yoda, :anakin]).to eq(Daru::Vector.new([1,2], name: :yoda, 
+            expect(@dv[:yoda, :anakin]).to eq(Daru::Vector.new([1,2], name: :yoda,
               index: [:yoda, :anakin], dtype: dtype))
           end
 
           it "returns a vector with given indices for multiple numeric indices" do
-            expect(@dv[0,1]).to eq(Daru::Vector.new([1,2], name: :yoda, 
+            expect(@dv[0,1]).to eq(Daru::Vector.new([1,2], name: :yoda,
               index: [:yoda, :anakin], dtype: dtype))
           end
 
           it "returns a vector when specified symbol Range" do
-            expect(@dv[:yoda..:anakin]).to eq(Daru::Vector.new([1,2], 
+            expect(@dv[:yoda..:anakin]).to eq(Daru::Vector.new([1,2],
               index: [:yoda, :anakin], name: :yoga, dtype: dtype))
           end
 
           it "returns a vector when specified numeric Range" do
-            expect(@dv[3..4]).to eq(Daru::Vector.new([4,5], name: :yoga, 
+            expect(@dv[3..4]).to eq(Daru::Vector.new([4,5], name: :yoga,
               index: [:padme, :r2d2], dtype: dtype))
           end
 
@@ -181,7 +181,7 @@ describe Daru::Vector do
             ]
             @multi_index = Daru::MultiIndex.from_tuples(@tuples)
             @vector = Daru::Vector.new(
-              Array.new(12) { |i| i }, index: @multi_index, 
+              Array.new(12) { |i| i }, index: @multi_index,
               dtype: dtype, name: :mi_vector)
           end
 
@@ -199,7 +199,7 @@ describe Daru::Vector do
               [:one,:baz],
               [:two,:bar],
               [:two,:baz]])
-            expect(@vector[:a]).to eq(Daru::Vector.new([0,1,2,3], index: mi, 
+            expect(@vector[:a]).to eq(Daru::Vector.new([0,1,2,3], index: mi,
               dtype: dtype, name: :sub_vector))
           end
 
@@ -230,7 +230,7 @@ describe Daru::Vector do
       context "#[]=" do
         context Daru::Index do
           before :each do
-            @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, 
+            @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga,
               index: [:yoda, :anakin, :obi, :padme, :r2d2], dtype: dtype
           end
 
@@ -260,7 +260,7 @@ describe Daru::Vector do
             v[3] = 666
             expect(v[3]).to eq(666)
 
-            expect(v).to eq(Daru::Vector.new([666,2,666,666], 
+            expect(v).to eq(Daru::Vector.new([666,2,666,666],
               index: ['a',:a,0,66]))
           end
         end
@@ -282,7 +282,7 @@ describe Daru::Vector do
               [:c,:two,:bar]
             ]
             @multi_index = Daru::MultiIndex.from_tuples(@tuples)
-            @vector = Daru::Vector.new Array.new(12) { |i| i }, index: @multi_index, 
+            @vector = Daru::Vector.new Array.new(12) { |i| i }, index: @multi_index,
               dtype: dtype, name: :mi_vector
           end
 
@@ -315,7 +315,7 @@ describe Daru::Vector do
 
       context "#concat" do
         before :each do
-          @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, 
+          @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga,
             index: [:warwick, :thompson, :jackson, :fender, :esp], dtype: dtype
         end
 
@@ -350,14 +350,14 @@ describe Daru::Vector do
       context "#delete_at" do
         context Daru::Index do
           before :each do
-            @dv = Daru::Vector.new [1,2,3,4,5], name: :a, 
+            @dv = Daru::Vector.new [1,2,3,4,5], name: :a,
               index: [:one, :two, :three, :four, :five], dtype: dtype
           end
 
           it "deletes element of specified index" do
             @dv.delete_at :one
 
-            expect(@dv).to eq(Daru::Vector.new [2,3,4,5], name: :a, 
+            expect(@dv).to eq(Daru::Vector.new [2,3,4,5], name: :a,
               index: [:two, :three, :four, :five], dtype: dtype)
           end
 
@@ -365,7 +365,7 @@ describe Daru::Vector do
             pending
             @dv.delete_at 2
 
-            expect(@dv).to eq(Daru::Vector.new [1,2,4,5], name: :a, 
+            expect(@dv).to eq(Daru::Vector.new [1,2,4,5], name: :a,
               index: [:one, :two, :four, :five], dtype: dtype)
           end
         end
@@ -376,7 +376,7 @@ describe Daru::Vector do
           v = Daru::Vector.new [1,22,33,45,65,32,524,656,123,99,77], dtype: dtype
           ret = v.delete_if { |d| d % 11 == 0 }
           expect(ret).to eq(
-            Daru::Vector.new([1,45,65,32,524,656,123], 
+            Daru::Vector.new([1,45,65,32,524,656,123],
               index: [0,3,4,5,6,7,8], dtype: dtype))
           expect(ret.dtype).to eq(dtype)
         end
@@ -396,7 +396,7 @@ describe Daru::Vector do
       context "#index_of" do
         context Daru::Index do
           it "returns index of specified value" do
-            dv = Daru::Vector.new [1,2,3,4,5], name: :a, 
+            dv = Daru::Vector.new [1,2,3,4,5], name: :a,
               index: [:one, :two, :three, :four, :five], dtype: dtype
 
             expect(dv.index_of(1)).to eq(:one)
@@ -420,7 +420,7 @@ describe Daru::Vector do
       context "#to_hash" do
         context Daru::Index do
           it "returns the vector as a hash" do
-            dv = Daru::Vector.new [1,2,3,4,5], name: :a, 
+            dv = Daru::Vector.new [1,2,3,4,5], name: :a,
               index: [:one, :two, :three, :four, :five], dtype: dtype
 
             expect(dv.to_hash).to eq({one: 1, two: 2, three: 3, four: 4, five: 5})
@@ -485,20 +485,19 @@ describe Daru::Vector do
             expect(sorted).to eq(Daru::Vector.new(["My", "Jazz", "Guitar", "My Jazz Guitar"], index: [2,1,3,0]))
           end
 
-          it "places nils near the end of the vector" do
-            pending
+          it "places nils near the beginning of the vector" do
             with_nils = Daru::Vector.new [22,4,nil,111,nil,2]
 
-            expect(with_nils.sort).to eq(Daru::Vector.new([2,4,22,111,nil,nil], index: [5,1,0,3,2,4]))
+            expect(with_nils.sort).to eq(Daru::Vector.new([nil,nil,2,4,22,111], index: [2,4,5,1,0,3]))
           end if dtype == :array
         end
 
         context Daru::MultiIndex do
           before do
             mi = Daru::MultiIndex.from_tuples([
-              [:a, :one,   :foo], 
-              [:a, :two,   :bar], 
-              [:b, :one,   :bar], 
+              [:a, :one,   :foo],
+              [:a, :two,   :bar],
+              [:b, :one,   :bar],
               [:b, :two,   :baz],
               [:b, :three, :bar]
               ])
@@ -520,10 +519,10 @@ describe Daru::Vector do
 
           it "sorts in descending" do
             mi_dsc = Daru::MultiIndex.from_tuples([
-              [:b, :one, :bar], 
-              [:a, :one, :foo], 
-              [:a, :two, :bar], 
-              [:b, :two, :baz], 
+              [:b, :one, :bar],
+              [:a, :one, :foo],
+              [:a, :two, :bar],
+              [:b, :two, :baz],
               [:b, :three, :bar]
             ])
             expect(@vector.sort(ascending: false)).to eq(Daru::Vector.new(
@@ -592,7 +591,7 @@ describe Daru::Vector do
         it "destructively maps" do
           @common_all_dtypes.map! { |v| v + 1 }
           expect(@common_all_dtypes).to eq(Daru::Vector.new(
-            [6, 6, 6, 6, 6, 7, 7, 8, 9, 10, 11, 2, 3, 4, 5, 12, -98, -98], 
+            [6, 6, 6, 6, 6, 7, 7, 8, 9, 10, 11, 2, 3, 4, 5, 12, -98, -98],
             dtype: dtype))
         end
       end
@@ -623,7 +622,7 @@ describe Daru::Vector do
       context "#recode!" do
         before :each do
           @vector =  Daru::Vector.new(
-            [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99], 
+            [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99],
             dtype: dtype, name: :common_all_dtypes)
         end
 
@@ -631,7 +630,7 @@ describe Daru::Vector do
           @vector.recode! { |v| v == -99 ? 1 : 0 }
           exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
           expect(@vector).to eq(exp)
-          expect(@vector.dtype).to eq(dtype) 
+          expect(@vector.dtype).to eq(dtype)
         end
 
         it "destructively maps and returns a vector of dtype gsl" do
@@ -715,7 +714,7 @@ describe Daru::Vector do
         [-99, -99, 1, 2, 3, 4, 5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10]
       )
       expect(@common.to_a).to eq(
-        [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99]  
+        [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99]
       )
     end
 
@@ -746,7 +745,7 @@ describe Daru::Vector do
         expect(vec.clone_structure).to eq(Daru::Vector.new([nil,nil,nil,nil,nil], index: [:a,:b,:c,:d,:e]))
       end
     end
-    
+
     context Daru::MultiIndex do
       pending
     end
@@ -782,7 +781,7 @@ describe Daru::Vector do
           ])
         vector = Daru::Vector.new([nil,2,4,5,3,nil,2,nil], index: mi)
         expect(vector.missing_positions).to eq([
-          ['M',2000], 
+          ['M',2000],
           ['F',2001],
           ['F',2003]
         ])
@@ -832,7 +831,7 @@ describe Daru::Vector do
       expect(@multi.type).to eq(:object)
       @multi[3] = 45
       @multi[4] = 54
-      expect(@multi.type).to eq(:numeric) 
+      expect(@multi.type).to eq(:numeric)
     end
 
     it "reports numeric if nils with number data" do
@@ -866,9 +865,9 @@ describe Daru::Vector do
 
   context "#only_valid" do
     it "returns a Vector of only non-nil data" do
-      vector = Daru::Vector.new [1,2,3,4,nil,3,nil], 
+      vector = Daru::Vector.new [1,2,3,4,nil,3,nil],
         index: [:a, :b, :c, :d, :e, :f, :g]
-      expect(vector.only_valid).to eq(Daru::Vector.new([1,2,3,4,3], 
+      expect(vector.only_valid).to eq(Daru::Vector.new([1,2,3,4,3],
         index: [:a, :b, :c, :d, :f]))
     end
   end
@@ -934,7 +933,7 @@ describe Daru::Vector do
     it "returns the number of ocurrences of tokens" do
       a = Daru::Vector.new ['a', 'a,b', 'c,d', 'a,d', 10, nil]
       expect(a.split_by_separator_freq).to eq(
-        { 'a' => 3, 'b' => 1, 'c' => 1, 'd' => 2, 10 => 1 }) 
+        { 'a' => 3, 'b' => 1, 'c' => 1, 'd' => 2, 10 => 1 })
     end
   end
 
@@ -985,7 +984,7 @@ describe Daru::Vector do
     it "returns false if block is false for all elements" do
       expect(@v.any?{ |e| e > 10 }).to eq(false)
     end
-  end 
+  end
 
   context "#all?" do
     before do
@@ -1006,14 +1005,14 @@ describe Daru::Vector do
       v = Daru::Vector.new([1,2,3,4,5,6,4,5,5,4,4,nil,nil,nil])
       v.missing_values = [nil, 5]
 
-      expect(v.only_missing).to eq(Daru::Vector.new([5,5,5,nil,nil,nil], 
+      expect(v.only_missing).to eq(Daru::Vector.new([5,5,5,nil,nil,nil],
         index: [4,7,8,11,12,13]))
     end
   end
 
   context "#detach_index" do
     it "creates a DataFrame with first Vector as index and second as values of the Vector" do
-      v = Daru::Vector.new([1,2,3,4,5,6], 
+      v = Daru::Vector.new([1,2,3,4,5,6],
         index: ['a', 'b', 'c', 'd', 'e', 'f'], name: :values)
       expect(v.detach_index).to eq(Daru::DataFrame.new({
         index: ['a', 'b', 'c', 'd', 'e', 'f'],
