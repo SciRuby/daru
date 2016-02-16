@@ -16,7 +16,7 @@ module Daru
 
     def each(&block)
       return to_enum(:each) unless block_given?
-      
+
       @data.each(&block)
       self
     end
@@ -566,12 +566,14 @@ module Daru
       }.merge(opts)
 
       block = lambda { |a,b|
+        return a <=> b if !(a.nil? || b.nil?)
+
         if a.nil? && b.nil?
           0
-        elsif a.nil? || b.nil?
-          1
+        elsif a.nil?
+          -1
         else
-          a <=> b
+          1
         end
       } unless block
 
