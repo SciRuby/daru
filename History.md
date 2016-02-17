@@ -5,11 +5,16 @@
     - Better importing of data from SQL databases by extracting that functionality into a separate class called `Daru::IO::SqlDataSource` (by @mrkn).
     - Faster algorithm for performing inner joins by using the bloomfilter-rb gem. Available only for MRI. (by Peter Tung)
     - Added exception `SizeError` (by Peter Tung).
-    - Removed outdated dependencies and build scripts.
+    - Removed outdated dependencies and build scripts, updated existing dependencies.
+    - Ability to sort a Daru::Vector with nils present (by @gnilrets)
+
 * Fixes
     - Fix column creation for `Dataframe.from_sql` (by @dansbits).
     - group_by can now be performed on DataFrames with nils (@gnilrets).
     - Bug fix for DataFrame Vectors not duplicating when calling `DataFrame#dup` (by @gnilrets).
+    - Bug fix when concantenating DataFrames (by @gnilrets)
+    - Handling improper arguments to `Daru::Vector#[]` (by @lokeshh)
+    - Resolve narray conflict by using the latest nmatrix require methods (by @lokeshh)
 
 # 0.1.1
 
