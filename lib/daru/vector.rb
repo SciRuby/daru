@@ -199,56 +199,19 @@ module Daru
     #
     #   # For vectors employing hierarchial multi index
     #
-    def [](*indexes)
-      location = indexes[0]
-      if @index.is_a?(MultiIndex)
-        sub_index = @index[indexes]
-        result =
-        if sub_index.is_a?(Integer)
-          @data[sub_index]
-        else
-          elements = sub_index.map do |tuple|
-            @data[@index[tuple]]
-          end
+    def [](*input_indexes)
+      # Get a proper index object
+      indexes = @index[*input_indexes]
 
-          if !indexes[0].is_a?(Range) and indexes.size < @index.width
-            sub_index = sub_index.drop_left_level indexes.size
-          end
-          Daru::Vector.new(
-            elements, index: sub_index, name: @name, dtype: @dtype)
-        end
-
-        return result
-      else
-        raise TypeError, "Invalid index type #{location.inspect}.\
-          \nUsage: v[:a, :b] gives elements with keys :a and :b for vector v." if location.is_a? Array
-
-        unless indexes[1]
-          case location
-          when Range
-            first = location.first
-            last  = location.last
-            indexes = @index.slice first, last
-          else
-            pos = @index[location]
-            if pos.is_a?(Numeric)
-              return @data[pos]
-            else
-              indexes = pos
-            end
-          end
-        else
-          indexes = indexes.map { |e| named_index_for(e) }
-        end
-
-        begin
-          Daru::Vector.new(
-            indexes.map { |loc| @data[@index[loc]] },
-            name: @name, index: indexes, dtype: @dtype)
-        rescue NoMethodError
-          raise IndexError, "Specified index #{pos.inspect} does not exist."
-        end
+      # If one object is asked return it
+      if indexes.is_a? Numeric
+        return @data[indexes]
       end
+
+      # Form a new Vector using indexes and return it
+      Daru::Vector.new(
+        indexes.map { |loc| @data[@index[loc]] },
+        name: @name, index: indexes.conform(input_indexes), dtype: @dtype)
     end
 
     # Just like in Hashes, you can specify the index label of the Daru::Vector
@@ -1309,16 +1272,6 @@ module Daru
 
       @dtype = dtype || :array
       new_vector
-    end
-
-    def named_index_for index
-      if @index.include? index
-        index
-      elsif @index.key index
-        @index.key index
-      else
-        raise IndexError, "Specified index #{index} does not exist."
-      end
     end
 
     def index_for index

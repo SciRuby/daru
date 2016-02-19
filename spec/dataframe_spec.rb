@@ -455,7 +455,7 @@ describe Daru::DataFrame do
       end
 
       it "returns a Vector if the last level of MultiIndex is tracked" do
-        expect(@df_mi[:a, :one]).to eq(
+        expect(@df_mi[:a, :one, :bar]).to eq(
           Daru::Vector.new(@vector_arry1, index: @multi_index))
       end
     end

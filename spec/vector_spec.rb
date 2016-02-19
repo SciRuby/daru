@@ -177,11 +177,12 @@ describe Daru::Vector do
               [:c,:one,:bar],
               [:c,:one,:baz],
               [:c,:two,:foo],
-              [:c,:two,:bar]
+              [:c,:two,:bar],
+              [:d,:one,:foo]
             ]
             @multi_index = Daru::MultiIndex.from_tuples(@tuples)
             @vector = Daru::Vector.new(
-              Array.new(12) { |i| i }, index: @multi_index,
+              Array.new(13) { |i| i }, index: @multi_index,
               dtype: dtype, name: :mi_vector)
           end
 
@@ -208,6 +209,12 @@ describe Daru::Vector do
               [:foo],
               [:bar]])
             expect(@vector[:c,:two]).to eq(Daru::Vector.new([10,11], index: mi,
+              dtype: dtype, name: :sub_sub_vector))
+          end
+
+          it "returns sub vector not a single element when passed the partial tuple" do
+            mi = Daru::MultiIndex.from_tuples([[:foo]])
+            expect(@vector[:d, :one]).to eq(Daru::Vector.new([12], index: mi,
               dtype: dtype, name: :sub_sub_vector))
           end
 

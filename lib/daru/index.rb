@@ -81,7 +81,13 @@ module Daru
 
         slice first, last
       when key.size > 1
-        Daru::Index.new key.map { |k| self[k] }
+        if include? key[0]
+          Daru::Index.new key.map { |k| k }
+        else
+          # Assume the user is specifing values for index not keys
+          # Return index object having keys corresponding to values provided
+          Daru::Index.new key.map { |k| key k }
+        end
       else
         v = @relation_hash[loc]
         return loc if v.nil?
@@ -142,6 +148,14 @@ module Daru
       h = Marshal.load data
 
       Daru::Index.new(h[:relation_hash].keys)
+    end
+
+    # Provide an Index for sub vector produced
+    #
+    # @param input_indexes [Array] the input by user to index the vector
+    # @return [Object] the Index object for sub vector produced
+    def conform input_indexes
+      self
     end
   end # class Index
 
@@ -214,7 +228,7 @@ module Daru
       case
       when key[0].is_a?(Range) then retrieve_from_range(key[0])
       when (key[0].is_a?(Integer) and key.size == 1) then try_retrieve_from_integer(key[0])
-      else retrieve_from_tuples(key)
+      else retrieve_from_tuples key
       end
     end
 
@@ -236,7 +250,7 @@ module Daru
         chosen = find_all_indexes label, level_index, chosen
       end
 
-      return chosen[0] if chosen.size == 1
+      return chosen[0] if chosen.size == 1 and key.size == @levels.size
       return multi_index_from_multiple_selections(chosen)              
     end
 
@@ -329,6 +343,15 @@ module Daru
 
     def inspect
       "Daru::MultiIndex:#{self.object_id} (levels: #{levels}\nlabels: #{labels})"
+    end
+
+    # Provide a MultiIndex for sub vector produced
+    #
+    # @param input_indexes [Array] the input by user to index the vector
+    # @return [Object] the MultiIndex object for sub vector produced
+    def conform input_indexes
+      return self if input_indexes[0].is_a? Range
+      drop_left_level input_indexes.size
     end
   end
 end
