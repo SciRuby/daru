@@ -71,7 +71,7 @@ module Daru
           hash
         end
 
-        # Preprocess headers for detecting and correcting repetition in 
+        # Preprocess headers for detecting and correcting repetition in
         # case the :headers option is not specified.
         unless opts[:headers]
           csv = ::CSV.open(path, 'rb', opts)
@@ -88,7 +88,7 @@ module Daru
           end
         else
           opts[:header_converters] ||= :symbol
-          
+
           csv = ::CSV.read(path, 'rb',opts)
           yield csv if block_given?
 
@@ -107,7 +107,7 @@ module Daru
         }.merge(opts)
 
         writer = ::CSV.open(path, 'w', options)
-        writer << dataframe.vectors.to_a
+        writer << dataframe.vectors.to_a unless options[:headers] == false
 
         dataframe.each_row do |row|
           if options[:convert_comma]

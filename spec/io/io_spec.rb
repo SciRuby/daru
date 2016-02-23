@@ -4,7 +4,7 @@ describe Daru::IO do
   describe Daru::DataFrame do
     context ".from_csv" do
       it "loads from a CSV file" do
-        df = Daru::DataFrame.from_csv('spec/fixtures/matrix_test.csv', 
+        df = Daru::DataFrame.from_csv('spec/fixtures/matrix_test.csv',
           col_sep: ' ', headers: true)
 
         df.vectors = [:image_resolution, :mls, :true_transform].to_index
@@ -32,17 +32,33 @@ describe Daru::IO do
     end
 
     context "#write_csv" do
-      it "writes DataFrame to a CSV file" do
-        df = Daru::DataFrame.new({
-          'a' => [1,2,3,4,5], 
+      before do
+        @df = Daru::DataFrame.new({
+          'a' => [1,2,3,4,5],
           'b' => [11,22,33,44,55],
           'c' => ['a', 'g', 4, 5,'addadf'],
           'd' => [nil, 23, 4,'a','ff']})
-        t = Tempfile.new('data.csv')
-        df.write_csv t.path
+        @tempfile = Tempfile.new('data.csv')
 
-        expect(Daru::DataFrame.from_csv(t.path)).to eq(df)
       end
+
+      it "writes DataFrame to a CSV file" do
+        @df.write_csv @tempfile.path
+        expect(Daru::DataFrame.from_csv(@tempfile.path)).to eq(@df)
+      end
+
+      it "will write headers unless headers=false" do
+        @df.write_csv @tempfile.path
+        first_line = File.open(@tempfile.path, &:readline).chomp.split(',', -1)
+        expect(first_line).to eq @df.vectors.to_a
+      end
+
+      it "will not write headers when headers=false" do
+        @df.write_csv @tempfile.path, { headers: false }
+        first_line = File.open(@tempfile.path, &:readline).chomp.split(',', -1)
+        expect(first_line).to eq @df.head(1).map { |v| (v.first || '').to_s }
+      end
+
     end
 
     context ".from_excel" do
@@ -52,8 +68,8 @@ describe Daru::IO do
         age  = Daru::Vector.new( [20, 23, 25, nil, 5.5, nil])
         city = Daru::Vector.new(['New York', 'London', 'London', 'Paris', 'Tome', nil])
         a1   = Daru::Vector.new(['a,b', 'b,c', 'a', nil, 'a,b,c', nil])
-        @expected = Daru::DataFrame.new({ 
-          :id => id, :name => name, :age => age, :city => city, :a1 => a1 
+        @expected = Daru::DataFrame.new({
+          :id => id, :name => name, :age => age, :city => city, :a1 => a1
           }, order: [:id, :name, :age, :city, :a1])
       end
 
@@ -190,8 +206,8 @@ describe Daru::IO do
         df   = Daru::DataFrame.new JSON.parse(json)
 
         expect(df.vectors).to eq([
-          'name', 'nativeName', 'tld', 'cca2', 'ccn3', 'cca3', 'currency', 'callingCode', 
-          'capital', 'altSpellings', 'relevance', 'region', 'subregion', 'language', 
+          'name', 'nativeName', 'tld', 'cca2', 'ccn3', 'cca3', 'currency', 'callingCode',
+          'capital', 'altSpellings', 'relevance', 'region', 'subregion', 'language',
           'languageCodes', 'translations', 'latlng', 'demonym', 'borders', 'area'].to_index)
 
         expect(df.row[0]['name']).to eq("Afghanistan")
@@ -208,9 +224,9 @@ describe Daru::IO do
 
     context "#save" do
       before do
-        @data_frame = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5], 
-          c: [11,22,33,44,55]}, 
-          order: [:a, :b, :c], 
+        @data_frame = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
+          c: [11,22,33,44,55]},
+          order: [:a, :b, :c],
           index: [:one, :two, :three, :four, :five])
       end
 
@@ -235,7 +251,7 @@ describe Daru::IO do
       ALL_DTYPES.each do |dtype|
         it "saves to a file and returns the same Vector of type #{dtype}" do
           vector = Daru::Vector.new(
-              [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99], 
+              [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99],
               dtype: dtype)
           outfile = Tempfile.new('vector.vec')
           vector.save(outfile.path)
