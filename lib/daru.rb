@@ -27,16 +27,16 @@ module Daru
     11 => 30,
     12 => 31
   }
-  
+
   SPLIT_TOKEN = ','
   class << self
     @@lazy_update = false
-    
+
     # A variable which will set whether Vector metadata is updated immediately or lazily.
     # Call the #update method every time a values are set or removed in order to update
     # metadata like positions of missing values.
     attr_accessor :lazy_update
-    
+
     def create_has_library(library)
       lib_underscore = library.to_s.gsub(/-/, '_')
       define_singleton_method("has_#{lib_underscore}?") do
@@ -58,7 +58,6 @@ module Daru
   create_has_library :gsl
   create_has_library :nmatrix
   create_has_library :nyaplot
-  create_has_library :'bloomfilter-rb'
 end
 
 autoload :Spreadsheet, 'spreadsheet'

@@ -34,7 +34,7 @@ class Array
       self
     end
   end
-  
+
   def daru_vector name=nil, index=nil, dtype=:array
     Daru::Vector.new self, name: name, index: index, dtype: dtype
   end
