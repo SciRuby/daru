@@ -90,7 +90,10 @@ module Daru
         end
       else
         v = @relation_hash[loc]
-        return loc if v.nil?
+        if !v
+          return loc if loc.is_a? Numeric and loc < size
+          raise IndexError, "Specified index #{loc.inspect} does not exist"
+        end
         v
       end
     end
@@ -228,7 +231,12 @@ module Daru
       case
       when key[0].is_a?(Range) then retrieve_from_range(key[0])
       when (key[0].is_a?(Integer) and key.size == 1) then try_retrieve_from_integer(key[0])
-      else retrieve_from_tuples key
+      else
+        begin
+          retrieve_from_tuples key
+        rescue NoMethodError
+          raise IndexError, "Specified index #{key.inspect} do not exist"
+        end
       end
     end
 

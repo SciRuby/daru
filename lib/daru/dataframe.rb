@@ -2245,7 +2245,11 @@ module Daru
 
     def assign_or_add_vector name, v
       #FIXME: fix this jugaad. need to make changes in Indexing itself.
-      pos = @vectors[name]
+      begin
+        pos = @vectors[name]
+      rescue IndexError
+        pos = name
+      end
 
       if !pos.kind_of?(Daru::Index) and pos == name and
         (@vectors.include?(name) or (pos.is_a?(Integer) and pos < @data.size))

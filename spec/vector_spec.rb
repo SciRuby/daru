@@ -161,6 +161,11 @@ describe Daru::Vector do
             expect(v[1]).to eq(3)
             expect(v[0]).to eq(1)
           end
+
+          it "raises exception for invalid index" do
+            expect { @dv[:foo] }.to raise_error(IndexError)
+            expect { @dv[:obi, :foo] }.to raise_error(IndexError)
+          end
         end
 
         context Daru::MultiIndex do
@@ -230,6 +235,11 @@ describe Daru::Vector do
             ])
             expect(@vector[3..9]).to eq(Daru::Vector.new([3,4,5,6,7,8,9], index: mi,
               dtype: dtype, name: :slice))
+          end
+
+          it "raises exception for invalid index" do
+            expect { @vector[:foo] }.to raise_error(IndexError)
+            expect { @vector[:a, :two, :foo] }.to raise_error(IndexError)
           end
         end
       end

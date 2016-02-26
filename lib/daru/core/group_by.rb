@@ -194,8 +194,15 @@ module Daru
         indexes.each do |idx|
           rows << transpose[idx]
         end
+
+        new_index =
+          begin
+            @context.index[indexes]
+          rescue IndexError
+            indexes
+          end
         Daru::DataFrame.rows(
-          rows, index: @context.index[indexes], order: @context.vectors)
+          rows, index: new_index, order: @context.vectors)
       end
 
      private
