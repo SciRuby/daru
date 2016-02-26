@@ -235,8 +235,7 @@ module Daru
       @possibly_changed_type = true if @type == :numeric and (!value.is_a?(Numeric) and
         !value.nil?)
 
-      location = location[0] unless @index.is_a?(MultiIndex)
-      pos      = @index[location]
+      pos      = @index[*location]
 
       if pos.is_a?(Numeric)
         @data[pos] = value
