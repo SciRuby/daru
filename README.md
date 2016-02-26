@@ -150,7 +150,7 @@ data_frame.where(
 
 *Plotting* 
 
-Daru supports plotting of interactive graphs with [nyaplot](). You can easily create a plot with the `#plot` method. Here we plot the gallons sold on the Y axis and name of the brand on the X axis in a bar graph.
+Daru supports plotting of interactive graphs with [nyaplot](https://github.com/domitry/nyaplot). You can easily create a plot with the `#plot` method. Here we plot the gallons sold on the Y axis and name of the brand on the X axis in a bar graph.
 ``` ruby
 data_frame.plot type: :bar, x: 'Beer', y: 'Gallons sold' do |plot, diagram|
   plot.x_label "Beer"
