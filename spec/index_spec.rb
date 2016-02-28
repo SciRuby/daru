@@ -76,7 +76,7 @@ describe Daru::Index do
   context "#[]" do
     before do
       @id = Daru::Index.new [:one, :two, :three, :four, :five, :six, :seven]
-      @mixed_id = Daru::Index.new ['a','b','c',:d,:a,0,3,5]
+      @mixed_id = Daru::Index.new ['a','b','c',:d,:a,8,3,5]
     end
 
     it "works with ranges" do
@@ -88,12 +88,12 @@ describe Daru::Index do
       expect(@mixed_id[0..2]).to eq(Daru::Index.new(['a','b','c']))
 
       # If atleast one is a number then refer to actual indexing
-      expect(@mixed_id.slice('b',0)).to eq(Daru::Index.new(['b','c',:d,:a,0]))
+      expect(@mixed_id.slice('b',8)).to eq(Daru::Index.new(['b','c',:d,:a,8]))
     end
 
     it "returns multiple keys if specified multiple indices" do
-      expect(@id[0,1,3,4]).to eq(Daru::Index.new([0,1,3,4]))
-      expect(@mixed_id[0,5,3,2]).to eq(Daru::Index.new([5, 7, 6, 2]))
+      expect(@id[0,1,3,4]).to eq(Daru::Index.new([:one, :two, :four, :five]))
+      expect(@mixed_id[0,5,3,2]).to eq(Daru::Index.new(['a', 8, :d, 'c']))
     end
 
     it "returns correct index position for non-numeric index" do
@@ -102,7 +102,7 @@ describe Daru::Index do
     end
 
     it "returns correct index position for mixed index" do
-      expect(@mixed_id[0]).to eq(5)
+      expect(@mixed_id[8]).to eq(5)
       expect(@mixed_id['c']).to eq(2)
     end
   end

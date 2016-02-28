@@ -161,6 +161,11 @@ describe Daru::Vector do
             expect(v[1]).to eq(3)
             expect(v[0]).to eq(1)
           end
+
+          it "raises exception for invalid index" do
+            expect { @dv[:foo] }.to raise_error(IndexError)
+            expect { @dv[:obi, :foo] }.to raise_error(IndexError)
+          end
         end
 
         context Daru::MultiIndex do
@@ -177,11 +182,12 @@ describe Daru::Vector do
               [:c,:one,:bar],
               [:c,:one,:baz],
               [:c,:two,:foo],
-              [:c,:two,:bar]
+              [:c,:two,:bar],
+              [:d,:one,:foo]
             ]
             @multi_index = Daru::MultiIndex.from_tuples(@tuples)
             @vector = Daru::Vector.new(
-              Array.new(12) { |i| i }, index: @multi_index,
+              Array.new(13) { |i| i }, index: @multi_index,
               dtype: dtype, name: :mi_vector)
           end
 
@@ -211,6 +217,12 @@ describe Daru::Vector do
               dtype: dtype, name: :sub_sub_vector))
           end
 
+          it "returns sub vector not a single element when passed the partial tuple" do
+            mi = Daru::MultiIndex.from_tuples([[:foo]])
+            expect(@vector[:d, :one]).to eq(Daru::Vector.new([12], index: mi,
+              dtype: dtype, name: :sub_sub_vector))
+          end
+
           it "returns a vector with corresponding MultiIndex when specified numeric Range" do
             mi = Daru::MultiIndex.from_tuples([
               [:a,:two,:baz],
@@ -223,6 +235,11 @@ describe Daru::Vector do
             ])
             expect(@vector[3..9]).to eq(Daru::Vector.new([3,4,5,6,7,8,9], index: mi,
               dtype: dtype, name: :slice))
+          end
+
+          it "raises exception for invalid index" do
+            expect { @vector[:foo] }.to raise_error(IndexError)
+            expect { @vector[:a, :two, :foo] }.to raise_error(IndexError)
           end
         end
       end
