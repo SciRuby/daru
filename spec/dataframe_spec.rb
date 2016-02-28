@@ -923,6 +923,17 @@ describe Daru::DataFrame do
       @ans_rows = Daru::DataFrame.new({b: [121, 144, 169, 196, 225], a: [1,4,9,16,25],
         c: [121, 484, 1089, 1936, 3025]}, order: [:a, :b, :c],
         index: [:one, :two, :three, :four, :five])
+
+      @data_frame_date_time = @data_frame.dup
+      @data_frame_date_time.index = Daru::DateTimeIndex.date_range(start:"2016-02-11", periods:5)
+
+      @ans_vector_date_time = Daru::DataFrame.new({b: [21,22,23,24,25], a: [11,12,13,14,15],
+        c: [21,32,43,54,65]}, order: [:a, :b, :c],
+        index: Daru::DateTimeIndex.date_range(start:"2016-02-11", periods:5))
+
+      @ans_rows_date_time = Daru::DataFrame.new({b: [121, 144, 169, 196, 225], a: [1,4,9,16,25],
+        c: [121, 484, 1089, 1936, 3025]}, order: [:a, :b, :c],
+        index: Daru::DateTimeIndex.date_range(start:"2016-02-11", periods:5))
     end
 
     it "maps over the vectors of a DataFrame and returns a DataFrame" do
@@ -941,6 +952,24 @@ describe Daru::DataFrame do
 
       expect(ret).to eq(@ans_rows)
     end
+
+    it "maps over the vectors of a DataFrame with DateTimeIndex and returns a DataFrame with DateTimeIndex" do
+      ret = @data_frame_date_time.recode do |vector|
+        vector.map! { |e| e += 10}
+      end
+
+      expect(ret).to eq(@ans_vector_date_time)
+    end
+
+    it "maps over the rows of a DataFrame with DateTimeIndex and returns a DataFrame with DateTimeIndex" do
+      ret = @data_frame_date_time.recode(:row) do |row|
+        expect(row.class).to eq(Daru::Vector)
+        row.map! { |e| e*e }
+      end
+
+      expect(ret).to eq(@ans_rows_date_time)
+    end
+
   end
 
   context "#collect" do
