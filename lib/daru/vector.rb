@@ -535,24 +535,32 @@ module Daru
     def sort opts={}, &block
       opts = {
         ascending: true,
-        type: :quick_sort
       }.merge(opts)
-
+      
       block = lambda { |a,b|
-        return a <=> b if !(a.nil? || b.nil?)
+        av, ai = a
+        bv, bi = b
+        return av <=> bv if !(av.nil? || bv.nil?)
 
-        if a.nil? && b.nil?
-          0
-        elsif a.nil?
+        if av.nil? && bv.nil?
+          ai <=> bi
+        elsif av.nil?
           -1
         else
           1
         end
-      } unless block
+      } unless block      
 
-      order = opts[:ascending] ? :ascending : :descending
-      vector, index = send(opts[:type], @data.to_a.dup, @index.to_a, order, &block)
-      index = Daru::Index.new index
+      vector_index = @data.each_with_index
+      if block_given?
+        vector_index = vector_index.sort { |a,b| block.call(a[0], b[0]) }
+      else
+        vector_index = vector_index.sort { |a,b| block.call(a, b)}
+      end
+      vector_index.reverse! unless opts[:ascending]
+      vector, index = vector_index.transpose
+      old_index = @index.to_a
+      index = index.map { |i| old_index[i] }
 
       Daru::Vector.new(vector, index: index, name: @name, dtype: @dtype)
     end
@@ -1191,56 +1199,6 @@ module Daru
       bss = h_est.keys.inject({}) { |h,v| h[v] = []; h }
 
       [h_est, h_est.keys, bss]
-    end
-
-    def quick_sort vector, index, order, &block
-      recursive_quick_sort vector, index, order, 0, @size-1, &block
-      [vector, index]
-    end
-
-    def recursive_quick_sort vector, index, order, left_lower, right_upper, &block
-      if left_lower < right_upper
-        left_upper, right_lower = partition(vector, index, order, left_lower, right_upper, &block)
-        if left_upper - left_lower < right_upper - right_lower
-          recursive_quick_sort(vector, index, order, left_lower, left_upper, &block)
-          recursive_quick_sort(vector, index, order, right_lower, right_upper, &block)
-        else
-          recursive_quick_sort(vector, index, order, right_lower, right_upper, &block)
-          recursive_quick_sort(vector, index, order, left_lower, left_upper, &block)
-        end
-      end
-    end
-
-    def partition vector, index, order, left_lower, right_upper, &block
-      mindex = (left_lower + right_upper) / 2
-      mvalue = vector[mindex]
-      i = left_lower
-      j = right_upper
-      opposite_order = order == :ascending ? :descending : :ascending
-
-      i += 1 while(keep?(vector[i], mvalue, order, &block))
-      j -= 1 while(keep?(vector[j], mvalue, opposite_order, &block))
-
-      while i < j - 1
-        vector[i], vector[j] = vector[j], vector[i]
-        index[i], index[j]   = index[j], index[i]
-        i += 1
-        j -= 1
-
-        i += 1 while(keep?(vector[i], mvalue, order, &block))
-        j -= 1 while(keep?(vector[j], mvalue, opposite_order, &block))
-      end
-
-      if i <= j
-        if i < j
-          vector[i], vector[j] = vector[j], vector[i]
-          index[i], index[j]   = index[j], index[i]
-        end
-        i += 1
-        j -= 1
-      end
-
-      [j,i]
     end
 
     def keep? a, b, order, &block
