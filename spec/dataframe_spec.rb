@@ -1235,12 +1235,12 @@ describe Daru::DataFrame do
       end
 
       it "sorts according to given vector order (bang)" do
-        a_sorter = lambda { |a,b| a <=> b }
+        a_sorter = lambda { |a| a }
         ans = @df.sort([:a], by: { a: a_sorter })
 
         expect(ans).to eq(
-          Daru::DataFrame.new({a: [-6,1,5,5,5,7], b: [5,-1,9,1,-2,3], c: ['aaa','aa','aaaaa','aaaaaa','a','aaaa']},
-            index: [2,1,4,5,0,3])
+          Daru::DataFrame.new({a: [-6,1,5,5,5,7], b: [5,-1,-2,9,1,3], c: ['aaa','aa','a','aaaaa','aaaaaa','aaaa']},
+            index: [2,1,0,4,5,3])
           )
         expect(ans).to_not eq(@df)
       end
@@ -1268,11 +1268,11 @@ describe Daru::DataFrame do
       end
 
       it "sorts according to given vector order (bang)" do
-        a_sorter = lambda { |a,b| a <=> b }
+        a_sorter = lambda { |a| a }
 
         expect(@df.sort!([:a], by: { a: a_sorter })).to eq(
-          Daru::DataFrame.new({a: [-6,1,5,5,5,7], b: [5,-1,9,1,-2,3],
-            c: ['aaa','aa','aaaaa','aaaaaa','a','aaaa']}, index: [2,1,4,5,0,3])
+          Daru::DataFrame.new({a: [-6,1,5,5,5,7], b: [5,-1,-2,9,1,3],
+            c: ['aaa','aa','a','aaaaa','aaaaaa','aaaa']}, index: [2,1,0,4,5,3])
           )
       end
 
@@ -1304,6 +1304,68 @@ describe Daru::DataFrame do
           Daru::DataFrame.new({a: [544,222,44,5,5,1,1,1], b: [3,222,111,22,554,44,44,333], c: [5,3,3,5,1,3,2,5]},
             index: [7,3,4,6,5,0,1,2])
           )
+      end
+
+      it "places nils at the beginning when sorting ascedingly" do
+        d = Daru::DataFrame.new({a: [1,1,1,nil,44,5,5,nil], b: [44,44,333,222,111,554,22,3], c: [3,2,5,3,3,1,5,5]})
+
+        expect(d.sort!([:a, :b, :c], ascending: [true, true, false])).to eq(
+          Daru::DataFrame.new({a: [nil,nil,1,1,1,5,5,44], b: [3,222,44,44,333,22,554,111], c: [5,3,3,2,5,5,1,3]},
+            index: [7,3,0,1,2,6,5,4])
+          )
+      end
+
+      it "places nils at the beginning when sorting decendingly" do
+        d = Daru::DataFrame.new({a: [1,1,1,nil,44,5,5,nil], b: [44,44,333,222,111,554,22,3], c: [3,2,5,3,3,1,5,5]})
+
+        expect(d.sort!([:a, :b, :c], ascending: [false, true, false])).to eq(
+          Daru::DataFrame.new({a: [nil,nil,44,5,5,1,1,1], b: [3,222,111,22,554,44,44,333], c: [5,3,3,5,1,3,2,5]},
+            index: [7,3,4,6,5,0,1,2])
+          )
+      end
+
+      it "sorts vectors of non-numeric types with nils in ascending order" do
+        non_numeric = Daru::DataFrame.new({a: [5,1,-6,7,5,5], b: [nil,-1,1,nil,-1,1],
+          c: ['aaa','aaa',nil,'baaa','xxx',nil]})
+
+        expect(non_numeric.sort!([:c], ascending: [true])).to eq(
+          Daru::DataFrame.new({a: [-6, 5, 5, 1, 7, 5], b: [1, 1, nil, -1, nil, -1],
+            c: [nil, nil, "aaa", "aaa", "baaa", "xxx"]}, 
+            index: [2, 5, 0, 1, 3, 4])
+          )
+      end
+
+      it "sorts vectors of non-numeric types with nils in descending order" do
+        non_numeric = Daru::DataFrame.new({a: [5,1,-6,7,5,5], b: [nil,-1,1,nil,-1,1],
+          c: ['aaa','aaa',nil,'baaa','xxx',nil]})
+
+        expect(non_numeric.sort!([:c], ascending: [false])).to eq(
+          Daru::DataFrame.new({a: [-6, 5, 5, 7, 5, 1], b: [1, 1, -1, nil, nil, -1],
+            c: [nil, nil, "xxx", "baaa", "aaa", "aaa"]}, 
+            index: [2, 5, 4, 3, 0, 1])
+          )
+      end
+
+      it "sorts vectors with block provided and handle nils automatically" do
+        non_numeric = Daru::DataFrame.new({a: [5,1,-6,7,5,5], b: [nil,-1,1,nil,-1,1],
+          c: ['aaa','aaa',nil,'baaa','xxx',nil]})
+
+        expect(non_numeric.sort!([:b], by: {b: lambda { |a| a.abs } }, handle_nils: true)).to eq(
+          Daru::DataFrame.new({a: [5, 7, 1, -6, 5, 5], b: [nil, nil, -1, 1, -1, 1],
+            c: ["aaa", "baaa", "aaa", nil, "xxx", nil]}, 
+            index: [0, 3, 1, 2, 4, 5])
+          )
+      end
+
+      it "sorts vectors with block provided and nils handled manually" do
+        non_numeric = Daru::DataFrame.new({a: [5,1,-6,7,5,5], b: [nil,-1,1,nil,-1,1],
+          c: ['aaa','aaa',nil,'baaa','xxx',nil]})
+
+      expect(non_numeric.sort!([:b], by: {b: lambda { |a| (a.nil?)?[1]:[0, a.abs]} }, handle_nils: false)).to eq(
+        Daru::DataFrame.new({a: [1, -6, 5, 5, 5, 7], b: [-1, 1, -1, 1, nil, nil],
+          c: ["aaa", nil, "xxx", nil, "aaa", "baaa"]}, 
+          index: [1, 2, 4, 5, 0, 3])
+        )
       end
     end
 

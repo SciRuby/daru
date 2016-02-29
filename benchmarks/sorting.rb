@@ -28,8 +28,8 @@ Benchmark.bm do |x|
 
   x.report("Sort two columns with custom operators in different orders of DataFrame") do
     df.sort([:c,:a], ascending: [true, false], 
-      by: { c: lambda { |a,b| a.to_s <=> b.to_s },
-            a: lambda { |a,b| (a+1) <=> (b+1) } })
+      by: { c: lambda { |a| a.to_s },
+            a: lambda { |a| a+1 } })
   end
 end
 
@@ -42,3 +42,10 @@ end
 # Sort single column of DataFrame                                          2502.450000 0.000000 2502.450000 (2503.808073)
 # Sort two columns of DataFrame                                            0.540000    0.000000 0.540000    (  0.537670)
 # Sort two columns with custom operators in different orders of DataFrame  2084.160000 7.260000 2091.420000 (2092.716603)
+
+#                                         ===== Current Benchamarks =====
+# Sort a Vector without any args                                           0.070000   0.000000   0.070000 (  0.070323)
+# Sort vector in descending order with custom <=> operator                 0.120000   0.000000   0.120000 (  0.119462)
+# Sort single column of DataFrame                                          0.940000   0.010000   0.950000 (  0.950349)
+# Sort two columns of DataFrame                                            1.490000   0.010000   1.500000 (  1.505680)
+# Sort two columns with custom operators in different orders of DataFrame  1.480000   0.000000   1.480000 (  1.495839)
