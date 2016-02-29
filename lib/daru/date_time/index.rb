@@ -268,6 +268,11 @@ module Daru
       @periods   = data.size
     end
 
+    # Custom dup method for DateTimeIndex   
+    def dup
+      Daru::DateTimeIndex.new(@data.transpose[0], :freq => @offset)
+    end
+
     # Create a date range by specifying the start, end, periods and frequency
     # of the data.
     # 
