@@ -30,8 +30,7 @@ module Daru
         end
 
         def mode
-          freqs = frequencies.values
-          @data[freqs.index(freqs.max)]
+          frequencies.max{|a,b| a[1]<=>b[1]}.first
         end
 
         def median_absolute_deviation
