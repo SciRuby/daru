@@ -91,7 +91,8 @@ describe Daru::Vector do
 
       context "#mode" do
         it "returns the mode" do
-          @dv.mode
+          mode_test_example = Daru::Vector.new [1,2,3,2,4,4,4,4], dtype: dtype
+          expect(mode_test_example.mode).to eq(4)
         end
       end
 
