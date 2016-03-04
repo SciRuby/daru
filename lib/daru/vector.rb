@@ -545,9 +545,9 @@ module Daru
         if av.nil? && bv.nil?
           ai <=> bi
         elsif av.nil?
-          -1
+          opts[:ascending]? -1:1
         else
-          1
+          opts[:ascending]? 1:-1
         end
       } unless block      
 
