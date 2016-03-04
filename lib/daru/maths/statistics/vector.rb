@@ -32,6 +32,20 @@ module Daru
         def mode
           frequencies.max{|a,b| a[1]<=>b[1]}.first
         end
+        
+        # Create a summary of count, mean, standard deviation, min and max of 
+        # the vector in one shot.
+        # 
+        # == Arguments
+        # 
+        # +methods+ - An array with aggregation methods specified as symbols to 
+        # be applied to vectors. Default is [:count, :mean, :std, :max, 
+        # :min]. Methods will be applied in the specified order.
+        def describe methods=nil
+          methods ||= [:count, :mean, :std, :min, :max]
+          description = methods.map { |m| self.send(m) }
+          Daru::Vector.new(description, index: methods, name: :statistics)
+	end
 
         def median_absolute_deviation
           m = median

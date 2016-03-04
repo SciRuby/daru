@@ -95,6 +95,15 @@ describe Daru::Vector do
           expect(mode_test_example.mode).to eq(4)
         end
       end
+      
+      context "#describe" do
+        it "generates count, mean, std, min and max of vectors in one shot" do
+          expect(@dv.describe.round(2)).to eq(Daru::Vector.new([10.00, 282.20, 274.08, 1.00, 666.00],
+            index: [:count, :mean, :std, :min, :max], 
+            name:  :statistics
+          ))
+        end
+      end
 
       context "#kurtosis" do
         it "calculates kurtosis" do
