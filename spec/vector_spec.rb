@@ -466,8 +466,11 @@ describe Daru::Vector do
       end
 
       context "#uniq" do
+        before do
+          @v = Daru::Vector.new [1, 2, 2, 2.0, 3, 3.0], index:[:a, :b, :c, :d, :e, :f]
+        end
         it "keeps only unique values" do
-          # TODO: fill this in
+          expect(@v.uniq).to eq(Daru::Vector.new [1, 2, 2.0, 3, 3.0], index: [:a, :b, :d, :e, :f])
         end
       end
 

@@ -494,7 +494,10 @@ module Daru
 
     # Get index of element
     def index_of element
-      @index.key @data.index(element)
+      case dtype
+      when :array   then @index.key @data.index{|x| x.eql? element}
+      else @index.key @data.index(element)
+      end
     end
 
     # Keep only unique elements of the vector alongwith their indexes.
