@@ -1415,8 +1415,8 @@ module Daru
       end
     end
 
-    # Sorts a dataframe (ascending/descending)according to the given sequence of
-    # vectors, using the attributes provided in the blocks.
+    # Sorts a dataframe (ascending/descending) in the given pripority sequence of
+    # vectors, with or without a block.
     #
     # @param order [Array] The order of vector names in which the DataFrame
     #   should be sorted.
@@ -1424,35 +1424,113 @@ module Daru
     # @option opts [TrueClass,FalseClass,Array] :ascending (true) Sort in ascending
     #   or descending order. Specify Array corresponding to *order* for multiple
     #   sort orders.
-    # @option opts [Hash] :by ({|a,b| a <=> b}) Specify attributes of objects to
+    # @option opts [Hash] :by (lambda{|a| a }) Specify attributes of objects to
     #   to be used for sorting, for each vector name in *order* as a hash of
-    #   vector name and lambda pairs. In case a lambda for a vector is not
+    #   vector name and lambda expressions. In case a lambda for a vector is not
     #   specified, the default will be used.
+    # @option opts [TrueClass,FalseClass,Array] :handle_nils (false) Handle nils 
+    #   automatically or not when a block is provided. 
+    #   If set to True, nils will appear at top after sorting. 
     #
-    # == Usage
+    # @example Sort a dataframe with a vector sequence.
+    # 
     #
-    #   df = Daru::DataFrame.new({a: [-3,2,-1,4], b: [4,3,2,1]})
+    #   df = Daru::DataFrame.new({a: [1,2,1,2,3], b: [5,4,3,2,1]})
     #
-    #   #<Daru::DataFrame:140630680 @name = 04e00197-f8d5-4161-bca2-93266bfabc6f @size = 4>
-    #   #            a          b
-    #   # 0         -3          4
-    #   # 1          2          3
-    #   # 2         -1          2
-    #   # 3          4          1
-    #   df.sort([:a], by: { a: lambda { |a,b| a.abs <=> b.abs } })
+    #   df.sort [:a, :b]
+    #   # => 
+    #   # <Daru::DataFrame:30604000 @name = d6a9294e-2c09-418f-b646-aa9244653444 @size = 5>
+    #   #                   a          b 
+    #   #        2          1          3 
+    #   #        0          1          5 
+    #   #        3          2          2 
+    #   #        1          2          4 
+    #   #        4          3          1  
+    #
+    # @example Sort a dataframe without a block. Here nils will be handled automatically.
+    #
+    #   df = Daru::DataFrame.new({a: [-3,nil,-1,nil,5], b: [4,3,2,1,4]})
+    #   
+    #   df.sort([:a])
+    #   # => 
+    #   # <Daru::DataFrame:14810920 @name = c07fb5c7-2201-458d-b679-6a1f7ebfe49f @size = 5>
+    #   #                    a          b 
+    #   #         1        nil          3
+    #   #         3        nil          1 
+    #   #         0         -3          4 
+    #   #         2         -1          2 
+    #   #         4          5          4 
+    #
+    # @example Sort a dataframe with a block with nils handled automatically.
+    #
+    #   df = Daru::DataFrame.new({a: [nil,-1,1,nil,-1,1], b: ['aaa','aa',nil,'baaa','x',nil] })
+    #
+    #   df.sort [:b], by: {b: lambda { |a| a.length } }
+    #   # NoMethodError: undefined method `length' for nil:NilClass
+    #   # from (pry):8:in `block in __pry__'
+    #
+    #   df.sort [:b], by: {b: lambda { |a| a.length } }, handle_nils: true
+    #
+    #   # =>
+    #   # <Daru::DataFrame:28469540 @name = 5f986508-556f-468b-be0c-88cc3534445c @size = 6>
+    #   #                    a          b
+    #   #         2          1        nil
+    #   #         5          1        nil
+    #   #         4         -1          x
+    #   #         1         -1         aa
+    #   #         0        nil        aaa
+    #   #         3        nil       baaa
+    #
+    # @example Sort a dataframe with a block with nils handled manually.
+    #
+    #   df = Daru::DataFrame.new({a: [nil,-1,1,nil,-1,1], b: ['aaa','aa',nil,'baaa','x',nil] })
+    #
+    #   # To print nils at the bottom one can use lambda { |a| (a.nil?)[1]:[0,a.length] }
+    #   df.sort [:b], by: {b: lambda { |a| (a.nil?)?[1]:[0,a.length] } }, handle_nils: true
+    #
+    #   # =>
+    #   #<Daru::DataFrame:22214180 @name = cd7703c7-1dca-4560-840b-5ea51a852ef9 @size = 6>
+    #   #                 a          b
+    #   #      4         -1          x
+    #   #      1         -1         aa
+    #   #      0        nil        aaa
+    #   #      3        nil       baaa
+    #   #      2          1        nil
+    #   #      5          1        nil
+
     def sort! vector_order, opts={}
       raise ArgumentError, "Required atleast one vector name" if vector_order.size < 1
       opts = {
         ascending: true,
-        type: :quick_sort,
+        handle_nils: false,
         by: {}
       }.merge(opts)
 
-      opts[:by]        = create_logic_blocks vector_order, opts[:by]
       opts[:ascending] = sort_order_array vector_order, opts[:ascending]
-      idx = @index.to_a
-      send(opts[:type], vector_order, idx, opts[:by], opts[:ascending])
-      self.index = Daru::Index.new(idx)
+      opts[:handle_nils] = handle_nils_array vector_order, opts[:handle_nils]
+      blocks = create_logic_blocks vector_order, opts[:by], opts[:ascending]
+
+      block = lambda do |r1, r2|
+        # Build left and right array to compare two rows
+        left = build_array_from_blocks vector_order, opts, blocks, r1, r2
+        right = build_array_from_blocks vector_order, opts, blocks, r2, r1
+
+        # Resolve conflict by Index if all attributes are same
+        left << r1
+        right << r2
+        left <=> right
+      end
+
+      idx = (0..@index.size-1).sort &block
+
+      old_index = @index.to_a
+      self.index = Daru::Index.new(idx.map { |i| old_index[i] })
+
+      self.vectors.each do |v|
+        @data[@vectors[v]] = Daru::Vector.new(
+          idx.map{ |i| @data[@vectors[v]].data[i] },
+          name: self[v].name, index: self.index)
+      end
 
       self
     end
@@ -2010,105 +2088,73 @@ module Daru
       end
     end
 
-    def quick_sort vector_order, index, by, ascending
-      recursive_quick_sort vector_order, index, by, ascending, 0, @size-1
+    def create_logic_blocks vector_order, by={}, ascending
+      # Create blocks to handle nils
+      blocks = {}
+      universal_block_ascending = lambda { |a| [(a.nil?)? 0:1, a] }
+      universal_block_decending = lambda { |a| [(a.nil?)? 1:0, a] }
+      vector_order.each_with_index do |vector, i|
+        blocks[vector] =  ascending[i] ? universal_block_ascending
+          : universal_block_decending
+      end
+
+      blocks
     end
 
-    # == Arguments
-    #
-    # vector_order -
-    # index -
-    # by -
-    # ascending -
-    # left_lower -
-    # right_upper -
-    def recursive_quick_sort vector_order, index, by, ascending, left_lower, right_upper
-      if left_lower < right_upper
-        left_upper, right_lower = partition(vector_order, index, by, ascending, left_lower, right_upper)
-        if left_upper - left_lower < right_upper - right_lower
-          recursive_quick_sort(vector_order, index, by, ascending, left_lower, left_upper)
-          recursive_quick_sort(vector_order, index, by, ascending, right_lower, right_upper)
+    def build_array_from_blocks vector_order, opts, blocks, r1, r2
+      # Create an array to be used for comparison of two rows in sorting
+      vector_order.map.each_with_index do |v, i|
+        if opts[:ascending][i]
+          value = @data[@vectors[v]].data[r1]
+          if opts[:by][v] and not opts[:handle_nils][i]
+            # Block given and nils handled manually
+            value = opts[:by][v].call value
+
+          elsif opts[:by][v] and opts[:handle_nils][i]
+            # Block given and nils handled automatically
+            value = opts[:by][v].call value rescue nil
+            blocks[v].call value
+
+          else
+            # Block not given and nils handled automatically
+            blocks[v].call value
+          end
         else
-          recursive_quick_sort(vector_order, index, by, ascending, right_lower, right_upper)
-          recursive_quick_sort(vector_order, index, by, ascending, left_lower, left_upper)
-        end
-      end
-    end
+          value = @data[@vectors[v]].data[r2]
+          if opts[:by][v] and not opts[:handle_nils][i]
+            # Block given and nils handled manually
+            value = opts[:by][v].call value
 
-    def partition vector_order, index, by, ascending, left_lower, right_upper
-      mindex = (left_lower + right_upper) / 2
-      mvalues = vector_order.inject([]) { |a, vector_name| a << self[vector_name][mindex]; a }
-      i = left_lower
-      j = right_upper
-      descending = ascending.map { |a| !a }
+          elsif opts[:by][v] and opts[:handle_nils][i]
+            # Block given and nils handled automatically
+            value = opts[:by][v].call value rescue nil
+            blocks[v].call value
 
-      i += 1 while(keep?(i, mvalues, vector_order, ascending , by, 0))
-      j -= 1 while(keep?(j, mvalues, vector_order, descending, by, 0))
-
-      while i < j - 1
-        @data.each do |vector|
-          vector[i], vector[j] = vector[j], vector[i]
-        end
-        index[i], index[j] = index[j], index[i]
-        i += 1
-        j -= 1
-
-        i += 1 while(keep?(i, mvalues, vector_order, ascending , by,0))
-        j -= 1 while(keep?(j, mvalues, vector_order, descending, by,0))
-      end
-
-      if i <= j
-        if i < j
-          @data.each do |vector|
-            vector[i], vector[j] = vector[j], vector[i]
-          end
-          index[i], index[j] = index[j], index[i]
-        end
-        i += 1
-        j -= 1
-      end
-
-      [j,i]
-    end
-
-    def keep? current_index, mvalues, vector_order, sort_order, by, vector_order_index
-      vector_name = vector_order[vector_order_index]
-      if vector_name
-        vec = self[vector_name]
-        eval = by[vector_name].call(vec[current_index], mvalues[vector_order_index])
-
-        if sort_order[vector_order_index] # sort in ascending order
-          return false if eval == 1
-          return true if eval == -1
-          if eval == 0
-            keep?(current_index, mvalues, vector_order, sort_order, by, vector_order_index + 1)
-          end
-        else # sort in descending order
-          return false if eval == -1
-          return true  if eval == 1
-          if eval == 0
-            keep?(current_index, mvalues, vector_order, sort_order, by, vector_order_index + 1)
+          else
+            # Block not given and nils handled automatically
+            blocks[v].call value
           end
         end
       end
-    end
-
-    def create_logic_blocks vector_order, by={}
-      universal_block = lambda { |a,b| a <=> b }
-      vector_order.each do |vector|
-        by[vector] ||= universal_block
-      end
-
-      by
     end
 
     def sort_order_array vector_order, ascending
-      if ascending.is_a?(Array)
+      if ascending.is_a? Array
         raise ArgumentError, "Specify same number of vector names and sort orders" if
           vector_order.size != ascending.size
         return ascending
       else
         Array.new(vector_order.size, ascending)
+      end
+    end
+
+    def handle_nils_array vector_order, handle_nils
+      if handle_nils.is_a? Array
+        raise ArgumentError, "Specify same number of vector names and handle nils" if
+          vector_order.size != handle_nils.size
+        return handle_nils
+      else
+        Array.new(vector_order.size, handle_nils)
       end
     end
 

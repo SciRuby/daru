@@ -59,6 +59,8 @@ module Daru
     # Store a hash of labels for values. Supplementary only. Recommend using index
     # for proper usage.
     attr_accessor :labels
+    # Store vector data in an array
+    attr_reader :data
 
     # Create a Vector object.
     #
