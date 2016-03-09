@@ -2137,11 +2137,13 @@ describe Daru::DataFrame do
   context "#concat" do
     before do
       @df1 = Daru::DataFrame.new({
-        a: [1, 2, 3]
+        a: [1, 2, 3],
+        b: [1, 2, 3]
       })
 
       @df2 = Daru::DataFrame.new({
-        a: [4, 5, 6]
+        a: [4, 5, 6],
+        c: [4, 5, 6]
       })
     end
 
@@ -2160,6 +2162,15 @@ describe Daru::DataFrame do
 
       df_concat = @df1.concat @df2
       expect(df_concat[:a].to_a).to eq df1_a + df2_a
+    end
+
+    it 'fills in missing vectors with nils' do
+      df1_b = @df1[:b].to_a.dup
+      df2_c = @df2[:c].to_a.dup
+
+      df_concat = @df1.concat @df2
+      expect(df_concat[:b].to_a).to eq df1_b + [nil] * @df2.size
+      expect(df_concat[:c].to_a).to eq [nil] * @df1.size + df2_c
     end
 
   end

@@ -1259,14 +1259,23 @@ module Daru
     end
 
     # Concatenate another DataFrame along corresponding columns.
-    # Very premature implementation. Use with caution.
+    # If columns do not exist in both dataframes, they are filled with nils
     def concat other_df
-      vectors = []
-      @vectors.each do |v|
-        vectors << self[v].to_a.dup.concat(other_df[v].to_a)
+      vectors = @vectors.to_a
+      data = []
+
+      vectors.each do |v|
+        other_vec = other_df.vectors.include?(v) ? other_df[v].to_a : [nil] * other_df.size
+        data << self[v].dup.to_a.concat(other_vec)
       end
 
-      Daru::DataFrame.new(vectors, order: @vectors)
+      other_df.vectors.each do |v|
+        next if vectors.include?(v)
+        vectors << v
+        data << ([nil] * self.size).concat(other_df[v].to_a)
+      end
+
+      Daru::DataFrame.new(data, order: vectors)
     end
 
     # Set a particular column as the new DF
