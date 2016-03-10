@@ -544,6 +544,7 @@ module Daru
       end
 
       result = @data.bsearch {|d| d[0] >= date_time }
+      return false if result.nil?
       result[0] == date_time
     end
 
