@@ -4,15 +4,15 @@ module Daru
       class << self
         def replace_keys_if_duplicates hash, matcher
           matched = nil
-          hash.keys.each { |d| 
+          hash.keys.each { |d|
             if matcher.match(Regexp.new(d.to_s))
               matched = d
               break
-            end  
+            end
           }
 
           if matched
-            hash[matcher] = hash[matched] 
+            hash[matcher] = hash[matched]
             hash.delete matched
           end
         end
@@ -33,7 +33,7 @@ module Daru
           hsh.each { |k,v| hsh[k] = v.to_a }
           hsh
         end
-        
+
         def arrayify df
           arr = df.to_a
           col_names = arr[0][0].keys
@@ -42,185 +42,178 @@ module Daru
           return col_names, values
         end
 
-        def inner_join df1, df2, df_hash1, df_hash2, on
-          joined_hash = {}
-          ((df_hash1.keys - on) | on | (df_hash2.keys - on)).each do |k|
-            joined_hash[k] = []
+        def arrayify_with_sort_keys(size, df_hash, on)
+
+          # Converting to a hash and then to an array is more complex
+          # than using df.to_a or df.map(:row).  However, it's
+          # substantially faster this way.
+
+          idx_keys = on.map { |key| df_hash.keys.index(key) }
+
+          (0...size).reduce([]) do |r, idx|
+            key_values = on.map { |col| df_hash[col][idx] }
+            row_values = df_hash.map { |col, val| val[idx] }
+            r << [key_values, row_values]
           end
 
-          (0...df1.size).each do |id1|
-            (0...df2.size).each do |id2|
-              if on.all? { |n| df_hash1[n][id1] == df_hash2[n][id2] }
-                joined_hash.each do |k,v|
-                  v << (df_hash1.has_key?(k) ? df_hash1[k][id1] : df_hash2[k][id2])
-                end
-              end
-            end
-          end
-
-          Daru::DataFrame.new(joined_hash, order: joined_hash.keys)
-        end
-
-        def bf_inner_join df1, df2, on
-          col_names1, table1 = arrayify df1
-          col_names2, table2 = arrayify df2
-
-          #resolve duplicates
-          indicies1 = on.map{|i| col_names1.index(i)}
-          indicies2 = on.map{|i| col_names2.index(i)}
-          col_names2.map! do |name| 
-            if (col_names1.include?(name))
-              col_names1[col_names1.index(name)] = (name.to_s + "_1").to_sym unless on.include?(name)
-              (name.to_s + "_2").to_sym
-            else
-              name
-            end
-          end
-
-          #combine key columns to a single column value
-          on_cols1 = table1.flat_map{|x| indicies1.map{|i| x[i].to_s}.join("+")}
-          on_cols2 = table2.flat_map{|x| indicies2.map{|i| x[i].to_s}.join("+")}
-
-          #parameters for a BF with approx 0.1% false positives
-          m = on_cols2.size * 15
-          k = 11
-
-          bf = BloomFilter::Native.new({:size => m, :hashes => k, :bucket => 1})
-          on_cols2.each{|x| bf.insert(x)}
-
-          x_ind = -1
-          joined_new = on_cols1.map do |x|
-            x_ind+=1
-            if (bf.include?(x))
-              {x_ind => on_cols2.each_index.select{|y_ind| on_cols2[y_ind] == x}}
-            else
-              {x_ind => []}
-            end
-          end
-            .reduce({}) {|h,pairs| pairs.each {|k,v| (h[k] ||= []) << v}; h}
-            .flat_map{|ind1, inds2| inds2.flatten.map{|ind2| [table1[ind1], table2[ind2]].flatten} if inds2.flatten.size > 0}
-
-          joined_cols = [col_names1, col_names2].flatten
-          df = Daru::DataFrame.rows(joined_new.compact, order: joined_cols)
-          on.each{|x| df.delete_vector (x.to_s + "_2").to_sym}
-
-          df
-        end
-
-        def full_outer_join df1, df2, df_hash1, df_hash2, on
-          left  = left_outer_join df1, df2, df_hash1, df_hash2, on, true
-          right = right_outer_join df1, df2, df_hash1, df_hash2, on, true
-
-          Daru::DataFrame.rows(
-            (left.values.transpose | right.values.transpose), order: left.keys)
-        end
-
-        def left_outer_join df1, df2, df_hash1, df_hash2, on, as_hash=false
-          joined_hash = {}
-          ((df_hash1.keys - on) | on | (df_hash2.keys - on)).each do |k|
-            joined_hash[k] = []
-          end
-
-          
-          (0...df1.size).each do |id1|
-            joined = false
-            (0...df2.size).each do |id2|
-              if on.all? { |n| df_hash1[n][id1] == df_hash2[n][id2] }
-                joined = true
-                joined_hash.each do |k,v|
-                  v << (df_hash1.has_key?(k) ? df_hash1[k][id1] : df_hash2[k][id2])
-                end
-              end
-            end
-
-            unless joined
-              df_hash1.keys.each do |k|
-                joined_hash[k] << df_hash1[k][id1]
-              end
-
-              (joined_hash.keys - df_hash1.keys).each do |k|
-                joined_hash[k] << nil
-              end
-              joined = false
-            end
-          end
-
-          return joined_hash if as_hash
-          Daru::DataFrame.new(joined_hash, order: joined_hash.keys)
-        end
-
-        def right_outer_join df1, df2, df_hash1, df_hash2, on, as_hash=false
-          joined_hash = {}
-          ((df_hash1.keys - on) | on | (df_hash2.keys - on)).each do |k|
-            joined_hash[k] = []
-          end
-
-          (0...df2.size).each do |id1|
-            joined = false
-            (0...df1.size).each do |id2|
-              if on.all? { |n| df_hash2[n][id1] == df_hash1[n][id2] }
-                joined = true
-                joined_hash.each do |k,v|
-                  v << (df_hash2.has_key?(k) ? df_hash2[k][id1] : df_hash1[k][id2])
-                end
-              end
-            end
-
-            unless joined
-              df_hash2.keys.each do |k|
-                joined_hash[k] << df_hash2[k][id1]
-              end
-
-              (joined_hash.keys - df_hash2.keys).each do |k|
-                joined_hash[k] << nil
-              end
-              joined = false
-            end
-          end
-
-          return joined_hash if as_hash
-          Daru::DataFrame.new(joined_hash, order: joined_hash.keys)
+          # Conceptually simpler and does the same thing, but slows down the
+          # total merge algorithm by 2x.  Would be nice to improve the performance
+          # of df.map(:row)
+  #        df.map(:row) do |row|
+  #          key_values = on.map { |key| row[key] }
+  #          [key_values, row.to_a]
+  #        end
         end
 
         def verify_dataframes df_hash1, df_hash2, on
-          raise ArgumentError, 
+          raise ArgumentError,
             "All fields in :on must be present in self" if !on.all? { |e| df_hash1[e] }
           raise ArgumentError,
             "All fields in :on must be present in other DF" if !on.all? { |e| df_hash2[e] }
         end
       end
     end
+
+
+
+    class MergeFrame
+
+      def initialize(df1, df2, on: nil)
+        @df1 = df1
+        @df2 = df2
+        @on = on
+      end
+
+      def inner opts
+        merge_join(left: false, right: false)
+      end
+
+      def left opts
+        merge_join(left: true, right: false)
+      end
+
+      def right opts
+        merge_join(left: false, right: true)
+      end
+
+      def outer opts
+        merge_join(left: true, right: true)
+      end
+
+      def merge_join(left: true, right: true)
+
+        MergeHelper.verify_dataframes df1_hash, df2_hash, @on
+        MergeHelper.resolve_duplicates df1_hash, df2_hash, @on
+
+        # TODO: Use native dataframe sorting.
+        #  It would be ideal to reuse sorting functionality that is native
+        #  to dataframes.  Unfortunately, native dataframe sort introduces
+        #  an overhead that reduces join performance by a factor of 4!  Until
+        #  that aspect is improved, we resort to a simpler array sort.
+        df1_array.sort_by! { |row| [row[0].nil? ? 0 : 1, row[0]] }
+        df2_array.sort_by! { |row| [row[0].nil? ? 0 : 1, row[0]] }
+
+        idx1 = 0
+        idx2 = 0
+
+        merged = []
+        while (idx1 < @df1.size || idx2 < @df2.size) do
+
+          key1 = df1_array[idx1][0] if idx1 < @df1.size
+          key2 = df2_array[idx2][0] if idx2 < @df2.size
+
+          if key1 == key2 && idx1 < @df1.size && idx2 < @df2.size
+            idx2_start = idx2
+
+            while (idx2 < @df2.size) && (df1_array[idx1][0] == df2_array[idx2][0]) do
+              add_merge_row_to_hash([df1_array[idx1], df2_array[idx2]], joined_hash)
+              idx2 += 1
+            end
+
+            idx2 = idx2_start if idx1+1 < @df1.size && df1_array[idx1][0] == df1_array[idx1+1][0]
+            idx1 += 1
+          elsif ([key1, key2].sort == [key1, key2] && idx1 < @df1.size) || idx2 == @df2.size
+            add_merge_row_to_hash([df1_array[idx1], nil], joined_hash) if left
+            idx1 += 1
+          elsif idx2 < @df2.size || idx1 == @df1.size
+            add_merge_row_to_hash([nil, df2_array[idx2]], joined_hash) if right
+            idx2 += 1
+          else
+            raise 'Unexpected condition met during merge'
+          end
+        end
+
+        Daru::DataFrame.new(joined_hash, order: joined_hash.keys)
+      end
+
+
+
+      private
+
+
+      def joined_hash
+        return @joined_hash if @joined_hash
+        @joined_hash ||= {}
+
+        ((df1_keys - @on) | @on | (df2_keys - @on)).each do |k|
+          @joined_hash[k] = []
+        end
+
+        @joined_hash
+      end
+
+      def df1_hash
+        @df1_hash ||= MergeHelper.hashify @df1
+      end
+
+      def df2_hash
+        @df2_hash ||= MergeHelper.hashify @df2
+      end
+
+      def df1_array
+        @df1_array ||= MergeHelper.arrayify_with_sort_keys @df1.size, df1_hash, @on
+      end
+
+      def df2_array
+        @df2_array ||= MergeHelper.arrayify_with_sort_keys @df2.size, df2_hash, @on
+      end
+
+      def df1_keys
+        df1_hash.keys
+      end
+
+      def df2_keys
+        df2_hash.keys
+      end
+
+      # Private: The merge row contains two elements, the first is the row from the
+      # first dataframe, the second is the row from the second dataframe.
+      def add_merge_row_to_hash row, hash
+        @df1_key_to_index ||= df1_keys.each_with_index.map { |k,idx| [k, idx] }.to_h
+        @df2_key_to_index ||= df2_keys.each_with_index.map { |k,idx| [k, idx] }.to_h
+
+        hash.each do |k,v|
+          v ||= []
+
+          left  = df1_keys.include?(k) ? row[0] && row[0][1][@df1_key_to_index[k]] : nil
+          right = df2_keys.include?(k) ? row[1] && row[1][1][@df2_key_to_index[k]] : nil
+
+          v << (left || right)
+        end
+      end
+    end
+
+
     # Private module containing methods for join, merge, concat operations on
     # dataframes and vectors.
     # @private
     module Merge
       class << self
         def join df1, df2, opts={}
-          helper = MergeHelper
-
-          df_hash1 = helper.hashify df1
-          df_hash2 = helper.hashify df2
           on = opts[:on]
 
-          helper.verify_dataframes df_hash1, df_hash2, on
-          helper.resolve_duplicates df_hash1, df_hash2, on
-
-          case opts[:how]
-          when :inner
-            if Daru.has_bloomfilter_rb?
-              helper.bf_inner_join df1, df2, on
-            else
-              helper.inner_join df1, df2, df_hash1, df_hash2, on
-            end
-          when :outer
-            helper.full_outer_join df1, df2, df_hash1, df_hash2, on
-          when :left
-            helper.left_outer_join df1, df2, df_hash1, df_hash2, on
-          when :right
-            helper.right_outer_join df1, df2, df_hash1, df_hash2, on
-          else
-            raise ArgumentError, "Unrecognized option in :how => #{opts[:how]}"
-          end
+          mf = MergeFrame.new df1, df2, on: on
+          mf.send opts[:how], {}
         end
       end
     end

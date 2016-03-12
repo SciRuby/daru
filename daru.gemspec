@@ -31,7 +31,7 @@ Gem::Specification.new do |spec|
 *************************************************************************
 Thank you for installing daru!
 
-  oOOOOOo 
+  oOOOOOo
  ,|    oO
 //|     |
 \\\\|     |
@@ -39,8 +39,8 @@ Thank you for installing daru!
   `-----`
 
 
-Hope you love daru! For enhanced interactivity and better visualizations, 
-consider using gnuplotrb and nyaplot with iruby. For statistics use the 
+Hope you love daru! For enhanced interactivity and better visualizations,
+consider using gnuplotrb and nyaplot with iruby. For statistics use the
 statsample family.
 
 Read the README for interesting use cases and examples.
@@ -63,7 +63,6 @@ EOF
   spec.add_development_dependency 'nmatrix', '~> 0.2.1'
   spec.add_development_dependency 'distribution', '~> 0.7'
   spec.add_development_dependency 'rb-gsl', '~>1.16'
-  spec.add_development_dependency 'bloomfilter-rb', '~> 2.1'
   spec.add_development_dependency 'dbd-sqlite3'
   spec.add_development_dependency 'dbi'
   spec.add_development_dependency 'activerecord', '~> 4.0'
