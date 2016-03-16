@@ -40,7 +40,7 @@ module Daru
         offset_klass  = OFFSETS_HASH[offset_string]
 
         raise ArgumentError,
-          "Cannont interpret offset #{offset_string}" if offset_klass.nil?
+          "Cannot interpret offset #{offset_string}" if offset_klass.nil?
 
         if offset_string.match(/W/)
           day = Regexp.new(Daru::DAYS_OF_WEEK.keys.join('|')).match(frequency).to_s
@@ -266,6 +266,7 @@ module Daru
       @data      = data.zip(Array.new(data.size) { |i| i })
       @data.sort_by! { |d| d[0] } if @offset.nil?
       @periods   = data.size
+      super self
     end
 
     # Custom dup method for DateTimeIndex   

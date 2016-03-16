@@ -55,8 +55,10 @@ module Daru
       index = index.to_a                if index.is_a? Daru::Index
 
       @relation_hash = {}
-      index.each_with_index do |n, idx|
-        @relation_hash[n] = idx 
+      unless index.nil?
+        index.each_with_index do |n, idx|
+          @relation_hash[n] = idx 
+        end
       end
 
       @relation_hash.freeze
