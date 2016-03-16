@@ -97,6 +97,7 @@ module Daru
       end
 
       def infer_offset data
+        return nil if data.count < 2
         possible_freq = data[1] - data[0]
         inferred = true
         data.each_cons(2) do |d|  
@@ -422,7 +423,7 @@ module Daru
     # @return [Array<DateTime>] Array of containing DateTimes.
     def to_a
       return @data.sort_by { |d| d[1] }.transpose[0] unless @offset
-      @data.transpose[0]
+      @data.transpose[0] || []
     end
 
     # Size of index.

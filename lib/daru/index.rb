@@ -122,7 +122,7 @@ module Daru
 
     # Produce a new index from the set intersection of two indexes
     def & other
-      
+
     end
 
     def to_a
