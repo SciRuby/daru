@@ -871,18 +871,20 @@ module Daru
           "</th>" +
         "</tr>"
       html += '<tr><th> </th><th>' + name.to_s + '</th></tr>'
-      @index.each_with_index do |index, num|
-        html += '<tr><td>' + index.to_s + '</td>' + '<td>' + self[index].to_s + '</td></tr>'
+      unless @index.empty?
+        @index.each_with_index do |index, num|
+          html += '<tr><td>' + index.to_s + '</td>' + '<td>' + self[index].to_s + '</td></tr>'
 
-        if num > threshold
-          html += '<tr><td>...</td><td>...</td></tr>'
+          if num > threshold
+            html += '<tr><td>...</td><td>...</td></tr>'
 
-          last_index = @index.to_a.last
-          html += '<tr>' +
-                    '<td>' + last_index.to_s       + '</td>' +
-                    '<td>' + self[last_index].to_s + '</td>' +
-                  '</tr>'
-          break
+            last_index = @index.to_a.last
+            html += '<tr>' +
+                      '<td>' + last_index.to_s       + '</td>' +
+                      '<td>' + self[last_index].to_s + '</td>' +
+                    '</tr>'
+            break
+          end
         end
       end
       html += '</table>'
