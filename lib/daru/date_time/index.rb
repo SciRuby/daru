@@ -75,7 +75,7 @@ module Daru
 
         if periods.nil? # use end
           loop do
-            break if new_date > en
+            break if new_date.nil? || new_date > en
             data << new_date
             new_date = offset + new_date
           end
