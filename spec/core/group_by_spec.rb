@@ -41,6 +41,10 @@ describe Daru::Core::GroupBy do
     it 'groups by nil values' do
       expect(@df.group_by(:w_nils).groups[[nil]]).to eq([1,3,4])
     end
+
+    it "uses a multi-index when nils are part of the grouping keys" do
+      expect(@df.group_by(:a, :w_nils).send(:multi_indexed_grouping?)).to be true
+    end
   end
 
   context "#initialize" do
