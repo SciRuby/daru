@@ -843,8 +843,13 @@ module Daru
       end
     end
 
-    # Convert to hash. Hash keys are indexes and values are the correspoding elements
+    # Convert to hash (implicit). Hash keys are indexes and values are the correspoding elements
     def to_hash
+      to_h
+    end
+
+    # Convert to hash (explicit). Hash keys are indexes and values are the correspoding elements
+    def to_h
       @index.inject({}) do |hsh, index|
         hsh[index] = self[index]
         hsh
