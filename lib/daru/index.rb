@@ -253,6 +253,7 @@ module Daru
 
       key.each_with_index do |k, depth|
         level_index = @levels[depth][k]
+        raise IndexError, "Specified index #{key.inspect} do not exist" if level_index.nil?
         label = @labels[depth]
         chosen = find_all_indexes label, level_index, chosen
       end
