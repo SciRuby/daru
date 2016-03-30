@@ -1865,9 +1865,15 @@ module Daru
       end
     end
 
-    # Converts DataFrame to a hash with keys as vector names and values as
+    # Converts DataFrame to a hash (implicit) with keys as vector names and values as
     # the corresponding vectors.
     def to_hash
+      to_h
+    end
+
+    # Converts DataFrame to a hash (explicit) with keys as vector names and values as
+    # the corresponding vectors.
+    def to_h
       hsh = {}
       @vectors.each_with_index do |vec_name, idx|
         hsh[vec_name] = @data[idx]
