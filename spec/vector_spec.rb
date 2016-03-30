@@ -240,6 +240,7 @@ describe Daru::Vector do
           it "raises exception for invalid index" do
             expect { @vector[:foo] }.to raise_error(IndexError)
             expect { @vector[:a, :two, :foo] }.to raise_error(IndexError)
+            expect { @vector[:x, :one] }.to raise_error(IndexError)
           end
         end
       end
