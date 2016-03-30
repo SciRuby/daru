@@ -197,7 +197,6 @@ module Daru
     def incorrect_fields? labels, levels
       max_level = levels[0].size
 
-      correct = labels.all? { |e| e.size == max_level }
       correct = levels.all? { |e| e.uniq.size == e.size }
 
       !correct
