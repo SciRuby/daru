@@ -383,6 +383,20 @@ describe Daru::Vector do
       expect(acf[3]).to be_within(0.001) .of(0.486)
     end
   end
+  
+  context "#percent_change" do
+    it "calculates percent change" do
+      vector = Daru::Vector.new([4,6,6,8,10],index: ['a','f','t','i','k'])
+      expect(vector.percent_change).to eq(
+      Daru::Vector.new([nil, 0.5, 0.0, 0.3333333333333333, 0.25], index: ['a','f','t','i','k']))
+    end
+
+    it "tests for numerical vectors with nils" do
+      vector2 = Daru::Vector.new([nil,6,nil,8,10],index: ['a','f','t','i','k'])
+      expect(vector2.percent_change).to eq(
+      Daru::Vector.new([nil, nil, nil, 0.3333333333333333, 0.25], index: ['a','f','t','i','k']))
+    end
+  end
 
   context "#diff" do
     it "performs the difference of the series" do
