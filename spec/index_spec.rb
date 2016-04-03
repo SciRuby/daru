@@ -203,6 +203,14 @@ describe Daru::MultiIndex do
         [:b,:two,:baz]
       ]))
     end
+    
+    it "raises error when specifying invalid index" do
+      expect { @multi_mi[:a, :three] }.to raise_error IndexError
+      expect { @multi_mi[:a, :one, :xyz] }.to raise_error IndexError
+      expect { @multi_mi[:x] }.to raise_error IndexError
+      expect { @multi_mi[:x, :one] }.to raise_error IndexError
+      expect { @multi_mi[:x, :one, :bar] }.to raise_error IndexError
+    end
 
     it "raises error when specifying invalid index" do
       expect { @multi_mi[:a, :three] }.to raise_error IndexError
