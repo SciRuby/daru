@@ -197,7 +197,6 @@ module Daru
     def incorrect_fields? labels, levels
       max_level = levels[0].size
 
-      correct = labels.all? { |e| e.size == max_level }
       correct = levels.all? { |e| e.uniq.size == e.size }
 
       !correct
@@ -254,6 +253,7 @@ module Daru
 
       key.each_with_index do |k, depth|
         level_index = @levels[depth][k]
+        raise IndexError, "Specified index #{key.inspect} do not exist" if level_index.nil?
         label = @labels[depth]
         chosen = find_all_indexes label, level_index, chosen
       end
