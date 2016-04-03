@@ -1423,6 +1423,21 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#rename_vectors" do
+    before do
+      @df = Daru::DataFrame.new({
+        a: [1,2,3,4,5],
+        b: [11,22,33,44,55],
+        c: %w(a b c d e)
+      })
+    end
+
+    it "renames vectors using a hash map" do
+      @df.rename_vectors :a => :alpha, :c => :gamma
+      expect(@df.vectors.to_a).to eq([:alpha, :b, :gamma])
+    end
+  end
+
   context "#reindex" do
     it "re indexes and aligns accordingly" do
       df = Daru::DataFrame.new({
