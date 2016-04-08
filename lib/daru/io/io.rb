@@ -86,6 +86,9 @@ module Daru
           headers.each_with_index do |h, i|
             hsh[h] = csv_as_arrays[i]
           end
+
+          # Order columns as given in CSV
+          daru_options[:order] = headers.to_a
         else
           opts[:header_converters] ||= :symbol
 

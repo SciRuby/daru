@@ -15,7 +15,7 @@ describe Daru::IO do
 
       it "works properly for repeated headers" do
         df = Daru::DataFrame.from_csv('spec/fixtures/repeated_fields.csv',header_converters: :symbol)
-        expect(df.vectors.to_a).to eq(['a1', 'age_1', 'age_2', 'city', 'id', 'name_1', 'name_2'])
+        expect(df.vectors.to_a).to eq(["id", "name_1", "age_1", "city", "a1", "name_2", "age_2"])
 
         age = Daru::Vector.new([3, 4, 5, 6, nil, 8])
         expect(df['age_2']).to eq(age)
@@ -28,6 +28,11 @@ describe Daru::IO do
         y.zip(ds['y']).each do |y_expected, y_ds|
           expect(y_ds).to be_within(0.001).of(y_expected)
         end
+      end
+      
+      it "follows the order of columns given in CSV" do
+        df = Daru::DataFrame.from_csv 'spec/fixtures/sales-funnel.csv'
+        expect(df.vectors.to_a).to eq(%W[Account Name Rep Manager Product Quantity Price Status])
       end
     end
 
