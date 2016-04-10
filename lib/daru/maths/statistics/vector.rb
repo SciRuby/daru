@@ -377,6 +377,40 @@ module Daru
           end
         end
 
+        # The percent_change method computes the percent change over
+        # the given number of periods.
+        #
+        # @param [Integer] periods (1) number of nils to insert at the beginning.
+        #
+        # @example
+        # 
+        #   vector = Daru::Vector.new([4,6,6,8,10],index: ['a','f','t','i','k'])
+        #   vector.percent_change
+        #   #=>
+        #   #   <Daru::Vector:28713060 @name = nil @size: 5 >
+        #   #              nil
+        #   #   a	
+        #   #   f	   0.5
+        #   #   t	   0.0
+        #   #   i	   0.3333333333333333
+        #   #   k          0.25
+        def percent_change periods = 1
+          type == :numeric or raise TypeError, "Vector must be numeric"
+          value = self.only_valid
+          arr = []
+          i = 1 
+          ind = @data.find_index{|x|!x.nil?}
+          (periods...size).each do |j|
+            if j==ind || @missing_values.has_key?(@data[j])
+              arr[j] = nil
+            else
+              arr[j] = (value.data[i] - value.data[i - 1]) / value.data[i - 1].to_f
+              i+=1
+            end 
+          end
+          Daru::Vector.new(arr, index: @index, name: @name)
+        end
+
         # Performs the difference of the series.
         # Note: The first difference of series is X(t) - X(t-1)
         # But, second difference of series is NOT X(t) - X(t-2)
