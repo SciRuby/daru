@@ -930,19 +930,9 @@ module Daru
     def filter_rows &block
       return to_enum(:filter_rows) unless block_given?
 
-      df = Daru::DataFrame.new({}, order: @vectors.to_a)
-      marked = []
+      keep_rows = @index.map { |index| block.call access_row(index) }
 
-      @index.each do |index|
-        keep_row = yield access_row(index)
-        marked << index if keep_row
-      end
-
-      marked.each do |idx|
-        df.row[idx] = self[idx, :row]
-      end
-
-      df
+      where keep_rows
     end
 
     # Iterates over each vector and retains it in a new DataFrame if the block returns
