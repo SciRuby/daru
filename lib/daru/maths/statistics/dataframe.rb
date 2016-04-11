@@ -96,6 +96,39 @@ module Daru
           Daru::DataFrame.new(description_hash, index: methods)
         end
 
+        # The percent_change method computes the percent change over
+        # the given number of periods for numeric vectors.
+        #
+        # @param [Integer] periods (1) number of nils to insert at the beginning.
+        #
+        # @example
+        # 
+        #   df = Daru::DataFrame.new({
+        #        'col0' => [1,2,3,4,5,6],
+        #        'col2' => ['a','b','c','d','e','f'],
+        #        'col1' => [11,22,33,44,55,66]
+        #        }, 
+        #        index: ['one', 'two', 'three', 'four', 'five', 'six'], 
+        #        order: ['col0', 'col1', 'col2'])
+        #   df.percent_change
+        #   #=>
+        #   #   <Daru::DataFrame:23513280 @rows: 6 @cols: 2>
+        #   #              col0                col1
+        #   #   one	                           
+        #   #   two	   1.0	               1.0
+        #   #   three	   0.5                 0.5
+        #   #   four	   0.3333333333333333  0.3333333333333333
+        #   #   five       0.25                0.25
+        #   #   six        0.2                 0.2
+        def percent_change periods = 1 
+          df_numeric = only_numerics.vectors.to_a
+          df = Daru::DataFrame.new({}, order: @order, index: @index, name: @name)
+          df_numeric.each do |vec|
+            df[vec] = self[vec].percent_change periods
+          end
+          df
+        end
+
         # Calculate sample variance-covariance between the numeric vectors.
         def covariance
           cache={}
