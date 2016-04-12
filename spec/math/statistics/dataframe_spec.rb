@@ -101,6 +101,16 @@ describe Daru::DataFrame do
     end
   end
 
+  context "percent_change" do
+    it "calculates percent change of numeric vectors" do
+      expect(@df.percent_change.round(2)).to eq(Daru::DataFrame.new({
+        d: [nil, 1.0, 0.0, 0.5, 0.0, 0.33, 0.25, 0.2, 0.17],
+        e: [nil, 1.0, 0.0, 0.5, 0.0, 0.33, 0.25, 0.2, 0.17],
+        f: [nil, 1.0, 0.0, 0.5, 0.0, 0.33, 0.25, 0.2, 0.17] }
+      ))
+    end
+  end
+
   context "#cov" do
     it "calculates the variance covariance of the numeric vectors of DataFrame" do
       expect(@df.cov).to eq(Daru::DataFrame.new({
