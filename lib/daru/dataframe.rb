@@ -320,7 +320,7 @@ module Daru
                 if vectors_have_same_index
                   v = source[vector].dup
                 else
-                  v = Daru::Vector.new([], name: vector, index: @index)
+                  v = Daru::Vector.new([], name: vector, metadata: source[vector].metadata.dup, index: @index)
 
                   @index.each do |idx|
                     if source[vector].index.include? idx
@@ -339,7 +339,8 @@ module Daru
             @index = try_create_index(index || source.values[0].size)
 
             @vectors.each do |name|
-              @data << Daru::Vector.new(source[name].dup, name: set_name(name), index: @index)
+              meta_opt = source[name].respond_to?(:metadata) ? { metadata: source[name].metadata.dup } : {}
+              @data << Daru::Vector.new(source[name].dup, name: set_name(name), **meta_opt, index: @index)
             end
           end
         end
@@ -432,7 +433,7 @@ module Daru
 
       src = []
       vectors_to_dup.each do |vec|
-        src << @data[@vectors[vec]].to_a.dup
+        src << @data[@vectors[vec]].dup
       end
       new_order = Daru::Index.new(vectors_to_dup)
 
@@ -922,7 +923,7 @@ module Daru
         d.push(row[vec]) if yield row
       end
 
-      Daru::Vector.new(d)
+      Daru::Vector.new(d, metadata: self[vec].metadata.dup)
     end
 
     # Iterates over each row and retains it in a new DataFrame if the block returns
@@ -1436,38 +1437,38 @@ module Daru
     #   to be used for sorting, for each vector name in *order* as a hash of
     #   vector name and lambda expressions. In case a lambda for a vector is not
     #   specified, the default will be used.
-    # @option opts [TrueClass,FalseClass,Array] :handle_nils (false) Handle nils 
-    #   automatically or not when a block is provided. 
-    #   If set to True, nils will appear at top after sorting. 
+    # @option opts [TrueClass,FalseClass,Array] :handle_nils (false) Handle nils
+    #   automatically or not when a block is provided.
+    #   If set to True, nils will appear at top after sorting.
     #
     # @example Sort a dataframe with a vector sequence.
-    # 
+    #
     #
     #   df = Daru::DataFrame.new({a: [1,2,1,2,3], b: [5,4,3,2,1]})
     #
     #   df.sort [:a, :b]
-    #   # => 
+    #   # =>
     #   # <Daru::DataFrame:30604000 @name = d6a9294e-2c09-418f-b646-aa9244653444 @size = 5>
-    #   #                   a          b 
-    #   #        2          1          3 
-    #   #        0          1          5 
-    #   #        3          2          2 
-    #   #        1          2          4 
-    #   #        4          3          1  
+    #   #                   a          b
+    #   #        2          1          3
+    #   #        0          1          5
+    #   #        3          2          2
+    #   #        1          2          4
+    #   #        4          3          1
     #
     # @example Sort a dataframe without a block. Here nils will be handled automatically.
     #
     #   df = Daru::DataFrame.new({a: [-3,nil,-1,nil,5], b: [4,3,2,1,4]})
-    #   
+    #
     #   df.sort([:a])
-    #   # => 
+    #   # =>
     #   # <Daru::DataFrame:14810920 @name = c07fb5c7-2201-458d-b679-6a1f7ebfe49f @size = 5>
-    #   #                    a          b 
+    #   #                    a          b
     #   #         1        nil          3
-    #   #         3        nil          1 
-    #   #         0         -3          4 
-    #   #         2         -1          2 
-    #   #         4          5          4 
+    #   #         3        nil          1
+    #   #         0         -3          4
+    #   #         2         -1          2
+    #   #         4          5          4
     #
     # @example Sort a dataframe with a block with nils handled automatically.
     #
@@ -1537,7 +1538,7 @@ module Daru
       self.vectors.each do |v|
         @data[@vectors[v]] = Daru::Vector.new(
           idx.map{ |i| @data[@vectors[v]].data[i] },
-          name: self[v].name, index: self.index)
+          name: self[v].name, metadata: self[v].metadata.dup, index: self.index)
       end
 
       self
@@ -2291,7 +2292,7 @@ module Daru
           if vector.index == @index # so that index-by-index assignment is avoided when possible.
             v = vector.dup
           else
-            v = Daru::Vector.new [], name: set_name(name), index: @index
+            v = Daru::Vector.new [], name: set_name(name), metadata: vector.metadata.dup, index: @index
             @index.each do |idx|
               if vector.index.include? idx
                 v[idx] = vector[idx]
