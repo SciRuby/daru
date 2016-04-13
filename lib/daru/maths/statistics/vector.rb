@@ -525,7 +525,44 @@ module Daru
             base << self[i] * smoother + (1 - smoother) * base.last
           end
 
-          Daru::Vector.new(base, index: @index)
+          Daru::Vector.new(base, index: @index, name: @name)
+        end
+
+        # Exponential Moving Variance.
+        # Calculates an exponential moving variance of the series using a
+        # specified parameter. If wilder is false (the default) then the EMV
+        # uses a smoothing value of 2 / (n + 1), if it is true then it uses the
+        # Welles Wilder smoother of 1 / n.
+        #
+        # @param [Integer] n (10) Loopback length.
+        # @param [TrueClass, FalseClass] wilder (false) If true, 1/n value is 
+        #   used for smoothing; if false, uses 2/(n+1) value
+        #
+        # @example Using emv
+        #
+        #   ts = Daru::Vector.new((1..100).map { rand })
+        #            # => [0.047..., 0.23..., 0.836..., 0.845..., ...]
+        #
+        #   # first 9 observations are nil
+        #   ts.emv   # => [ ... nil, 0.073... , 0.082..., 0.080..., ...]
+        #
+        # @return [Daru::Vector] contains EMV
+        def emv(n = 10, wilder = false)
+          smoother = wilder ? 1.0 / n : 2.0 / (n + 1)
+          # need to start everything from the first non-nil observation
+          start = @data.index { |i| i != nil }
+          # first n - 1 observations are nil
+          var_base = [nil] * (start + n - 1)
+          mean_base = [nil] * (start + n - 1)
+          mean_base << @data[start...(start + n)].inject(0.0) { |s, a| a.nil? ? s : s + a } / n
+          # nth observation is just a moving variance_population
+          var_base << @data[start...(start + n)].inject(0.0) {|s,x| x.nil? ? s : s + (x - mean_base.last)**2} / n
+          (start + n).upto size - 1 do |i|
+            last = mean_base.last
+            mean_base << self[i] * smoother + (1 - smoother) * last
+            var_base << (1 - smoother) * var_base.last + smoother * (self[i] - last) * (self[i] - mean_base.last)
+          end
+          Daru::Vector.new(var_base, index: @index, name: @name)	
         end
 
         # Moving Average Convergence-Divergence.
