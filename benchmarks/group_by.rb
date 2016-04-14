@@ -7,11 +7,11 @@ data = Daru::DataFrame.from_csv 'TradeoffData.csv'
 
 Benchmark.bm do |x|
   x.report("Single column grouping") do
-    @single = data.group_by([:Treatment])
+    @single = data.group_by(['Treatment'])
   end
 
   x.report("Multi-column grouping") do
-    @multi = data.group_by([:Group, :Treatment])
+    @multi = data.group_by(['Group', 'Treatment'])
   end
 
   x.report("Single mean") do
@@ -24,9 +24,9 @@ Benchmark.bm do |x|
 end
 
 #                    ===== Benchmarks =====
-# 
+#
 #                          user     system      total        real
-# Single column grouping 0.000000   0.000000   0.000000   (0.000356)
-# Multi-column grouping  0.000000   0.000000   0.000000   (0.000958)
-# Single mean            0.000000   0.000000   0.000000   (0.000865)
-# Multi mean             0.000000   0.000000   0.000000   (0.002748)
+# Single column grouping  0.000000   0.000000   0.000000  (0.000340)
+# Multi-column grouping   0.000000   0.000000   0.000000  (0.000855)
+# Single mean             0.000000   0.000000   0.000000  (0.001208)
+# Multi mean              0.000000   0.000000   0.000000  (0.004892)
