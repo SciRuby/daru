@@ -487,12 +487,12 @@ describe Daru::Vector do
       expect(ema10[-5]) .to be_within(0.00001).of( 17.19187)
       expect(ema10[-10]).to be_within(0.00001).of( 17.54918)
 
-      # test with a different lookback period
+      # test with a different loopback period
       ema5 = @shares.ema 5
 
-      expect(ema5[-1]) .to be_within( 0.0001).of(16.71299)
-      expect(ema5[-10]).to be_within( 0.0001).of(17.49079)
-      expect(ema5[-15]).to be_within( 0.0001).of(17.70067)
+      expect(ema5[-1]) .to be_within( 0.00001).of(16.71299)
+      expect(ema5[-10]).to be_within( 0.00001).of(17.49079)
+      expect(ema5[-15]).to be_within( 0.00001).of(17.70067)
 
       # test with a different smoother
       ema_w = @shares.ema 10, true
@@ -500,6 +500,31 @@ describe Daru::Vector do
       expect(ema_w[-1]) .to be_within(0.00001).of(17.08044)
       expect(ema_w[-5]) .to be_within(0.00001).of(17.33219)
       expect(ema_w[-10]).to be_within(0.00001).of(17.55810)
+    end
+  end
+
+  context "#emv" do
+    it "calculates exponential moving variance" do
+      # test default
+      emv10 = @shares.emv
+
+      expect(emv10[-1]) .to be_within(0.00001).of(0.14441)
+      expect(emv10[-5]) .to be_within(0.00001).of(0.10797)
+      expect(emv10[-10]).to be_within(0.00001).of(0.03979)
+
+      # test with a different loopback period
+      emv5 = @shares.emv 5
+
+      expect(emv5[-1]) .to be_within(0.00001).of(0.05172)
+      expect(emv5[-10]).to be_within(0.00001).of(0.01736)
+      expect(emv5[-15]).to be_within(0.00001).of(0.04410)
+
+      # test with a different smoother
+      emv_w = @shares.emv 10, true
+
+      expect(emv_w[-1]) .to be_within(0.00001).of(0.20318)
+      expect(emv_w[-5]) .to be_within(0.00001).of(0.11319)
+      expect(emv_w[-10]).to be_within(0.00001).of(0.04289)
     end
   end
 
