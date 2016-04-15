@@ -565,6 +565,34 @@ module Daru
           Daru::Vector.new(var_base, index: @index, name: @name)	
         end
 
+        # Exponential Moving Standard Deviation.
+        # Calculates an exponential moving standard deviation of the series using a
+        # specified parameter. If wilder is false (the default) then the EMSD
+        # uses a smoothing value of 2 / (n + 1), if it is true then it uses the
+        # Welles Wilder smoother of 1 / n.
+        #
+        # @param [Integer] n (10) Loopback length.
+        # @param [TrueClass, FalseClass] wilder (false) If true, 1/n value is 
+        #   used for smoothing; if false, uses 2/(n+1) value
+        #
+        # @example Using emsd
+        #
+        #   ts = Daru::Vector.new((1..100).map { rand })
+        #            # => [0.400..., 0.727..., 0.862..., 0.013..., ...]
+        #
+        #   # first 9 observations are nil
+        #   ts.emsd   # => [ ... nil, 0.285... , 0.258..., 0.243..., ...]
+        #
+        # @return [Daru::Vector] contains EMSD
+        def emsd(n = 10, wilder = false)
+          result = []
+          emv_return = emv(n, wilder)
+          emv_return.each do |d|
+            result << (d.nil? ? nil : Math::sqrt(d))
+          end
+          Daru::Vector.new(result, index: @index, name: @name)
+        end
+
         # Moving Average Convergence-Divergence.
         # Calculates the MACD (moving average convergence-divergence) of the time
         # series - this is a comparison of a fast EMA with a slow EMA.
