@@ -133,14 +133,17 @@ describe Daru::DataFrame do
       end
 
       it "initializes from a Hash of Vectors" do
-        df = Daru::DataFrame.new({b: [11,12,13,14,15].dv(:b, [:one, :two, :three, :four, :five]),
-          a: [1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five])}, order: [:a, :b],
-          index: [:one, :two, :three, :four, :five])
+        va = Daru::Vector.new([1,2,3,4,5], metadata: { cdc_type: 2 }, index: [:one, :two, :three, :four, :five])
+        vb = Daru::Vector.new([11,12,13,14,15], index: [:one, :two, :three, :four, :five])
+
+        df = Daru::DataFrame.new({ b: vb, a: va }, order: [:a, :b], index: [:one, :two, :three, :four, :five])
 
         expect(df.index)  .to eq(Daru::Index.new [:one, :two, :three, :four, :five])
         expect(df.vectors).to eq(Daru::Index.new [:a, :b])
         expect(df.a.class).to eq(Daru::Vector)
         expect(df.a)      .to eq([1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five]))
+        expect(df.a.metadata).to eq({ cdc_type: 2 })
+        expect(df.b.metadata).to eq({})
       end
 
       it "initializes from an Array of Hashes" do
@@ -1232,6 +1235,7 @@ describe Daru::DataFrame do
     context Daru::Index do
       before :each do
         @df = Daru::DataFrame.new({a: [5,1,-6,7,5,5], b: [-2,-1,5,3,9,1], c: ['a','aa','aaa','aaaa','aaaaa','aaaaaa']})
+        @df[:a].metadata = { cdc_type: 2 }
       end
 
       it "sorts according to given vector order (bang)" do
@@ -1253,6 +1257,12 @@ describe Daru::DataFrame do
           )
         expect(ans).to_not eq(@df)
       end
+
+      it "retains the vector metadata from the original dataframe" do
+        ans = @df.sort([:a])
+        expect(ans[:a].metadata).to eq({ cdc_type: 2 })
+      end
+
     end
 
     context Daru::MultiIndex do
@@ -1330,7 +1340,7 @@ describe Daru::DataFrame do
 
         expect(non_numeric.sort!([:c], ascending: [true])).to eq(
           Daru::DataFrame.new({a: [-6, 5, 5, 1, 7, 5], b: [1, 1, nil, -1, nil, -1],
-            c: [nil, nil, "aaa", "aaa", "baaa", "xxx"]}, 
+            c: [nil, nil, "aaa", "aaa", "baaa", "xxx"]},
             index: [2, 5, 0, 1, 3, 4])
           )
       end
@@ -1341,7 +1351,7 @@ describe Daru::DataFrame do
 
         expect(non_numeric.sort!([:c], ascending: [false])).to eq(
           Daru::DataFrame.new({a: [-6, 5, 5, 7, 5, 1], b: [1, 1, -1, nil, nil, -1],
-            c: [nil, nil, "xxx", "baaa", "aaa", "aaa"]}, 
+            c: [nil, nil, "xxx", "baaa", "aaa", "aaa"]},
             index: [2, 5, 4, 3, 0, 1])
           )
       end
@@ -1352,7 +1362,7 @@ describe Daru::DataFrame do
 
         expect(non_numeric.sort!([:b], by: {b: lambda { |a| a.abs } }, handle_nils: true)).to eq(
           Daru::DataFrame.new({a: [5, 7, 1, -6, 5, 5], b: [nil, nil, -1, 1, -1, 1],
-            c: ["aaa", "baaa", "aaa", nil, "xxx", nil]}, 
+            c: ["aaa", "baaa", "aaa", nil, "xxx", nil]},
             index: [0, 3, 1, 2, 4, 5])
           )
       end
@@ -1363,7 +1373,7 @@ describe Daru::DataFrame do
 
       expect(non_numeric.sort!([:b], by: {b: lambda { |a| (a.nil?)?[1]:[0, a.abs]} }, handle_nils: false)).to eq(
         Daru::DataFrame.new({a: [1, -6, 5, 5, 5, 7], b: [-1, 1, -1, 1, nil, nil],
-          c: ["aaa", nil, "xxx", nil, "aaa", "baaa"]}, 
+          c: ["aaa", nil, "xxx", nil, "aaa", "baaa"]},
           index: [1, 2, 4, 5, 0, 3])
         )
       end
