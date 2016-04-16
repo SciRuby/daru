@@ -528,6 +528,31 @@ describe Daru::Vector do
     end
   end
 
+  context "#emsd" do
+    it "calculates exponential moving standard deviation" do
+      # test default
+      emsd10 = @shares.emsd
+
+      expect(emsd10[-1]) .to be_within(0.00001).of(0.38002)
+      expect(emsd10[-5]) .to be_within(0.00001).of(0.32859)
+      expect(emsd10[-10]).to be_within(0.00001).of(0.19947)
+
+      # test with a different loopback period
+      emsd5 = @shares.emsd 5
+
+      expect(emsd5[-1]) .to be_within(0.00001).of(0.22742)
+      expect(emsd5[-10]).to be_within(0.00001).of(0.13174)
+      expect(emsd5[-15]).to be_within(0.00001).of(0.21000)
+
+      # test with a different smoother
+      emsd_w = @shares.emsd 10, true
+
+      expect(emsd_w[-1]) .to be_within(0.00001).of(0.45076)
+      expect(emsd_w[-5]) .to be_within(0.00001).of(0.33644)
+      expect(emsd_w[-10]).to be_within(0.00001).of(0.20710)
+    end
+  end
+
   context "#macd" do
     it "calculates moving average convergence divergence" do
       # MACD uses a lot more data than the other ones, so we need a bigger vector
