@@ -506,11 +506,11 @@ module Daru
         #
         # @example Using ema
         #
-        #   ts = (1..100).map { rand }.to_ts
-        #            # => [0.69, 0.23, 0.44, 0.71, ...]
+        #   ts = Daru::Vector.new((1..100).map { rand })
+        #            # => [0.577..., 0.123..., 0.173..., 0.233..., ...]
         #
         #   # first 9 observations are nil
-        #   ts.ema   # => [ ... nil, 0.509... , 0.433..., ... ]
+        #   ts.ema   # => [ ... nil, 0.455... , 0.395..., 0.323..., ... ]
         #
         # @return [Daru::Vector] Contains EMA
         def ema(n = 10, wilder = false)
