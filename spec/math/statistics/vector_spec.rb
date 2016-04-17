@@ -46,6 +46,22 @@ describe Daru::Vector do
         end
       end
 
+      context "#covariance_sample" do
+        it "calculates sample covariance" do
+          @dv_1 = Daru::Vector.new [323, 11, 555, 666, 234, 21, 666, 343, 1, 2]
+          @dv_2 = Daru::Vector.new [123, 22, 444, 555, 324, 21, 666, 434, 5, 8]
+          expect(@dv_1.covariance @dv_2).to be_within(0.00001).of(65603.62222)
+        end
+      end
+
+      context "#covariance_population" do
+        it "calculates population covariance" do
+          @dv_1 = Daru::Vector.new [323, 11, 555, 666, 234, 21, 666, 343, 1, 2]
+          @dv_2 = Daru::Vector.new [123, 22, 444, 555, 324, 21, 666, 434, 5, 8]
+          expect(@dv_1.covariance_population @dv_2).to be_within(0.01).of(59043.26)
+        end
+      end
+
       context "#sum_of_squared_deviation" do
         it "calculates sum of squared deviation" do
           expect(@dv.sum_of_squared_deviation).to eq(676069.6)
