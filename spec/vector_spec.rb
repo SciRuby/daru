@@ -446,13 +446,13 @@ describe Daru::Vector do
         end
       end
 
-      context "#to_hash" do
+      context "#to_h" do
         context Daru::Index do
           it "returns the vector as a hash" do
             dv = Daru::Vector.new [1,2,3,4,5], name: :a,
               index: [:one, :two, :three, :four, :five], dtype: dtype
 
-            expect(dv.to_hash).to eq({one: 1, two: 2, three: 3, four: 4, five: 5})
+            expect(dv.to_h).to eq({one: 1, two: 2, three: 3, four: 4, five: 5})
           end
         end
 
@@ -467,7 +467,7 @@ describe Daru::Vector do
           #     [:b,:two,:bar]
           #   ])
           #   vector = Daru::Vector.new([1,2,3,4], index: mi, dtype: dtype)
-          #   expect(vector.to_hash).to eq({
+          #   expect(vector.to_h).to eq({
           #     [:a,:two,:bar] => 1,
           #     [:a,:two,:baz] => 2,
           #     [:b,:one,:bar] => 3,

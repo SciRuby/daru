@@ -29,7 +29,7 @@ module Daru
         end
 
         def hashify df
-          hsh = df.to_hash
+          hsh = df.to_h
           hsh.each { |k,v| hsh[k] = v.to_a }
           hsh
         end
