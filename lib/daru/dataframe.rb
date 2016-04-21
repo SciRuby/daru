@@ -2282,7 +2282,7 @@ module Daru
 
         @data.map! do |v|
           if v.size == 0
-            Daru::Vector.new([nil]*@size, name: set_name(name), index: @index)
+            Daru::Vector.new([nil]*@size, name: set_name(name), metadata: v.metadata, index: @index)
           else
             v
           end
