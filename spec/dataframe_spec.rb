@@ -422,6 +422,13 @@ describe Daru::DataFrame do
         expect(@df[:a, :b]).to eq(temp)
       end
 
+      it "returns a DataFrame with metadata" do
+        @df[:a].metadata = "alpha"
+        @df[:b].metadata = "beta"
+        subset_df = @df[:a, :b]
+        expect([:a, :b].map { |v| subset_df[v].metadata }).to eq(["alpha", "beta"])
+      end
+
       it "accesses vector with Integer index" do
         expect(@df[0]).to eq([1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five]))
       end
