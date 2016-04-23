@@ -1321,7 +1321,7 @@ module Daru
     #
     # @param [Daru::Index] idx New index object on which the rows of the dataframe
     #   are to be indexed.
-    # @example Reassgining index of a DataFrame
+    # @example Reassigning index of a DataFrame
     #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [11,22,33,44]})
     #   df.index.to_a #=> [0,1,2,3]
     #
@@ -1587,6 +1587,10 @@ module Daru
       raise ArgumentError,
         "Specify grouping index" if !opts[:index] or opts[:index].empty?
 
+      arr = []
+      self.size.times {|i| arr[i] = i}
+      new_dataframe_index = Daru::Index.new(arr)
+      self.index = new_dataframe_index
       index   = opts[:index]
       vectors = opts[:vectors] || []
       aggregate_function = opts[:agg] || :mean
@@ -1639,7 +1643,6 @@ module Daru
 
         super_hash.each do |row_index, sub_h|
           sub_h.each do |vector_index, val|
-            # pivoted_dataframe[symbolize(vector_index)][symbolize(row_index)] = val
             pivoted_dataframe[vector_index][row_index] = val
           end
         end
