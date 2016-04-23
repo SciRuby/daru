@@ -135,7 +135,7 @@ module Daru
           end
         end
 
-        # Count number of occurences of each value in the Vector
+        # Count number of occurrences of each value in the Vector
         def value_counts
           values = {}
           @data.each do |d|
@@ -167,6 +167,30 @@ module Daru
           else
             sum_of_squares(m).quo((n_valid)).to_f            
           end
+        end
+
+        # Sample covariance with denominator (N-1)
+        def covariance_sample other
+          @size == other.size or raise ArgumentError, "size of both the vectors must be equal"
+          mean_x = self.mean 
+          mean_y = other.mean
+          sum = 0
+          (0...size).each do |i| 
+            sum = sum + ((@missing_values.has_key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
+          end 
+          sum / (n_valid - 1)
+        end
+ 
+        # Population covariance with denominator (N)
+        def covariance_population other
+          @size == other.size or raise ArgumentError, "size of both the vectors must be equal"
+          mean_x = self.mean 
+          mean_y = other.mean
+          sum = 0
+          (0...size).each do |i| 
+            sum = sum + ((@missing_values.has_key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
+          end 
+          sum / n_valid
         end
 
         def sum_of_squares(m=nil)
@@ -700,7 +724,8 @@ module Daru
         alias :std :sds
         alias :adp :average_deviation_population
         alias :cov :coefficient_of_variation
-        alias :variance :variance_sample    
+        alias :variance :variance_sample   
+        alias :covariance :covariance_sample  
         alias :sd :standard_deviation_sample
         alias :ss :sum_of_squares
         alias :percentil :percentile
