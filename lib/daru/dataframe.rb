@@ -2213,13 +2213,13 @@ module Daru
           end
         end
 
-        new_vcs = []
+        new_vectors = {}
         names.each do |name|
-          new_vcs << @data[@vectors[name]].to_a
+          new_vectors[name] = @data[@vectors[name]]
         end
 
         order = names.is_a?(Array) ? Daru::Index.new(names) : names
-        Daru::DataFrame.new(new_vcs, order: order,
+        Daru::DataFrame.new(new_vectors, order: order,
           index: @index, name: @name)
       end
     end
@@ -2282,7 +2282,7 @@ module Daru
 
         @data.map! do |v|
           if v.size == 0
-            Daru::Vector.new([nil]*@size, name: set_name(name), index: @index)
+            Daru::Vector.new([nil]*@size, name: set_name(name), metadata: v.metadata, index: @index)
           else
             v
           end

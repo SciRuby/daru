@@ -422,6 +422,13 @@ describe Daru::DataFrame do
         expect(@df[:a, :b]).to eq(temp)
       end
 
+      it "returns a DataFrame with metadata" do
+        @df[:a].metadata = "alpha"
+        @df[:b].metadata = "beta"
+        subset_df = @df[:a, :b]
+        expect([:a, :b].map { |v| subset_df[v].metadata }).to eq(["alpha", "beta"])
+      end
+
       it "accesses vector with Integer index" do
         expect(@df[0]).to eq([1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five]))
       end
@@ -524,14 +531,30 @@ describe Daru::DataFrame do
           }.to raise_error
       end
 
-    it "assigns correct name given empty dataframe" do
-      df_empty = Daru::DataFrame.new({})
-      df_empty[:a] = 1..5
-      df_empty[:b] = 1..5
+      it "assigns correct name given empty dataframe" do
+        df_empty = Daru::DataFrame.new({})
+        df_empty[:a] = 1..5
+        df_empty[:b] = 1..5
 
-      expect(df_empty[:a].name).to equal(:a)
-      expect(df_empty[:b].name).to equal(:b)
-    end
+        expect(df_empty[:a].name).to equal(:a)
+        expect(df_empty[:b].name).to equal(:b)
+      end
+
+      it "copies metadata when the target is a vector" do
+        vec = Daru::Vector.new(1.upto(@df.size), index: @df.index, metadata: { cdc_type: 2 })
+        @df[:woo] = vec.dup
+        expect(@df[:woo].metadata).to eq vec.metadata
+      end
+
+      it "doesn't delete metadata when the source is a dataframe with empty vectors" do
+        empty_df = Daru::DataFrame.new({
+          a: Daru::Vector.new([], metadata: 'alpha'),
+          b: Daru::Vector.new([], metadata: 'beta'),
+          })
+
+        empty_df[:c] = Daru::Vector.new(1.upto(3))
+        expect(empty_df[:a].metadata).to eq 'alpha'
+      end
 
       it "appends multiple vectors at a time" do
         # TODO
