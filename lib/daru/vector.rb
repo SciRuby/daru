@@ -847,11 +847,6 @@ module Daru
       end
     end
 
-    # Convert to hash (implicit). Hash keys are indexes and values are the correspoding elements
-    def to_hash
-      to_h
-    end
-
     # Convert to hash (explicit). Hash keys are indexes and values are the correspoding elements
     def to_h
       @index.inject({}) do |hsh, index|
@@ -865,9 +860,9 @@ module Daru
       @data.to_a
     end
 
-    # Convert the hash from to_hash to json
+    # Convert the hash from to_h to json
     def to_json *args
-      self.to_hash.to_json
+      self.to_h.to_json
     end
 
     # Convert to html for iruby

@@ -1065,7 +1065,7 @@ module Daru
         name = row[tree_keys.last]
         if !block
           current[name] ||= []
-          current[name].push(row.to_hash.delete_if { |key,value| tree_keys.include? key})
+          current[name].push(row.to_h.delete_if { |key,value| tree_keys.include? key})
         else
           current[name] = block.call(row, current,name)
         end
@@ -1857,7 +1857,7 @@ module Daru
     def to_a
       arry = [[],[]]
       self.each_row do |row|
-        arry[0] << row.to_hash
+        arry[0] << row.to_h
       end
       arry[1] = @index.to_a
 
@@ -1872,12 +1872,6 @@ module Daru
       else
         self.to_a.to_json
       end
-    end
-
-    # Converts DataFrame to a hash (implicit) with keys as vector names and values as
-    # the corresponding vectors.
-    def to_hash
-      to_h
     end
 
     # Converts DataFrame to a hash (explicit) with keys as vector names and values as
@@ -2055,7 +2049,7 @@ module Daru
       row_num  = 1
 
       self.each_row_with_index do |row, index|
-        content += sprintf formatter, index.to_s, *row.to_hash.values.map { |e| (e || 'nil').to_s }
+        content += sprintf formatter, index.to_s, *row.to_h.values.map { |e| (e || 'nil').to_s }
         row_num += 1
         if row_num > threshold
           dots = []

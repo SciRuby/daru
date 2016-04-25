@@ -1229,9 +1229,9 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#to_hash" do
+  context "#to_h" do
     it "converts to a hash" do
-      expect(@data_frame.to_hash).to eq(
+      expect(@data_frame.to_h).to eq(
         {
           a: Daru::Vector.new([1,2,3,4,5],
             index: [:one, :two, :three, :four, :five]),
