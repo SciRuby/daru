@@ -474,8 +474,11 @@ describe Daru::DataFrame do
   context "#[]=" do
     context Daru::Index do
       before :each do
-        @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
-          c: [11,22,33,44,55]}, order: [:a, :b, :c],
+        @df = Daru::DataFrame.new({
+          b: [11,12,13,14,15],
+          a: [1,2,3,4,5],
+          c: [11,22,33,44,55]},
+          order: [:a, :b, :c],
           index: [:one, :two, :three, :four, :five])
       end
 
@@ -554,6 +557,13 @@ describe Daru::DataFrame do
 
         empty_df[:c] = Daru::Vector.new(1.upto(3))
         expect(empty_df[:a].metadata).to eq 'alpha'
+      end
+      
+      it "modifies multiple vectors at a time" do
+        @df[:a, :b] = 1..5
+
+        expect(@df[:a].to_a).to eq((1..5).to_a)
+        expect(@df[:b].to_a).to eq((1..5).to_a)
       end
 
       it "appends multiple vectors at a time" do
