@@ -1481,6 +1481,14 @@ describe Daru::DataFrame do
       @df.rename_vectors :a => :alpha, :c => :gamma
       expect(@df.vectors.to_a).to eq([:alpha, :b, :gamma])
     end
+
+    it "overwrites vectors if the new name already exists" do
+      saved_vector = @df[:a].dup
+
+      @df.rename_vectors :a => :b
+      expect(@df.vectors.to_a).to eq([:b, :c])
+      expect(@df[:b]).to eq saved_vector
+    end
   end
 
   context "#reindex" do

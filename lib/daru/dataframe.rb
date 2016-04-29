@@ -1368,7 +1368,9 @@ module Daru
     # == Arguments
     #
     # * name_map - A hash where the keys are the exising vector names and
-    #              the values are the new names
+    #              the values are the new names.  If a vector is renamed
+    #              to a vector name that is already in use, the existing
+    #              one is overwritten.
     #
     # == Usage
     #
@@ -1376,6 +1378,9 @@ module Daru
     #   df.rename_vectors :a => :alpha, :c => :gamma
     #   df.vectors.to_a #=> [:alpha, :b, :gamma]
     def rename_vectors name_map
+      existing_targets = name_map.values & self.vectors.to_a
+      delete_vectors *existing_targets
+
       new_names = self.vectors.to_a.map { |v| name_map[v] ? name_map[v] : v }
       self.vectors = Daru::Index.new new_names
     end
