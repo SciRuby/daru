@@ -1124,6 +1124,18 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#delete_vectors" do
+    context Daru::Index do
+      it "deletes the specified vectors" do
+        @data_frame.delete_vectors :a, :b
+
+        expect(@data_frame).to eq(Daru::DataFrame.new({
+                c: [11,22,33,44,55]}, order: [:c],
+                index: [:one, :two, :three, :four, :five]))
+      end
+    end
+  end
+
   context "#delete_row" do
     it "deletes the specified row" do
       @data_frame.delete_row :three

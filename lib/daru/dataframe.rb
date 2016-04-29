@@ -865,6 +865,13 @@ module Daru
       self
     end
 
+    # Deletes a list of vectors
+    def delete_vectors *vectors
+      Array(vectors).each { |vec| delete_vector vec }
+
+      self
+    end
+
     # Delete a row
     def delete_row index
       idx = named_index_for index
