@@ -89,6 +89,11 @@ describe Daru::Core::GroupBy do
     it "returns a vector containing the size of each group" do
       expect(@dl_group.size).to eq(Daru::Vector.new([1,1,1,2,1,2], index: @dl_multi_index))
     end
+
+    it "returns an empty vector if given an empty dataframe" do
+      df = Daru::DataFrame.new({ a: [], b: [] })
+      expect(df.group_by(:a).size).to eq(Daru::Vector.new([]))
+    end
   end
 
   context "#get_group" do
