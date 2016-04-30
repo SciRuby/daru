@@ -345,4 +345,11 @@ describe Daru::Core::GroupBy do
   context "#[]" do
     pending
   end
+
+  context "#reduce" do
+    it "returns a vector that concatenates strings in a group" do
+      string_concat = lambda { |result, row| result += row[:b] }
+      expect(@sl_group.reduce('', &string_concat)).to eq(Daru::Vector.new(['onethreetwo', 'onetwotwoonethree'], index: @sl_index))
+    end
+  end
 end
