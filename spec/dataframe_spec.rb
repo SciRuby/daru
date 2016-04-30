@@ -1124,6 +1124,18 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#delete_vectors" do
+    context Daru::Index do
+      it "deletes the specified vectors" do
+        @data_frame.delete_vectors :a, :b
+
+        expect(@data_frame).to eq(Daru::DataFrame.new({
+                c: [11,22,33,44,55]}, order: [:c],
+                index: [:one, :two, :three, :four, :five]))
+      end
+    end
+  end
+
   context "#delete_row" do
     it "deletes the specified row" do
       @data_frame.delete_row :three
@@ -1468,6 +1480,14 @@ describe Daru::DataFrame do
     it "renames vectors using a hash map" do
       @df.rename_vectors :a => :alpha, :c => :gamma
       expect(@df.vectors.to_a).to eq([:alpha, :b, :gamma])
+    end
+
+    it "overwrites vectors if the new name already exists" do
+      saved_vector = @df[:a].dup
+
+      @df.rename_vectors :a => :b
+      expect(@df.vectors.to_a).to eq([:b, :c])
+      expect(@df[:b]).to eq saved_vector
     end
   end
 
