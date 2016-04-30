@@ -66,27 +66,31 @@ module Daru
         ArrayWrapper.new @data.dup, @context
       end
 
+      def compact
+        @data - @context.missing_values
+      end
+
       def mean
-        sum.quo(@size - @context.missing_positions.size).to_f
+        values_to_sum = compact
+        return nil if values_to_sum.empty?
+        sum = values_to_sum.inject :+
+        sum.quo(values_to_sum.size).to_f
       end
 
       def product
-        @data.inject(1) { |m,e| m*e unless e.nil? }
+        compact.inject :*
       end
 
       def max
-        @data.max
+        compact.max
       end
 
       def min
-        @data.min
+        compact.min
       end
 
       def sum
-        @data.inject(0) do |memo ,e|
-          memo += e unless e.nil? #TODO: Remove this conditional somehow!
-          memo
-        end
+        compact.inject :+
       end
 
      private
