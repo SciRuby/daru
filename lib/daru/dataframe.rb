@@ -2310,14 +2310,19 @@ module Daru
 
       # Update an existing vector based on its index
       if pos.is_a? Daru::Index
-        # If there are multiple vectors associated with this name
+        # If there are multiple vectors associated with this name modify all of them
+        # This could be in case of Index, MultiIndex as well as DateTimeIndex
         pos.each { |p| @data[@vectors[p]] = v }
       else
         @data[pos] = v
       end
 
     rescue IndexError
-      # Add a new vector
+      # IndexError tells that this vector isn't in the dataframe
+      # Therefore add a new vector with this name
+      # Perhaps not a good idea to use exception handling for this purpose
+      # Doing this because other method like @index.include? are insufficient
+      # for this purpose.
       @vectors |= name
       @data[@vectors[*name]] = v
     end
