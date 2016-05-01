@@ -1291,6 +1291,8 @@ module Daru
       @missing_values[nil] = 0
       if values_arry
         values_arry.each do |e|
+        # If dtype is :gsl then missing values have to be converted to float
+          e = e.to_f if dtype == :gsl && e.is_a?(Numeric)
           @missing_values[e] = 0
         end
       end
