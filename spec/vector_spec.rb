@@ -970,18 +970,22 @@ describe Daru::Vector do
   end
 
   context "#only_valid" do
-    before do
-      @vector = Daru::Vector.new [1,2,3,4,nil,3,nil], metadata: { cdc_type: 2 },
-        index: [:a, :b, :c, :d, :e, :f, :g]
-    end
+    [:array, :gsl].each do |dtype|
+      describe dtype do
+        before do
+          @vector = Daru::Vector.new [1,2,3,4,5,3,5], metadata: { cdc_type: 2 },
+            index: [:a, :b, :c, :d, :e, :f, :g], dtype: dtype, missing_values: [3, 5]
+        end
 
-    it "returns a Vector of only non-nil data" do
-      expect(@vector.only_valid).to eq(Daru::Vector.new([1,2,3,4,3],
-        index: [:a, :b, :c, :d, :f]))
-    end
+        it "returns a Vector of only non-missing data" do
+          expect(@vector.only_valid).to eq(Daru::Vector.new([1,2,4],
+            index: [:a, :b, :d], dtype: dtype))
+        end
 
-    it "retains the original vector metadata" do
-      expect(@vector.only_valid.metadata).to eq({ cdc_type: 2 })
+        it "retains the original vector metadata" do
+          expect(@vector.only_valid.metadata).to eq({ cdc_type: 2 })
+        end
+      end
     end
   end
 
