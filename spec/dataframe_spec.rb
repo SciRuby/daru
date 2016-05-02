@@ -890,6 +890,16 @@ describe Daru::DataFrame do
       expect(cloned[:a].object_id).to eq(@data_frame[:a].object_id)
       expect(cloned[:b].object_id).to eq(@data_frame[:b].object_id)
     end
+
+    it "original dataframe remains unaffected when operations are applied
+      on cloned data frame" do
+      original = @data_frame.dup
+      cloned = @data_frame.clone
+      cloned.delete_vector :a
+
+      expect(@data_frame).to eq(original)
+    end
+
   end
 
   context "#clone_structure" do
