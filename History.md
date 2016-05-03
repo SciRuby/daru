@@ -1,3 +1,43 @@
+# 0.1.3 (May 2016)
+
+* Enhancements
+    - Proper error handling for case where an index specified by the user is not actually present in the DataFrame/Vector (@lokeshh).
+    - DataFrame CSV writer function will now supress headers when passing headers: false (@gnilrets).
+    - Refactor Index and MultiIndex so that a Vector or DataFrame can access the actual index number without having to check the exact type of index every time (@lokeshh).
+    - Refactor `Vector#[]=` to not use conditionals (@lokeshh).
+    - Custom `#dup` method for `Daru::DateTimeIndex` (@Deepakkoli93).
+    - Massive performance boost to Vector and DataFrame sorting by using in-built Array#sort and removing previous hand-made sort (@lokeshh).
+    - Handle nils in sorting for Vectors and DataFrame (@lokeshh, @gnilrets).
+    - Add #describe function for Vectors (@shahsaurabh0605).
+    - Adds support for concatenating dataframes that don't share all the same vectors (@gnilrets).
+    - Massive performance enhancement for joins using the sorted merge method (@gnilrets).
+    - New statistics methods and tests for DataFrame (@shahsaurabh0605).
+    - Add explicit conversion to hash for DataFrame (DataFrame#to_h, Vector#to_h) and remove implicit conversion to hash (DataFrame#to_hash, Vector#to_hash) (@gnilrets).
+    - Add `DataFrame#rename_vectors` for simplifying renaming of vectors in DataFrame (@gnilrets).
+    - MultiIndex raises error on accessing an invalid index (@shreyanshd).
+    - Order columns as given in the CSV file when reading into a DataFrame from CSV using `DataFrame.from_csv` (@lokeshh).
+    - Add `Vector#percent_change` and `DataFrame#percent_change` (@shahsaurabh0605).
+    - Faster `DataFrame#filter_rows` (@lokeshh).
+    - Added `Vector#emv` for calculating exponential moving variance of Vector (@shahsaurabh0605).
+    - Add support for associating metadata with a Vector or DataFrame using the :metadata option (@gnilrets).
+    - Add `Vector#emsd` for calculating exponential moving standard deviation of Vector (@shahsaurabh0605).
+    - Sample and population covariance functions for Vector (@shahsaurabh0605).
+    - Improve `DataFrame#dup` performance (@gnilrets).
+    - Add `Daru::DataFrame::Core::GroupBy#reduce` for reducing groups by passing a block (@gnilrets).
+* Fixes
+    - Fix conflict with narray that caused namespace clashes with nmatrix in case both narray and nmatrix were installed on the user's system (@lokeshh).
+    - Fix bug with dataframe concatenation that caused modifying the arrays that
+    compose the vectors in the original dataframes (@gnilrets).
+    - Fix an error where the Vectors in an empty DataFrame would not be assigned correct names (@lokeshh).
+    - Correct spelling mistakes and fix broken links in README (@lokeshh).
+    - Fix bug in Vector#mode (@sunshineyyy).
+    - Fix `Vector#index_of` method to handle dtype :array differently (@lokeshh).
+    - Fix `DateTimeIndex#include?` method since it was raising an exception when index not found. It returns false now (@Phitherek).
+    - Handle nils in group_by keys (@gnilrets).
+    - Handle nils for statistics methods in Vector and DataFrame for :array and :gsl data (@lokeshh).
+    - Fix `DataFrame#clone` when no arguments have been passed to it (@lokeshh).
+
+
 # 0.1.2
 
 * Enhancements
