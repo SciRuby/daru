@@ -1238,7 +1238,7 @@ module Daru
 
     def reindex_vectors new_vectors
       raise ArgumentError, "Must pass the new index of type Index or its "\
-        "subclasses, not #{new_index.class}" unless new_vectors.kind_of?(Daru::Index)
+        "subclasses, not #{new_index.class}" unless new_vectors.is_a?(Daru::Index)
 
       cl = Daru::DataFrame.new({}, order: new_vectors, index: @index, name: @name)
       new_vectors.each do |vec|
@@ -1307,7 +1307,7 @@ module Daru
     #   #         g        nil        nil
     def reindex new_index
       raise ArgumentError, "Must pass the new index of type Index or its "\
-        "subclasses, not #{new_index.class}" unless new_index.kind_of?(Daru::Index)
+        "subclasses, not #{new_index.class}" unless new_index.is_a?(Daru::Index)
 
       cl = Daru::DataFrame.new({}, order: @vectors, index: new_index, name: @name)
       new_index.each do |idx|
@@ -1351,7 +1351,7 @@ module Daru
     #   df.vectors.to_a #=> [:foo, :bar, :baz]
     def vectors= idx
       raise ArgumentError, "Can only reindex with Index and its subclasses" unless
-        index.kind_of?(Daru::Index)
+        index.is_a?(Daru::Index)
       raise ArgumentError, "Specified index length #{idx.size} not equal to"\
         "dataframe size #{ncols}" if idx.size != ncols
 
@@ -2322,10 +2322,10 @@ module Daru
         pos = name
       end
 
-      if !pos.kind_of?(Daru::Index) and pos == name and
+      if !pos.is_a?(Daru::Index) and pos == name and
         (@vectors.include?(name) or (pos.is_a?(Integer) and pos < @data.size))
         @data[pos] = v
-      elsif pos.kind_of?(Daru::Index)
+      elsif pos.is_a?(Daru::Index)
         pos.each do |p|
           @data[@vectors[p]] = v
         end
@@ -2427,7 +2427,7 @@ module Daru
     end
 
     def try_create_index index
-      index.kind_of?(Index) ? index : Daru::Index.new(index)
+      index.is_a?(Index) ? index : Daru::Index.new(index)
     end
 
     def set_name potential_name

@@ -259,16 +259,6 @@ Style/CaseEquality:
   Exclude:
     - 'lib/daru/io/sql_data_source.rb'
 
-# Offense count: 10
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: is_a?, kind_of?
-Style/ClassCheck:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/date_time/index.rb'
-    - 'lib/daru/vector.rb'
-
 # Offense count: 1
 Style/ClassVars:
   Exclude:

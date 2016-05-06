@@ -29,7 +29,7 @@ module Daru
       # string.
       def offset_from_frequency frequency
         frequency = 'D' if frequency.nil?
-        return frequency if frequency.kind_of?(Daru::DateOffset)
+        return frequency if frequency.is_a?(Daru::DateOffset)
 
         matched = /([0-9]*)(MONTH|YEAR|S|H|MB|ME|M|D|W|YB|YE)/.match(frequency)
         raise ArgumentError,
@@ -61,7 +61,7 @@ module Daru
       end
 
       def begin_from_offset? offset, start
-        if offset.kind_of?(Daru::Offsets::Tick) or
+        if offset.is_a?(Daru::Offsets::Tick) or
           (offset.respond_to?(:on_offset?) and offset.on_offset?(start))
           true
         else

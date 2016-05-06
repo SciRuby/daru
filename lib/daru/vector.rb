@@ -968,7 +968,7 @@ module Daru
         "Size of supplied index #{index.size} does not match size of DataFrame" if
         idx.size != self.size
       raise ArgumentError, "Can only assign type Index and its subclasses." unless
-        idx.kind_of?(Daru::Index)
+        idx.is_a?(Daru::Index)
 
       @index = idx
       self
@@ -1108,7 +1108,7 @@ module Daru
       numeric_indexes = []
 
       each_with_index do |v, i|
-        numeric_indexes << i if(v.kind_of?(Numeric) or @missing_values.has_key?(v))
+        numeric_indexes << i if(v.is_a?(Numeric) or @missing_values.has_key?(v))
       end
 
       self[*numeric_indexes]
