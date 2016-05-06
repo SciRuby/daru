@@ -688,7 +688,7 @@ module Daru
     def recode_vectors &block
       block_given? or return to_enum(:recode_vectors)
 
-      df = self.dup
+      df = dup
       df.each_vector_with_index do |v, i|
         ret = yield v
         ret.is_a?(Daru::Vector) or
@@ -702,7 +702,7 @@ module Daru
     def recode_rows &block
       block_given? or return to_enum(:recode_rows)
 
-      df = self.dup
+      df = dup
       df.each_row_with_index do |r, i|
         ret = yield r
         ret.is_a?(Daru::Vector) or raise TypeError, "Every iteration must return Daru::Vector not #{ret.class}"
@@ -776,9 +776,9 @@ module Daru
       return to_enum(:map_rows!) unless block_given?
 
       index.dup.each do |i|
-        r = yield self.row[i]
+        r = yield row[i]
         r.is_a?(Daru::Vector) or raise TypeError, "Returned object must be Daru::Vector not #{r.class}"
-        self.row[i] = r
+        row[i] = r
       end
 
       self
@@ -874,7 +874,7 @@ module Daru
 
       if @index.include? idx
         @index = Daru::Index.new(@index.to_a - [idx])
-        self.each_vector do |vector|
+        each_vector do |vector|
           vector.delete_at idx
         end
       else
@@ -944,7 +944,7 @@ module Daru
     def filter_vectors &block
       return to_enum(:filter_vectors) unless block_given?
 
-      df = self.dup
+      df = dup
       df.keep_vector_if &block
 
       df
@@ -1265,7 +1265,7 @@ module Daru
       other_df.vectors.each do |v|
         next if vectors.include?(v)
         vectors << v
-        data << ([nil] * self.size).concat(other_df[v].to_a)
+        data << ([nil] * size).concat(other_df[v].to_a)
       end
 
       Daru::DataFrame.new(data, order: vectors)
@@ -1277,7 +1277,7 @@ module Daru
         @size != self[new_index].uniq.size
 
       self.index = Daru::Index.new(self[new_index].to_a)
-      self.delete_vector(new_index) unless opts[:keep]
+      delete_vector(new_index) unless opts[:keep]
 
       self
     end
@@ -1311,7 +1311,7 @@ module Daru
       cl = Daru::DataFrame.new({}, order: @vectors, index: new_index, name: @name)
       new_index.each do |idx|
         if @index.include?(idx)
-          cl.row[idx] = self.row[idx]
+          cl.row[idx] = row[idx]
         else
           cl.row[idx] = [nil]*ncols
         end
@@ -1374,10 +1374,10 @@ module Daru
     #   df.rename_vectors :a => :alpha, :c => :gamma
     #   df.vectors.to_a #=> [:alpha, :b, :gamma]
     def rename_vectors name_map
-      existing_targets = name_map.select { |k,v| k != v }.values & self.vectors.to_a
+      existing_targets = name_map.select { |k,v| k != v }.values & vectors.to_a
       delete_vectors *existing_targets
 
-      new_names = self.vectors.to_a.map { |v| name_map[v] ? name_map[v] : v }
+      new_names = vectors.to_a.map { |v| name_map[v] ? name_map[v] : v }
       self.vectors = Daru::Index.new new_names
     end
 
@@ -1542,10 +1542,10 @@ module Daru
       old_index = @index.to_a
       self.index = Daru::Index.new(idx.map { |i| old_index[i] })
 
-      self.vectors.each do |v|
+      vectors.each do |v|
         @data[@vectors[v]] = Daru::Vector.new(
           idx.map{ |i| @data[@vectors[v]].data[i] },
-          name: self[v].name, metadata: self[v].metadata.dup, index: self.index)
+          name: self[v].name, metadata: self[v].metadata.dup, index: index)
       end
 
       self
@@ -1553,7 +1553,7 @@ module Daru
 
     # Non-destructive version of #sort!
     def sort vector_order, opts={}
-      self.dup.sort! vector_order, opts
+      dup.sort! vector_order, opts
     end
 
     # Pivots a data frame on specified vectors and applies an aggregate function
@@ -1811,7 +1811,7 @@ module Daru
     #
     def create_sql(table,charset="UTF8")
       sql    = "CREATE TABLE #{table} ("
-      fields = self.vectors.to_a.collect do |f|
+      fields = vectors.to_a.collect do |f|
         v = self[f]
         f.to_s + " " + v.db_type
       end
@@ -1862,7 +1862,7 @@ module Daru
     # in the array of hashes, which has the same index.
     def to_a
       arry = [[],[]]
-      self.each_row do |row|
+      each_row do |row|
         arry[0] << row.to_h
       end
       arry[1] = @index.to_a
@@ -1874,9 +1874,9 @@ module Daru
     # in the JSON thus created.
     def to_json no_index=true
       if no_index
-        self.to_a[0].to_json
+        to_a[0].to_json
       else
-        self.to_a.to_json
+        to_a.to_json
       end
     end
 
@@ -1896,7 +1896,7 @@ module Daru
       html = "<table>" \
         "<tr>" \
           "<th colspan=\"#{@vectors.size+1}\">" \
-            "Daru::DataFrame:#{self.object_id} " + " rows: #{nrows} " + " cols: #{ncols}" \
+            "Daru::DataFrame:#{object_id} " + " rows: #{nrows} " + " cols: #{ncols}" \
           "</th>" \
         "</tr>"
       html +='<tr><th></th>'
@@ -1907,7 +1907,7 @@ module Daru
         html += '<tr>'
         html += '<td>' + index.to_s + '</td>'
 
-        self.row[index].each do |element|
+        row[index].each do |element|
           html += '<td>' + element.to_s + '</td>'
         end
 
@@ -1919,7 +1919,7 @@ module Daru
         html += '</tr>'
 
         last_index = @index.to_a.last
-        last_row = self.row[last_index]
+        last_row = row[last_index]
         html += '<tr>'
         html += "<td>" + last_index.to_s + "</td>"
         (0..(ncols - 1)).to_a.each do |i|
@@ -2049,12 +2049,12 @@ module Daru
       formatter = "\n"
 
       (@vectors.size + 1).times { formatter += "%#{longest}.#{longest}s " }
-      content += "\n#<" + self.class.to_s + ":" + self.object_id.to_s + " @name = " +
+      content += "\n#<" + self.class.to_s + ":" + object_id.to_s + " @name = " +
                  name.to_s + " @size = " + @size.to_s + ">"
       content += sprintf formatter, "" , *@vectors.map(&:to_s)
       row_num  = 1
 
-      self.each_row_with_index do |row, index|
+      each_row_with_index do |row, index|
         content += sprintf formatter, index.to_s, *row.to_h.values.map { |e| (e || 'nil').to_s }
         row_num += 1
         next if row_num <= threshold
@@ -2086,7 +2086,7 @@ module Daru
     def method_missing(name, *args, &block)
       if (md = name.match(/(.+)\=/))
         insert_or_modify_vector name[/(.+)\=/].delete("=").to_sym, args[0]
-      elsif self.has_vector? name
+      elsif has_vector? name
         self[name]
       else
         super(name, *args, &block)
@@ -2355,12 +2355,12 @@ module Daru
         end
 
         if @index.include? name
-          self.each_vector_with_index do |vector,i|
+          each_vector_with_index do |vector,i|
             vector[name] = v.index.include?(i) ? v[i] : nil
           end
         else
           @index = @index | [name]
-          self.each_vector_with_index do |vector,i|
+          each_vector_with_index do |vector,i|
             vector.concat((v.index.include?(i) ? v[i] : nil), name)
           end
         end

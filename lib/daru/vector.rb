@@ -412,7 +412,7 @@ module Daru
     #   # 13   5
     #   # 15   1
     def where bool_arry
-      Daru::Core::Query.vector_where @data.to_a, @index.to_a, bool_arry, self.dtype
+      Daru::Core::Query.vector_where @data.to_a, @index.to_a, bool_arry, dtype
     end
 
     def head q=10
@@ -458,7 +458,7 @@ module Daru
 
     # Delete an element by value
     def delete element
-      self.delete_at index_of(element)
+      delete_at index_of(element)
     end
 
     # Delete element by index
@@ -481,7 +481,7 @@ module Daru
 
       if @type.nil? or @possibly_changed_type
         @type = :numeric
-        self.each do |e|
+        each do |e|
           next if e.nil? || e.is_a?(Numeric)
           @type = :object
           break
@@ -771,7 +771,7 @@ module Daru
     #   ts.lag   # => [nil, 0.69, 0.23, 0.44, ...]
     #   ts.lag(2) # => [nil, nil, 0.69, 0.23, ...]
     def lag k=1
-      return self.dup if k == 0
+      return dup if k == 0
 
       dat = @data.to_a.dup
       (dat.size - 1).downto(k) { |i| dat[i] = dat[i - k] }
@@ -789,7 +789,7 @@ module Daru
 
     # Non-destructive version of #replace_nils!
     def replace_nils replacement
-      self.dup.replace_nils!(replacement)
+      dup.replace_nils!(replacement)
     end
 
     # number of non-missing elements
@@ -843,7 +843,7 @@ module Daru
 
     # Convert the hash from to_h to json
     def to_json *args
-      self.to_h.to_json
+      to_h.to_json
     end
 
     # Convert to html for iruby
@@ -852,7 +852,7 @@ module Daru
       html = "<table>" \
         "<tr>" \
           "<th colspan=\"2\">" \
-            "Daru::Vector:#{self.object_id} " + " size: #{size}" \
+            "Daru::Vector:#{object_id} " + " size: #{size}" \
           "</th>" \
         "</tr>"
       html += '<tr><th> </th><th>' + name.to_s + '</th></tr>'
@@ -925,7 +925,7 @@ module Daru
       name      = @name || 'nil'
       metadata  = @metadata || 'nil'
       formatter = "\n%#{longest}.#{longest}s %#{longest}.#{longest}s"
-      content  += "\n#<" + self.class.to_s + ":" + self.object_id.to_s + " @name = " + name.to_s + " @metadata = " + @metadata.to_s + " @size = " + size.to_s + " >"
+      content  += "\n#<" + self.class.to_s + ":" + object_id.to_s + " @name = " + name.to_s + " @metadata = " + @metadata.to_s + " @size = " + size.to_s + " >"
 
       content += sprintf formatter, "", name
       @index.each_with_index do |index, num|
@@ -959,7 +959,7 @@ module Daru
     def index= idx
       raise ArgumentError,
         "Size of supplied index #{index.size} does not match size of DataFrame" if
-        idx.size != self.size
+        idx.size != size
       raise ArgumentError, "Can only assign type Index and its subclasses." unless
         idx.is_a?(Daru::Index)
 
@@ -1072,9 +1072,9 @@ module Daru
     # Otherwise, a duplicate will be returned irrespective of
     # presence of missing data.
     def only_valid as_a=:vector, duplicate=true
-      return self.dup if !has_missing_data? and as_a == :vector and duplicate
+      return dup if !has_missing_data? and as_a == :vector and duplicate
       return self if !has_missing_data? and as_a == :vector and !duplicate
-      return self.to_a if !has_missing_data? and as_a != :vector
+      return to_a if !has_missing_data? and as_a != :vector
 
       new_index = @index.to_a - missing_positions
       new_vector = new_index.map do |idx|

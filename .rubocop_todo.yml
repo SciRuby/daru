@@ -411,21 +411,21 @@ Style/RedundantParentheses:
 
 # Offense count: 85
 # Cop supports --auto-correct.
-Style/RedundantSelf:
-  Exclude:
-    - 'lib/daru/core/query.rb'
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/date_time/index.rb'
-    - 'lib/daru/extensions/rserve.rb'
-    - 'lib/daru/index.rb'
-    - 'lib/daru/io/sql_data_source.rb'
-    - 'lib/daru/maths/arithmetic/dataframe.rb'
-    - 'lib/daru/maths/arithmetic/vector.rb'
-    - 'lib/daru/maths/statistics/dataframe.rb'
-    - 'lib/daru/maths/statistics/vector.rb'
-    - 'lib/daru/monkeys.rb'
-    - 'lib/daru/plotting/dataframe.rb'
-    - 'lib/daru/vector.rb'
+#Style/RedundantSelf:
+  #Exclude:
+    #- 'lib/daru/core/query.rb'
+    #- 'lib/daru/dataframe.rb'
+    #- 'lib/daru/date_time/index.rb'
+    #- 'lib/daru/extensions/rserve.rb'
+    #- 'lib/daru/index.rb'
+    #- 'lib/daru/io/sql_data_source.rb'
+    #- 'lib/daru/maths/arithmetic/dataframe.rb'
+    #- 'lib/daru/maths/arithmetic/vector.rb'
+    #- 'lib/daru/maths/statistics/dataframe.rb'
+    #- 'lib/daru/maths/statistics/vector.rb'
+    #- 'lib/daru/monkeys.rb'
+    #- 'lib/daru/plotting/dataframe.rb'
+    #- 'lib/daru/vector.rb'
 
 # Offense count: 6
 # Cop supports --auto-correct.

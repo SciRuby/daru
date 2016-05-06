@@ -42,13 +42,13 @@ class Range
   alias_method :dv, :daru_vector
 
   def to_index
-    Daru::Index.new self.to_a
+    Daru::Index.new to_a
   end
 end
 
 class Hash
   def daru_vector index=nil, dtype=:array
-    Daru::Vector.new self.values[0], name: self.keys[0], index: index, dtype: dtype
+    Daru::Vector.new values[0], name: keys[0], index: index, dtype: dtype
   end
 
   alias_method :dv, :daru_vector
@@ -78,7 +78,7 @@ end
 
 class Matrix
   def elementwise_division other
-    self.map.with_index do |e, index|
+    map.with_index do |e, index|
       e / other.to_a.flatten[index]
     end
   end

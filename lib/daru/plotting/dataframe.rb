@@ -36,7 +36,7 @@ module Daru
             add_multiple_diagrams plot, options
           end
         when types.include?(:box)
-          numeric = self.only_numerics(clone: false).dup_only_valid
+          numeric = only_numerics(clone: false).dup_only_valid
 
           plot.add_with_df(
             numeric.to_nyaplotdf,
@@ -56,7 +56,7 @@ module Daru
 
       def add_single_diagram plot, options
         args = [
-          self.to_nyaplotdf, 
+          to_nyaplotdf, 
           options[:type], 
           options[:x]
         ]
@@ -72,7 +72,7 @@ module Daru
         y_vecs = extract_option :y, options
 
         diagrams   = []
-        nyaplot_df = self.to_nyaplotdf
+        nyaplot_df = to_nyaplotdf
         total      = x_vecs.size
         types = types.size < total ? types*total : types
 

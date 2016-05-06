@@ -31,7 +31,7 @@ module Daru
         # Calculate the maximum value of each numeric vector.
         def max opts={}
           if opts[:vector]
-            self.row[*self[opts[:vector]].max_index.index.to_a]
+            row[*self[opts[:vector]].max_index.index.to_a]
           else
             compute_stats :max
           end
@@ -132,7 +132,7 @@ module Daru
         # Calculate sample variance-covariance between the numeric vectors.
         def covariance
           cache={}
-          vectors = self.numeric_vectors
+          vectors = numeric_vectors
 
           mat_rows = vectors.collect do |row|
             vectors.collect do |col|

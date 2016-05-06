@@ -59,7 +59,7 @@ module Daru
       private_constant :ActiveRecordConnectionAdapter
 
       def self.make_dataframe(db, query)
-        self.new(db, query).make_dataframe
+        new(db, query).make_dataframe
       end
 
       def initialize(db, query)

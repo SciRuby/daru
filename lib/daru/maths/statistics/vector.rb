@@ -43,7 +43,7 @@ module Daru
         # :min]. Methods will be applied in the specified order.
         def describe methods=nil
           methods ||= [:count, :mean, :std, :min, :max]
-          description = methods.map { |m| self.send(m) }
+          description = methods.map { |m| send(m) }
           Daru::Vector.new(description, index: methods, name: :statistics)
         end
 
@@ -147,7 +147,7 @@ module Daru
 
         # Sample variance with denominator (N-1)
         def variance_sample m=nil
-          m ||= self.mean
+          m ||= mean
           if @data.respond_to? :variance_sample
             @data.variance_sample m
           else
@@ -168,7 +168,7 @@ module Daru
         # Sample covariance with denominator (N-1)
         def covariance_sample other
           @size == other.size or raise ArgumentError, "size of both the vectors must be equal"
-          mean_x = self.mean
+          mean_x = mean
           mean_y = other.mean
           sum = 0
           (0...size).each do |i|
@@ -180,7 +180,7 @@ module Daru
         # Population covariance with denominator (N)
         def covariance_population other
           @size == other.size or raise ArgumentError, "size of both the vectors must be equal"
-          mean_x = self.mean
+          mean_x = mean
           mean_y = other.mean
           sum = 0
           (0...size).each do |i|
@@ -288,7 +288,7 @@ module Daru
         def dichotomize(low = nil)
           low ||= factors.min
 
-          self.recode do |x|
+          recode do |x|
             if x.nil?
               nil
             elsif x > low
@@ -321,7 +321,7 @@ module Daru
         def box_cox_transformation lambda # :nodoc:
           raise "Should be a numeric" unless @type == :numeric
 
-          self.recode do |x|
+          recode do |x|
             if !x.nil?
               if(lambda == 0)
                 Math.log(x)
@@ -367,7 +367,7 @@ module Daru
           if @data.respond_to? :sample_with_replacement
             @data.sample_with_replacement sample
           else
-            valid = missing_positions.empty? ? self : self.only_valid
+            valid = missing_positions.empty? ? self : only_valid
             vds = valid.size
             (0...sample).collect{ valid[rand(vds)] }
           end
@@ -383,7 +383,7 @@ module Daru
           if @data.respond_to? :sample_without_replacement
             @data.sample_without_replacement sample
           else
-            valid = missing_positions.empty? ? self : self.only_valid
+            valid = missing_positions.empty? ? self : only_valid
             raise ArgumentError, "Sample size couldn't be greater than n" if
               sample > valid.size
             out  = []
@@ -416,7 +416,7 @@ module Daru
         #   #   k          0.25
         def percent_change periods = 1
           type == :numeric or raise TypeError, "Vector must be numeric"
-          value = self.only_valid
+          value = only_valid
           arr = []
           i = 1
           ind = @data.find_index{|x|!x.nil?}
@@ -654,10 +654,10 @@ module Daru
             if i == 0
               1.0
             else
-              m = self.mean
+              m = mean
               # can't use Pearson coefficient since the mean for the lagged series should
               # be the same as the regular series
-              ((self - m) * (self.lag(i) - m)).sum / self.variance_sample / (self.size - 1)
+              ((self - m) * (lag(i) - m)).sum / variance_sample / (size - 1)
             end
           end
         end
@@ -681,21 +681,21 @@ module Daru
           demean   = opts[:demean]
           unbiased = opts[:unbiased]
           if demean
-            demeaned_series = self - self.mean
+            demeaned_series = self - mean
           else
             demeaned_series = self
           end
 
           n = (10 * Math.log10(size)).to_i + 1
-          m = self.mean
+          m = mean
           if unbiased
-            d = Array.new(self.size, self.size)
+            d = Array.new(size, size)
           else
-            d = ((1..self.size).to_a.reverse)[0..n]
+            d = ((1..size).to_a.reverse)[0..n]
           end
 
           0.upto(n - 1).map do |i|
-            (demeaned_series * (self.lag(i) - m)).sum / d[i]
+            (demeaned_series * (lag(i) - m)).sum / d[i]
           end
         end
 

@@ -59,12 +59,12 @@ module Daru
         end
 
         def dataframe_binary_operation operation, other
-          all_vectors = (self.vectors.to_a | other.vectors.to_a).sort
-          all_indexes = (self.index.to_a   | other.index.to_a).sort
+          all_vectors = (vectors.to_a | other.vectors.to_a).sort
+          all_indexes = (index.to_a   | other.index.to_a).sort
 
           hsh = {}
           all_vectors.each do |vector_name|
-            this = self .has_vector?(vector_name) ? self[vector_name] : nil
+            this = has_vector?(vector_name) ? self[vector_name] : nil
             that = other.has_vector?(vector_name) ? other[vector_name] : nil
 
             if this and that
@@ -79,7 +79,7 @@ module Daru
         end
 
         def scalar_binary_operation operation, other
-          clone = self.dup
+          clone = dup
           clone.map_vectors! do |vector|
             vector = vector.send(operation, other) if vector.type == :numeric
             vector

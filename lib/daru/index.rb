@@ -30,7 +30,7 @@ module Daru
             source.all? { |e| e.is_a?(DateTime) }
         Daru::DateTimeIndex.new(source, freq: :infer)
       else
-        i = self.allocate
+        i = allocate
         i.send :initialize, *args, &block
         i
       end
@@ -349,7 +349,7 @@ module Daru
     end
 
     def inspect
-      "Daru::MultiIndex:#{self.object_id} (levels: #{levels}\nlabels: #{labels})"
+      "Daru::MultiIndex:#{object_id} (levels: #{levels}\nlabels: #{labels})"
     end
 
     # Provide a MultiIndex for sub vector produced

@@ -35,17 +35,17 @@ module Daru
         end
 
         def abs
-          self.recode { |e| e.abs unless e.nil? }
+          recode { |e| e.abs unless e.nil? }
         end
 
         def round precision=0
-          self.recode { |e| e.round(precision) unless e.nil? }
+          recode { |e| e.round(precision) unless e.nil? }
         end
 
        private
 
         def math_unary_op operation
-          self.recode { |e| Math.send(operation, e) unless e.nil? }
+          recode { |e| Math.send(operation, e) unless e.nil? }
         end
 
         def binary_op operation, other
@@ -58,7 +58,7 @@ module Daru
         end
 
         def v2o_binary operation, other
-          Daru::Vector.new self.map { |e| e.nil? ? nil : e.send(operation, other) },
+          Daru::Vector.new map { |e| e.nil? ? nil : e.send(operation, other) },
            name: @name, index: @index
         end
 

@@ -15,7 +15,7 @@ module Daru
 
   class Vector
     def to_REXP # rubocop:disable Style/MethodName
-      Rserve::REXP::Wrapper.wrap(self.to_a)
+      Rserve::REXP::Wrapper.wrap(to_a)
     end
   end
 end

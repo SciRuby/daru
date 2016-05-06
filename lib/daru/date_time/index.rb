@@ -401,7 +401,7 @@ module Daru
       if first.is_a?(String) and last.is_a?(String)
         self[first..last]
       elsif first.is_a?(Fixnum) and last.is_a?(Fixnum)
-        DateTimeIndex.new(self.to_a[first..last], freq: @offset)
+        DateTimeIndex.new(to_a[first..last], freq: @offset)
       else
         first_dt =
           if first.is_a?(String)
@@ -449,11 +449,11 @@ module Daru
     end
 
     def == other
-      self.to_a == other.to_a
+      to_a == other.to_a
     end
 
     def inspect
-      string = "#<DateTimeIndex:" + self.object_id.to_s + " offset=" +
+      string = "#<DateTimeIndex:" + object_id.to_s + " offset=" +
                (@offset ? @offset.freq_string : 'nil') + ' periods=' + @periods.to_s +
                " data=[" + @data.first[0].to_s + "..." + @data.last[0].to_s + ']'+ '>'
 
@@ -492,7 +492,7 @@ module Daru
           raise IndexError, "To shift non-freq date time index pass an offset."
         end
       else # its a Daru::Offset/DateOffset
-        DateTimeIndex.new(self.to_a.map { |e| distance + e }, freq: :infer)
+        DateTimeIndex.new(to_a.map { |e| distance + e }, freq: :infer)
       end
     end
 
@@ -517,12 +517,12 @@ module Daru
           raise IndexError, "To lag non-freq date time index pass an offset."
         end
       else
-        DateTimeIndex.new(self.to_a.map { |e| distance - e }, freq: :infer)
+        DateTimeIndex.new(to_a.map { |e| distance - e }, freq: :infer)
       end
     end
 
     def _dump depth
-      Marshal.dump({data: self.to_a, freq: @offset})
+      Marshal.dump({data: to_a, freq: @offset})
     end
 
     def self._load data
@@ -545,7 +545,7 @@ module Daru
     #   @return [Array<Fixnum>] Array containing seconds of each index.
     [:year, :month, :day, :hour, :min, :sec].each do |meth|
       define_method(meth) do
-        self.each_with_object([]) do |d, arr|
+        each_with_object([]) do |d, arr|
           arr << d.send(meth)
         end
       end
