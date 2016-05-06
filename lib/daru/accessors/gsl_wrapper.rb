@@ -23,7 +23,7 @@ module Daru
       end
 
       def median
-        GSL::Stats::median_from_sorted_data(@data.sort)
+        GSL::Stats.median_from_sorted_data(@data.sort)
       end
       
       def variance_sample(m)

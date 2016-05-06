@@ -212,13 +212,6 @@ Style/BracesAroundHashParameters:
     - 'lib/daru/index.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 5
-# Cop supports --auto-correct.
-Style/ColonMethodCall:
-  Exclude:
-    - 'lib/daru/accessors/gsl_wrapper.rb'
-    - 'lib/daru/maths/statistics/vector.rb'
-
 # Offense count: 3
 # Cop supports --auto-correct.
 Style/CommentIndentation:

@@ -55,7 +55,7 @@ module Daru
         alias :mad :median_absolute_deviation
 
         def standard_error
-          standard_deviation_sample/(Math::sqrt((n_valid)))
+          standard_deviation_sample/(Math.sqrt((n_valid)))
         end
 
         def sum_of_squared_deviation
@@ -201,7 +201,7 @@ module Daru
           if @data.respond_to? :standard_deviation_population
             @data.standard_deviation_population(m)
           else
-            Math::sqrt(variance_population(m))
+            Math.sqrt(variance_population(m))
           end
         end
 
@@ -210,7 +210,7 @@ module Daru
           if @data.respond_to? :standard_deviation_sample
             @data.standard_deviation_sample m
           else
-            Math::sqrt(variance_sample(m))
+            Math.sqrt(variance_sample(m))
           end
         end
 
@@ -608,7 +608,7 @@ module Daru
           result = []
           emv_return = emv(n, wilder)
           emv_return.each do |d|
-            result << (d.nil? ? nil : Math::sqrt(d))
+            result << (d.nil? ? nil : Math.sqrt(d))
           end
           Daru::Vector.new(result, index: @index, name: @name)
         end
