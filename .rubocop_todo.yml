@@ -272,27 +272,17 @@ Style/EmptyLinesAroundClassBody:
     - 'lib/daru/core/merge.rb'
     - 'lib/daru/dataframe.rb'
 
-# Offense count: 4
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: empty_lines, no_empty_lines
-#Style/EmptyLinesAroundModuleBody:
-  #Exclude:
-    #- 'lib/daru/accessors/mdarray_wrapper.rb'
-    #- 'lib/daru/maths/arithmetic/dataframe.rb'
-    #- 'lib/daru/plotting/dataframe.rb'
-    #- 'lib/daru/plotting/vector.rb'
-
 # Offense count: 15
 # Cop supports --auto-correct.
 # Configuration parameters: AllowForAlignment, ForceEqualSignAlignment.
 Style/ExtraSpacing:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/date_time/index.rb'
-    - 'lib/daru/index.rb'
-    - 'lib/daru/io/io.rb'
-    - 'lib/daru/vector.rb'
+  AllowForAlignment: true
+  #Exclude:
+    #- 'lib/daru/dataframe.rb'
+    #- 'lib/daru/date_time/index.rb'
+    #- 'lib/daru/index.rb'
+    #- 'lib/daru/io/io.rb'
+    #- 'lib/daru/vector.rb'
 
 # Offense count: 13
 # Configuration parameters: EnforcedStyle, SupportedStyles.

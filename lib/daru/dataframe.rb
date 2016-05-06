@@ -248,7 +248,7 @@ module Daru
       @data   = []
 
       temp_name = opts[:name]
-      @name   = temp_name || SecureRandom.uuid
+      @name = temp_name || SecureRandom.uuid
 
       if source.empty?
         @vectors = try_create_index vectors
@@ -1609,7 +1609,7 @@ module Daru
 
       raise IndexError, "No numeric vectors to aggregate" if values.empty?
 
-      grouped  = group_by(index)
+      grouped = group_by(index)
 
       unless vectors.empty?
         super_hash = {}
@@ -1765,7 +1765,7 @@ module Daru
         end
 
         max_n.times do |n1|
-          n  = n1+1
+          n = n1+1
           any_data = false
           vars.each do |v|
             data = row[pattern.gsub("%v",v.to_s).gsub("%n",n.to_s)]
@@ -2110,7 +2110,7 @@ module Daru
       universal_block_ascending = lambda { |a| [(a.nil?)? 0:1, a] }
       universal_block_decending = lambda { |a| [(a.nil?)? 1:0, a] }
       vector_order.each_with_index do |vector, i|
-        blocks[vector] =  ascending[i] ? universal_block_ascending
+        blocks[vector] = ascending[i] ? universal_block_ascending
           : universal_block_decending
       end
 

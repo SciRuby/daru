@@ -258,14 +258,15 @@ module Daru
       @offset =
       case opts[:freq]
       when :infer then helper.infer_offset(data)
-      when  nil    then nil
+      when  nil   then nil
       else  helper.offset_from_frequency(opts[:freq])
       end
 
       @frequency = @offset ? @offset.freq_string : nil
       @data      = data.zip(Array.new(data.size) { |i| i })
       @data.sort_by! { |d| d[0] } if @offset.nil?
-      @periods   = data.size
+
+      @periods = data.size
     end
 
     # Custom dup method for DateTimeIndex

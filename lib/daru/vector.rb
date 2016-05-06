@@ -31,7 +31,7 @@ module Daru
     def each_with_index(&block)
       return to_enum(:each_with_index) unless block_given?
 
-      @index.each { |i|  yield(self[i], i) }
+      @index.each { |i| yield(self[i], i) }
       self
     end
 
@@ -103,7 +103,7 @@ module Daru
         index  = opts[:index]
         source = source || []
       end
-      name   = opts[:name]
+      name = opts[:name]
       set_name name
 
       @metadata = opts[:metadata] || {}
@@ -186,7 +186,7 @@ module Daru
         when Daru::Vector
           values.concat a.to_a
         when Range
-          values.concat  a.to_a
+          values.concat a.to_a
         else
           values << a
         end
@@ -241,7 +241,7 @@ module Daru
       @possibly_changed_type = true if @type == :numeric and (!value.is_a?(Numeric) and
         !value.nil?)
 
-      pos      = @index[*location]
+      pos = @index[*location]
 
       if pos.is_a?(Numeric)
         @data[pos] = value
@@ -500,7 +500,7 @@ module Daru
     # Get index of element
     def index_of element
       case dtype
-      when :array   then @index.key @data.index{|x| x.eql? element}
+      when :array then @index.key @data.index{|x| x.eql? element}
       else @index.key @data.index(element)
       end
     end
@@ -924,7 +924,7 @@ module Daru
     def inspect spacing=20, threshold=15
       longest = [@name.to_s.size,
                  (@index.to_a.map(&:to_s).map(&:size).max || 0),
-                 (@data    .map(&:to_s).map(&:size).max || 0),
+                 (@data.map(&:to_s).map(&:size).max || 0),
                  3 # 'nil'.size
                 ].max
 
@@ -1120,7 +1120,7 @@ module Daru
       # first, detect any character not number
       if @data.find {|v| v.to_s=~/\d{2,2}-\d{2,2}-\d{4,4}/} or @data.find {|v| v.to_s=~/\d{4,4}-\d{2,2}-\d{2,2}/}
         return "DATE"
-      elsif @data.find {|v|  v.to_s=~/[^0-9e.-]/ }
+      elsif @data.find {|v| v.to_s=~/[^0-9e.-]/ }
         return "VARCHAR (255)"
       elsif @data.find {|v| v.to_s=~/\./}
         return "DOUBLE"
