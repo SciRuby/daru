@@ -365,15 +365,6 @@ Style/NestedTernaryOperator:
   Exclude:
     - 'lib/daru/core/group_by.rb'
 
-# Offense count: 6
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, MinBodyLength, SupportedStyles.
-# SupportedStyles: skip_modifier_ifs, always
-Style/Next:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/vector.rb'
-
 # Offense count: 2
 # Cop supports --auto-correct.
 # Configuration parameters: IncludeSemanticChanges.

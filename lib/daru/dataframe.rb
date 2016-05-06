@@ -967,13 +967,12 @@ module Daru
       each(:row) do |row|
         i += 1
         tests.each do |test|
-          unless test[2].call(row)
-            values = ""
-            if test[1].size>0
-              values = " (" + test[1].collect{ |k| "#{k}=#{row[k]}" }.join(", ") + ")"
-            end
-            vr.push("#{i} [#{row[id]}]: #{test[0]}#{values}")
+          next if test[2].call(row)
+          values = ""
+          if test[1].size>0
+            values = " (" + test[1].collect{ |k| "#{k}=#{row[k]}" }.join(", ") + ")"
           end
+          vr.push("#{i} [#{row[id]}]: #{test[0]}#{values}")
         end
       end
       vr
@@ -1748,13 +1747,13 @@ module Daru
       ds_vars.push('_col_id')
 
       @vectors.each do |f|
-        if f =~ re
-          unless vars.include? $1
-            vars.push($1)
-            h[$1] = Daru::Vector.new([])
-          end
-          max_n = $2.to_i if max_n < $2.to_i
+        next unless f =~ re
+        unless vars.include? $1
+          vars.push($1)
+          h[$1] = Daru::Vector.new([])
         end
+
+        max_n = $2.to_i if max_n < $2.to_i
       end
       ds = DataFrame.new(h, order: ds_vars+vars)
 
@@ -1913,21 +1912,21 @@ module Daru
         end
 
         html += '</tr>'
-        if num > threshold
-          html += '<tr>'
-          (@vectors.size + 1).times { html += '<td>...</td>' }
-          html += '</tr>'
+        next if num <= threshold
 
-          last_index = @index.to_a.last
-          last_row = self.row[last_index]
-          html += '<tr>'
-          html += "<td>" + last_index.to_s + "</td>"
-          (0..(ncols - 1)).to_a.each do |i|
-            html += '<td>' + last_row[i].to_s + '</td>'
-          end
-          html += '</tr>'
-          break
+        html += '<tr>'
+        (@vectors.size + 1).times { html += '<td>...</td>' }
+        html += '</tr>'
+
+        last_index = @index.to_a.last
+        last_row = self.row[last_index]
+        html += '<tr>'
+        html += "<td>" + last_index.to_s + "</td>"
+        (0..(ncols - 1)).to_a.each do |i|
+          html += '<td>' + last_row[i].to_s + '</td>'
         end
+        html += '</tr>'
+        break
       end
       html += '</table>'
 
@@ -2058,13 +2057,13 @@ module Daru
       self.each_row_with_index do |row, index|
         content += sprintf formatter, index.to_s, *row.to_h.values.map { |e| (e || 'nil').to_s }
         row_num += 1
-        if row_num > threshold
-          dots = []
+        next if row_num <= threshold
 
-          (@vectors.size + 1).times { dots << "..." }
-          content += sprintf formatter, *dots
-          break
-        end
+        dots = []
+
+        (@vectors.size + 1).times { dots << "..." }
+        content += sprintf formatter, *dots
+        break
       end
       content += "\n"
 

@@ -482,12 +482,9 @@ module Daru
       if @type.nil? or @possibly_changed_type
         @type = :numeric
         self.each do |e|
-          unless e.nil?
-            unless e.is_a?(Numeric)
-              @type = :object
-              break
-            end
-          end
+          next if e.nil? || e.is_a?(Numeric)
+          @type = :object
+          break
         end
         @possibly_changed_type = false
       end
@@ -862,16 +859,15 @@ module Daru
       @index.each_with_index do |index, num|
         html += '<tr><td>' + index.to_s + '</td>' + '<td>' + self[index].to_s + '</td></tr>'
 
-        if num > threshold
-          html += '<tr><td>...</td><td>...</td></tr>'
+        next if num <= threshold
+        html += '<tr><td>...</td><td>...</td></tr>'
 
-          last_index = @index.to_a.last
-          html += '<tr>' \
-                    '<td>' + last_index.to_s       + '</td>' \
-                    '<td>' + self[last_index].to_s + '</td>' \
-                  '</tr>'
-          break
-        end
+        last_index = @index.to_a.last
+        html += '<tr>' \
+                  '<td>' + last_index.to_s       + '</td>' \
+                  '<td>' + self[last_index].to_s + '</td>' \
+                '</tr>'
+        break
       end
       html += '</table>'
 
