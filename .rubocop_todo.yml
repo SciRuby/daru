@@ -112,12 +112,6 @@ Performance/RedundantMatch:
     - 'lib/daru/date_time/index.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 2
-# Cop supports --auto-correct.
-#Performance/TimesMap:
-  #Exclude:
-    #- 'lib/daru/vector.rb'
-
 # Offense count: 8
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles, IndentationWidth.
@@ -217,11 +211,6 @@ Style/BracesAroundHashParameters:
     - 'lib/daru/date_time/index.rb'
     - 'lib/daru/index.rb'
     - 'lib/daru/vector.rb'
-
-# Offense count: 2
-Style/CaseEquality:
-  Exclude:
-    - 'lib/daru/io/sql_data_source.rb'
 
 # Offense count: 5
 # Cop supports --auto-correct.

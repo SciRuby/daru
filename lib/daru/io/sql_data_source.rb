@@ -105,11 +105,11 @@ module Daru
       end
 
       def check_dbi(obj)
-        DBI::DatabaseHandle === obj rescue false
+        obj.is_a?(DBI::DatabaseHandle)
       end
 
       def check_active_record_connection(obj)
-        ActiveRecord::ConnectionAdapters::AbstractAdapter === obj rescue false
+        obj.is_a?(ActiveRecord::ConnectionAdapters::AbstractAdapter)
       end
     end
   end
