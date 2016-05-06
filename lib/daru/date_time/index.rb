@@ -280,7 +280,7 @@ module Daru
 
     # Custom dup method for DateTimeIndex
     def dup
-      Daru::DateTimeIndex.new(@data.transpose[0], :freq => @offset)
+      Daru::DateTimeIndex.new(@data.transpose[0], freq: @offset)
     end
 
     # Create a date range by specifying the start, end, periods and frequency
@@ -350,7 +350,7 @@ module Daru
       offset = helper.offset_from_frequency opts[:freq]
       data   = helper.generate_data start, en, offset, opts[:periods]
 
-      DateTimeIndex.new(data, :freq => offset)
+      DateTimeIndex.new(data, freq: offset)
     end
 
     # Retreive a slice or a an individual index number from the index.
@@ -424,7 +424,7 @@ module Daru
         if @offset
           en = after_en ? @data[after_en[1] - 1] : @data.last
           return start[1] if start == en
-          DateTimeIndex.date_range :start => start[0], :end => en[0], freq: @offset
+          DateTimeIndex.date_range start: start[0], end: en[0], freq: @offset
         else
           st = @data.index(start)
           en = after_en ? @data.index(after_en) - 1 : helper.last_date(@data)[1]
@@ -487,7 +487,7 @@ module Daru
           start = @data[0][0]
           distance.times { start = @offset + start }
           return DateTimeIndex.date_range(
-            :start => start, :periods => @periods, freq: @offset)
+            start: start, periods: @periods, freq: @offset)
         else
           raise IndexError, 'To shift non-freq date time index pass an offset.'
         end
@@ -512,7 +512,7 @@ module Daru
           start = @data[0][0]
           distance.times { start = @offset - start }
           return DateTimeIndex.date_range(
-            :start => start, :periods => @periods, freq: @offset)
+            start: start, periods: @periods, freq: @offset)
         else
           raise IndexError, 'To lag non-freq date time index pass an offset.'
         end

@@ -23,7 +23,7 @@ module Daru
 
       def from_excel path, opts={}
         opts = {
-          :worksheet_id => 0,
+          worksheet_id: 0,
         }.merge opts
 
         worksheet_id = opts[:worksheet_id]
@@ -44,7 +44,7 @@ module Daru
       def dataframe_write_excel dataframe, path, opts={}
         book   = Spreadsheet::Workbook.new
         sheet  = book.create_worksheet
-        format = Spreadsheet::Format.new :color => :blue, :weight => :bold
+        format = Spreadsheet::Format.new color: :blue, weight: :bold
 
         sheet.row(0).concat(dataframe.vectors.to_a.map(&:to_s)) # Unfreeze strings
         sheet.row(0).default_format = format

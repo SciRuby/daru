@@ -1404,7 +1404,7 @@ module Daru
     end
 
     def report_building(b) # :nodoc: #
-      b.section(:name=>@name) do |g|
+      b.section(name: @name) do |g|
         g.text "Number of rows: #{nrows}"
         @vectors.each do |v|
           g.text "Element:[#{v}]"

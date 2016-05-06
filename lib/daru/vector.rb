@@ -332,12 +332,12 @@ module Daru
     # written above for functionality of each method. Use these methods with the
     # `where` method to obtain the corresponding Vector/DataFrame.
     {
-      :eq     => :==,
-      :not_eq => :!=,
-      :lt     => :<,
-      :lteq   => :<=,
-      :mt     => :>,
-      :mteq   => :>=,
+      eq: :==,
+      not_eq: :!=,
+      lt: :<,
+      lteq: :<=,
+      mt: :>,
+      mteq: :>=,
     }.each do |method, operator|
       define_method(method) do |other|
         mod = Daru::Core::Query
@@ -885,14 +885,14 @@ module Daru
     end
 
     def report_building b
-      b.section(:name => name) do |s|
+      b.section(name: name) do |s|
         s.text "n :#{size}"
         s.text "n valid:#{n_valid}"
         if @type == :object
           s.text  "factors: #{factors.to_a.join(',')}"
           s.text  "mode: #{mode}"
 
-          s.table(:name => 'Distribution') do |t|
+          s.table(name: 'Distribution') do |t|
             frequencies.sort_by(&:to_s).each do |k,v|
               key = @index.include?(k) ? @index[k] : k
               t.row [key, v , ('%0.2f%%' % (v.quo(n_valid)*100))]
