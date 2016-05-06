@@ -1608,7 +1608,9 @@ module Daru
 
       grouped = group_by(index)
 
-      unless vectors.empty?
+      if vectors.empty?
+        grouped.send(aggregate_function)
+      else
         super_hash = {}
         values.each do |value|
           grouped.groups.each do |group_name, row_numbers|
@@ -1649,8 +1651,6 @@ module Daru
           end
         end
         return pivoted_dataframe
-      else
-        grouped.send(aggregate_function)
       end
     end
 
@@ -2416,11 +2416,11 @@ module Daru
       vectors = source.keys.sort_by(&:to_s) if vectors.nil?
 
       @vectors =
-      unless vectors.is_a?(Index) or vectors.is_a?(MultiIndex)
-        Daru::Index.new((vectors + (source.keys - vectors)).uniq)
-      else
-        vectors
-      end
+        if vectors.is_a?(Index) || vectors.is_a?(MultiIndex)
+          vectors
+        else
+          Daru::Index.new((vectors + (source.keys - vectors)).uniq)
+        end
     end
 
     def all_vectors_have_equal_indexes? source

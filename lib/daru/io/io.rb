@@ -71,7 +71,17 @@ module Daru
 
         # Preprocess headers for detecting and correcting repetition in
         # case the :headers option is not specified.
-        unless opts[:headers]
+        if opts[:headers]
+          opts[:header_converters] ||= :symbol
+
+          csv = ::CSV.read(path, 'rb',opts)
+          yield csv if block_given?
+
+          hsh = {}
+          csv.by_col.each do |col_name, values|
+            hsh[col_name] = values
+          end
+        else
           csv = ::CSV.open(path, 'rb', opts)
           yield csv if block_given?
 
@@ -87,16 +97,6 @@ module Daru
 
           # Order columns as given in CSV
           daru_options[:order] = headers.to_a
-        else
-          opts[:header_converters] ||= :symbol
-
-          csv = ::CSV.read(path, 'rb',opts)
-          yield csv if block_given?
-
-          hsh = {}
-          csv.by_col.each do |col_name, values|
-            hsh[col_name] = values
-          end
         end
 
         Daru::DataFrame.new(hsh,daru_options)

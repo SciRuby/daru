@@ -560,13 +560,6 @@ Style/TrailingWhitespace:
     - 'lib/daru/plotting/dataframe.rb'
     - 'lib/daru/plotting/vector.rb'
 
-# Offense count: 3
-# Cop supports --auto-correct.
-Style/UnlessElse:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/io/io.rb'
-
 # Offense count: 2
 # Cop supports --auto-correct.
 Style/WhileUntilDo:
