@@ -101,7 +101,7 @@ module Daru
         source = source.values
       else
         index  = opts[:index]
-        source = source || []
+        source ||= []
       end
       name = opts[:name]
       set_name name
@@ -434,7 +434,7 @@ module Daru
     def concat element, index
       raise IndexError, "Expected new unique index" if @index.include? index
 
-      @index = @index | [index]
+      @index |= [index]
       @data[@index[index]] = element
 
       set_size

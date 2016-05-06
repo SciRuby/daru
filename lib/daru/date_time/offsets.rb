@@ -258,7 +258,7 @@ module Daru
         @n.times do
           days_in_month = Daru::MONTH_DAYS[date_time.month]
           days_in_month += 1 if date_time.leap? and date_time.month == 2
-          date_time = date_time + (days_in_month - date_time.day + 1)
+          date_time += (days_in_month - date_time.day + 1)
         end
 
         date_time
@@ -301,7 +301,7 @@ module Daru
           days_in_month = Daru::MONTH_DAYS[date_time.month]
           days_in_month += 1 if date_time.leap? and date_time.month == 2
 
-          date_time = date_time + (days_in_month - date_time.day)
+          date_time += (days_in_month - date_time.day)
         end
 
         date_time
@@ -313,7 +313,7 @@ module Daru
           days_in_month = Daru::MONTH_DAYS[date_time.month]
           days_in_month += 1 if date_time.leap? and date_time.month == 2
 
-          date_time = date_time + (days_in_month - date_time.day)
+          date_time += (days_in_month - date_time.day)
         end
 
         date_time

@@ -2337,7 +2337,7 @@ module Daru
           @data[@vectors[p]] = v
         end
       else
-        @vectors = @vectors | [name] unless @vectors.include?(name)
+        @vectors |= [name] unless @vectors.include?(name)
         @data[@vectors[name]] = v
       end
     end
@@ -2359,7 +2359,7 @@ module Daru
             vector[name] = v.index.include?(i) ? v[i] : nil
           end
         else
-          @index = @index | [name]
+          @index |= [name]
           each_vector_with_index do |vector,i|
             vector.concat((v.index.include?(i) ? v[i] : nil), name)
           end

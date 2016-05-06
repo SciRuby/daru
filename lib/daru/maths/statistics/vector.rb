@@ -172,7 +172,7 @@ module Daru
           mean_y = other.mean
           sum = 0
           (0...size).each do |i|
-            sum = sum + ((@missing_values.has_key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
+            sum += ((@missing_values.has_key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
           end
           sum / (n_valid - 1)
         end
@@ -184,7 +184,7 @@ module Daru
           mean_y = other.mean
           sum = 0
           (0...size).each do |i|
-            sum = sum + ((@missing_values.has_key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
+            sum += ((@missing_values.has_key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
           end
           sum / n_valid
         end
