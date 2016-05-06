@@ -35,7 +35,7 @@ module Daru
 
       def []= index, value
         raise ArgumentError, "Index #{index} does not exist" if
-          index > @size and index < @data.size
+          index > @size && index < @data.size
         resize     if index >= @data.size
         @size += 1 if index == @size
 

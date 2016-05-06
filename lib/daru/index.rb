@@ -24,7 +24,7 @@ module Daru
       source = args[0]
 
       idx =
-      if source and source[0].is_a?(Array)
+      if source && source[0].is_a?(Array)
         Daru::MultiIndex.from_tuples source
       elsif source && source.is_a?(Array) && !source.empty? &&
             source.all? { |e| e.is_a?(DateTime) }
@@ -65,7 +65,7 @@ module Daru
     end
 
     def ==(other)
-      return false if self.class != other.class or other.size != @size
+      return false if self.class != other.class || other.size != @size
 
       @relation_hash.keys == other.to_a &&
         @relation_hash.values == other.relation_hash.values
@@ -91,7 +91,7 @@ module Daru
       else
         v = @relation_hash[loc]
         unless v
-          return loc if loc.is_a? Numeric and loc < size
+          return loc if loc.is_a?(Numeric) && loc < size
           raise IndexError, "Specified index #{loc.inspect} does not exist"
         end
         v
@@ -102,7 +102,7 @@ module Daru
       start   = args[0]
       en      = args[1]
 
-      if start.is_a?(Integer) and en.is_a?(Integer)
+      if start.is_a?(Integer) && en.is_a?(Integer)
         Index.new @keys[start..en]
       else
         start_idx = @relation_hash[start]
@@ -183,7 +183,7 @@ module Daru
       levels = opts[:levels]
 
       raise ArgumentError,
-        'Must specify both labels and levels' unless labels and levels
+        'Must specify both labels and levels' unless labels && levels
       raise ArgumentError,
         'Labels and levels should be same size' if labels.size != levels.size
       raise ArgumentError,
@@ -257,7 +257,7 @@ module Daru
         chosen = find_all_indexes label, level_index, chosen
       end
 
-      return chosen[0] if chosen.size == 1 and key.size == @levels.size
+      return chosen[0] if chosen.size == 1 && key.size == @levels.size
       multi_index_from_multiple_selections(chosen)
     end
 

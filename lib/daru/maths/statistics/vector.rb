@@ -313,7 +313,7 @@ module Daru
         def standardize use_population=false
           m ||= mean
           sd = use_population ? sdp : sds
-          return Daru::Vector.new([nil]*@size) if m.nil? or sd == 0.0
+          return Daru::Vector.new([nil]*@size) if m.nil? || sd == 0.0
 
           vector_standardized_compute m, sd
         end

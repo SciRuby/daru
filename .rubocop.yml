@@ -15,3 +15,6 @@ Style/ExtraSpacing:
 
 Style/FormatString:
   EnforcedStyle: percent
+
+Style/AndOr:
+  EnforcedStyle: conditionals

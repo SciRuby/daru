@@ -160,7 +160,7 @@ module Daru
       # Useful to process outputs from databases
       def crosstab_by_assignation rows, columns, values
         raise 'Three vectors should be equal size' if
-          rows.size != columns.size or rows.size!=values.size
+          rows.size != columns.size || rows.size!=values.size
 
         cols_values = columns.factors
         cols_n      = cols_values.size
@@ -351,7 +351,7 @@ module Daru
     # Defaults to *:vector*. Use of this method is not recommended for accessing
     # rows. Use df.row[:a] for accessing row with index ':a'.
     def [](*names)
-      if names[-1] == :vector or names[-1] == :row
+      if names[-1] == :vector || names[-1] == :row
         axis = names[-1]
         names = names[0..-2]
       else
@@ -541,7 +541,7 @@ module Daru
     # * +axis+ - The axis to iterate over. Can be :vector (or :column)
     # or :row. Default to :vector.
     def each axis=:vector, &block
-      if axis == :vector or axis == :column
+      if axis == :vector || axis == :column
         each_vector(&block)
       elsif axis == :row
         each_row(&block)
@@ -566,7 +566,7 @@ module Daru
     # * +axis+ - The axis to iterate over. Can be :vector (or :column)
     # or :row. Default to :vector.
     def collect axis=:vector, &block
-      if axis == :vector or axis == :column
+      if axis == :vector || axis == :column
         collect_vectors(&block)
       elsif axis == :row
         collect_rows(&block)
@@ -592,7 +592,7 @@ module Daru
     # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
     # Default to :vector.
     def map axis=:vector, &block
-      if axis == :vector or axis == :column
+      if axis == :vector || axis == :column
         map_vectors(&block)
       elsif axis == :row
         map_rows(&block)
@@ -610,7 +610,7 @@ module Daru
     # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
     # Default to :vector.
     def map! axis=:vector, &block
-      if axis == :vector or axis == :column
+      if axis == :vector || axis == :column
         map_vectors!(&block)
       elsif axis == :row
         map_rows!(&block)
@@ -635,7 +635,7 @@ module Daru
     # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
     # Default to :vector.
     def recode axis=:vector, &block
-      if axis == :vector or axis == :column
+      if axis == :vector || axis == :column
         recode_vectors(&block)
       elsif axis == :row
         recode_rows(&block)
@@ -671,7 +671,7 @@ module Daru
     #     row[:a] + row[:d] < 100
     #   end
     def filter axis=:vector, &block
-      if axis == :vector or axis == :column
+      if axis == :vector || axis == :column
         filter_vectors(&block)
       elsif axis == :row
         filter_rows(&block)
@@ -1113,7 +1113,7 @@ module Daru
     #     row[:a] < 3 and row[:b] == 'b'
     #   end #=> true
     def any? axis=:vector, &block
-      if axis == :vector or axis == :column
+      if axis == :vector || axis == :column
         @data.any?(&block)
       elsif axis == :row
         each_row do |row|
@@ -1135,7 +1135,7 @@ module Daru
     #     row[:a] < 10
     #   end #=> true
     def all? axis=:vector, &block
-      if axis == :vector or axis == :column
+      if axis == :vector || axis == :column
         @data.all?(&block)
       elsif axis == :row
         each_row do |row|
@@ -1574,7 +1574,7 @@ module Daru
     #   #     [:foo]         10         12
     def pivot_table opts={}
       raise ArgumentError,
-        'Specify grouping index' if !opts[:index] or opts[:index].empty?
+        'Specify grouping index' if !opts[:index] || opts[:index].empty?
 
       index   = opts[:index]
       vectors = opts[:vectors] || []
@@ -1829,7 +1829,7 @@ module Daru
     def to_nmatrix
       numerics_as_arrays = []
       each_vector do |vector|
-        numerics_as_arrays << vector.to_a if(vector.type == :numeric and
+        numerics_as_arrays << vector.to_a if(vector.type == :numeric &&
           vector.missing_positions.empty?)
       end
 
@@ -2167,7 +2167,7 @@ module Daru
             @data[@vectors[tuple]]
           end
 
-          if !location.is_a?(Range) and names.size < @vectors.width
+          if !location.is_a?(Range) && names.size < @vectors.width
             pos = pos.drop_left_level names.size
           end
 
@@ -2206,7 +2206,7 @@ module Daru
         else
           new_rows = pos.map { |tuple| populate_row_for(tuple) }
 
-          if !location.is_a?(Range) and names.size < @index.width
+          if !location.is_a?(Range) && names.size < @index.width
             pos = pos.drop_left_level names.size
           end
 
@@ -2341,10 +2341,10 @@ module Daru
 
     def validate_labels
       raise IndexError, "Expected equal number of vector names (#{@vectors.size}) for number of vectors (#{@data.size})." if
-        @vectors and @vectors.size != @data.size
+        @vectors && @vectors.size != @data.size
 
       raise IndexError, 'Expected number of indexes same as number of rows' if
-        @index and @data[0] and @index.size != @data[0].size
+        @index && @data[0] && @index.size != @data[0].size
     end
 
     def validate_vector_sizes

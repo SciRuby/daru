@@ -229,11 +229,11 @@ module Daru
     #   #  b   2
     #   #  c   3
     def []=(*location, value)
-      cast(dtype: :array) if value.nil? and dtype != :array
+      cast(dtype: :array) if value.nil? && dtype != :array
 
-      @possibly_changed_type = true if @type == :object  and (value.nil? or
+      @possibly_changed_type = true if @type == :object  && (value.nil? ||
         value.is_a?(Numeric))
-      @possibly_changed_type = true if @type == :numeric and (!value.is_a?(Numeric) and
+      @possibly_changed_type = true if @type == :numeric && (!value.is_a?(Numeric) &&
         !value.nil?)
 
       pos = @index[*location]
@@ -447,7 +447,7 @@ module Daru
     def cast opts={}
       dt = opts[:dtype]
       raise ArgumentError, "Unsupported dtype #{opts[:dtype]}" unless
-        dt == :array or dt == :nmatrix or dt == :gsl
+        dt == :array || dt == :nmatrix || dt == :gsl
 
       @data = cast_vector_to dt unless @dtype == dt
     end
@@ -475,7 +475,7 @@ module Daru
     def type
       return @data.nm_dtype if dtype == :nmatrix
 
-      if @type.nil? or @possibly_changed_type
+      if @type.nil? || @possibly_changed_type
         @type = :numeric
         each do |e|
           next if e.nil? || e.is_a?(Numeric)
@@ -896,7 +896,7 @@ module Daru
           end
         end
 
-        s.text "median: #{median}" if @type==:numeric or @type==:numeric
+        s.text "median: #{median}" if @type==:numeric || @type==:numeric
         if @type==:numeric
           s.text 'mean: %0.4f' % mean
           if sd
@@ -1065,9 +1065,9 @@ module Daru
     # Otherwise, a duplicate will be returned irrespective of
     # presence of missing data.
     def only_valid as_a=:vector, duplicate=true
-      return dup if !has_missing_data? and as_a == :vector and duplicate
-      return self if !has_missing_data? and as_a == :vector and !duplicate
-      return to_a if !has_missing_data? and as_a != :vector
+      return dup if !has_missing_data? && as_a == :vector && duplicate
+      return self if !has_missing_data? && as_a == :vector && !duplicate
+      return to_a if !has_missing_data? && as_a != :vector
 
       new_index = @index.to_a - missing_positions
       new_vector = new_index.map do |idx|
@@ -1094,7 +1094,7 @@ module Daru
       numeric_indexes = []
 
       each_with_index do |v, i|
-        numeric_indexes << i if(v.is_a?(Numeric) or @missing_values.key?(v))
+        numeric_indexes << i if(v.is_a?(Numeric) || @missing_values.key?(v))
       end
 
       self[*numeric_indexes]
@@ -1172,7 +1172,7 @@ module Daru
     # 3.- A Hash with estimators names as keys and empty arrays as values
     def prepare_bootstrap(estimators)
       h_est = estimators
-      h_est = [h_est] unless h_est.is_a?(Array) or h_est.is_a?(Hash)
+      h_est = [h_est] unless h_est.is_a?(Array) || h_est.is_a?(Hash)
 
       if h_est.is_a? Array
         h_est = h_est.map do |est|
@@ -1244,7 +1244,7 @@ module Daru
     end
 
     def try_create_index potential_index
-      if potential_index.is_a?(Daru::MultiIndex) or potential_index.is_a?(Daru::Index)
+      if potential_index.is_a?(Daru::MultiIndex) || potential_index.is_a?(Daru::Index)
         potential_index
       else
         Daru::Index.new(potential_index)

@@ -67,8 +67,8 @@ module Daru
       end
 
       def begin_from_offset? offset, start
-        if offset.is_a?(Daru::Offsets::Tick) or
-           (offset.respond_to?(:on_offset?) and offset.on_offset?(start))
+        if offset.is_a?(Daru::Offsets::Tick) ||
+           (offset.respond_to?(:on_offset?) && offset.on_offset?(start))
           true
         else
           false
@@ -370,10 +370,10 @@ module Daru
         first = key.first
         last = key.last
         return slice(first, last) if
-          first.is_a?(Fixnum) and last.is_a?(Fixnum)
+          first.is_a?(Fixnum) && last.is_a?(Fixnum)
 
         raise ArgumentError, "Keys #{first} and #{last} are out of bounds" if
-          helper.key_out_of_bounds?(first, @data) and helper.key_out_of_bounds?(last, @data)
+          helper.key_out_of_bounds?(first, @data) && helper.key_out_of_bounds?(last, @data)
 
         slice_begin = helper.find_date_string_bounds(first)[0]
         slice_end   = helper.find_date_string_bounds(last)[1]
@@ -396,9 +396,9 @@ module Daru
     def slice first, last
       helper = DateTimeIndexHelper
 
-      if first.is_a?(String) and last.is_a?(String)
+      if first.is_a?(String) && last.is_a?(String)
         self[first..last]
-      elsif first.is_a?(Fixnum) and last.is_a?(Fixnum)
+      elsif first.is_a?(Fixnum) && last.is_a?(Fixnum)
         DateTimeIndex.new(to_a[first..last], freq: @offset)
       else
         first_dt =

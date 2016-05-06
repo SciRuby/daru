@@ -267,7 +267,7 @@ module Daru
           single_row = []
           @non_group_vectors.each do |ngvector|
             vec = @context[ngvector]
-            if method_type == :numeric and vec.type == :numeric
+            if method_type == :numeric && vec.type == :numeric
               slice = vec[*indexes]
               single_row << (slice.is_a?(Daru::Vector) ? slice.send(method) : slice)
             end
@@ -278,7 +278,7 @@ module Daru
 
         @non_group_vectors.each do |ngvec|
           order << ngvec if
-            method_type == :numeric and @context[ngvec].type == :numeric
+            method_type == :numeric && @context[ngvec].type == :numeric
         end
 
         index = @groups.keys
