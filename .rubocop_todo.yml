@@ -353,42 +353,11 @@ Style/Lambda:
 Style/LambdaCall:
   Enabled: false
 
-# Offense count: 12
-# Cop supports --auto-correct.
-#Style/LineEndConcatenation:
-  #Exclude:
-    #- 'lib/daru/dataframe.rb'
-    #- 'lib/daru/vector.rb'
-
 # Offense count: 337
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 # SupportedStyles: require_parentheses, require_no_parentheses, require_no_parentheses_except_multiline
 Style/MethodDefParentheses:
-  Enabled: false
-
-# Offense count: 2
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: snake_case, camelCase
-Style/MethodName:
-  Enabled: false
-
-# Offense count: 1
-Style/MultilineBlockChain:
-  Exclude:
-    - 'lib/daru/monkeys.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
-Style/MultilineBlockLayout:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-
-# Offense count: 2
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles, IndentationWidth.
-# SupportedStyles: aligned, indented
-Style/MultilineMethodCallIndentation:
   Enabled: false
 
 # Offense count: 26

@@ -9,7 +9,8 @@ class Array
     return self if size == uniq.size
 
     duplicated = group_by { |n| n}
-      .select { |_, g| g.size > 1}.map(&:first)
+                 .select { |_, g| g.size > 1}.map(&:first)
+
     counter = duplicated.collect { |n| [n, 0] }.to_h
 
     collect do |n|

@@ -2,7 +2,7 @@
 
 module Daru
   class DataFrame
-    def to_REXP
+    def to_REXP # rubocop:disable Style/MethodName
       names = @vectors.to_a
       data  = names.map do |f|
         Rserve::REXP::Wrapper.wrap(self[f].to_a)
@@ -14,7 +14,7 @@ module Daru
   end
 
   class Vector
-    def to_REXP
+    def to_REXP # rubocop:disable Style/MethodName
       Rserve::REXP::Wrapper.wrap(self.to_a)
     end
   end

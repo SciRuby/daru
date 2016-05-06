@@ -1665,8 +1665,8 @@ module Daru
       raise "Number of rows must be equal in this: #{nrows} and other: #{other_df.nrows}" unless nrows == other_df.nrows
 
       new_fields = (@vectors.to_a + other_df.vectors.to_a)
-                        .recode_repeated
-                        .map(&:to_sym)
+                   .recode_repeated
+                   .map(&:to_sym)
       df_new     = DataFrame.new({}, order: new_fields)
 
       (0...nrows).to_a.each do |i|
