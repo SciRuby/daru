@@ -339,14 +339,6 @@ Style/IndentAssignment:
     - 'lib/daru/plotting/vector.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: normal, rails
-Style/IndentationConsistency:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-
 # Offense count: 3
 # Cop supports --auto-correct.
 Style/Lambda:
@@ -363,10 +355,10 @@ Style/LambdaCall:
 
 # Offense count: 7
 # Cop supports --auto-correct.
-Style/LeadingCommentSpace:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/maths/statistics/vector.rb'
+#Style/LeadingCommentSpace:
+  #Exclude:
+    #- 'lib/daru/dataframe.rb'
+    #- 'lib/daru/maths/statistics/vector.rb'
 
 # Offense count: 12
 # Cop supports --auto-correct.

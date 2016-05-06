@@ -439,7 +439,7 @@ module Daru
         #
         # == Arguments
         #
-        #* *max_lags*: integer, (default: 1), number of differences reqd.
+        # * *max_lags*: integer, (default: 1), number of differences reqd.
         #
         # @example Using #diff
         #
@@ -618,9 +618,9 @@ module Daru
         # series - this is a comparison of a fast EMA with a slow EMA.
         #
         # == Arguments
-        #* *fast*: integer, (default = 12) - fast component of MACD
-        #* *slow*: integer, (default = 26) - slow component of MACD
-        #* *signal*: integer, (default = 9) - signal component of MACD
+        # * *fast*: integer, (default = 12) - fast component of MACD
+        # * *slow*: integer, (default = 26) - slow component of MACD
+        # * *signal*: integer, (default = 9) - signal component of MACD
         #
         # == Usage
         #
@@ -666,8 +666,8 @@ module Daru
         #
         # == Options
         #
-        #* *:demean* = true; optional. Supply false if series is not to be demeaned
-        #* *:unbiased* = true; optional. true/false for unbiased/biased form of autocovariance
+        # * *:demean* = true; optional. Supply false if series is not to be demeaned
+        # * *:unbiased* = true; optional. true/false for unbiased/biased form of autocovariance
         #
         # == Returns
         #

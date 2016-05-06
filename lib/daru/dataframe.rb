@@ -2315,7 +2315,7 @@ module Daru
     end
 
     def assign_or_add_vector name, v
-      #FIXME: fix this jugaad. need to make changes in Indexing itself.
+      # FIXME: fix this jugaad. need to make changes in Indexing itself.
       begin
         pos = @vectors[name]
       rescue IndexError
