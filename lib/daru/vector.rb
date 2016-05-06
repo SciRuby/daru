@@ -207,9 +207,7 @@ module Daru
       indexes = @index[*input_indexes]
 
       # If one object is asked return it
-      if indexes.is_a? Numeric
-        return @data[indexes]
-      end
+      return @data[indexes] if indexes.is_a? Numeric
 
       # Form a new Vector using indexes and return it
       Daru::Vector.new(
@@ -280,9 +278,7 @@ module Daru
     # assignment/deletion of elements is done. Updating data this way is called
     # lazy loading. To set or unset lazy loading, see the .lazy_update= method.
     def update
-      if Daru.lazy_update
-        set_missing_positions
-      end
+      Daru.lazy_update and set_missing_positions
     end
 
     # Two vectors are equal if the have the exact same index values corresponding

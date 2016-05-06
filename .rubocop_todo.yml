@@ -210,21 +210,6 @@ Style/GuardClause:
     - 'lib/daru/vector.rb'
     - 'lib/daru/core/merge.rb'
 
-# Offense count: 3
-#Style/IfInsideElse:
-  #Exclude:
-    #- 'lib/daru/date_time/index.rb'
-    #- 'lib/daru/io/io.rb'
-    #- 'lib/daru/maths/statistics/dataframe.rb'
-
-# Offense count: 4
-# Cop supports --auto-correct.
-# Configuration parameters: MaxLineLength.
-Style/IfUnlessModifier:
-  Exclude:
-    - 'lib/daru/index.rb'
-    - 'lib/daru/vector.rb'
-
 # Offense count: 1
 # Cop supports --auto-correct.
 # Configuration parameters: SupportedStyles, IndentationWidth.

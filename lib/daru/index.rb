@@ -267,14 +267,11 @@ module Daru
 
     def find_all_indexes label, level_index, chosen
       if chosen.empty?
-        label.each_with_index do |lbl, i|
-          if lbl == level_index then chosen << i end
-        end
+        label.each_with_index
+             .select {|lbl, _| lbl == level_index}.map(&:last)
       else
         chosen.keep_if { |c| label[c] == level_index }
       end
-
-      chosen
     end
 
     private :find_all_indexes, :multi_index_from_multiple_selections,
