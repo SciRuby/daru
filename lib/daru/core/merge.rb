@@ -59,10 +59,11 @@ module Daru
           # Conceptually simpler and does the same thing, but slows down the
           # total merge algorithm by 2x.  Would be nice to improve the performance
           # of df.map(:row)
-  #        df.map(:row) do |row|
-  #          key_values = on.map { |key| row[key] }
-  #          [key_values, row.to_a]
-  #        end
+          #
+          # df.map(:row) do |row|
+          #   key_values = on.map { |key| row[key] }
+          #   [key_values, row.to_a]
+          # end
         end
 
         def verify_dataframes df_hash1, df_hash2, on
