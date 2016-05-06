@@ -293,10 +293,8 @@ module Daru
     def == other
       case other
       when Daru::Vector
-        @index == other.index and @size == other.size and
-        @index.all? do |index|
-          self[index] == other[index]
-        end
+        @index == other.index && @size == other.size &&
+          @index.all?{|index| self[index] == other[index]}
       else
         super
       end

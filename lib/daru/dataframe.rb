@@ -2051,7 +2051,7 @@ module Daru
 
       (@vectors.size + 1).times { formatter += "%#{longest}.#{longest}s " }
       content += "\n#<" + self.class.to_s + ":" + self.object_id.to_s + " @name = " +
-                    name.to_s + " @size = " + @size.to_s + ">"
+                 name.to_s + " @size = " + @size.to_s + ">"
       content += sprintf formatter, "" , *@vectors.map(&:to_s)
       row_num  = 1
 
@@ -2077,11 +2077,11 @@ module Daru
     end
 
     def == other
-      self.class == other.class   and
-      @size      == other.size    and
-      @index     == other.index   and
-      @vectors   == other.vectors and
-      @vectors.to_a.all? { |v| self[v] == other[v] }
+      self.class == other.class   &&
+        @size    == other.size    &&
+        @index   == other.index   &&
+        @vectors == other.vectors &&
+        @vectors.to_a.all? { |v| self[v] == other[v] }
     end
 
     def method_missing(name, *args, &block)
@@ -2322,8 +2322,8 @@ module Daru
         pos = name
       end
 
-      if !pos.is_a?(Daru::Index) and pos == name and
-        (@vectors.include?(name) or (pos.is_a?(Integer) and pos < @data.size))
+      if !pos.is_a?(Daru::Index) && pos == name &&
+         (@vectors.include?(name) || (pos.is_a?(Integer) && pos < @data.size))
         @data[pos] = v
       elsif pos.is_a?(Daru::Index)
         pos.each do |p|

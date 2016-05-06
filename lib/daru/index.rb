@@ -26,8 +26,8 @@ module Daru
       idx =
       if source and source[0].is_a?(Array)
         Daru::MultiIndex.from_tuples source
-      elsif source and source.is_a?(Array) and !source.empty? and
-        source.all? { |e| e.is_a?(DateTime) }
+      elsif source && source.is_a?(Array) && !source.empty? &&
+            source.all? { |e| e.is_a?(DateTime) }
         Daru::DateTimeIndex.new(source, freq: :infer)
       else
         i = self.allocate
@@ -67,8 +67,8 @@ module Daru
     def ==(other)
       return false if self.class != other.class or other.size != @size
 
-      @relation_hash.keys   == other.to_a and
-      @relation_hash.values == other.relation_hash.values
+      @relation_hash.keys == other.to_a &&
+        @relation_hash.values == other.relation_hash.values
     end
 
     def [](*key)
@@ -335,9 +335,9 @@ module Daru
     end
 
     def == other
-      self.class == other.class  and
-      labels     == other.labels and
-      levels     == other.levels
+      self.class == other.class  &&
+        labels   == other.labels &&
+        levels   == other.levels
     end
 
     def to_a

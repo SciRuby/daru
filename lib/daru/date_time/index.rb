@@ -62,7 +62,7 @@ module Daru
 
       def begin_from_offset? offset, start
         if offset.is_a?(Daru::Offsets::Tick) or
-          (offset.respond_to?(:on_offset?) and offset.on_offset?(start))
+           (offset.respond_to?(:on_offset?) and offset.on_offset?(start))
           true
         else
           false
@@ -205,10 +205,10 @@ module Daru
         date_time = date_time_from key, precision
         case precision
         when :year
-          date_time.year < data[0][0].year or date_time.year > data[-1][0].year
+          date_time.year < data[0][0].year || date_time.year > data[-1][0].year
         when :month
-          (date_time.year < data[0][0].year and date_time.month < data[0][0].month) or
-          (date_time.year > data[-1][0].year and date_time.month > data[-1][0].month)
+          (date_time.year < data[0][0].year && date_time.month < data[0][0].month) ||
+            (date_time.year > data[-1][0].year and date_time.month > data[-1][0].month)
         end
       end
     end
@@ -436,8 +436,8 @@ module Daru
 
     def inspect
       string = "#<DateTimeIndex:" + self.object_id.to_s + " offset=" +
-        (@offset ? @offset.freq_string : 'nil') + ' periods=' + @periods.to_s +
-        " data=[" + @data.first[0].to_s + "..." + @data.last[0].to_s + ']'+ '>'
+               (@offset ? @offset.freq_string : 'nil') + ' periods=' + @periods.to_s +
+               " data=[" + @data.first[0].to_s + "..." + @data.last[0].to_s + ']'+ '>'
 
       string
     end
