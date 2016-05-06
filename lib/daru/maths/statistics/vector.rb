@@ -172,7 +172,7 @@ module Daru
           mean_y = other.mean
           sum = 0
           (0...size).each do |i|
-            sum += ((@missing_values.has_key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
+            sum += ((@missing_values.key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
           end
           sum / (n_valid - 1)
         end
@@ -184,7 +184,7 @@ module Daru
           mean_y = other.mean
           sum = 0
           (0...size).each do |i|
-            sum += ((@missing_values.has_key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
+            sum += ((@missing_values.key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
           end
           sum / n_valid
         end
@@ -192,7 +192,7 @@ module Daru
         def sum_of_squares(m=nil)
           m ||= mean
           @data.inject(0) { |memo, val|
-            @missing_values.has_key?(val) ? memo : (memo + (val - m)**2)
+            @missing_values.key?(val) ? memo : (memo + (val - m)**2)
           }
         end
 
@@ -239,7 +239,7 @@ module Daru
           type == :numeric or raise TypeError, 'Vector must be numeric'
           m ||= mean
           (@data.inject( 0 ) { |memo, val|
-            @missing_values.has_key?(val) ? memo : ( val - m ).abs + memo
+            @missing_values.key?(val) ? memo : ( val - m ).abs + memo
           }).quo( n_valid )
         end
 
@@ -421,7 +421,7 @@ module Daru
           i = 1
           ind = @data.find_index{|x|!x.nil?}
           (periods...size).each do |j|
-            if j==ind || @missing_values.has_key?(@data[j])
+            if j==ind || @missing_values.key?(@data[j])
               arr[j] = nil
             else
               arr[j] = (value.data[i] - value.data[i - 1]) / value.data[i - 1].to_f
@@ -700,7 +700,7 @@ module Daru
           result = []
           acc = 0
           @data.each do |d|
-            if @missing_values.has_key?(d)
+            if @missing_values.key?(d)
               result << nil
             else
               acc += d

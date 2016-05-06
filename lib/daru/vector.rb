@@ -367,7 +367,7 @@ module Daru
       other = Hash[other.zip(Array.new(other.size, 0))]
       Daru::Core::Query::BoolArray.new(
         @data.each_with_object([]) do |d, memo|
-          memo << (other.has_key?(d) ? true : false)
+          memo << (other.key?(d) ? true : false)
         end
       )
     end
@@ -578,7 +578,7 @@ module Daru
     # Returns *true* if the value passed is actually exists or is not marked as
     # a *missing value*.
     def exists? value
-      !@missing_values.has_key?(self[index_of(value)])
+      !@missing_values.key?(self[index_of(value)])
     end
 
     # Like map, but returns a Daru::Vector with the returned values.
@@ -1099,7 +1099,7 @@ module Daru
       numeric_indexes = []
 
       each_with_index do |v, i|
-        numeric_indexes << i if(v.is_a?(Numeric) or @missing_values.has_key?(v))
+        numeric_indexes << i if(v.is_a?(Numeric) or @missing_values.key?(v))
       end
 
       self[*numeric_indexes]
@@ -1242,7 +1242,7 @@ module Daru
     def set_missing_positions
       @missing_positions = []
       @index.each do |e|
-        @missing_positions << e if @missing_values.has_key?(self[e])
+        @missing_positions << e if @missing_values.key?(self[e])
       end
     end
 

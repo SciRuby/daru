@@ -131,7 +131,7 @@ module Daru
     end
 
     def include? index
-      @relation_hash.has_key? index
+      @relation_hash.key? index
     end
 
     def empty?
@@ -239,7 +239,7 @@ module Daru
     end
 
     def try_retrieve_from_integer int
-      return retrieve_from_tuples([int]) if @levels[0].has_key?(int)
+      return retrieve_from_tuples([int]) if @levels[0].key?(int)
       int
     end
 

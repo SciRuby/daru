@@ -182,14 +182,6 @@ Style/BracesAroundHashParameters:
     - 'lib/daru/index.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 12
-# Cop supports --auto-correct.
-Style/DeprecatedHashMethods:
-  Exclude:
-    - 'lib/daru/index.rb'
-    - 'lib/daru/maths/statistics/vector.rb'
-    - 'lib/daru/vector.rb'
-
 # Offense count: 35
 Style/Documentation:
   Enabled: false
