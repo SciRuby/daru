@@ -427,13 +427,6 @@ Style/SingleLineBlockParams:
     - 'lib/daru/maths/statistics/vector.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 5
-# Cop supports --auto-correct.
-#Style/SpaceAfterColon:
-  #Exclude:
-    #- 'lib/daru/dataframe.rb'
-    #- 'lib/daru/vector.rb'
-
 # Offense count: 94
 # Cop supports --auto-correct.
 Style/SpaceAfterComma:
@@ -546,8 +539,8 @@ Style/SpaceInsideParens:
 # Cop supports --auto-correct.
 # Configuration parameters: SupportedStyles.
 # SupportedStyles: use_perl_names, use_english_names
-Style/SpecialGlobalVars:
-  EnforcedStyle: use_perl_names
+#Style/SpecialGlobalVars:
+  #EnforcedStyle: use_perl_names
 
 # Offense count: 104
 # Cop supports --auto-correct.

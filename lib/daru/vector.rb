@@ -1,11 +1,9 @@
-$:.unshift File.dirname(__FILE__)
-
-require 'maths/arithmetic/vector.rb'
-require 'maths/statistics/vector.rb'
-require 'plotting/vector.rb'
-require 'accessors/array_wrapper.rb'
-require 'accessors/nmatrix_wrapper.rb'
-require 'accessors/gsl_wrapper.rb'
+require 'daru/maths/arithmetic/vector.rb'
+require 'daru/maths/statistics/vector.rb'
+require 'daru/plotting/vector.rb'
+require 'daru/accessors/array_wrapper.rb'
+require 'daru/accessors/nmatrix_wrapper.rb'
+require 'daru/accessors/gsl_wrapper.rb'
 
 module Daru
   class Vector

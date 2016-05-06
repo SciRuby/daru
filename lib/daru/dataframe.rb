@@ -1,10 +1,8 @@
-$:.unshift File.dirname(__FILE__)
-
-require 'accessors/dataframe_by_row.rb'
-require 'maths/arithmetic/dataframe.rb'
-require 'maths/statistics/dataframe.rb'
-require 'plotting/dataframe.rb'
-require 'io/io.rb'
+require 'daru/accessors/dataframe_by_row.rb'
+require 'daru/maths/arithmetic/dataframe.rb'
+require 'daru/maths/statistics/dataframe.rb'
+require 'daru/plotting/dataframe.rb'
+require 'daru/io/io.rb'
 
 module Daru
   class DataFrame
