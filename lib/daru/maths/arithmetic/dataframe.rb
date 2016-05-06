@@ -36,12 +36,12 @@ module Daru
 
         # Calculate exponenential of all vectors with numeric values.
         def exp
-          only_numerics(clone: false).recode { |v| v.exp }
+          only_numerics(clone: false).recode(&:exp)
         end
 
         # Calcuate square root of numeric vectors.
         def sqrt
-          only_numerics(clone: false).recode { |v| v.sqrt }
+          only_numerics(clone: false).recode(&:sqrt)
         end
 
         def round precision=0

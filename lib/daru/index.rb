@@ -176,7 +176,7 @@ module Daru
     attr_reader :labels
 
     def levels
-      @levels.map { |e| e.keys }
+      @levels.map(&:keys)
     end
 
     def initialize opts={}
@@ -205,7 +205,7 @@ module Daru
     private :incorrect_fields?
 
     def self.from_arrays arrays
-      levels = arrays.map { |e| e.uniq.sort_by { |a| a.to_s  } }
+      levels = arrays.map { |e| e.uniq.sort_by(&:to_s) }
       labels = []
 
       arrays.each_with_index do |arry, level_index|
@@ -315,7 +315,7 @@ module Daru
     end
 
     def empty?
-      @labels.flatten.empty? and @levels.all? { |l| l.empty? }
+      @labels.flatten.empty? and @levels.all?(&:empty?)
     end
 
     def include? tuple

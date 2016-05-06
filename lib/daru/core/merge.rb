@@ -37,7 +37,7 @@ module Daru
         def arrayify df
           arr = df.to_a
           col_names = arr[0][0].keys
-          values = arr[0].map{|h| h.values}
+          values = arr[0].map(&:values)
 
           return col_names, values
         end

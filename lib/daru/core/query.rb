@@ -33,7 +33,7 @@ module Daru
         alias :or :|
 
         def !
-          BoolArray.new(@barry.map { |b| !b })
+          BoolArray.new(@barry.map(&:!))
         end
 
         def == other

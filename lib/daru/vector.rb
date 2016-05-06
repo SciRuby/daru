@@ -900,7 +900,7 @@ module Daru
           s.text  "mode: #{mode}"
 
           s.table(:name => "Distribution") do |t|
-            frequencies.sort_by { |a| a.to_s }.each do |k,v|
+            frequencies.sort_by(&:to_s).each do |k,v|
               key = @index.include?(k) ? @index[k] : k
               t.row [key, v , ("%0.2f%%" % (v.quo(n_valid)*100))]
             end

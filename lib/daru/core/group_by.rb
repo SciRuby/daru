@@ -35,7 +35,7 @@ module Daru
           Daru::Index.new @groups.keys.flatten
         end
 
-        values = @groups.values.map { |e| e.size }
+        values = @groups.values.map(&:size)
         Daru::Vector.new(values, index: index, name: :size)
       end
 

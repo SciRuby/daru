@@ -859,20 +859,6 @@ Style/SpecialGlobalVars:
 Style/StringLiterals:
   Enabled: false
 
-# Offense count: 13
-# Cop supports --auto-correct.
-# Configuration parameters: IgnoredMethods.
-# IgnoredMethods: respond_to
-Style/SymbolProc:
-  Exclude:
-    - 'lib/daru/core/group_by.rb'
-    - 'lib/daru/core/merge.rb'
-    - 'lib/daru/core/query.rb'
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/index.rb'
-    - 'lib/daru/maths/arithmetic/dataframe.rb'
-    - 'lib/daru/vector.rb'
-
 # Offense count: 1
 # Cop supports --auto-correct.
 Style/Tab:

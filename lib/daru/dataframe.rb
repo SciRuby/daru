@@ -124,7 +124,7 @@ module Daru
             source.each { |vec| index << vec.name }
             first.index.to_a
           elsif first.is_a?(Array)
-            Array.new(first.size) { |i| i.to_s }
+            Array.new(first.size, &:to_s)
           end
 
           if source.all? { |s| s.is_a?(Array) }
@@ -1044,7 +1044,7 @@ module Daru
     alias :vector_missing_values :missing_values_rows
 
     def has_missing_data?
-      !!@data.any? { |v| v.has_missing_data? }
+      !!@data.any?(&:has_missing_data?)
     end
 
     alias :flawed? :has_missing_data?
@@ -1943,7 +1943,7 @@ module Daru
     # assignment/deletion of elements is done. Updating data this way is called
     # lazy loading. To set or unset lazy loading, see the .lazy_update= method.
     def update
-      @data.each { |v| v.update } if Daru.lazy_update
+      @data.each(&:update) if Daru.lazy_update
     end
 
     # Rename the DataFrame.
@@ -2407,7 +2407,7 @@ module Daru
     end
 
     def create_vectors_index_with vectors, source
-      vectors = source.keys.sort_by { |a| a.to_s } if vectors.nil?
+      vectors = source.keys.sort_by(&:to_s) if vectors.nil?
 
       @vectors =
       unless vectors.is_a?(Index) or vectors.is_a?(MultiIndex)
