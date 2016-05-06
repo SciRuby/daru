@@ -168,7 +168,7 @@ module Daru
 
         alias :corr :correlation
 
-       private
+        private
 
         def apply_method_to_numerics method, *args
           order = []

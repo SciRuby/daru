@@ -141,11 +141,10 @@ module Daru
       value = opts[:value]
       opts.delete :value
       if block
-        vector = Daru::Vector.new Array.new(n) { |i| block.call(i) }, opts
+        Daru::Vector.new Array.new(n) { |i| block.call(i) }, opts
       else
-        vector = Daru::Vector.new Array.new(n) { value }, opts
+        Daru::Vector.new Array.new(n) { value }, opts
       end
-      vector
     end
 
     # Create a vector using (almost) any object
@@ -556,11 +555,12 @@ module Daru
       } unless block
 
       vector_index = @data.each_with_index
-      if block_given?
-        vector_index = vector_index.sort { |a,b| block.call(a[0], b[0]) }
-      else
-        vector_index = vector_index.sort { |a,b| block.call(a, b)}
-      end
+      vector_index =
+        if block_given?
+          vector_index.sort { |a,b| block.call(a[0], b[0]) }
+        else
+          vector_index.sort { |a,b| block.call(a, b)}
+        end
       vector_index.reverse! unless opts[:ascending]
       vector, index = vector_index.transpose
       old_index = @index.to_a
@@ -948,11 +948,7 @@ module Daru
       vector = Daru::Vector.new([], index: new_index, name: @name, metadata: @metadata.dup)
 
       new_index.each do |idx|
-        if @index.include?(idx)
-          vector[idx] = self[idx]
-        else
-          vector[idx] = nil
-        end
+        vector[idx] = @index.include?(idx) ? self[idx] : nil
       end
 
       vector
@@ -1161,7 +1157,7 @@ module Daru
     alias :dv :daru_vector
 
     def method_missing(name, *args, &block)
-      if name.match(/(.+)\=/)
+      if name =~ /(.+)\=/
         self[name] = args[0]
       elsif has_index?(name)
         self[name]
@@ -1170,7 +1166,7 @@ module Daru
       end
     end
 
-   private
+    private
 
     # For an array or hash of estimators methods, returns
     # an array with three elements

@@ -680,19 +680,15 @@ module Daru
 
           demean   = opts[:demean]
           unbiased = opts[:unbiased]
-          if demean
-            demeaned_series = self - mean
-          else
-            demeaned_series = self
-          end
+          demeaned_series = demean ? self - mean : self
 
           n = (10 * Math.log10(size)).to_i + 1
           m = mean
-          if unbiased
-            d = Array.new(size, size)
-          else
-            d = ((1..size).to_a.reverse)[0..n]
-          end
+          d = if unbiased
+                Array.new(size, size)
+              else
+                ((1..size).to_a.reverse)[0..n]
+              end
 
           0.upto(n - 1).map do |i|
             (demeaned_series * (lag(i) - m)).sum / d[i]

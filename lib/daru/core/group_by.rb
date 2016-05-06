@@ -245,7 +245,7 @@ module Daru
       end
 
 
-     private
+      private
 
       def select_groups_from method, quantity
         selection     = @context

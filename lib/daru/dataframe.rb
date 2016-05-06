@@ -272,12 +272,12 @@ module Daru
             end
             initialize(hsh, index: index, order: vectors, name: @name, clone: clone)
           else # array of hashes
-            if vectors.nil?
-              @vectors = Daru::Index.new source[0].keys
-            else
-              @vectors = Daru::Index.new(
-                (vectors + (source[0].keys - vectors)).uniq)
-            end
+            @vectors =
+              if vectors.nil?
+                Daru::Index.new source[0].keys
+              else
+                Daru::Index.new((vectors + (source[0].keys - vectors)).uniq)
+              end
             @index = Daru::Index.new(index || source.size)
 
             @vectors.each do |name|
@@ -319,11 +319,7 @@ module Daru
                   v = Daru::Vector.new([], name: vector, metadata: source[vector].metadata.dup, index: @index)
 
                   @index.each do |idx|
-                    if source[vector].index.include? idx
-                      v[idx] = source[vector][idx]
-                    else
-                      v[idx] = nil
-                    end
+                    v[idx] = source[vector].index.include?(idx) ? source[vector][idx] : nil
                   end
                 end
                 @data << v
@@ -1239,11 +1235,7 @@ module Daru
 
       cl = Daru::DataFrame.new({}, order: new_vectors, index: @index, name: @name)
       new_vectors.each do |vec|
-        if @vectors.include?(vec)
-          cl[vec] = self[vec]
-        else
-          cl[vec] = [nil]*nrows
-        end
+        cl[vec] = @vectors.include?(vec) ? self[vec] : cl[vec] = [nil]*nrows
       end
 
       cl
@@ -1308,11 +1300,7 @@ module Daru
 
       cl = Daru::DataFrame.new({}, order: @vectors, index: new_index, name: @name)
       new_index.each do |idx|
-        if @index.include?(idx)
-          cl.row[idx] = row[idx]
-        else
-          cl.row[idx] = [nil]*ncols
-        end
+        cl.row[idx] = @index.include?(idx) ? row[idx] : [nil]*ncols
       end
 
       cl
@@ -2091,7 +2079,7 @@ module Daru
       end
     end
 
-   private
+    private
 
     def possibly_multi_index? index
       if @index.is_a?(MultiIndex)
@@ -2300,11 +2288,7 @@ module Daru
           else
             v = Daru::Vector.new [], name: set_name(name), metadata: vector.metadata.dup, index: @index
             @index.each do |idx|
-              if vector.index.include? idx
-                v[idx] = vector[idx]
-              else
-                v[idx] = nil
-              end
+              v[idx] = vector.index.include?(idx) ? vector[idx] : nil
             end
           end
         else

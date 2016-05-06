@@ -42,7 +42,7 @@ module Daru
           recode { |e| e.round(precision) unless e.nil? }
         end
 
-       private
+        private
 
         def math_unary_op operation
           recode { |e| Math.send(operation, e) unless e.nil? }

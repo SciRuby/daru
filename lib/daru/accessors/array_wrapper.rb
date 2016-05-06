@@ -93,7 +93,7 @@ module Daru
         compact.inject :+
       end
 
-     private
+      private
 
       def set_size
         @size = @data.size

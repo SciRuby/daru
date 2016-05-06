@@ -111,11 +111,11 @@ module Daru
         writer << dataframe.vectors.to_a unless options[:headers] == false
 
         dataframe.each_row do |row|
-          if options[:convert_comma]
-            writer << row.map { |v| v.to_s.tr('.', ',') }
-          else
-            writer << row.to_a
-          end
+          writer << if options[:convert_comma]
+                      row.map { |v| v.to_s.tr('.', ',') }
+                    else
+                      row.to_a
+                    end
         end
 
         writer.close

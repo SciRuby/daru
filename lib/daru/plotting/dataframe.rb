@@ -48,7 +48,7 @@ module Daru
         plot.show
       end
 
-     private
+      private
 
       def single_diagram? options
         options[:x] and options[:x].is_a?(Symbol)

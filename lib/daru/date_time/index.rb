@@ -42,7 +42,7 @@ module Daru
         raise ArgumentError,
           "Cannont interpret offset #{offset_string}" if offset_klass.nil?
 
-        if offset_string.match(/W/)
+        if offset_string =~ /W/
           day = Regexp.new(Daru::DAYS_OF_WEEK.keys.join('|')).match(frequency).to_s
           return offset_klass.new(n, weekday: Daru::DAYS_OF_WEEK[day])
         end

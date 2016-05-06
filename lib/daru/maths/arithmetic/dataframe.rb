@@ -67,12 +67,12 @@ module Daru
             this = has_vector?(vector_name) ? self[vector_name] : nil
             that = other.has_vector?(vector_name) ? other[vector_name] : nil
 
-            if this and that
-              hsh[vector_name] = this.send(operation, that)
-            else
-              hsh[vector_name] = Daru::Vector.new([], index: all_indexes,
-                name: vector_name)
-            end
+            hsh[vector_name] =
+              if this && that
+                this.send(operation, that)
+              else
+                Daru::Vector.new([], index: all_indexes, name: vector_name)
+              end
           end
 
           Daru::DataFrame.new(hsh, index: all_indexes, name: @name, dtype: @dtype)

@@ -69,7 +69,7 @@ Metrics/LineLength:
 # Offense count: 81
 # Configuration parameters: CountComments.
 Metrics/MethodLength:
-  Max: 91
+  Max: 100
 
 # Offense count: 3
 # Configuration parameters: CountComments.
@@ -88,20 +88,6 @@ Performance/RedundantBlockCall:
     - 'lib/daru/dataframe.rb'
     - 'lib/daru/io/sql_data_source.rb'
     - 'lib/daru/vector.rb'
-
-# Offense count: 2
-# Cop supports --auto-correct.
-Performance/RedundantMatch:
-  Exclude:
-    - 'lib/daru/date_time/index.rb'
-    - 'lib/daru/vector.rb'
-
-# Offense count: 8
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles, IndentationWidth.
-# SupportedStyles: outdent, indent
-Style/AccessModifierIndentation:
-  Enabled: false
 
 # Offense count: 3
 Style/AccessorMethodName:
@@ -195,18 +181,6 @@ Style/BracesAroundHashParameters:
     - 'lib/daru/date_time/index.rb'
     - 'lib/daru/index.rb'
     - 'lib/daru/vector.rb'
-
-# Offense count: 8
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles, SingleLineConditionsOnly.
-# SupportedStyles: assign_to_condition, assign_inside_condition
-Style/ConditionalAssignment:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/io/io.rb'
-    - 'lib/daru/maths/statistics/vector.rb'
-    - 'lib/daru/vector.rb'
-    - 'lib/daru/maths/arithmetic/dataframe.rb'
 
 # Offense count: 12
 # Cop supports --auto-correct.
