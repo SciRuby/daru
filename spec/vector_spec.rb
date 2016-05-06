@@ -613,7 +613,7 @@ describe Daru::Vector do
           index  = Daru::DateTimeIndex.date_range(:start => '2012', :periods => 5)
           @vector.index = index
 
-          expect(@vector.index.class).to eq(DateTimeIndex)
+          expect(@vector.index.class).to eq(Daru::DateTimeIndex)
           expect(@vector['2012-1-1']).to eq(1)
         end
 

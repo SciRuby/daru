@@ -32,7 +32,7 @@ module Daru
         return frequency if frequency.kind_of?(Daru::DateOffset)
 
         matched = /([0-9]*)(MONTH|YEAR|S|H|MB|ME|M|D|W|YB|YE)/.match(frequency)
-        raise ArgumentError, 
+        raise ArgumentError,
           "Invalid frequency string #{frequency}" if matched.nil?
 
         n             = matched[1] == "" ? 1 : matched[1].to_i
@@ -61,7 +61,7 @@ module Daru
       end
 
       def begin_from_offset? offset, start
-        if offset.kind_of?(Daru::Offsets::Tick) or 
+        if offset.kind_of?(Daru::Offsets::Tick) or
           (offset.respond_to?(:on_offset?) and offset.on_offset?(start))
           true
         else
@@ -92,14 +92,14 @@ module Daru
       def verify_start_and_end start, en
         raise ArgumentError, "Start and end cannot be the same" if start == en
         raise ArgumentError, "Start must be lesser than end"    if start > en
-        raise ArgumentError, 
+        raise ArgumentError,
           "Only same time zones are allowed" if start.zone != en.zone
       end
 
       def infer_offset data
         possible_freq = data[1] - data[0]
         inferred = true
-        data.each_cons(2) do |d|  
+        data.each_cons(2) do |d|
           if d[1] - d[0] != possible_freq
             inferred = false
             break
@@ -107,7 +107,7 @@ module Daru
         end
 
         if inferred
-          TIME_INTERVALS[possible_freq].new 
+          TIME_INTERVALS[possible_freq].new
         else
           nil
         end
@@ -115,7 +115,7 @@ module Daru
 
       def find_index_of_date data, date_time
         searched = data.bsearch { |d| d[0] >= date_time }
-        (!searched.nil? and searched[0] == date_time) ? searched[1] : 
+        (!searched.nil? and searched[0] == date_time) ? searched[1] :
           raise(ArgumentError, "Cannot find #{date_time}")
       end
 
@@ -131,7 +131,7 @@ module Daru
           DateTime.new(date_string.gsub(/[^0-9]/, '').to_i)
         when :month
           DateTime.new(
-            date_string.match(/\d\d\d\d/).to_s.to_i, 
+            date_string.match(/\d\d\d\d/).to_s.to_i,
             date_string.match(/\-\d?\d/).to_s.gsub("-",'').to_i)
         else
           DateTime.parse date_string
@@ -161,7 +161,7 @@ module Daru
         case date_precision
         when :year
           [
-            date_time, 
+            date_time,
             DateTime.new(date_time.year,12,31,23,59,59)
           ]
         when :month
@@ -178,13 +178,13 @@ module Daru
         when :hour
           [
             date_time,
-            DateTime.new(date_time.year, date_time.month, date_time.day, 
+            DateTime.new(date_time.year, date_time.month, date_time.day,
             date_time.hour,59,59)
           ]
         when :min
           [
             date_time,
-            DateTime.new(date_time.year, date_time.month, date_time.day, 
+            DateTime.new(date_time.year, date_time.month, date_time.day,
               date_time.hour, date_time.min, 59)
            ]
         else # second or when precision is same as offset
@@ -227,7 +227,7 @@ module Daru
     # should be used for creating DateTimeIndex by directly passing in DateTime
     # objects or date-like strings, typically in cases where values with frequency
     # are not needed.
-    # 
+    #
     # @param [Array<String>, Array<DateTime>] data Array of date-like Strings or
     #   actual DateTime objects for creating the DateTimeIndex.
     # @param [Hash] opts Hash of options for configuring index.
@@ -235,16 +235,16 @@ module Daru
     #   Option for specifying the frequency of data, if applicable. If `:infer` is
     #   passed to this option, daru will try to infer the frequency of the data
     #   by itself.
-    # 
+    #
     # @example Usage of DateTimeIndex constructor
     #   index = Daru::DateTimeIndex.new(
-    #     [DateTime.new(2012,4,5), DateTime.new(2012,4,6), 
+    #     [DateTime.new(2012,4,5), DateTime.new(2012,4,6),
     #      DateTime.new(2012,4,7), DateTime.new(2012,4,8)])
     #   #=>#<DateTimeIndex:84232240 offset=nil periods=4 data=[2012-04-05T00:00:00+00:00...2012-04-08T00:00:00+00:00]>
     #
     #   index = Daru::DateTimeIndex.new([
-    #     DateTime.new(2012,4,5), DateTime.new(2012,4,6), DateTime.new(2012,4,7), 
-    #     DateTime.new(2012,4,8), DateTime.new(2012,4,9), DateTime.new(2012,4,10), 
+    #     DateTime.new(2012,4,5), DateTime.new(2012,4,6), DateTime.new(2012,4,7),
+    #     DateTime.new(2012,4,8), DateTime.new(2012,4,9), DateTime.new(2012,4,10),
     #     DateTime.new(2012,4,11), DateTime.new(2012,4,12)], freq: :infer)
     #   #=>#<DateTimeIndex:84198340 offset=D periods=8 data=[2012-04-05T00:00:00+00:00...2012-04-12T00:00:00+00:00]>
     def initialize *args
@@ -255,7 +255,7 @@ module Daru
 
       helper.possibly_convert_to_date_time data
 
-      @offset = 
+      @offset =
       case opts[:freq]
       when :infer then helper.infer_offset(data)
       when  nil    then nil
@@ -268,35 +268,35 @@ module Daru
       @periods   = data.size
     end
 
-    # Custom dup method for DateTimeIndex   
+    # Custom dup method for DateTimeIndex
     def dup
       Daru::DateTimeIndex.new(@data.transpose[0], :freq => @offset)
     end
 
     # Create a date range by specifying the start, end, periods and frequency
     # of the data.
-    # 
+    #
     # @param [Hash] opts Options hash to create the date range with
-    # @option opts [String, DateTime] :start A DateTime object or date-like 
+    # @option opts [String, DateTime] :start A DateTime object or date-like
     #   string that defines the start of the date range.
-    # @option opts [String, DateTime] :end A DateTime object or date-like string 
+    # @option opts [String, DateTime] :end A DateTime object or date-like string
     #   that defines the end of the date range.
-    # @option opts [String, Daru::DateOffset, Daru::Offsets::*] :freq ('D') The interval 
-    #   between each date in the index. This can either be a string specifying 
+    # @option opts [String, Daru::DateOffset, Daru::Offsets::*] :freq ('D') The interval
+    #   between each date in the index. This can either be a string specifying
     #   the frequency (i.e. one of the frequency aliases) or an offset object.
-    # @option opts [Fixnum] :periods The number of periods that should go into 
+    # @option opts [Fixnum] :periods The number of periods that should go into
     #   this index. Takes precedence over `:end`.
     # @return [DateTimeIndex] DateTimeIndex object of the specified parameters.
     #
     # == Notes
     #
-    # If you specify :start and :end options as strings, they can be complete or 
-    # partial dates and daru will intelligently infer the date from the string 
-    # directly. However, note that the date-like string must be in the format 
-    # `YYYY-MM-DD HH:MM:SS`. 
+    # If you specify :start and :end options as strings, they can be complete or
+    # partial dates and daru will intelligently infer the date from the string
+    # directly. However, note that the date-like string must be in the format
+    # `YYYY-MM-DD HH:MM:SS`.
     #
     # The string aliases supported by the :freq option are as follows:
-    # 
+    #
     # * 'S'     - seconds
     # * 'M'     - minutes
     # * 'H'     - hours
@@ -315,7 +315,7 @@ module Daru
     # * 'ME'    - month end
     # * 'YB'    - year begin
     # * 'YE'    - year end
-    # 
+    #
     # Multiples of these can also be specified. For example '2S' for 2 seconds
     # or '2ME' for two month end offsets.
     #
@@ -324,7 +324,7 @@ module Daru
     #
     # @example Creating date ranges
     #   Daru::DateTimeIndex.date_range(
-    #     :start => DateTime.new(2014,5,1), 
+    #     :start => DateTime.new(2014,5,1),
     #     :end   => DateTime.new(2014,5,2), :freq => '6H')
     #   #=>#<DateTimeIndex:83600130 offset=H periods=5 data=[2014-05-01T00:00:00+00:00...2014-05-02T00:00:00+00:00]>
     #
@@ -345,7 +345,7 @@ module Daru
 
     # Retreive a slice or a an individual index number from the index.
     #
-    # @param [String, DateTime] Specify a date partially (as a String) or 
+    # @param [String, DateTime] Specify a date partially (as a String) or
     #   completely to retrieve.
     def [] *key
       helper = DateTimeIndexHelper
@@ -359,10 +359,10 @@ module Daru
       if key.is_a?(Range)
         first = key.first
         last = key.last
-        return slice(first, last) if 
+        return slice(first, last) if
           first.is_a?(Fixnum) and last.is_a?(Fixnum)
 
-        raise ArgumentError, "Keys #{first} and #{last} are out of bounds" if 
+        raise ArgumentError, "Keys #{first} and #{last} are out of bounds" if
           helper.key_out_of_bounds?(first, @data) and helper.key_out_of_bounds?(last, @data)
 
         slice_begin = helper.find_date_string_bounds(first)[0]
@@ -371,7 +371,7 @@ module Daru
         if key.is_a?(DateTime)
           return helper.find_index_of_date(@data, key)
         else
-          raise ArgumentError, "Key #{key} is out of bounds" if 
+          raise ArgumentError, "Key #{key} is out of bounds" if
             helper.key_out_of_bounds?(key, @data)
 
           slice_begin, slice_end = helper.find_date_string_bounds key
@@ -393,7 +393,7 @@ module Daru
       elsif first.is_a?(Fixnum) and last.is_a?(Fixnum)
         DateTimeIndex.new(self.to_a[first..last], freq: @offset)
       else
-        first_dt = first.is_a?(String) ? 
+        first_dt = first.is_a?(String) ?
           helper.find_date_string_bounds(first)[0] : first
         last_dt  = last.is_a?(String) ?
           helper.find_date_string_bounds(last)[1]  : last
@@ -414,7 +414,7 @@ module Daru
         end
 
         result
-      end   
+      end
     end
 
     # Return the DateTimeIndex as an Array of DateTime objects.
@@ -434,8 +434,8 @@ module Daru
     end
 
     def inspect
-      string = "#<DateTimeIndex:" + self.object_id.to_s + " offset=" + 
-        (@offset ? @offset.freq_string : 'nil') + ' periods=' + @periods.to_s + 
+      string = "#<DateTimeIndex:" + self.object_id.to_s + " offset=" +
+        (@offset ? @offset.freq_string : 'nil') + ' periods=' + @periods.to_s +
         " data=[" + @data.first[0].to_s + "..." + @data.last[0].to_s + ']'+ '>'
 
       string
@@ -443,21 +443,21 @@ module Daru
 
     # Shift all dates in the index by a positive number in the future. The dates
     # are shifted by the same amount as that specified in the offset.
-    # 
-    # @param [Fixnum, Daru::DateOffset, Daru::Offsets::*] distance Distance by 
-    #   which each date should be shifted. Passing an offset object to #shift 
-    #   will offset each data point by the offset value. Passing a positive 
-    #   integer will offset each data point by the same offset that it was 
+    #
+    # @param [Fixnum, Daru::DateOffset, Daru::Offsets::*] distance Distance by
+    #   which each date should be shifted. Passing an offset object to #shift
+    #   will offset each data point by the offset value. Passing a positive
+    #   integer will offset each data point by the same offset that it was
     #   created with.
     # @return [DateTimeIndex] Returns a new, shifted DateTimeIndex object.
     # @example Using the shift method
     #   index = Daru::DateTimeIndex.date_range(
     #     :start => '2012', :periods => 10, :freq => 'YEAR')
-    #   
+    #
     #   # Passing a offset to shift
     #   index.shift(Daru::Offsets::Hour.new(3))
     #   #=>#<DateTimeIndex:84038960 offset=nil periods=10 data=[2012-01-01T03:00:00+00:00...2021-01-01T03:00:00+00:00]>
-    # 
+    #
     #   # Pass an integer to shift
     #   index.shift(4)
     #   #=>#<DateTimeIndex:83979630 offset=YEAR periods=10 data=[2016-01-01T00:00:00+00:00...2025-01-01T00:00:00+00:00]>
@@ -479,11 +479,11 @@ module Daru
 
     # Shift all dates in the index to the past. The dates are shifted by the same
     # amount as that specified in the offset.
-    # 
-    # @param [Fixnum, Daru::DateOffset, Daru::Offsets::*] distance Fixnum or 
-    #   Daru::DateOffset. Distance by which each date should be shifted. Passing 
-    #   an offset object to #lag will offset each data point by the offset value. 
-    #   Passing a positive integer will offset each data point by the same offset 
+    #
+    # @param [Fixnum, Daru::DateOffset, Daru::Offsets::*] distance Fixnum or
+    #   Daru::DateOffset. Distance by which each date should be shifted. Passing
+    #   an offset object to #lag will offset each data point by the offset value.
+    #   Passing a positive integer will offset each data point by the same offset
     #   that it was created with.
     # @return [DateTimeIndex] A new lagged DateTimeIndex object.
     def lag distance
@@ -526,14 +526,13 @@ module Daru
     #   @return [Array<Fixnum>] Array containing seconds of each index.
     [:year, :month, :day, :hour, :min, :sec].each do |meth|
       define_method(meth) do
-        self.inject([]) do |arr, d|
+        self.each_with_object([]) do |d, arr|
           arr << d.send(meth)
-          arr
         end
       end
     end
 
-    # Check if a date exists in the index. Will be inferred from string in case 
+    # Check if a date exists in the index. Will be inferred from string in case
     # you pass a string. Recommened specifying the full date as a DateTime object.
     def include? date_time
       return false if !(date_time.is_a?(String) or date_time.is_a?(DateTime))

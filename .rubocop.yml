@@ -1,0 +1,11 @@
+inherit_from: .rubocop_todo.yml
+
+AllCops:
+  Include:
+    - 'lib/**/*'
+  Exclude:
+    - 'spec/*'
+    - 'spec/**/*'
+    - 'vendor/**/*'
+    - 'benchmarks/*'
+  DisplayCopNames: true

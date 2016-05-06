@@ -62,13 +62,11 @@ module Daru
         opts[:col_sep]           ||= ','
         opts[:converters]        ||= :numeric
 
-        daru_options = opts.keys.inject({}) do |hash, k|
+        daru_options = opts.keys.each_with_object({}) do |hash, k|
           if [:clone, :order, :index, :name].include?(k)
             hash[k] = opts[k]
             opts.delete k
           end
-
-          hash
         end
 
         # Preprocess headers for detecting and correcting repetition in

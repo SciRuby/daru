@@ -36,7 +36,7 @@ module Daru
             compute_stats :max
           end
         end
-        
+
         # @!method cumsum
         #   Calculate cumulative sum of each numeric Vector
         # @!method standardize
@@ -47,7 +47,7 @@ module Daru
         # @!method ema
         #   Calculate exponential moving average.
         #   @param [Integer] n (10) Loopback length.
-        #   @param [TrueClass, FalseClass, NilClass] wilder (false) If true, 
+        #   @param [TrueClass, FalseClass, NilClass] wilder (false) If true,
         #     1/n value is  used for smoothing; if false, uses 2/(n+1) value.
         # @!method rolling_mean
         #   Calculate moving averages
@@ -78,13 +78,13 @@ module Daru
           end
         end
 
-        # Create a summary of mean, standard deviation, count, max and min of 
+        # Create a summary of mean, standard deviation, count, max and min of
         # each numeric vector in the dataframe in one shot.
-        # 
+        #
         # == Arguments
-        # 
-        # +methods+ - An array with aggregation methods specified as symbols to 
-        # be applied to numeric vectors. Default is [:count, :mean, :std, :max, 
+        #
+        # +methods+ - An array with aggregation methods specified as symbols to
+        # be applied to numeric vectors. Default is [:count, :mean, :std, :max,
         # :min]. Methods will be applied in the specified order.
         def describe methods=nil
           methods ||= [:count, :mean, :std, :min, :max]
@@ -102,25 +102,25 @@ module Daru
         # @param [Integer] periods (1) number of nils to insert at the beginning.
         #
         # @example
-        # 
+        #
         #   df = Daru::DataFrame.new({
         #        'col0' => [1,2,3,4,5,6],
         #        'col2' => ['a','b','c','d','e','f'],
         #        'col1' => [11,22,33,44,55,66]
-        #        }, 
-        #        index: ['one', 'two', 'three', 'four', 'five', 'six'], 
+        #        },
+        #        index: ['one', 'two', 'three', 'four', 'five', 'six'],
         #        order: ['col0', 'col1', 'col2'])
         #   df.percent_change
         #   #=>
         #   #   <Daru::DataFrame:23513280 @rows: 6 @cols: 2>
         #   #              col0                col1
-        #   #   one	                           
+        #   #   one
         #   #   two	   1.0	               1.0
         #   #   three	   0.5                 0.5
         #   #   four	   0.3333333333333333  0.3333333333333333
         #   #   five       0.25                0.25
         #   #   six        0.2                 0.2
-        def percent_change periods = 1 
+        def percent_change periods = 1
           df_numeric = only_numerics.vectors.to_a
           df = Daru::DataFrame.new({}, order: @order, index: @index, name: @name)
           df_numeric.each do |vec|
@@ -154,13 +154,13 @@ module Daru
         end
 
         alias :cov :covariance
-          
+
         # Calculate the correlation between the numeric vectors.
         def correlation
           standard_deviation = std.to_matrix
           corr_arry = (cov
             .to_matrix
-            .elementwise_division(standard_deviation.transpose * 
+            .elementwise_division(standard_deviation.transpose *
             standard_deviation)).to_a
 
           Daru::DataFrame.rows(corr_arry, index: numeric_vectors, order: numeric_vectors)
@@ -172,16 +172,15 @@ module Daru
 
         def apply_method_to_numerics method, *args
           order = []
-          computed = @vectors.to_a.inject([]) do |memo, n|
+          computed = @vectors.to_a.each_with_object([]) do |n, memo|
             v = @data[@vectors[n]]
             if v.type == :numeric
               memo << v.send(method, *args)
               order << n
             end
-            memo
           end
-          
-          Daru::DataFrame.new(computed, index: @index, order: order ,clone: false) 
+
+          Daru::DataFrame.new(computed, index: @index, order: order ,clone: false)
         end
 
         def vector_cov v1a, v2a
@@ -191,7 +190,7 @@ module Daru
         def sum_of_squares v1, v2
           v1a,v2a = v1.only_valid ,v2.only_valid
           v1a.reset_index!
-          v2a.reset_index!        
+          v2a.reset_index!
           m1 = v1a.mean
           m2 = v2a.mean
           (v1a.size).times.inject(0) {|ac,i| ac+(v1a[i]-m1)*(v2a[i]-m2)}
@@ -199,9 +198,8 @@ module Daru
 
         def compute_stats method
           Daru::Vector.new(
-            numeric_vectors.inject({}) do |hash, vec|
+            numeric_vectors.each_with_object({}) do |vec, hash|
               hash[vec] = self[vec].send(method)
-              hash
             end, name: method
           )
         end

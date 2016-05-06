@@ -168,12 +168,10 @@ module Daru
         cols_values = columns.factors
         cols_n      = cols_values.size
 
-        h_rows = rows.factors.inject({}) do |a,v|
-          a[v] = cols_values.inject({}) do |a1,v1|
+        h_rows = rows.factors.each_with_object({}) do |v, a|
+          a[v] = cols_values.each_with_object({}) do |v1, a1|
             a1[v1]=nil
-            a1
           end
-          a
         end
 
         values.each_index do |i|
@@ -456,9 +454,8 @@ module Daru
       vectors_to_clone.flatten! unless vectors_to_clone.all? { |a| !a.is_a?(Array) }
       vectors_to_clone = @vectors.to_a if vectors_to_clone.empty?
 
-      h = vectors_to_clone.inject({}) do |hsh, vec|
+      h = vectors_to_clone.each_with_object({}) do |vec, hsh|
         hsh[vec] = self[vec]
-        hsh
       end
       Daru::DataFrame.new(h, clone: false)
     end
@@ -476,9 +473,8 @@ module Daru
     # Creates a new duplicate dataframe containing only rows
     # without a single missing value.
     def dup_only_valid vecs=nil
-      rows_with_nil = @data.inject([]) do |memo, vector|
+      rows_with_nil = @data.each_with_object([]) do |vector, memo|
         memo.concat vector.missing_positions
-        memo
       end.uniq
 
       row_indexes = @index.to_a
@@ -1412,9 +1408,8 @@ module Daru
     def only_numerics opts={}
       cln = opts[:clone] == false ? false : true
       nv = numeric_vectors
-      arry = nv.inject([]) do |arr, v|
+      arry = nv.each_with_object([]) do |v, arr|
         arr << self[v]
-        arr
       end
 
       order = Index.new(nv)
@@ -1744,9 +1739,8 @@ module Daru
       ds_vars = parent_fields.dup
       vars    = []
       max_n   = 0
-      h       = parent_fields.inject({}) { |a,v|
+      h       = parent_fields.each_with_object({}) { |v, a|
         a[v] = Daru::Vector.new([])
-        a
       }
       # Adding _row_id
       h['_col_id'] = Daru::Vector.new([])

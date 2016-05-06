@@ -223,7 +223,7 @@ module Daru
       #   #   a ACE
       #   #   b BDF
       def reduce(init=nil, &block)
-        result_hash = @groups.reduce({}) do |h, (group, indices)|
+        result_hash = @groups.each_with_object({}) do |(group, indices), h|
           group_indices = indices.map { |v| @context.index.to_a[v] }
 
           grouped_result = init
@@ -232,7 +232,6 @@ module Daru
           end
 
           h[group] = grouped_result
-          h
         end
 
         index =

@@ -371,9 +371,8 @@ module Daru
     def in other
       other = Hash[other.zip(Array.new(other.size, 0))]
       Daru::Core::Query::BoolArray.new(
-        @data.inject([]) do |memo, d|
+        @data.each_with_object([]) do |d, memo|
           memo << (other.has_key?(d) ? true : false)
-          memo
         end
       )
     end
@@ -509,9 +508,8 @@ module Daru
     # Keep only unique elements of the vector alongwith their indexes.
     def uniq
       uniq_vector = @data.uniq
-      new_index   = uniq_vector.inject([]) do |acc, element|
+      new_index   = uniq_vector.each_with_object([]) do |element, acc|
         acc << index_of(element)
-        acc
       end
 
       Daru::Vector.new uniq_vector, name: @name, metadata: @metadata.dup, index: new_index, dtype: @dtype
@@ -691,10 +689,7 @@ module Daru
       split_data = splitted sep
       factors = split_data.flatten.uniq.compact
 
-      out = factors.inject({}) do |h,x|
-        h[x] = []
-        h
-      end
+      out = factors.map { |x| [x, []] }.to_h
 
       split_data.each do |r|
         if r.nil?
@@ -708,17 +703,13 @@ module Daru
         end
       end
 
-      out.inject({}) do |s,v|
-        s[v[0]] = Daru::Vector.new v[1]
-        s
-      end
+      out.map { |k, v| [k, Daru::Vector.new(v)] }.to_h
     end
 
     def split_by_separator_freq(sep=",")
-      split_by_separator(sep).inject({}) do |a,v|
-        a[v[0]] = v[1].inject { |s,x| s+x.to_i }
-        a
-      end
+      split_by_separator(sep).map do |k, v|
+        [k, v.inject { |s,x| s+x.to_i }]
+      end.to_h
     end
 
     def reset_index!
@@ -849,10 +840,7 @@ module Daru
 
     # Convert to hash (explicit). Hash keys are indexes and values are the correspoding elements
     def to_h
-      @index.inject({}) do |hsh, index|
-        hsh[index] = self[index]
-        hsh
-      end
+      @index.map { |index| [index, self[index]] }.to_h
     end
 
     # Return an array
@@ -1059,10 +1047,7 @@ module Daru
       nb = (size / k).to_i
       h_est, es, ps = prepare_bootstrap(estimators)
 
-      est_n = es.inject({}) do |h,v|
-        h[v] = h_est[v].call(self)
-        h
-      end
+      est_n = es.map { |v| [v, h_est[v].call(self)] }.to_h
 
       nb.times do |i|
         other = @data.dup
@@ -1202,12 +1187,11 @@ module Daru
       h_est = [h_est] unless h_est.is_a?(Array) or h_est.is_a?(Hash)
 
       if h_est.is_a? Array
-        h_est = h_est.inject({}) do |h, est|
-          h[est] = lambda { |v| Daru::Vector.new(v).send(est) }
-          h
-        end
+        h_est = h_est.map do |est|
+          [est, lambda { |v| Daru::Vector.new(v).send(est) }]
+        end.to_h
       end
-      bss = h_est.keys.inject({}) { |h,v| h[v] = []; h }
+      bss = h_est.keys.map { |v| [v, []] }.to_h
 
       [h_est, h_est.keys, bss]
     end

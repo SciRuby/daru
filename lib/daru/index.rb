@@ -3,14 +3,14 @@ module Daru
     include Enumerable
     # It so happens that over riding the .new method in a super class also
     # tampers with the default .new method for class that inherit from the
-    # super class (Index in this case). Thus we first alias the original 
-    # new method (from Object) to __new__ when the Index class is evaluated, 
+    # super class (Index in this case). Thus we first alias the original
+    # new method (from Object) to __new__ when the Index class is evaluated,
     # and then we use an inherited hook such that the old new method (from
     # Object) is once again the default .new for the subclass.
     # Refer http://blog.sidu.in/2007/12/rubys-new-as-factory.html
     class << self
       alias :__new__ :new
-      
+
       def inherited subclass
         class << subclass
           alias :new :__new__
@@ -26,7 +26,7 @@ module Daru
       idx =
       if source and source[0].is_a?(Array)
         Daru::MultiIndex.from_tuples source
-      elsif source and source.is_a?(Array) and !source.empty? and 
+      elsif source and source.is_a?(Array) and !source.empty? and
         source.all? { |e| e.is_a?(DateTime) }
         Daru::DateTimeIndex.new(source, freq: :infer)
       else
@@ -56,7 +56,7 @@ module Daru
 
       @relation_hash = {}
       index.each_with_index do |n, idx|
-        @relation_hash[n] = idx 
+        @relation_hash[n] = idx
       end
 
       @relation_hash.freeze
@@ -67,14 +67,14 @@ module Daru
     def ==(other)
       return false if self.class != other.class or other.size != @size
 
-      @relation_hash.keys   == other.to_a and 
+      @relation_hash.keys   == other.to_a and
       @relation_hash.values == other.relation_hash.values
     end
 
     def [](*key)
       loc = key[0]
 
-      case 
+      case
       when loc.is_a?(Range)
         first = loc.first
         last = loc.last
@@ -120,7 +120,7 @@ module Daru
 
     # Produce a new index from the set intersection of two indexes
     def & other
-      
+
     end
 
     def to_a
@@ -166,7 +166,7 @@ module Daru
     include Enumerable
 
     def each(&block)
-      to_a.each(&block)  
+      to_a.each(&block)
     end
 
     def map(&block)
@@ -183,7 +183,7 @@ module Daru
       labels = opts[:labels]
       levels = opts[:levels]
 
-      raise ArgumentError, 
+      raise ArgumentError,
         "Must specify both labels and levels" unless labels and levels
       raise ArgumentError,
         "Labels and levels should be same size" if labels.size != levels.size
@@ -259,7 +259,7 @@ module Daru
       end
 
       return chosen[0] if chosen.size == 1 and key.size == @levels.size
-      return multi_index_from_multiple_selections(chosen)              
+      return multi_index_from_multiple_selections(chosen)
     end
 
     def multi_index_from_multiple_selections chosen
@@ -285,11 +285,10 @@ module Daru
       raise ArgumentError,
         "Key #{index} is too large" if index >= @labels[0].size
 
-      level_indexes = 
-      @labels.inject([]) do |memo, label|
-        memo << label[index]
-        memo
-      end
+      level_indexes =
+        @labels.each_with_object([]) do |label, memo|
+          memo << label[index]
+        end
 
       tuple = []
       level_indexes.each_with_index do |level_index, i|
@@ -336,9 +335,9 @@ module Daru
     end
 
     def == other
-      self.class == other.class  and 
-      labels     == other.labels and 
-      levels     == other.levels 
+      self.class == other.class  and
+      labels     == other.labels and
+      levels     == other.levels
     end
 
     def to_a

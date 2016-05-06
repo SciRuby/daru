@@ -51,9 +51,8 @@ module Daru
 
       class << self
         def apply_scalar_operator operator, data, other
-          arry = data.inject([]) do |memo,d|
+          arry = data.each_with_object([]) do |d, memo|
             memo << (d.send(operator, other) ? true : false)
-            memo
           end
 
           BoolArray.new(arry)
