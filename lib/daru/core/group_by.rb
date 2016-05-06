@@ -281,7 +281,7 @@ module Daru
 
         @non_group_vectors.each do |ngvec|
           order << ngvec if
-            (method_type == :numeric and @context[ngvec].type == :numeric)
+            method_type == :numeric and @context[ngvec].type == :numeric
         end
 
         index = @groups.keys

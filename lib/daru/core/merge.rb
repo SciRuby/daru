@@ -118,7 +118,7 @@ module Daru
         idx2 = 0
 
         merged = []
-        while (idx1 < @df1.size || idx2 < @df2.size) do
+        while idx1 < @df1.size || idx2 < @df2.size do
 
           key1 = df1_array[idx1][0] if idx1 < @df1.size
           key2 = df2_array[idx2][0] if idx2 < @df2.size

@@ -899,7 +899,7 @@ module Daru
           end
         end
 
-        s.text "median: #{median.to_s}" if (@type==:numeric or @type==:numeric)
+        s.text "median: #{median.to_s}" if @type==:numeric or @type==:numeric
         if @type==:numeric
           s.text "mean: %0.4f" % mean
           if sd
@@ -1244,7 +1244,7 @@ module Daru
     def set_missing_positions
       @missing_positions = []
       @index.each do |e|
-        @missing_positions << e if (@missing_values.has_key?(self[e]))
+        @missing_positions << e if @missing_values.has_key?(self[e])
       end
     end
 

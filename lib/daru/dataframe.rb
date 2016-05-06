@@ -1397,7 +1397,7 @@ module Daru
       numerics = []
 
       @vectors.each do |v|
-        numerics << v if (self[v].type == :numeric)
+        numerics << v if self[v].type == :numeric
       end
       numerics
     end

@@ -384,16 +384,6 @@ Style/ParallelAssignment:
 
 # Offense count: 5
 # Cop supports --auto-correct.
-# Configuration parameters: AllowSafeAssignment.
-Style/ParenthesesAroundCondition:
-  Exclude:
-    - 'lib/daru/core/group_by.rb'
-    - 'lib/daru/core/merge.rb'
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/vector.rb'
-
-# Offense count: 5
-# Cop supports --auto-correct.
 Style/PerlBackrefs:
   Exclude:
     - 'lib/daru/dataframe.rb'
