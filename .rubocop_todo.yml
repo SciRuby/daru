@@ -409,12 +409,6 @@ Style/PredicateName:
     - 'lib/daru/monkeys.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 1
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: compact, exploded
-Style/RaiseArgs:
-  Enabled: false
-
 # Offense count: 12
 # Cop supports --auto-correct.
 Style/RedundantParentheses:
@@ -423,16 +417,6 @@ Style/RedundantParentheses:
     - 'lib/daru/io/io.rb'
     - 'lib/daru/maths/statistics/dataframe.rb'
     - 'lib/daru/maths/statistics/vector.rb'
-    - 'lib/daru/vector.rb'
-
-# Offense count: 4
-# Cop supports --auto-correct.
-# Configuration parameters: AllowMultipleReturnValues.
-Style/RedundantReturn:
-  Exclude:
-    - 'lib/daru/core/merge.rb'
-    - 'lib/daru/index.rb'
-    - 'lib/daru/io/io.rb'
     - 'lib/daru/vector.rb'
 
 # Offense count: 85

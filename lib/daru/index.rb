@@ -259,7 +259,7 @@ module Daru
       end
 
       return chosen[0] if chosen.size == 1 and key.size == @levels.size
-      return multi_index_from_multiple_selections(chosen)
+      multi_index_from_multiple_selections(chosen)
     end
 
     def multi_index_from_multiple_selections chosen

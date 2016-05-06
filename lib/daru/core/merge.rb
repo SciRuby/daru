@@ -39,7 +39,7 @@ module Daru
           col_names = arr[0][0].keys
           values = arr[0].map(&:values)
 
-          return col_names, values
+          [col_names, values]
         end
 
         def arrayify_with_sort_keys(size, df_hash, on)

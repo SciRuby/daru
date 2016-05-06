@@ -15,7 +15,7 @@ module Daru
     # * :weeks - Create a weeks offset
     # * :months - Create a months offset
     # * :years - Create a years offset
-    # 
+    #
     # Additionaly, passing the `:n` option will apply the offset that many times.
     #
     # @example Usage of DateOffset
@@ -23,7 +23,7 @@ module Daru
     #   offset = Daru::DateOffset.new(weeks: 3)
     #   offset + DateTime.new(2012,5,3)
     #   #=> #<DateTime: 2012-05-24T00:00:00+00:00 ((2456072j,0s,0n),+0s,2299161j)>
-    #  
+    #
     #   # Create an offset of 5 hours
     #   offset = Daru::DateOffset.new(hours: 5)
     #   offset + DateTime.new(2015,3,3,23,5,1)
@@ -37,7 +37,7 @@ module Daru
       n = opts[:n] || 1
 
       @offset =
-      case 
+      case
       when opts[:secs]
         Offsets::Second.new(n*opts[:secs])
       when opts[:mins]
@@ -93,7 +93,7 @@ module Daru
     end
 
     # Create a seconds offset
-    # 
+    #
     # @param n [Integer] The number of times an offset should be applied.
     # @example Create a Seconds offset
     #   offset = Daru::Offsets::Second.new(5)
@@ -110,7 +110,7 @@ module Daru
     end
 
     # Create a minutes offset
-    # 
+    #
     # @param n [Integer] The number of times an offset should be applied.
     # @example Create a Minutes offset
     #   offset = Daru::Offsets::Minute.new(8)
@@ -127,7 +127,7 @@ module Daru
     end
 
     # Create an hours offset
-    # 
+    #
     # @param n [Integer] The number of times an offset should be applied.
     # @example Create a Hour offset
     #   offset = Daru::Offsets::Hour.new(8)
@@ -137,14 +137,14 @@ module Daru
       def multiplier
         0.041666666666666664
       end
-      
+
       def freq_string
         (@n == 1 ? '' : @n.to_s) + 'H'
       end
     end
 
     # Create an days offset
-    # 
+    #
     # @param n [Integer] The number of times an offset should be applied.
     # @example Create a Day offset
     #   offset = Daru::Offsets::Day.new(2)
@@ -161,7 +161,7 @@ module Daru
     end
 
     # Create an months offset
-    # 
+    #
     # @param n [Integer] The number of times an offset should be applied.
     # @example Create a Month offset
     #   offset = Daru::Offsets::Month.new(5)
@@ -182,7 +182,7 @@ module Daru
     end
 
     # Create a years offset
-    # 
+    #
     # @param n [Integer] The number of times an offset should be applied.
     # @example Create a Year offset
     #   offset = Daru::Offsets::Year.new(2)
@@ -239,7 +239,7 @@ module Daru
     end
 
     # Create a month begin offset
-    # 
+    #
     # @param n [Integer] The number of times an offset should be applied.
     # @example Create a MonthBegin offset
     #   offset = Daru::Offsets::MonthBegin.new(2)
@@ -267,7 +267,7 @@ module Daru
       def - date_time
         @n.times do
           date_time = date_time << 1 if on_offset?(date_time)
-          date_time = DateTime.new(date_time.year, date_time.month, 1, 
+          date_time = DateTime.new(date_time.year, date_time.month, 1,
             date_time.hour, date_time.min, date_time.sec)
         end
 
@@ -280,7 +280,7 @@ module Daru
     end
 
     # Create a month end offset
-    # 
+    #
     # @param n [Integer] The number of times an offset should be applied.
     # @example Create a MonthEnd offset
     #   offset = Daru::Offsets::MonthEnd.new
@@ -296,7 +296,7 @@ module Daru
       end
 
       def + date_time
-        @n.times do 
+        @n.times do
           date_time     = date_time >> 1 if on_offset?(date_time)
           days_in_month = Daru::MONTH_DAYS[date_time.month]
           days_in_month += 1 if date_time.leap? and date_time.month == 2
@@ -308,7 +308,7 @@ module Daru
       end
 
       def - date_time
-        @n.times do 
+        @n.times do
           date_time = date_time << 1
           days_in_month = Daru::MONTH_DAYS[date_time.month]
           days_in_month += 1 if date_time.leap? and date_time.month == 2
@@ -325,7 +325,7 @@ module Daru
     end
 
     # Create a year begin offset
-    # 
+    #
     # @param n [Integer] The number of times an offset should be applied.
     # @example Create a YearBegin offset
     #   offset = Daru::Offsets::YearBegin.new(3)
@@ -347,7 +347,7 @@ module Daru
 
       def - date_time
         if on_offset?(date_time)
-          DateTime.new(date_time.year - @n, 1, 1, 
+          DateTime.new(date_time.year - @n, 1, 1,
             date_time.hour,date_time.min, date_time.sec)
         else
           DateTime.new(date_time.year - (@n-1), 1, 1)
@@ -360,7 +360,7 @@ module Daru
     end
 
     # Create a year end offset
-    # 
+    #
     # @param n [Integer] The number of times an offset should be applied.
     # @example Create a YearEnd offset
     #   offset = Daru::Offsets::YearEnd.new

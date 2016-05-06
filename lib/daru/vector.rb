@@ -1198,7 +1198,7 @@ module Daru
         return false if eval == -1
         return true  if eval == 1
       end
-      return false
+      false
     end
 
     # Note: To maintain sanity, this _MUST_ be the _ONLY_ place in daru where the

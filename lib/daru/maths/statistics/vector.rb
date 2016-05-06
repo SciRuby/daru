@@ -278,7 +278,7 @@ module Daru
               sorted[k - 1] + d * (sorted[k] - sorted[k - 1])
             end
           else
-            raise NotImplementedError.new "Unknown strategy #{strategy.to_s}"
+            raise NotImplementedError, "Unknown strategy #{strategy.to_s}"
           end
         end
 
