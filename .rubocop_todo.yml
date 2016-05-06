@@ -243,12 +243,6 @@ Style/BlockDelimiters:
     - 'lib/daru/maths/statistics/vector.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 1
-# Cop supports --auto-correct.
-Style/BlockEndNewline:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-
 # Offense count: 5
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.

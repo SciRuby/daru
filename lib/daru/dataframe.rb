@@ -1229,8 +1229,9 @@ module Daru
     #   # ["foo", "two", 3]=>[2, 4]}
     def group_by *vectors
       vectors.flatten!
-      vectors.each { |v| raise(ArgumentError, "Vector #{v} does not exist") unless
-        has_vector?(v) }
+      vectors.each { |v|
+        raise(ArgumentError, "Vector #{v} does not exist") unless has_vector?(v)
+      }
 
       Daru::Core::GroupBy.new(self, vectors)
     end
