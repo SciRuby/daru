@@ -1894,11 +1894,11 @@ module Daru
 
     # Convert to html for IRuby.
     def to_html threshold=30
-      html = "<table>" +
-        "<tr>" +
-          "<th colspan=\"#{@vectors.size+1}\">" +
-            "Daru::DataFrame:#{self.object_id} " + " rows: #{nrows} " + " cols: #{ncols}" +
-          "</th>" +
+      html = "<table>" \
+        "<tr>" \
+          "<th colspan=\"#{@vectors.size+1}\">" \
+            "Daru::DataFrame:#{self.object_id} " + " rows: #{nrows} " + " cols: #{ncols}" \
+          "</th>" \
         "</tr>"
       html +='<tr><th></th>'
       @vectors.each { |vector| html += '<th>' + vector.to_s + '</th>' }

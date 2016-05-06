@@ -353,19 +353,12 @@ Style/Lambda:
 Style/LambdaCall:
   Enabled: false
 
-# Offense count: 7
-# Cop supports --auto-correct.
-#Style/LeadingCommentSpace:
-  #Exclude:
-    #- 'lib/daru/dataframe.rb'
-    #- 'lib/daru/maths/statistics/vector.rb'
-
 # Offense count: 12
 # Cop supports --auto-correct.
-Style/LineEndConcatenation:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/vector.rb'
+#Style/LineEndConcatenation:
+  #Exclude:
+    #- 'lib/daru/dataframe.rb'
+    #- 'lib/daru/vector.rb'
 
 # Offense count: 337
 # Cop supports --auto-correct.

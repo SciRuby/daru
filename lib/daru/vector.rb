@@ -856,11 +856,11 @@ module Daru
     # Convert to html for iruby
     def to_html threshold=30
       name = @name || 'nil'
-      html = "<table>" +
-        "<tr>" +
-          "<th colspan=\"2\">" +
-            "Daru::Vector:#{self.object_id} " + " size: #{size}" +
-          "</th>" +
+      html = "<table>" \
+        "<tr>" \
+          "<th colspan=\"2\">" \
+            "Daru::Vector:#{self.object_id} " + " size: #{size}" \
+          "</th>" \
         "</tr>"
       html += '<tr><th> </th><th>' + name.to_s + '</th></tr>'
       @index.each_with_index do |index, num|
@@ -870,9 +870,9 @@ module Daru
           html += '<tr><td>...</td><td>...</td></tr>'
 
           last_index = @index.to_a.last
-          html += '<tr>' +
-                    '<td>' + last_index.to_s       + '</td>' +
-                    '<td>' + self[last_index].to_s + '</td>' +
+          html += '<tr>' \
+                    '<td>' + last_index.to_s       + '</td>' \
+                    '<td>' + self[last_index].to_s + '</td>' \
                   '</tr>'
           break
         end
