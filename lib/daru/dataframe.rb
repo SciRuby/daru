@@ -1378,7 +1378,7 @@ module Daru
     #   df.rename_vectors :a => :alpha, :c => :gamma
     #   df.vectors.to_a #=> [:alpha, :b, :gamma]
     def rename_vectors name_map
-      existing_targets = name_map.values & self.vectors.to_a
+      existing_targets = name_map.select { |k,v| k != v }.values & self.vectors.to_a
       delete_vectors *existing_targets
 
       new_names = self.vectors.to_a.map { |v| name_map[v] ? name_map[v] : v }

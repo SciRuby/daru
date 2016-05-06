@@ -1499,6 +1499,14 @@ describe Daru::DataFrame do
       expect(@df.vectors.to_a).to eq([:b, :c])
       expect(@df[:b]).to eq saved_vector
     end
+
+    it "makes no changes if the old and new names are the same" do
+      saved_vector = @df[:a].dup
+
+      @df.rename_vectors :a => :a
+      expect(@df.vectors.to_a).to eq([:a, :b, :c])
+      expect(@df[:a]).to eq saved_vector
+    end
   end
 
   context "#reindex" do
