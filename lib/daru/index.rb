@@ -101,7 +101,6 @@ module Daru
     def slice *args
       start   = args[0]
       en      = args[1]
-      indexes = []
 
       if start.is_a?(Integer) and en.is_a?(Integer)
         Index.new @keys[start..en]
@@ -195,7 +194,7 @@ module Daru
     end
 
     def incorrect_fields? labels, levels
-      max_level = levels[0].size
+      levels[0].size # FIXME: without this call everything fails
 
       correct = levels.all? { |e| e.uniq.size == e.size }
 

@@ -43,14 +43,6 @@ Lint/UnusedMethodArgument:
     - 'lib/daru/plotting/vector.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 6
-Lint/UselessAssignment:
-  Exclude:
-    - 'lib/daru/core/merge.rb'
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/index.rb'
-    - 'lib/daru/vector.rb'
-
 # Offense count: 66
 Metrics/AbcSize:
   Max: 110

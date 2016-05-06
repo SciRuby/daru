@@ -927,7 +927,7 @@ module Daru
       name      = @name || 'nil'
       metadata  = @metadata || 'nil'
       formatter = "\n%#{longest}.#{longest}s %#{longest}.#{longest}s"
-      content  += "\n#<" + self.class.to_s + ':' + object_id.to_s + ' @name = ' + name.to_s + ' @metadata = ' + @metadata.to_s + ' @size = ' + size.to_s + ' >'
+      content  += "\n#<#{self.class}:#{object_id} @name = #{name} @metadata = #{metadata} @size = #{size} >"
 
       content += sprintf formatter, '', name
       @index.each_with_index do |index, num|

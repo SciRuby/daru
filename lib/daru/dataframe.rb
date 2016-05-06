@@ -2082,7 +2082,7 @@ module Daru
     end
 
     def method_missing(name, *args, &block)
-      if (md = name.match(/(.+)\=/))
+      if name =~ /(.+)\=/
         insert_or_modify_vector name[/(.+)\=/].delete('=').to_sym, args[0]
       elsif has_vector? name
         self[name]

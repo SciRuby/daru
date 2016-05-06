@@ -48,7 +48,7 @@ module Daru
           # than using df.to_a or df.map(:row).  However, it's
           # substantially faster this way.
 
-          idx_keys = on.map { |key| df_hash.keys.index(key) }
+          # idx_keys = on.map { |key| df_hash.keys.index(key) }
 
           (0...size).reduce([]) do |r, idx|
             key_values = on.map { |col| df_hash[col][idx] }
@@ -117,7 +117,6 @@ module Daru
         idx1 = 0
         idx2 = 0
 
-        merged = []
         while idx1 < @df1.size || idx2 < @df2.size
 
           key1 = df1_array[idx1][0] if idx1 < @df1.size
