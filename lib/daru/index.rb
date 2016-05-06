@@ -142,8 +142,8 @@ module Daru
       Daru::Index.new @relation_hash.keys
     end
 
-    def _dump depth
-      Marshal.dump({relation_hash: @relation_hash})
+    def _dump(*)
+      Marshal.dump(relation_hash: @relation_hash)
     end
 
     def self._load data
@@ -156,7 +156,7 @@ module Daru
     #
     # @param input_indexes [Array] the input by user to index the vector
     # @return [Object] the Index object for sub vector produced
-    def conform input_indexes
+    def conform(*)
       self
     end
   end # class Index
@@ -193,7 +193,7 @@ module Daru
       @levels = levels.map { |e| Hash[e.map.with_index.to_a]}
     end
 
-    def incorrect_fields? labels, levels
+    def incorrect_fields?(_labels, levels)
       levels[0].size # FIXME: without this call everything fails
 
       correct = levels.all? { |e| e.uniq.size == e.size }

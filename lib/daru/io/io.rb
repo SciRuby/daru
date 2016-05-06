@@ -39,7 +39,7 @@ module Daru
         df
       end
 
-      def dataframe_write_excel dataframe, path, opts={}
+      def dataframe_write_excel dataframe, path, _opts={}
         book   = Spreadsheet::Workbook.new
         sheet  = book.create_worksheet
         format = Spreadsheet::Format.new color: :blue, weight: :bold

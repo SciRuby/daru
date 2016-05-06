@@ -15,7 +15,7 @@ module Daru
       #     plot.title "My first plot"
       #     plot.width 1200
       #   end
-      def plot opts={}, &block
+      def plot opts={}
         options = {
           type: :scatter
         }.merge(opts)

@@ -55,7 +55,7 @@ class Hash
 end
 
 class NMatrix
-  def daru_vector name=nil, index=nil, dtype=NMatrix
+  def daru_vector(name=nil, index=nil, *)
     Daru::Vector.new self, name: name, index: index, dtype: :nmatrix
   end
 
@@ -63,7 +63,7 @@ class NMatrix
 end
 
 class MDArray
-  def daru_vector name=nil, index=nil, dtype=MDArray
+  def daru_vector(name=nil, index=nil, *)
     Daru::Vector.new self, name: name, index: index, dtype: :mdarray
   end
 

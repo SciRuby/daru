@@ -519,8 +519,8 @@ module Daru
       end
     end
 
-    def _dump depth
-      Marshal.dump({data: to_a, freq: @offset})
+    def _dump(_depth)
+      Marshal.dump(data: to_a, freq: @offset)
     end
 
     def self._load data

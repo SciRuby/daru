@@ -342,7 +342,7 @@ module Daru
       update
     end
 
-    def vector *args
+    def vector(*)
       $stderr.puts '#vector has been deprecated in favour of #[]. Please use that.'
       self[*names]
     end
@@ -494,7 +494,7 @@ module Daru
     alias_method :each_column, :each_vector
 
     # Iterate over each vector alongwith the name of the vector
-    def each_vector_with_index(&block)
+    def each_vector_with_index
       return to_enum(:each_vector_with_index) unless block_given?
 
       @vectors.each do |vector|
@@ -507,7 +507,7 @@ module Daru
     alias_method :each_column_with_index, :each_vector_with_index
 
     # Iterate over each row
-    def each_row(&block)
+    def each_row
       return to_enum(:each_row) unless block_given?
 
       @index.each do |index|
@@ -517,7 +517,7 @@ module Daru
       self
     end
 
-    def each_row_with_index(&block)
+    def each_row_with_index
       return to_enum(:each_row_with_index) unless block_given?
 
       @index.each do |index|
@@ -678,7 +678,7 @@ module Daru
       end
     end
 
-    def recode_vectors &block
+    def recode_vectors
       block_given? or return to_enum(:recode_vectors)
 
       df = dup
@@ -692,7 +692,7 @@ module Daru
       df
     end
 
-    def recode_rows &block
+    def recode_rows
       block_given? or return to_enum(:recode_rows)
 
       df = dup
@@ -706,7 +706,7 @@ module Daru
     end
 
     # Map each vector and return an Array.
-    def map_vectors(&block)
+    def map_vectors
       return to_enum(:map_vectors) unless block_given?
 
       arry = []
@@ -718,7 +718,7 @@ module Daru
     end
 
     # Destructive form of #map_vectors
-    def map_vectors!(&block)
+    def map_vectors!
       return to_enum(:map_vectors!) unless block_given?
 
       vectors.dup.each do |n|
@@ -731,7 +731,7 @@ module Daru
     end
 
     # Map vectors alongwith the index.
-    def map_vectors_with_index(&block)
+    def map_vectors_with_index
       return to_enum(:map_vectors_with_index) unless block_given?
 
       dt = []
@@ -743,7 +743,7 @@ module Daru
     end
 
     # Map each row
-    def map_rows(&block)
+    def map_rows
       return to_enum(:map_rows) unless block_given?
 
       dt = []
@@ -754,7 +754,7 @@ module Daru
       dt
     end
 
-    def map_rows_with_index(&block)
+    def map_rows_with_index
       return to_enum(:map_rows_with_index) unless block_given?
 
       dt = []
@@ -765,7 +765,7 @@ module Daru
       dt
     end
 
-    def map_rows!(&block)
+    def map_rows!
       return to_enum(:map_rows!) unless block_given?
 
       index.dup.each do |i|
@@ -779,7 +779,7 @@ module Daru
 
     # Retrieves a Daru::Vector, based on the result of calculation
     # performed on each row.
-    def collect_rows &block
+    def collect_rows
       return to_enum(:collect_rows) unless block_given?
 
       data = []
@@ -790,7 +790,7 @@ module Daru
       Daru::Vector.new(data, index: @index)
     end
 
-    def collect_row_with_index &block
+    def collect_row_with_index
       return to_enum(:collect_row_with_index) unless block_given?
 
       data = []
@@ -803,7 +803,7 @@ module Daru
 
     # Retrives a Daru::Vector, based on the result of calculation
     # performed on each vector.
-    def collect_vectors &block
+    def collect_vectors
       return to_enum(:collect_vectors) unless block_given?
 
       data = []
@@ -814,7 +814,7 @@ module Daru
       Daru::Vector.new(data, index: @vectors)
     end
 
-    def collect_vector_with_index &block
+    def collect_vector_with_index
       return to_enum(:collect_vector_with_index) unless block_given?
 
       data = []
@@ -890,7 +890,7 @@ module Daru
       ds_boot
     end
 
-    def keep_row_if &block
+    def keep_row_if
       deletion = []
 
       @index.each do |index|
@@ -903,7 +903,7 @@ module Daru
       }
     end
 
-    def keep_vector_if &block
+    def keep_vector_if
       @vectors.each do |vector|
         keep_vector = yield @data[@vectors[vector]], vector
 
@@ -1978,7 +1978,7 @@ module Daru
       Daru::IO.save self, filename
     end
 
-    def _dump depth
+    def _dump(_depth)
       Marshal.dump(
         data:  @data,
         index: @index.to_a,
@@ -2083,7 +2083,7 @@ module Daru
       end
     end
 
-    def create_logic_blocks vector_order, by={}, ascending
+    def create_logic_blocks vector_order, _by, ascending
       # Create blocks to handle nils
       blocks = {}
       universal_block_ascending = lambda { |a| [a.nil? ? 0 : 1, a] }

@@ -26,7 +26,7 @@ module Daru
       self
     end
 
-    def each_with_index(&block)
+    def each_with_index
       return to_enum(:each_with_index) unless block_given?
 
       @index.each { |i| yield(self[i], i) }
@@ -593,7 +593,7 @@ module Daru
     end
 
     # Delete an element if block returns true. Destructive.
-    def delete_if &block
+    def delete_if
       return to_enum(:delete_if) unless block_given?
 
       keep_e = []
@@ -614,7 +614,7 @@ module Daru
     end
 
     # Keep an element if block returns true. Destructive.
-    def keep_if &block
+    def keep_if
       return to_enum(:keep_if) unless block_given?
 
       keep_e = []
@@ -636,7 +636,7 @@ module Daru
 
     # Reports all values that doesn't comply with a condition.
     # Returns a hash with the index of data and the invalid data.
-    def verify &block
+    def verify
       h = {}
       (0...size).each do |i|
         h[i] = @data[i] unless yield(@data[i])
@@ -839,7 +839,7 @@ module Daru
     end
 
     # Convert the hash from to_h to json
-    def to_json *args
+    def to_json(*)
       to_h.to_json
     end
 
@@ -1101,9 +1101,11 @@ module Daru
     end
 
     # Returns the database type for the vector, according to its content
-    def db_type(dbs=:mysql)
+    def db_type
       # first, detect any character not number
-      if @data.find {|v| v.to_s=~/\d{2,2}-\d{2,2}-\d{4,4}/} or @data.find {|v| v.to_s=~/\d{4,4}-\d{2,2}-\d{2,2}/}
+      if @data.find {|v| v.to_s=~/\d{2,2}-\d{2,2}-\d{4,4}/} ||
+         @data.find {|v| v.to_s=~/\d{4,4}-\d{2,2}-\d{2,2}/}
+
         return 'DATE'
       elsif @data.find {|v| v.to_s=~/[^0-9e.-]/ }
         return 'VARCHAR (255)'
@@ -1129,7 +1131,7 @@ module Daru
       Daru::IO.save self, filename
     end
 
-    def _dump(depth) # :nodoc:
+    def _dump(*) # :nodoc:
       Marshal.dump(
         data:           @data.to_a,
         dtype:          @dtype,
@@ -1145,7 +1147,7 @@ module Daru
         name: h[:name], metadata: h[:metadata], dtype: h[:dtype], missing_values: h[:missing_values])
     end
 
-    def daru_vector *name
+    def daru_vector(*)
       self
     end
 

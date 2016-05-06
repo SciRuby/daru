@@ -82,19 +82,19 @@ module Daru
         @on = on
       end
 
-      def inner opts
+      def inner _opts
         merge_join(left: false, right: false)
       end
 
-      def left opts
+      def left _opts
         merge_join(left: true, right: false)
       end
 
-      def right opts
+      def right _opts
         merge_join(left: false, right: true)
       end
 
-      def outer opts
+      def outer _opts
         merge_join(left: true, right: true)
       end
 
