@@ -5,12 +5,10 @@ module Daru
         row.to_a.map do |c|
           if empty.include?(c)
             nil
+          elsif c.is_a? String and c.is_number?
+            c =~ /^\d+$/ ? c.to_i : c.tr(',','.').to_f
           else
-            if c.is_a? String and c.is_number?
-              c =~ /^\d+$/ ? c.to_i : c.tr(',','.').to_f
-            else
-              c
-            end
+            c
           end
         end
       end

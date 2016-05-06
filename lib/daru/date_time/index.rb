@@ -377,15 +377,13 @@ module Daru
 
         slice_begin = helper.find_date_string_bounds(first)[0]
         slice_end   = helper.find_date_string_bounds(last)[1]
+      elsif key.is_a?(DateTime)
+        return helper.find_index_of_date(@data, key)
       else
-        if key.is_a?(DateTime)
-          return helper.find_index_of_date(@data, key)
-        else
-          raise ArgumentError, "Key #{key} is out of bounds" if
-            helper.key_out_of_bounds?(key, @data)
+        raise ArgumentError, "Key #{key} is out of bounds" if
+          helper.key_out_of_bounds?(key, @data)
 
-          slice_begin, slice_end = helper.find_date_string_bounds key
-        end
+        slice_begin, slice_end = helper.find_date_string_bounds key
       end
 
       slice slice_begin, slice_end

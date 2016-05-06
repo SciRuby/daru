@@ -138,14 +138,12 @@ module Daru
             vectors.collect do |col|
               if row == col
                 self[row].variance
+              elsif cache[[col,row]].nil?
+                cov = vector_cov(self[row],self[col])
+                cache[[row,col]] = cov
+                cov
               else
-                if cache[[col,row]].nil?
-                  cov = vector_cov(self[row],self[col])
-                  cache[[row,col]] = cov
-                  cov
-                else
-                  cache[[col,row]]
-                end
+                cache[[col,row]]
               end
             end
           end
