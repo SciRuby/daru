@@ -184,11 +184,11 @@ module Daru
       levels = opts[:levels]
 
       raise ArgumentError,
-        "Must specify both labels and levels" unless labels and levels
+        'Must specify both labels and levels' unless labels and levels
       raise ArgumentError,
-        "Labels and levels should be same size" if labels.size != levels.size
+        'Labels and levels should be same size' if labels.size != levels.size
       raise ArgumentError,
-        "Incorrect labels and levels" if incorrect_fields?(labels, levels)
+        'Incorrect labels and levels' if incorrect_fields?(labels, levels)
 
       @labels = labels
       @levels = levels.map { |e| Hash[e.map.with_index.to_a]}

@@ -167,7 +167,7 @@ module Daru
 
         # Sample covariance with denominator (N-1)
         def covariance_sample other
-          @size == other.size or raise ArgumentError, "size of both the vectors must be equal"
+          @size == other.size or raise ArgumentError, 'size of both the vectors must be equal'
           mean_x = mean
           mean_y = other.mean
           sum = 0
@@ -179,7 +179,7 @@ module Daru
 
         # Population covariance with denominator (N)
         def covariance_population other
-          @size == other.size or raise ArgumentError, "size of both the vectors must be equal"
+          @size == other.size or raise ArgumentError, 'size of both the vectors must be equal'
           mean_x = mean
           mean_y = other.mean
           sum = 0
@@ -236,7 +236,7 @@ module Daru
         end
 
         def average_deviation_population m=nil
-          type == :numeric or raise TypeError, "Vector must be numeric"
+          type == :numeric or raise TypeError, 'Vector must be numeric'
           m ||= mean
           (@data.inject( 0 ) { |memo, val|
             @missing_values.has_key?(val) ? memo : ( val - m ).abs + memo
@@ -319,7 +319,7 @@ module Daru
         end
 
         def box_cox_transformation lambda # :nodoc:
-          raise "Should be a numeric" unless @type == :numeric
+          raise 'Should be a numeric' unless @type == :numeric
 
           recode do |x|
             if !x.nil?
@@ -415,7 +415,7 @@ module Daru
         #   #   i	   0.3333333333333333
         #   #   k          0.25
         def percent_change periods = 1
-          type == :numeric or raise TypeError, "Vector must be numeric"
+          type == :numeric or raise TypeError, 'Vector must be numeric'
           value = only_valid
           arr = []
           i = 1

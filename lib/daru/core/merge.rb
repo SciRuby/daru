@@ -68,9 +68,9 @@ module Daru
 
         def verify_dataframes df_hash1, df_hash2, on
           raise ArgumentError,
-            "All fields in :on must be present in self" unless on.all? { |e| df_hash1[e] }
+            'All fields in :on must be present in self' unless on.all? { |e| df_hash1[e] }
           raise ArgumentError,
-            "All fields in :on must be present in other DF" unless on.all? { |e| df_hash2[e] }
+            'All fields in :on must be present in other DF' unless on.all? { |e| df_hash2[e] }
         end
       end
     end

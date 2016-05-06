@@ -72,7 +72,7 @@ module Daru
       end
 
       def resize size = @size*2
-        raise ArgumentError, "Size must be greater than current size" if size < @size
+        raise ArgumentError, 'Size must be greater than current size' if size < @size
 
         @data = NMatrix.new [size], @data.to_a, dtype: @nm_dtype
       end

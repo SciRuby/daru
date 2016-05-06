@@ -134,7 +134,7 @@ module Daru
             end
           end
         else
-          raise SizeError, "All vectors must have same length"
+          raise SizeError, 'All vectors must have same length'
         end
 
         df
@@ -160,7 +160,7 @@ module Daru
       #
       # Useful to process outputs from databases
       def crosstab_by_assignation rows, columns, values
-        raise "Three vectors should be equal size" if
+        raise 'Three vectors should be equal size' if
           rows.size != columns.size or rows.size!=values.size
 
         cols_values = columns.factors
@@ -348,7 +348,7 @@ module Daru
     end
 
     def vector *args
-      $stderr.puts "#vector has been deprecated in favour of #[]. Please use that."
+      $stderr.puts '#vector has been deprecated in favour of #[]. Please use that.'
       self[*names]
     end
 
@@ -966,9 +966,9 @@ module Daru
         i += 1
         tests.each do |test|
           next if test[2].call(row)
-          values = ""
+          values = ''
           if test[1].size>0
-            values = " (" + test[1].collect{ |k| "#{k}=#{row[k]}" }.join(", ") + ")"
+            values = ' (' + test[1].collect{ |k| "#{k}=#{row[k]}" }.join(', ') + ')'
           end
           vr.push("#{i} [#{row[id]}]: #{test[0]}#{values}")
         end
@@ -1234,7 +1234,7 @@ module Daru
     end
 
     def reindex_vectors new_vectors
-      raise ArgumentError, "Must pass the new index of type Index or its "\
+      raise ArgumentError, 'Must pass the new index of type Index or its '\
         "subclasses, not #{new_index.class}" unless new_vectors.is_a?(Daru::Index)
 
       cl = Daru::DataFrame.new({}, order: new_vectors, index: @index, name: @name)
@@ -1271,7 +1271,7 @@ module Daru
 
     # Set a particular column as the new DF
     def set_index new_index, opts={}
-      raise ArgumentError, "All elements in new index must be unique." if
+      raise ArgumentError, 'All elements in new index must be unique.' if
         @size != self[new_index].uniq.size
 
       self.index = Daru::Index.new(self[new_index].to_a)
@@ -1303,7 +1303,7 @@ module Daru
     #   #         a          1         11
     #   #         g        nil        nil
     def reindex new_index
-      raise ArgumentError, "Must pass the new index of type Index or its "\
+      raise ArgumentError, 'Must pass the new index of type Index or its '\
         "subclasses, not #{new_index.class}" unless new_index.is_a?(Daru::Index)
 
       cl = Daru::DataFrame.new({}, order: @vectors, index: new_index, name: @name)
@@ -1347,7 +1347,7 @@ module Daru
     #   df.vectors = Daru::Index.new([:foo, :bar, :baz])
     #   df.vectors.to_a #=> [:foo, :bar, :baz]
     def vectors= idx
-      raise ArgumentError, "Can only reindex with Index and its subclasses" unless
+      raise ArgumentError, 'Can only reindex with Index and its subclasses' unless
         index.is_a?(Daru::Index)
       raise ArgumentError, "Specified index length #{idx.size} not equal to"\
         "dataframe size #{ncols}" if idx.size != ncols
@@ -1513,7 +1513,7 @@ module Daru
     #   #      5          1        nil
 
     def sort! vector_order, opts={}
-      raise ArgumentError, "Required atleast one vector name" if vector_order.size < 1
+      raise ArgumentError, 'Required atleast one vector name' if vector_order.size < 1
       opts = {
         ascending: true,
         handle_nils: false,
@@ -1590,7 +1590,7 @@ module Daru
     #   #     [:foo]         10         12
     def pivot_table opts={}
       raise ArgumentError,
-        "Specify grouping index" if !opts[:index] or opts[:index].empty?
+        'Specify grouping index' if !opts[:index] or opts[:index].empty?
 
       index   = opts[:index]
       vectors = opts[:vectors] || []
@@ -1604,7 +1604,7 @@ module Daru
         (@vectors.to_a - (index | vectors)) & numeric_vector_names
       end
 
-      raise IndexError, "No numeric vectors to aggregate" if values.empty?
+      raise IndexError, 'No numeric vectors to aggregate' if values.empty?
 
       grouped = group_by(index)
 
@@ -1733,7 +1733,7 @@ module Daru
     #   #   ["white", "2", 20]
     #   #   ]
     def one_to_many(parent_fields, pattern)
-      re      = Regexp.new pattern.gsub("%v","(.+?)").gsub("%n","(\\d+?)")
+      re      = Regexp.new pattern.gsub('%v','(.+?)').gsub('%n','(\\d+?)')
       ds_vars = parent_fields.dup
       vars    = []
       max_n   = 0
@@ -1765,7 +1765,7 @@ module Daru
           n = n1+1
           any_data = false
           vars.each do |v|
-            data = row[pattern.gsub("%v",v.to_s).gsub("%n",n.to_s)]
+            data = row[pattern.gsub('%v',v.to_s).gsub('%n',n.to_s)]
             row_out[v] = data
             any_data = true unless data.nil?
           end
@@ -1785,7 +1785,7 @@ module Daru
       i = 1
       split.each { |k,v|
         new_field = name_.to_s + join + i.to_s
-        v.rename name_.to_s + ":" + k.to_s
+        v.rename name_.to_s + ':' + k.to_s
         self[new_field.to_sym] = v
         i += 1
       }
@@ -1807,11 +1807,11 @@ module Daru
     #  ds.create_sql('names')
     #   #=>"CREATE TABLE names (id INTEGER,\n name VARCHAR (255)) CHARACTER SET=UTF8;"
     #
-    def create_sql(table,charset="UTF8")
+    def create_sql(table,charset='UTF8')
       sql    = "CREATE TABLE #{table} ("
       fields = vectors.to_a.collect do |f|
         v = self[f]
-        f.to_s + " " + v.db_type
+        f.to_s + ' ' + v.db_type
       end
 
       sql + fields.join(",\n ")+") CHARACTER SET=#{charset};"
@@ -1891,12 +1891,12 @@ module Daru
 
     # Convert to html for IRuby.
     def to_html threshold=30
-      html = "<table>" \
-        "<tr>" \
+      html = '<table>' \
+        '<tr>' \
           "<th colspan=\"#{@vectors.size+1}\">" \
             "Daru::DataFrame:#{object_id} " + " rows: #{nrows} " + " cols: #{ncols}" \
-          "</th>" \
-        "</tr>"
+          '</th>' \
+        '</tr>'
       html +='<tr><th></th>'
       @vectors.each { |vector| html += '<th>' + vector.to_s + '</th>' }
       html += '</tr>'
@@ -1919,7 +1919,7 @@ module Daru
         last_index = @index.to_a.last
         last_row = row[last_index]
         html += '<tr>'
-        html += "<td>" + last_index.to_s + "</td>"
+        html += '<td>' + last_index.to_s + '</td>'
         (0..(ncols - 1)).to_a.each do |i|
           html += '<td>' + last_row[i].to_s + '</td>'
         end
@@ -2042,14 +2042,14 @@ module Daru
                  (@data   .map{ |v| v.map(&:to_s).map(&:size).max}.max || 0)].max
 
       name      = @name || 'nil'
-      content   = ""
+      content   = ''
       longest   = spacing if longest > spacing
       formatter = "\n"
 
       (@vectors.size + 1).times { formatter += "%#{longest}.#{longest}s " }
-      content += "\n#<" + self.class.to_s + ":" + object_id.to_s + " @name = " +
-                 name.to_s + " @size = " + @size.to_s + ">"
-      content += sprintf formatter, "" , *@vectors.map(&:to_s)
+      content += "\n#<" + self.class.to_s + ':' + object_id.to_s + ' @name = ' +
+                 name.to_s + ' @size = ' + @size.to_s + '>'
+      content += sprintf formatter, '' , *@vectors.map(&:to_s)
       row_num  = 1
 
       each_row_with_index do |row, index|
@@ -2059,7 +2059,7 @@ module Daru
 
         dots = []
 
-        (@vectors.size + 1).times { dots << "..." }
+        (@vectors.size + 1).times { dots << '...' }
         content += sprintf formatter, *dots
         break
       end
@@ -2083,7 +2083,7 @@ module Daru
 
     def method_missing(name, *args, &block)
       if (md = name.match(/(.+)\=/))
-        insert_or_modify_vector name[/(.+)\=/].delete("=").to_sym, args[0]
+        insert_or_modify_vector name[/(.+)\=/].delete('=').to_sym, args[0]
       elsif has_vector? name
         self[name]
       else
@@ -2157,7 +2157,7 @@ module Daru
 
     def sort_order_array vector_order, ascending
       if ascending.is_a? Array
-        raise ArgumentError, "Specify same number of vector names and sort orders" if
+        raise ArgumentError, 'Specify same number of vector names and sort orders' if
           vector_order.size != ascending.size
         return ascending
       else
@@ -2167,7 +2167,7 @@ module Daru
 
     def handle_nils_array vector_order, handle_nils
       if handle_nils.is_a? Array
-        raise ArgumentError, "Specify same number of vector names and handle nils" if
+        raise ArgumentError, 'Specify same number of vector names and handle nils' if
           vector_order.size != handle_nils.size
         return handle_nils
       else
@@ -2377,13 +2377,13 @@ module Daru
       raise IndexError, "Expected equal number of vector names (#{@vectors.size}) for number of vectors (#{@data.size})." if
         @vectors and @vectors.size != @data.size
 
-      raise IndexError, "Expected number of indexes same as number of rows" if
+      raise IndexError, 'Expected number of indexes same as number of rows' if
         @index and @data[0] and @index.size != @data[0].size
     end
 
     def validate_vector_sizes
       @data.each do |vector|
-        raise IndexError, "Expected vectors with equal length" if vector.size != @size
+        raise IndexError, 'Expected vectors with equal length' if vector.size != @size
       end
     end
 

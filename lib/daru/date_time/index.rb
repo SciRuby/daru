@@ -35,7 +35,7 @@ module Daru
         raise ArgumentError,
           "Invalid frequency string #{frequency}" if matched.nil?
 
-        n             = matched[1] == "" ? 1 : matched[1].to_i
+        n             = matched[1] == '' ? 1 : matched[1].to_i
         offset_string = matched[2]
         offset_klass  = OFFSETS_HASH[offset_string]
 
@@ -96,10 +96,10 @@ module Daru
       end
 
       def verify_start_and_end start, en
-        raise ArgumentError, "Start and end cannot be the same" if start == en
-        raise ArgumentError, "Start must be lesser than end"    if start > en
+        raise ArgumentError, 'Start and end cannot be the same' if start == en
+        raise ArgumentError, 'Start must be lesser than end'    if start > en
         raise ArgumentError,
-          "Only same time zones are allowed" if start.zone != en.zone
+          'Only same time zones are allowed' if start.zone != en.zone
       end
 
       def infer_offset data
@@ -141,7 +141,7 @@ module Daru
         when :month
           DateTime.new(
             date_string.match(/\d\d\d\d/).to_s.to_i,
-            date_string.match(/\-\d?\d/).to_s.delete("-").to_i)
+            date_string.match(/\-\d?\d/).to_s.delete('-').to_i)
         else
           DateTime.parse date_string
         end
@@ -453,9 +453,9 @@ module Daru
     end
 
     def inspect
-      string = "#<DateTimeIndex:" + object_id.to_s + " offset=" +
+      string = '#<DateTimeIndex:' + object_id.to_s + ' offset=' +
                (@offset ? @offset.freq_string : 'nil') + ' periods=' + @periods.to_s +
-               " data=[" + @data.first[0].to_s + "..." + @data.last[0].to_s + ']'+ '>'
+               ' data=[' + @data.first[0].to_s + '...' + @data.last[0].to_s + ']'+ '>'
 
       string
     end
@@ -489,7 +489,7 @@ module Daru
           return DateTimeIndex.date_range(
             :start => start, :periods => @periods, freq: @offset)
         else
-          raise IndexError, "To shift non-freq date time index pass an offset."
+          raise IndexError, 'To shift non-freq date time index pass an offset.'
         end
       else # its a Daru::Offset/DateOffset
         DateTimeIndex.new(to_a.map { |e| distance + e }, freq: :infer)
@@ -514,7 +514,7 @@ module Daru
           return DateTimeIndex.date_range(
             :start => start, :periods => @periods, freq: @offset)
         else
-          raise IndexError, "To lag non-freq date time index pass an offset."
+          raise IndexError, 'To lag non-freq date time index pass an offset.'
         end
       else
         DateTimeIndex.new(to_a.map { |e| distance - e }, freq: :infer)

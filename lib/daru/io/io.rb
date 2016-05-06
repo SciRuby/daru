@@ -7,7 +7,7 @@ module Daru
             nil
           else
             if c.is_a? String and c.is_number?
-              c =~ /^\d+$/ ? c.to_i : c.tr(",",".").to_f
+              c =~ /^\d+$/ ? c.to_i : c.tr(',','.').to_f
             else
               c
             end
@@ -135,7 +135,7 @@ module Daru
 
       def dataframe_write_sql ds, dbh, table
         require 'dbi'
-        query = "INSERT INTO #{table} ("+ds.vectors.to_a.join(",")+") VALUES ("+((["?"]*ds.vectors.size).join(","))+")"
+        query = "INSERT INTO #{table} ("+ds.vectors.to_a.join(',')+') VALUES ('+((['?']*ds.vectors.size).join(','))+')'
         sth   = dbh.prepare(query)
         ds.each_row { |c| sth.execute(*c.to_a) }
         true
@@ -175,9 +175,9 @@ module Daru
 
       def from_plaintext filename, fields
         ds = Daru::DataFrame.new({}, order: fields)
-        fp = File.open(filename,"r")
+        fp = File.open(filename,'r')
         fp.each_line do |line|
-          row = Daru::IOHelpers.process_row(line.strip.split(/\s+/),[""])
+          row = Daru::IOHelpers.process_row(line.strip.split(/\s+/),[''])
           next if row == ["\x1A"]
           ds.add_row(row)
         end

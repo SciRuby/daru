@@ -535,48 +535,6 @@ Style/SpaceInsideParens:
   Exclude:
     - 'lib/daru/maths/statistics/vector.rb'
 
-# Offense count: 2
-# Cop supports --auto-correct.
-# Configuration parameters: SupportedStyles.
-# SupportedStyles: use_perl_names, use_english_names
-#Style/SpecialGlobalVars:
-  #EnforcedStyle: use_perl_names
-
-# Offense count: 104
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles, ConsistentQuotesInMultiline.
-# SupportedStyles: single_quotes, double_quotes
-Style/StringLiterals:
-  Enabled: false
-
-# Offense count: 1
-# Cop supports --auto-correct.
-Style/Tab:
-  Exclude:
-    - 'lib/daru/maths/statistics/vector.rb'
-
-# Offense count: 15
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: final_newline, final_blank_line
-Style/TrailingBlankLines:
-  Exclude:
-    - 'lib/daru/accessors/array_wrapper.rb'
-    - 'lib/daru/accessors/dataframe_by_row.rb'
-    - 'lib/daru/accessors/gsl_wrapper.rb'
-    - 'lib/daru/accessors/mdarray_wrapper.rb'
-    - 'lib/daru/accessors/nmatrix_wrapper.rb'
-    - 'lib/daru/core/query.rb'
-    - 'lib/daru/date_time/index.rb'
-    - 'lib/daru/date_time/offsets.rb'
-    - 'lib/daru/extensions/rserve.rb'
-    - 'lib/daru/index.rb'
-    - 'lib/daru/maths/arithmetic/dataframe.rb'
-    - 'lib/daru/maths/arithmetic/vector.rb'
-    - 'lib/daru/plotting/dataframe.rb'
-    - 'lib/daru/plotting/vector.rb'
-    - 'lib/daru/version.rb'
-
 # Offense count: 3
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyleForMultiline, SupportedStyles.

@@ -251,7 +251,7 @@ module Daru
       end
 
       def freq_string
-        (@n == 1 ? '' : @n.to_s) + "MB"
+        (@n == 1 ? '' : @n.to_s) + 'MB'
       end
 
       def + date_time

@@ -430,7 +430,7 @@ module Daru
 
     # Append an element to the vector by specifying the element and index
     def concat element, index
-      raise IndexError, "Expected new unique index" if @index.include? index
+      raise IndexError, 'Expected new unique index' if @index.include? index
 
       @index |= [index]
       @data[@index[index]] = element
@@ -651,7 +651,7 @@ module Daru
     #   a.splitted
     #     =>
     #   [["a","b"],["c","d"],["a","b"],["d"]]
-    def splitted sep=","
+    def splitted sep=','
       @data.map do |s|
         if s.nil?
           nil
@@ -676,7 +676,7 @@ module Daru
     #      "c"=>#<Daru::Vector:0x7f2dbcc09b08
     #        @data=[0, 1, 1]>}
     #
-    def split_by_separator sep=","
+    def split_by_separator sep=','
       split_data = splitted sep
       factors = split_data.flatten.uniq.compact
 
@@ -697,7 +697,7 @@ module Daru
       out.map { |k, v| [k, Daru::Vector.new(v)] }.to_h
     end
 
-    def split_by_separator_freq(sep=",")
+    def split_by_separator_freq(sep=',')
       split_by_separator(sep).map do |k, v|
         [k, v.inject { |s,x| s+x.to_i }]
       end.to_h
@@ -825,7 +825,7 @@ module Daru
           GSL::Vector.alloc only_valid(:array).to_a
         end
       else
-        raise NoMethodError, "Install gsl-nmatrix for access to this functionality."
+        raise NoMethodError, 'Install gsl-nmatrix for access to this functionality.'
       end
     end
 
@@ -847,12 +847,12 @@ module Daru
     # Convert to html for iruby
     def to_html threshold=30
       name = @name || 'nil'
-      html = "<table>" \
-        "<tr>" \
-          "<th colspan=\"2\">" \
+      html = '<table>' \
+        '<tr>' \
+          '<th colspan="2">' \
             "Daru::Vector:#{object_id} " + " size: #{size}" \
-          "</th>" \
-        "</tr>"
+          '</th>' \
+        '</tr>'
       html += '<tr><th> </th><th>' + name.to_s + '</th></tr>'
       @index.each_with_index do |index, num|
         html += '<tr><td>' + index.to_s + '</td>' + '<td>' + self[index].to_s + '</td></tr>'
@@ -889,22 +889,22 @@ module Daru
           s.text  "factors: #{factors.to_a.join(',')}"
           s.text  "mode: #{mode}"
 
-          s.table(:name => "Distribution") do |t|
+          s.table(:name => 'Distribution') do |t|
             frequencies.sort_by(&:to_s).each do |k,v|
               key = @index.include?(k) ? @index[k] : k
-              t.row [key, v , ("%0.2f%%" % (v.quo(n_valid)*100))]
+              t.row [key, v , ('%0.2f%%' % (v.quo(n_valid)*100))]
             end
           end
         end
 
         s.text "median: #{median.to_s}" if @type==:numeric or @type==:numeric
         if @type==:numeric
-          s.text "mean: %0.4f" % mean
+          s.text 'mean: %0.4f' % mean
           if sd
-            s.text "std.dev.: %0.4f" % sd
-            s.text "std.err.: %0.4f" % se
-            s.text "skew: %0.4f" % skew
-            s.text "kurtosis: %0.4f" % kurtosis
+            s.text 'std.dev.: %0.4f' % sd
+            s.text 'std.err.: %0.4f' % se
+            s.text 'skew: %0.4f' % skew
+            s.text 'kurtosis: %0.4f' % kurtosis
           end
         end
       end
@@ -918,14 +918,14 @@ module Daru
                  3 # 'nil'.size
                 ].max
 
-      content   = ""
+      content   = ''
       longest   = spacing if longest > spacing
       name      = @name || 'nil'
       metadata  = @metadata || 'nil'
       formatter = "\n%#{longest}.#{longest}s %#{longest}.#{longest}s"
-      content  += "\n#<" + self.class.to_s + ":" + object_id.to_s + " @name = " + name.to_s + " @metadata = " + @metadata.to_s + " @size = " + size.to_s + " >"
+      content  += "\n#<" + self.class.to_s + ':' + object_id.to_s + ' @name = ' + name.to_s + ' @metadata = ' + @metadata.to_s + ' @size = ' + size.to_s + ' >'
 
-      content += sprintf formatter, "", name
+      content += sprintf formatter, '', name
       @index.each_with_index do |index, num|
         content += sprintf formatter, index.to_s, (self[*index] || 'nil').to_s
         if num > threshold
@@ -958,7 +958,7 @@ module Daru
       raise ArgumentError,
         "Size of supplied index #{index.size} does not match size of DataFrame" if
         idx.size != size
-      raise ArgumentError, "Can only assign type Index and its subclasses." unless
+      raise ArgumentError, 'Can only assign type Index and its subclasses.' unless
         idx.is_a?(Daru::Index)
 
       @index = idx
@@ -1109,13 +1109,13 @@ module Daru
     def db_type(dbs=:mysql)
       # first, detect any character not number
       if @data.find {|v| v.to_s=~/\d{2,2}-\d{2,2}-\d{4,4}/} or @data.find {|v| v.to_s=~/\d{4,4}-\d{2,2}-\d{2,2}/}
-        return "DATE"
+        return 'DATE'
       elsif @data.find {|v| v.to_s=~/[^0-9e.-]/ }
-        return "VARCHAR (255)"
+        return 'VARCHAR (255)'
       elsif @data.find {|v| v.to_s=~/\./}
-        return "DOUBLE"
+        return 'DOUBLE'
       else
-        return "INTEGER"
+        return 'INTEGER'
       end
     end
 
@@ -1209,7 +1209,7 @@ module Daru
       when :array   then Daru::Accessors::ArrayWrapper.new(source, self)
       when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source, self, nm_dtype)
       when :gsl then Daru::Accessors::GSLWrapper.new(source, self)
-      when :mdarray then raise NotImplementedError, "MDArray not yet supported."
+      when :mdarray then raise NotImplementedError, 'MDArray not yet supported.'
       else raise "Unknown dtype #{dtype}"
       end
 
