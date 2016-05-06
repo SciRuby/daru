@@ -788,10 +788,10 @@ module Daru
     end
 
     def detach_index
-      Daru::DataFrame.new({
+      Daru::DataFrame.new(
         index: @index.to_a,
         values: @data.to_a
-      })
+      )
     end
 
     # Non-destructive version of #replace_nils!
@@ -1145,13 +1145,13 @@ module Daru
     end
 
     def _dump(depth) # :nodoc:
-      Marshal.dump({
+      Marshal.dump(
         data:           @data.to_a,
         dtype:          @dtype,
         name:           @name,
         metadata:       @metadata,
         index:          @index,
-        missing_values: @missing_values})
+        missing_values: @missing_values)
     end
 
     def self._load(data) # :nodoc:

@@ -2000,12 +2000,12 @@ module Daru
     end
 
     def _dump depth
-      Marshal.dump({
+      Marshal.dump(
         data:  @data,
         index: @index.to_a,
         order: @vectors.to_a,
         name:  @name
-        })
+      )
     end
 
     def self._load data

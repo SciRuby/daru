@@ -9,3 +9,6 @@ AllCops:
     - 'vendor/**/*'
     - 'benchmarks/*'
   DisplayCopNames: true
+
+Style/ExtraSpacing:
+  AllowForAlignment: true

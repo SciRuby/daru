@@ -272,18 +272,6 @@ Style/EmptyLinesAroundClassBody:
     - 'lib/daru/core/merge.rb'
     - 'lib/daru/dataframe.rb'
 
-# Offense count: 15
-# Cop supports --auto-correct.
-# Configuration parameters: AllowForAlignment, ForceEqualSignAlignment.
-Style/ExtraSpacing:
-  AllowForAlignment: true
-  #Exclude:
-    #- 'lib/daru/dataframe.rb'
-    #- 'lib/daru/date_time/index.rb'
-    #- 'lib/daru/index.rb'
-    #- 'lib/daru/io/io.rb'
-    #- 'lib/daru/vector.rb'
-
 # Offense count: 13
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 # SupportedStyles: format, sprintf, percent
@@ -350,13 +338,6 @@ Style/IndentAssignment:
     - 'lib/daru/plotting/dataframe.rb'
     - 'lib/daru/plotting/vector.rb'
     - 'lib/daru/vector.rb'
-
-# Offense count: 5
-# Cop supports --auto-correct.
-# Configuration parameters: SupportedStyles, IndentationWidth.
-# SupportedStyles: special_inside_parentheses, consistent, align_braces
-Style/IndentHash:
-  Enabled: false
 
 # Offense count: 1
 # Cop supports --auto-correct.
