@@ -925,7 +925,8 @@ module Daru
       longest = [@name.to_s.size,
                  (@index.to_a.map(&:to_s).map(&:size).max || 0),
                  (@data    .map(&:to_s).map(&:size).max || 0),
-                 'nil'.size].max
+                 3 # 'nil'.size
+                ].max
 
       content   = ""
       longest   = spacing if longest > spacing

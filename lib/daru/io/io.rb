@@ -7,7 +7,7 @@ module Daru
             nil
           else
             if c.is_a? String and c.is_number?
-              c =~ /^\d+$/ ? c.to_i : c.gsub(",",".").to_f
+              c =~ /^\d+$/ ? c.to_i : c.tr(",",".").to_f
             else
               c
             end
@@ -112,7 +112,7 @@ module Daru
 
         dataframe.each_row do |row|
           if options[:convert_comma]
-            writer << row.map { |v| v.to_s.gsub('.', ',') }
+            writer << row.map { |v| v.to_s.tr('.', ',') }
           else
             writer << row.to_a
           end

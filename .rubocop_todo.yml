@@ -11,24 +11,6 @@ Lint/AmbiguousOperator:
   Exclude:
     - 'lib/daru/dataframe.rb'
 
-# Offense count: 1
-# Configuration parameters: AllowSafeAssignment.
-Lint/AssignmentInCondition:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: AlignWith, SupportedStyles, AutoCorrect.
-# SupportedStyles: start_of_line, def
-Lint/DefEndAlignment:
-  Enabled: false
-
-# Offense count: 1
-Lint/ParenthesesAsGroupedExpression:
-  Exclude:
-    - 'lib/daru/maths/statistics/vector.rb'
-
 # Offense count: 4
 Lint/ShadowingOuterLocalVariable:
   Exclude:
@@ -77,11 +59,6 @@ Lint/UselessAssignment:
     - 'lib/daru/index.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 1
-Lint/Void:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-
 # Offense count: 66
 Metrics/AbcSize:
   Max: 110
@@ -119,11 +96,6 @@ Metrics/ModuleLength:
 Metrics/PerceivedComplexity:
   Max: 28
 
-# Offense count: 1
-Performance/FixedSize:
-  Exclude:
-    - 'lib/daru/vector.rb'
-
 # Offense count: 10
 # Cop supports --auto-correct.
 Performance/RedundantBlockCall:
@@ -139,14 +111,6 @@ Performance/RedundantMatch:
   Exclude:
     - 'lib/daru/date_time/index.rb'
     - 'lib/daru/vector.rb'
-
-# Offense count: 4
-# Cop supports --auto-correct.
-Performance/StringReplacement:
-  Exclude:
-    - 'lib/daru.rb'
-    - 'lib/daru/date_time/index.rb'
-    - 'lib/daru/io/io.rb'
 
 # Offense count: 2
 # Cop supports --auto-correct.

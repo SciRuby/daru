@@ -38,7 +38,7 @@ module Daru
     attr_accessor :lazy_update
 
     def create_has_library(library)
-      lib_underscore = library.to_s.gsub(/-/, '_')
+      lib_underscore = library.to_s.tr('-', '_')
       define_singleton_method("has_#{lib_underscore}?") do
         cv = "@@#{lib_underscore}"
         unless class_variable_defined? cv

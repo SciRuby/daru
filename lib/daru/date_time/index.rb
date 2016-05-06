@@ -132,7 +132,7 @@ module Daru
         when :month
           DateTime.new(
             date_string.match(/\d\d\d\d/).to_s.to_i,
-            date_string.match(/\-\d?\d/).to_s.gsub("-",'').to_i)
+            date_string.match(/\-\d?\d/).to_s.delete("-").to_i)
         else
           DateTime.parse date_string
         end

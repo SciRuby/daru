@@ -45,12 +45,13 @@ module Daru
           methods ||= [:count, :mean, :std, :min, :max]
           description = methods.map { |m| self.send(m) }
           Daru::Vector.new(description, index: methods, name: :statistics)
-	end
+        end
 
         def median_absolute_deviation
           m = median
           recode {|val| (val - m).abs }.median
         end
+
         alias :mad :median_absolute_deviation
 
         def standard_error
@@ -220,7 +221,7 @@ module Daru
           else
             m ||= mean
             th  = @data.inject(0) { |memo, val| memo + ((val - m)**3) }
-            th.quo ((@size - @missing_positions.size) * (standard_deviation_sample(m)**3))
+            th.quo((@size - @missing_positions.size) * (standard_deviation_sample(m)**3))
           end
         end
 

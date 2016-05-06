@@ -1897,7 +1897,7 @@ module Daru
       html = "<table>" +
         "<tr>" +
           "<th colspan=\"#{@vectors.size+1}\">" +
-            "Daru::DataFrame:#{self.object_id} " + " rows: #{nrows} " + " cols: #{ncols}"
+            "Daru::DataFrame:#{self.object_id} " + " rows: #{nrows} " + " cols: #{ncols}" +
           "</th>" +
         "</tr>"
       html +='<tr><th></th>'
@@ -2085,7 +2085,7 @@ module Daru
     end
 
     def method_missing(name, *args, &block)
-      if md = name.match(/(.+)\=/)
+      if (md = name.match(/(.+)\=/))
         insert_or_modify_vector name[/(.+)\=/].delete("=").to_sym, args[0]
       elsif self.has_vector? name
         self[name]
