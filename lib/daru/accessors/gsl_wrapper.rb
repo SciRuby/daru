@@ -12,13 +12,13 @@ module Daru
       end
 
       def sample_with_replacement(sample=1)
-        r = GSL::Rng.alloc(GSL::Rng::MT19937,rand(10000))
+        r = GSL::Rng.alloc(GSL::Rng::MT19937,rand(10_000))
         Daru::Vector.new(r.sample(@data, sample).to_a, dtype: :gsl, 
           index: @context.index, name: @context.name)
       end
       
       def sample_without_replacement(sample=1)
-        r = GSL::Rng.alloc(GSL::Rng::MT19937,rand(10000))
+        r = GSL::Rng.alloc(GSL::Rng::MT19937,rand(10_000))
         r.choose(@data, sample).to_a
       end
 
