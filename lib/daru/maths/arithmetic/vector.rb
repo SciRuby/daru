@@ -71,13 +71,8 @@ module Daru
             this = self.index.include?(idx) ? self[idx] : nil
             that = other.index.include?(idx) ? other[idx] : nil
 
-            if this and that
-              elements << this.send(operation ,that)
-              common_idxs << idx
-            else
-              elements << nil
-              common_idxs << idx
-            end
+            elements << (this && that ? this.send(operation, that) : nil)
+            common_idxs << idx
           end
 
           Daru::Vector.new(elements, name: @name, index: common_idxs)

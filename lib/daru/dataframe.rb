@@ -2103,36 +2103,24 @@ module Daru
     def build_array_from_blocks vector_order, opts, blocks, r1, r2
       # Create an array to be used for comparison of two rows in sorting
       vector_order.map.each_with_index do |v, i|
-        if opts[:ascending][i]
-          value = @data[@vectors[v]].data[r1]
-          if opts[:by][v] && !opts[:handle_nils][i]
-            # Block given and nils handled manually
-            value = opts[:by][v].call value
+        value = if opts[:ascending][i]
+                  @data[@vectors[v]].data[r1]
+                else
+                  @data[@vectors[v]].data[r2]
+                end
 
-          elsif opts[:by][v] && opts[:handle_nils][i]
-            # Block given and nils handled automatically
-            value = opts[:by][v].call value rescue nil
-            blocks[v].call value
+        if opts[:by][v] && !opts[:handle_nils][i]
+          # Block given and nils handled manually
+          value = opts[:by][v].call value
 
-          else
-            # Block not given and nils handled automatically
-            blocks[v].call value
-          end
+        elsif opts[:by][v] && opts[:handle_nils][i]
+          # Block given and nils handled automatically
+          value = opts[:by][v].call value rescue nil
+          blocks[v].call value
+
         else
-          value = @data[@vectors[v]].data[r2]
-          if opts[:by][v] && !opts[:handle_nils][i]
-            # Block given and nils handled manually
-            value = opts[:by][v].call value
-
-          elsif opts[:by][v] && opts[:handle_nils][i]
-            # Block given and nils handled automatically
-            value = opts[:by][v].call value rescue nil
-            blocks[v].call value
-
-          else
-            # Block not given and nils handled automatically
-            blocks[v].call value
-          end
+          # Block not given and nils handled automatically
+          blocks[v].call value
         end
       end
     end

@@ -210,19 +210,6 @@ Style/GuardClause:
     - 'lib/daru/vector.rb'
     - 'lib/daru/core/merge.rb'
 
-# Offense count: 20
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles, UseHashRocketsWithSymbolValues.
-# SupportedStyles: ruby19, ruby19_no_mixed_keys, hash_rockets
-#Style/HashSyntax:
-  #Enabled: false
-
-# Offense count: 4
-Style/IdenticalConditionalBranches:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/maths/arithmetic/vector.rb'
-
 # Offense count: 3
 Style/IfInsideElse:
   Exclude:
