@@ -16,14 +16,6 @@ Lint/ShadowingOuterLocalVariable:
   Exclude:
     - 'lib/daru/dataframe.rb'
 
-# Offense count: 3
-# Cop supports --auto-correct.
-Lint/StringConversionInInterpolation:
-  Exclude:
-    - 'lib/daru/maths/statistics/vector.rb'
-    - 'lib/daru/plotting/dataframe.rb'
-    - 'lib/daru/vector.rb'
-
 # Offense count: 7
 # Cop supports --auto-correct.
 # Configuration parameters: IgnoreEmptyBlocks.

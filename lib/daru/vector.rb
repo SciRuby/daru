@@ -901,7 +901,7 @@ module Daru
           end
         end
 
-        s.text "median: #{median.to_s}" if @type==:numeric or @type==:numeric
+        s.text "median: #{median}" if @type==:numeric or @type==:numeric
         if @type==:numeric
           s.text 'mean: %0.4f' % mean
           if sd
