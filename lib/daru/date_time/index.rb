@@ -51,13 +51,19 @@ module Daru
       end
 
       def start_date start
-        start.is_a?(String) ? date_time_from(
-          start, determine_date_precision_of(start)) : start
+        if start.is_a?(String)
+          date_time_from(start, determine_date_precision_of(start))
+        else
+          start
+        end
       end
 
       def end_date en
-        en.is_a?(String) ? date_time_from(
-          en, determine_date_precision_of(en)) : en
+        if en.is_a?(String)
+          date_time_from(en, determine_date_precision_of(en))
+        else
+          en
+        end
       end
 
       def begin_from_offset? offset, start
@@ -115,8 +121,11 @@ module Daru
 
       def find_index_of_date data, date_time
         searched = data.bsearch { |d| d[0] >= date_time }
-        (!searched.nil? and searched[0] == date_time) ? searched[1] :
+        if !searched.nil? && searched[0] == date_time
+          searched[1]
+        else
           raise(ArgumentError, "Cannot find #{date_time}")
+        end
       end
 
       def find_date_string_bounds date_string
@@ -394,10 +403,19 @@ module Daru
       elsif first.is_a?(Fixnum) and last.is_a?(Fixnum)
         DateTimeIndex.new(self.to_a[first..last], freq: @offset)
       else
-        first_dt = first.is_a?(String) ?
-          helper.find_date_string_bounds(first)[0] : first
-        last_dt  = last.is_a?(String) ?
-          helper.find_date_string_bounds(last)[1]  : last
+        first_dt =
+          if first.is_a?(String)
+            helper.find_date_string_bounds(first)[0]
+          else
+            first
+          end
+
+        last_dt =
+          if last.is_a?(String)
+            helper.find_date_string_bounds(last)[1]
+          else
+            last
+          end
 
         start    = @data.bsearch { |d| d[0] >= first_dt }
         after_en = @data.bsearch { |d| d[0] > last_dt }

@@ -2110,8 +2110,12 @@ module Daru
       universal_block_ascending = lambda { |a| [(a.nil?)? 0:1, a] }
       universal_block_decending = lambda { |a| [(a.nil?)? 1:0, a] }
       vector_order.each_with_index do |vector, i|
-        blocks[vector] = ascending[i] ? universal_block_ascending
-          : universal_block_decending
+        blocks[vector] =
+          if ascending[i]
+            universal_block_ascending
+          else
+            universal_block_decending
+          end
       end
 
       blocks
@@ -2275,8 +2279,12 @@ module Daru
       v = nil
 
       if @index.empty?
-        v = vector.is_a?(Daru::Vector) ? vector :
-                            Daru::Vector.new(vector.to_a, name: set_name(name))
+        v = if vector.is_a?(Daru::Vector)
+              vector
+            else
+              Daru::Vector.new(vector.to_a, name: set_name(name))
+            end
+
         @index = v.index
         assign_or_add_vector name, v
         set_size

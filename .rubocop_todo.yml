@@ -70,7 +70,7 @@ Metrics/BlockNesting:
 # Offense count: 6
 # Configuration parameters: CountComments.
 Metrics/ClassLength:
-  Max: 1386
+  Max: 1400
 
 # Offense count: 26
 Metrics/CyclomaticComplexity:
@@ -359,12 +359,6 @@ Style/LambdaCall:
 # SupportedStyles: require_parentheses, require_no_parentheses, require_no_parentheses_except_multiline
 Style/MethodDefParentheses:
   Enabled: false
-
-# Offense count: 7
-Style/MultilineTernaryOperator:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/date_time/index.rb'
 
 # Offense count: 6
 # Cop supports --auto-correct.
