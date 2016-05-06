@@ -562,9 +562,9 @@ Style/TrailingWhitespace:
 
 # Offense count: 2
 # Cop supports --auto-correct.
-Style/WhileUntilDo:
-  Exclude:
-    - 'lib/daru/core/merge.rb'
+#Style/WhileUntilDo:
+  #Exclude:
+    #- 'lib/daru/core/merge.rb'
 
 # Offense count: 4
 # Cop supports --auto-correct.

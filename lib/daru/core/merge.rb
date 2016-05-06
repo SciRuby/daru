@@ -118,7 +118,7 @@ module Daru
         idx2 = 0
 
         merged = []
-        while idx1 < @df1.size || idx2 < @df2.size do
+        while idx1 < @df1.size || idx2 < @df2.size
 
           key1 = df1_array[idx1][0] if idx1 < @df1.size
           key2 = df2_array[idx2][0] if idx2 < @df2.size
@@ -126,7 +126,7 @@ module Daru
           if key1 == key2 && idx1 < @df1.size && idx2 < @df2.size
             idx2_start = idx2
 
-            while (idx2 < @df2.size) && (df1_array[idx1][0] == df2_array[idx2][0]) do
+            while (idx2 < @df2.size) && (df1_array[idx1][0] == df2_array[idx2][0])
               add_merge_row_to_hash([df1_array[idx1], df2_array[idx2]], joined_hash)
               idx2 += 1
             end
