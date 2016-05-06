@@ -1,7 +1,6 @@
 module Daru
   module Core
     class GroupBy
-
       attr_reader :groups
 
       # Iterate over each group created by group_by. A DataFrame is yielded in
@@ -205,7 +204,6 @@ module Daru
           rows, index: new_index, order: @context.vectors)
       end
 
-
       # Iteratively applies a function to the values in a group and accumulates the result.
       # @param init (nil) The initial value of the accumulator.
       # @param block [Proc] A proc or lambda that accepts two arguments.  The first argument
@@ -243,7 +241,6 @@ module Daru
 
         Daru::Vector.new(result_hash.values, index: index)
       end
-
 
       private
 

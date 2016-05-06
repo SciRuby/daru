@@ -201,27 +201,6 @@ Style/EmptyElse:
     - 'lib/daru/maths/statistics/vector.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 15
-# Cop supports --auto-correct.
-Style/EmptyLines:
-  Exclude:
-    - 'lib/daru/core/group_by.rb'
-    - 'lib/daru/core/merge.rb'
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/plotting/dataframe.rb'
-    - 'lib/daru/vector.rb'
-
-# Offense count: 4
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: empty_lines, no_empty_lines
-Style/EmptyLinesAroundClassBody:
-  Exclude:
-    - 'lib/daru/accessors/mdarray_wrapper.rb'
-    - 'lib/daru/core/group_by.rb'
-    - 'lib/daru/core/merge.rb'
-    - 'lib/daru/dataframe.rb'
-
 # Offense count: 13
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 # SupportedStyles: format, sprintf, percent

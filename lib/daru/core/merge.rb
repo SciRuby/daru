@@ -75,10 +75,7 @@ module Daru
       end
     end
 
-
-
     class MergeFrame
-
       def initialize(df1, df2, on: nil)
         @df1 = df1
         @df2 = df2
@@ -146,10 +143,7 @@ module Daru
         Daru::DataFrame.new(joined_hash, order: joined_hash.keys)
       end
 
-
-
       private
-
 
       def joined_hash
         return @joined_hash if @joined_hash
@@ -202,7 +196,6 @@ module Daru
         end
       end
     end
-
 
     # Private module containing methods for join, merge, concat operations on
     # dataframes and vectors.

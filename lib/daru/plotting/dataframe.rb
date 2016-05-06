@@ -76,7 +76,6 @@ module Daru
         total      = x_vecs.size
         types = types.size < total ? types*total : types
 
-
         (0...total).each do |i|
           diagrams << plot.add_with_df(
             nyaplot_df,

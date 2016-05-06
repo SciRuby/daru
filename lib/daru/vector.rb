@@ -430,7 +430,6 @@ module Daru
     end
     alias :flawed? :has_missing_data?
 
-
     # Append an element to the vector by specifying the element and index
     def concat element, index
       raise IndexError, 'Expected new unique index' if @index.include? index

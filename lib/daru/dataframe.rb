@@ -6,7 +6,6 @@ require 'daru/io/io.rb'
 
 module Daru
   class DataFrame
-
     include Daru::Maths::Arithmetic::DataFrame
     include Daru::Maths::Statistics::DataFrame
     include Daru::Plotting::DataFrame if Daru.has_nyaplot?
@@ -842,7 +841,6 @@ module Daru
       Matrix.rows(rows)
     end
 
-
     # Delete a vector
     def delete_vector vector
       if @vectors.include? vector
@@ -1344,7 +1342,6 @@ module Daru
       self
     end
 
-
     # Renames the vectors
     #
     # == Arguments
@@ -1366,7 +1363,6 @@ module Daru
       new_names = vectors.to_a.map { |v| name_map[v] ? name_map[v] : v }
       self.vectors = Daru::Index.new new_names
     end
-
 
     # Return the indexes of all the numeric vectors. Will include vectors with nils
     # alongwith numbers.
@@ -1692,7 +1688,6 @@ module Daru
       Daru::Core::Merge.join(self, other_df, opts)
     end
 
-
     # Creates a new dataset for one to many relations
     # on a dataset, based on pattern of field names.
     #
@@ -1977,7 +1972,6 @@ module Daru
     def write_sql dbh, table
       Daru::IO.dataframe_write_sql self, dbh, table
     end
-
 
     # Use marshalling to save dataframe to a file.
     def save filename
