@@ -19,7 +19,7 @@ module Daru
       end
 
       attr_reader :size, :data, :nm_dtype
-      
+
       def initialize vector, context, nm_dtype=:int32
         @size = vector.size
         @data = NMatrix.new [@size*2], vector.to_a, dtype: nm_dtype
@@ -32,41 +32,41 @@ module Daru
         return @data[*index] if index[0] < @size
         nil
       end
- 
+
       def []= index, value
-        raise ArgumentError, "Index #{index} does not exist" if 
+        raise ArgumentError, "Index #{index} does not exist" if
           index > @size and index < @data.size
         resize     if index >= @data.size
         @size += 1 if index == @size
-        
+
         @data = @data.cast(dtype: :object) if value.nil?
         @data[index] = value
-      end 
- 
+      end
+
       def == other
         @data[0...@size] == other[0...@size] and @size == other.size
       end
- 
+
       def delete_at index
         arry = @data.to_a
         arry.delete_at index
         @data = NMatrix.new [(2*@size-1)], arry, dtype: @nm_dtype
         @size -= 1
       end
- 
+
       def index key
         @data.to_a.index key
       end
- 
+
       def << element
         resize if @size >= @data.size
         self[@size] = element
       end
- 
+
       def to_a
         @data[0...@size].to_a
       end
- 
+
       def dup
         NMatrixWrapper.new @data[0...@size].to_a, @context, @nm_dtype
       end

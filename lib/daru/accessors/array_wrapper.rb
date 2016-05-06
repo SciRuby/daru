@@ -6,7 +6,7 @@ module Daru
       extend Forwardable
 
       def_delegators :@data, :slice!
-      
+
       def each(&block)
         @data.each(&block)
         self

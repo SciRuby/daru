@@ -1,20 +1,20 @@
 module Daru
   module Plotting
     module DataFrame
-      # Plots a DataFrame with Nyaplot on IRuby using the given options. Yields 
+      # Plots a DataFrame with Nyaplot on IRuby using the given options. Yields
       # the corresponding Nyaplot::Plot object and the Nyaplot::Diagram object
       # to the block, if it is specified. See the nyaplot docs for info on how to
       # further use these objects.
-      # 
-      # Detailed instructions on use of the plotting API can be found in the 
+      #
+      # Detailed instructions on use of the plotting API can be found in the
       # notebooks whose links you can find in the README.
-      # 
+      #
       # == Options
-      # 
+      #
       # * +:type+  - Type of plot. Can be :scatter, :bar, :histogram, :line or :box.
       # * +:x+ - Vector to be used for X co-ordinates.
       # * +:y+ - Vector to be used for Y co-ordinates.
-      # 
+      #
       # == Usage
       #   # Simple bar chart
       #   df = Daru::DataFrame.new({a:['A', 'B', 'C', 'D', 'E'], b:[10,20,30,40,50]})
@@ -28,7 +28,7 @@ module Daru
         types = extract_option :type, options
 
         diagram =
-        case 
+        case
         when !([:scatter, :bar, :line, :histogram] & types).empty?
           if single_diagram? options
             add_single_diagram plot, options
@@ -56,8 +56,8 @@ module Daru
 
       def add_single_diagram plot, options
         args = [
-          to_nyaplotdf, 
-          options[:type], 
+          to_nyaplotdf,
+          options[:type],
           options[:x]
         ]
 

@@ -5,7 +5,7 @@ module Daru
         Daru::Vector.new @data.collect { |x| (x.to_f - m).quo(sd) }, dtype: :gsl,
           index: @context.index, name: @context.name
       end
-      
+
       def vector_centered_compute(m)
         Daru::Vector.new @data.collect {|x| (x.to_f - m)}, dtype: :gsl,
           index: @context.index, name: @context.name
@@ -13,10 +13,10 @@ module Daru
 
       def sample_with_replacement(sample=1)
         r = GSL::Rng.alloc(GSL::Rng::MT19937,rand(10_000))
-        Daru::Vector.new(r.sample(@data, sample).to_a, dtype: :gsl, 
+        Daru::Vector.new(r.sample(@data, sample).to_a, dtype: :gsl,
           index: @context.index, name: @context.name)
       end
-      
+
       def sample_without_replacement(sample=1)
         r = GSL::Rng.alloc(GSL::Rng::MT19937,rand(10_000))
         r.choose(@data, sample).to_a
@@ -25,11 +25,11 @@ module Daru
       def median
         GSL::Stats.median_from_sorted_data(@data.sort)
       end
-      
+
       def variance_sample(m)
         @data.variance_m
       end
-      
+
       def standard_deviation_sample(m)
         @data.sd(m)
       end
@@ -76,7 +76,7 @@ module Daru
 
       def each(&block)
         @data.each(&block)
-        self  
+        self
       end
 
       def map!(&block)
