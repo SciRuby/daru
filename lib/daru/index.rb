@@ -90,7 +90,7 @@ module Daru
         end
       else
         v = @relation_hash[loc]
-        if !v
+        unless v
           return loc if loc.is_a? Numeric and loc < size
           raise IndexError, "Specified index #{loc.inspect} does not exist"
         end

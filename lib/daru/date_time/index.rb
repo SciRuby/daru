@@ -554,7 +554,7 @@ module Daru
     # Check if a date exists in the index. Will be inferred from string in case
     # you pass a string. Recommened specifying the full date as a DateTime object.
     def include? date_time
-      return false if !(date_time.is_a?(String) or date_time.is_a?(DateTime))
+      return false unless date_time.is_a?(String) || date_time.is_a?(DateTime)
       helper = DateTimeIndexHelper
       if date_time.is_a?(String)
         date_precision = helper.determine_date_precision_of date_time

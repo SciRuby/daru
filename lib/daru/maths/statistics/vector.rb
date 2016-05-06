@@ -390,7 +390,7 @@ module Daru
             size = valid.size
             while out.size < sample
               value = rand(size)
-              out.push(value) if !out.include?(value)
+              out.push(value) unless out.include?(value)
             end
 
             out.collect{|i| valid[i]}

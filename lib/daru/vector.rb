@@ -545,7 +545,7 @@ module Daru
       block = lambda { |a,b|
         av, ai = a
         bv, bi = b
-        return av <=> bv if !(av.nil? || bv.nil?)
+        return av <=> bv unless av.nil? || bv.nil?
 
         if av.nil? && bv.nil?
           ai <=> bi
@@ -645,9 +645,7 @@ module Daru
     def verify &block
       h = {}
       (0...size).each do |i|
-        if !(yield @data[i])
-          h[i] = @data[i]
-        end
+        h[i] = @data[i] unless yield(@data[i])
       end
 
       h

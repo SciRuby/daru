@@ -360,17 +360,6 @@ Style/LambdaCall:
 Style/MethodDefParentheses:
   Enabled: false
 
-# Offense count: 11
-# Cop supports --auto-correct.
-Style/NegatedIf:
-  Exclude:
-    - 'lib/daru/core/merge.rb'
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/date_time/index.rb'
-    - 'lib/daru/index.rb'
-    - 'lib/daru/maths/statistics/vector.rb'
-    - 'lib/daru/vector.rb'
-
 # Offense count: 1
 Style/NestedTernaryOperator:
   Exclude:

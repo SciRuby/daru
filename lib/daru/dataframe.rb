@@ -967,7 +967,7 @@ module Daru
       each(:row) do |row|
         i += 1
         tests.each do |test|
-          if !test[2].call(row)
+          unless test[2].call(row)
             values = ""
             if test[1].size>0
               values = " (" + test[1].collect{ |k| "#{k}=#{row[k]}" }.join(", ") + ")"
@@ -1749,7 +1749,7 @@ module Daru
 
       @vectors.each do |f|
         if f =~ re
-          if !vars.include? $1
+          unless vars.include? $1
             vars.push($1)
             h[$1] = Daru::Vector.new([])
           end
@@ -1770,7 +1770,7 @@ module Daru
           vars.each do |v|
             data = row[pattern.gsub("%v",v.to_s).gsub("%n",n.to_s)]
             row_out[v] = data
-            any_data = true if !data.nil?
+            any_data = true unless data.nil?
           end
 
           if any_data
@@ -2338,7 +2338,7 @@ module Daru
           @data[@vectors[p]] = v
         end
       else
-        @vectors = @vectors | [name] if !@vectors.include?(name)
+        @vectors = @vectors | [name] unless @vectors.include?(name)
         @data[@vectors[name]] = v
       end
     end
