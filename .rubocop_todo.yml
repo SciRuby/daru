@@ -360,14 +360,6 @@ Style/LambdaCall:
 Style/MethodDefParentheses:
   Enabled: false
 
-# Offense count: 6
-# Cop supports --auto-correct.
-Style/MutableConstant:
-  Exclude:
-    - 'lib/daru.rb'
-    - 'lib/daru/date_time/index.rb'
-    - 'lib/daru/version.rb'
-
 # Offense count: 11
 # Cop supports --auto-correct.
 Style/NegatedIf:

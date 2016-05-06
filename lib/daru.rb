@@ -11,7 +11,7 @@ module Daru
     'THU' => 4,
     'FRI' => 5,
     'SAT' => 6
-  }
+  }.freeze
 
   MONTH_DAYS = {
     1 => 31,
@@ -26,11 +26,12 @@ module Daru
     10 => 31,
     11 => 30,
     12 => 31
-  }
+  }.freeze
 
   @lazy_update = false
 
-  SPLIT_TOKEN = ','
+  SPLIT_TOKEN = ','.freeze
+
   class << self
     # A variable which will set whether Vector metadata is updated immediately or lazily.
     # Call the #update method every time a values are set or removed in order to update

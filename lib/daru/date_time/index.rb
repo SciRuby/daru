@@ -15,14 +15,14 @@ module Daru
         'YEAR' => Daru::Offsets::Year,
         'YB' => Daru::Offsets::YearBegin,
         'YE' => Daru::Offsets::YearEnd
-      }
+      }.freeze
 
       TIME_INTERVALS = {
         Rational(1,1)     => Daru::Offsets::Day,
         Rational(1,24)    => Daru::Offsets::Hour,
         Rational(1,1440)  => Daru::Offsets::Minute,
         Rational(1,86400) => Daru::Offsets::Second
-      }
+      }.freeze
 
       # Generates a Daru::DateOffset object for generic offsets or one of the
       # specialized classed within Daru::Offsets depending on the 'frequency'
