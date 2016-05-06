@@ -11,10 +11,10 @@ module Daru
             end
           }
 
-          if matched
-            hash[matcher] = hash[matched]
-            hash.delete matched
-          end
+          return unless matched
+
+          hash[matcher] = hash[matched]
+          hash.delete matched
         end
 
         def resolve_duplicates df_hash1, df_hash2, on

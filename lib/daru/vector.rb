@@ -817,15 +817,8 @@ module Daru
     # If dtype != gsl, will convert data to GSL::Vector with to_a. Otherwise returns
     # the stored GSL::Vector object.
     def to_gsl
-      if Daru.has_gsl?
-        if dtype == :gsl
-          return @data.data
-        else
-          GSL::Vector.alloc only_valid(:array).to_a
-        end
-      else
-        raise NoMethodError, 'Install gsl-nmatrix for access to this functionality.'
-      end
+      raise NoMethodError, 'Install gsl-nmatrix for access to this functionality.' unless Daru.has_gsl?
+      dtype == :gsl ? @data.data : GSL::Vector.alloc(only_valid(:array).to_a)
     end
 
     # Convert to hash (explicit). Hash keys are indexes and values are the correspoding elements

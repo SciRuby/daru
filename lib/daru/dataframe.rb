@@ -112,11 +112,12 @@ module Daru
       # Create DataFrame by specifying rows as an Array of Arrays or Array of
       # Daru::Vector objects.
       def rows source, opts={}
-        df = nil
-        if source.all? { |v| v.size == source[0].size }
-          first = source[0]
-          index = []
-          opts[:order] ||=
+        raise SizeError, 'All vectors must have same length' \
+          unless source.all? { |v| v.size == source[0].size }
+
+        first = source[0]
+        index = []
+        opts[:order] ||=
           if first.is_a?(Daru::Vector) # assume that all are Vectors
             source.each { |vec| index << vec.name }
             first.index.to_a
@@ -124,19 +125,15 @@ module Daru
             Array.new(first.size, &:to_s)
           end
 
-          if source.all? { |s| s.is_a?(Array) }
-            df = Daru::DataFrame.new(source.transpose, opts)
-          else # array of Daru::Vectors
-            df = Daru::DataFrame.new({}, opts)
+        if source.all? { |s| s.is_a?(Array) }
+          Daru::DataFrame.new(source.transpose, opts)
+        else # array of Daru::Vectors
+          Daru::DataFrame.new({}, opts).tap{|df|
             source.each_with_index do |row, idx|
               df[(index[idx] || idx), :row] = row
             end
-          end
-        else
-          raise SizeError, 'All vectors must have same length'
+          }
         end
-
-        df
       end
 
       # Generates a new dataset, using three vectors
@@ -843,12 +840,10 @@ module Daru
 
     # Delete a vector
     def delete_vector vector
-      if @vectors.include? vector
-        @data.delete_at @vectors[vector]
-        @vectors = Daru::Index.new @vectors.to_a - [vector]
-      else
-        raise IndexError, "Vector #{vector} does not exist."
-      end
+      raise IndexError, "Vector #{vector} does not exist." unless @vectors.include?(vector)
+
+      @data.delete_at @vectors[vector]
+      @vectors = Daru::Index.new @vectors.to_a - [vector]
 
       self
     end
@@ -864,13 +859,10 @@ module Daru
     def delete_row index
       idx = named_index_for index
 
-      if @index.include? idx
-        @index = Daru::Index.new(@index.to_a - [idx])
-        each_vector do |vector|
-          vector.delete_at idx
-        end
-      else
-        raise IndexError, "Index #{index} does not exist."
+      raise IndexError, "Index #{index} does not exist." unless @index.include? idx
+      @index = Daru::Index.new(@index.to_a - [idx])
+      each_vector do |vector|
+        vector.delete_at idx
       end
 
       set_size
@@ -2160,29 +2152,25 @@ module Daru
       if @vectors.is_a?(MultiIndex)
         pos = @vectors[names]
 
-        if pos.is_a?(Integer)
-          return @data[pos]
-        else # MultiIndex
-          new_vectors = pos.map do |tuple|
-            @data[@vectors[tuple]]
-          end
+        return @data[pos] if pos.is_a?(Integer)
 
-          if !location.is_a?(Range) && names.size < @vectors.width
-            pos = pos.drop_left_level names.size
-          end
-
-          Daru::DataFrame.new(
-            new_vectors, index: @index, order: pos)
+        # MultiIndex
+        new_vectors = pos.map do |tuple|
+          @data[@vectors[tuple]]
         end
+
+        if !location.is_a?(Range) && names.size < @vectors.width
+          pos = pos.drop_left_level names.size
+        end
+
+        Daru::DataFrame.new(new_vectors, index: @index, order: pos)
       else
         unless names[1]
           pos = @vectors[location]
 
-          if pos.is_a?(Numeric)
-            return @data[pos]
-          else
-            names = pos
-          end
+          return @data[pos] if pos.is_a?(Numeric)
+
+          names = pos
         end
 
         new_vectors = {}
@@ -2203,16 +2191,15 @@ module Daru
         pos = @index[names]
         if pos.is_a?(Integer)
           return Daru::Vector.new(populate_row_for(pos), index: @vectors, name: pos)
-        else
-          new_rows = pos.map { |tuple| populate_row_for(tuple) }
-
-          if !location.is_a?(Range) && names.size < @index.width
-            pos = pos.drop_left_level names.size
-          end
-
-          Daru::DataFrame.rows(
-            new_rows, order: @vectors, name: @name, index: pos)
         end
+
+        new_rows = pos.map { |tuple| populate_row_for(tuple) }
+
+        if !location.is_a?(Range) && names.size < @index.width
+          pos = pos.drop_left_level names.size
+        end
+
+        Daru::DataFrame.rows(new_rows, order: @vectors, name: @name, index: pos)
       else
         if names[1].nil?
           names = @index[location]

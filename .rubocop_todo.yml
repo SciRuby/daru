@@ -167,12 +167,12 @@ Style/EmptyElse:
 
 # Offense count: 5
 # Configuration parameters: MinBodyLength.
-Style/GuardClause:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/date_time/index.rb'
-    - 'lib/daru/vector.rb'
-    - 'lib/daru/core/merge.rb'
+#Style/GuardClause:
+  #Exclude:
+    #- 'lib/daru/dataframe.rb'
+    #- 'lib/daru/date_time/index.rb'
+    #- 'lib/daru/vector.rb'
+    #- 'lib/daru/core/merge.rb'
 
 # Offense count: 1
 # Cop supports --auto-correct.

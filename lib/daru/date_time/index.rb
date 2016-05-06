@@ -121,11 +121,9 @@ module Daru
 
       def find_index_of_date data, date_time
         searched = data.bsearch { |d| d[0] >= date_time }
-        if !searched.nil? && searched[0] == date_time
-          searched[1]
-        else
-          raise(ArgumentError, "Cannot find #{date_time}")
-        end
+        raise(ArgumentError, "Cannot find #{date_time}") if searched.nil? || searched[0] != date_time
+
+        searched[1]
       end
 
       def find_date_string_bounds date_string
@@ -359,12 +357,10 @@ module Daru
     #   completely to retrieve.
     def [] *key
       helper = DateTimeIndexHelper
-      if key.size == 1
-        key = key[0]
-        return key if key.is_a?(Numeric)
-      else
-        return slice(*key)
-      end
+
+      return slice(*key) if key.size != 1
+      key = key[0]
+      return key if key.is_a?(Numeric)
 
       if key.is_a?(Range)
         first = key.first
@@ -481,14 +477,11 @@ module Daru
     def shift distance
       if distance.is_a?(Fixnum)
         raise IndexError, "Distance #{distance} cannot be negative" if distance < 0
-        if @offset
-          start = @data[0][0]
-          distance.times { start = @offset + start }
-          return DateTimeIndex.date_range(
-            start: start, periods: @periods, freq: @offset)
-        else
-          raise IndexError, 'To shift non-freq date time index pass an offset.'
-        end
+        raise IndexError, 'To shift non-freq date time index pass an offset.' unless @offset
+
+        start = @data[0][0]
+        distance.times { start = @offset + start }
+        DateTimeIndex.date_range(start: start, periods: @periods, freq: @offset)
       else # its a Daru::Offset/DateOffset
         DateTimeIndex.new(to_a.map { |e| distance + e }, freq: :infer)
       end
@@ -506,14 +499,11 @@ module Daru
     def lag distance
       if distance.is_a?(Fixnum)
         raise IndexError, "Distance #{distance} cannot be negative" if distance < 0
-        if @offset
-          start = @data[0][0]
-          distance.times { start = @offset - start }
-          return DateTimeIndex.date_range(
-            start: start, periods: @periods, freq: @offset)
-        else
-          raise IndexError, 'To lag non-freq date time index pass an offset.'
-        end
+        raise IndexError, 'To lag non-freq date time index pass an offset.' unless @offset
+
+        start = @data[0][0]
+        distance.times { start = @offset - start }
+        DateTimeIndex.date_range(start: start, periods: @periods, freq: @offset)
       else
         DateTimeIndex.new(to_a.map { |e| distance - e }, freq: :infer)
       end
