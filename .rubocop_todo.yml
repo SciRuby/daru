@@ -431,10 +431,10 @@ Style/SpaceInsideParens:
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyleForMultiline, SupportedStyles.
 # SupportedStyles: comma, consistent_comma, no_comma
-Style/TrailingCommaInLiteral:
-  Exclude:
-    - 'lib/daru/io/io.rb'
-    - 'lib/daru/vector.rb'
+#Style/TrailingCommaInLiteral:
+  #Exclude:
+    #- 'lib/daru/io/io.rb'
+    #- 'lib/daru/vector.rb'
 
 # Offense count: 186
 # Cop supports --auto-correct.

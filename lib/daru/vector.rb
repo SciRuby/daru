@@ -333,7 +333,7 @@ module Daru
       lt: :<,
       lteq: :<=,
       mt: :>,
-      mteq: :>=,
+      mteq: :>=
     }.each do |method, operator|
       define_method(method) do |other|
         mod = Daru::Core::Query
@@ -532,7 +532,7 @@ module Daru
     #   v.sort(ascending: false) { |a,b| a.length <=> b.length }
     def sort opts={}, &block
       opts = {
-        ascending: true,
+        ascending: true
       }.merge(opts)
 
       block = lambda { |a,b|

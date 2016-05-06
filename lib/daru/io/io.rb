@@ -21,7 +21,7 @@ module Daru
 
       def from_excel path, opts={}
         opts = {
-          worksheet_id: 0,
+          worksheet_id: 0
         }.merge opts
 
         worksheet_id = opts[:worksheet_id]
