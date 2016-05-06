@@ -547,9 +547,9 @@ module Daru
         if av.nil? && bv.nil?
           ai <=> bi
         elsif av.nil?
-          opts[:ascending]? -1:1
+          opts[:ascending] ? -1 : 1
         else
-          opts[:ascending]? 1:-1
+          opts[:ascending] ? 1 : -1
         end
       } unless block
 
@@ -691,7 +691,7 @@ module Daru
           end
         else
           factors.each do |f|
-            out[f].push(r.include?(f) ? 1:0)
+            out[f].push(r.include?(f) ? 1 : 0)
           end
         end
       end
