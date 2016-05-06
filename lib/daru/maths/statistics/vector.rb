@@ -536,7 +536,7 @@ module Daru
         def ema(n = 10, wilder = false)
           smoother = wilder ? 1.0 / n : 2.0 / (n + 1)
           # need to start everything from the first non-nil observation
-          start = @data.index { |i| i != nil }
+          start = @data.index { |i| !i.nil? }
           # first n - 1 observations are nil
           base = [nil] * (start + n - 1)
           # nth observation is just a moving average
@@ -570,7 +570,7 @@ module Daru
         def emv(n = 10, wilder = false)
           smoother = wilder ? 1.0 / n : 2.0 / (n + 1)
           # need to start everything from the first non-nil observation
-          start = @data.index { |i| i != nil }
+          start = @data.index { |i| !i.nil? }
           # first n - 1 observations are nil
           var_base = [nil] * (start + n - 1)
           mean_base = [nil] * (start + n - 1)

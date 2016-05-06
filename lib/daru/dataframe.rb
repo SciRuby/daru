@@ -2125,11 +2125,11 @@ module Daru
       vector_order.map.each_with_index do |v, i|
         if opts[:ascending][i]
           value = @data[@vectors[v]].data[r1]
-          if opts[:by][v] and not opts[:handle_nils][i]
+          if opts[:by][v] && !opts[:handle_nils][i]
             # Block given and nils handled manually
             value = opts[:by][v].call value
 
-          elsif opts[:by][v] and opts[:handle_nils][i]
+          elsif opts[:by][v] && opts[:handle_nils][i]
             # Block given and nils handled automatically
             value = opts[:by][v].call value rescue nil
             blocks[v].call value
@@ -2140,11 +2140,11 @@ module Daru
           end
         else
           value = @data[@vectors[v]].data[r2]
-          if opts[:by][v] and not opts[:handle_nils][i]
+          if opts[:by][v] && !opts[:handle_nils][i]
             # Block given and nils handled manually
             value = opts[:by][v].call value
 
-          elsif opts[:by][v] and opts[:handle_nils][i]
+          elsif opts[:by][v] && opts[:handle_nils][i]
             # Block given and nils handled automatically
             value = opts[:by][v].call value rescue nil
             blocks[v].call value
