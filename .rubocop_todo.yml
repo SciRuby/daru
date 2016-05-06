@@ -241,20 +241,6 @@ Style/DoubleNegation:
   Exclude:
     - 'lib/daru/dataframe.rb'
 
-# Offense count: 27
-#Style/EachWithObject:
-  #Exclude:
-    #- 'lib/daru/core/group_by.rb'
-    #- 'lib/daru/core/query.rb'
-    #- 'lib/daru/dataframe.rb'
-    #- 'lib/daru/date_time/index.rb'
-    #- 'lib/daru/index.rb'
-    #- 'lib/daru/io/io.rb'
-    #- 'lib/daru/maths/statistics/dataframe.rb'
-    #- 'lib/daru/maths/statistics/vector.rb'
-    #- 'lib/daru/monkeys.rb'
-    #- 'lib/daru/vector.rb'
-
 # Offense count: 3
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
@@ -275,12 +261,6 @@ Style/EmptyLines:
     - 'lib/daru/plotting/dataframe.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 1
-# Cop supports --auto-correct.
-Style/EmptyLinesAroundAccessModifier:
-  Exclude:
-    - 'lib/daru/maths/arithmetic/dataframe.rb'
-
 # Offense count: 4
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
@@ -292,22 +272,16 @@ Style/EmptyLinesAroundClassBody:
     - 'lib/daru/core/merge.rb'
     - 'lib/daru/dataframe.rb'
 
-# Offense count: 2
-# Cop supports --auto-correct.
-Style/EmptyLinesAroundMethodBody:
-  Exclude:
-    - 'lib/daru/core/merge.rb'
-
 # Offense count: 4
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 # SupportedStyles: empty_lines, no_empty_lines
-Style/EmptyLinesAroundModuleBody:
-  Exclude:
-    - 'lib/daru/accessors/mdarray_wrapper.rb'
-    - 'lib/daru/maths/arithmetic/dataframe.rb'
-    - 'lib/daru/plotting/dataframe.rb'
-    - 'lib/daru/plotting/vector.rb'
+#Style/EmptyLinesAroundModuleBody:
+  #Exclude:
+    #- 'lib/daru/accessors/mdarray_wrapper.rb'
+    #- 'lib/daru/maths/arithmetic/dataframe.rb'
+    #- 'lib/daru/plotting/dataframe.rb'
+    #- 'lib/daru/plotting/vector.rb'
 
 # Offense count: 15
 # Cop supports --auto-correct.

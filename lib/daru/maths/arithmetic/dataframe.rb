@@ -2,15 +2,14 @@ module Daru
   module Maths
     # Module encapsulating all aritmetic methods on DataFrame.
     module Arithmetic
-      module DataFrame 
-
+      module DataFrame
         # Add a scalar or another DataFrame
         def + other
           binary_operation :+, other
         end
 
         # Subtract a scalar or another DataFrame.
-        def - other 
+        def - other
           binary_operation :-, other
         end
 
@@ -19,7 +18,7 @@ module Daru
           binary_operation :*, other
         end
 
-        # Divide a scalar or another DataFrame. 
+        # Divide a scalar or another DataFrame.
         def / other
           binary_operation :/, other
         end
@@ -47,7 +46,8 @@ module Daru
         def round precision=0
           only_numerics(clone: false).recode { |v| v.round(precision) }
         end
-       private
+
+        private
 
         def binary_operation operation, other
           case other
@@ -70,12 +70,12 @@ module Daru
             if this and that
               hsh[vector_name] = this.send(operation, that)
             else
-              hsh[vector_name] = Daru::Vector.new([], index: all_indexes, 
+              hsh[vector_name] = Daru::Vector.new([], index: all_indexes,
                 name: vector_name)
             end
           end
 
-          Daru::DataFrame.new(hsh, index: all_indexes, name: @name, dtype: @dtype)          
+          Daru::DataFrame.new(hsh, index: all_indexes, name: @name, dtype: @dtype)
         end
 
         def scalar_binary_operation operation, other

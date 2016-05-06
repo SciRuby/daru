@@ -99,7 +99,6 @@ module Daru
           arr.map { |a| options[a] }
         end
       end
-
     end
   end
 end if Daru.has_nyaplot?

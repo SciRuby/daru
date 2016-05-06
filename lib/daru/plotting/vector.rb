@@ -1,7 +1,6 @@
 module Daru
   module Plotting
     module Vector
-
       # Plots a Vector with Nyaplot on IRuby using the given options. Yields the
       # plot object (Nyaplot::Plot) and the diagram object (Nyaplot::Diagram) 
       # to the block, which can be used for setting various options as per the 
