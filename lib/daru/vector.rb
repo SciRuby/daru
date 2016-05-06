@@ -928,11 +928,11 @@ module Daru
       formatter = "\n%#{longest}.#{longest}s %#{longest}.#{longest}s"
       content  += "\n#<#{self.class}:#{object_id} @name = #{name} @metadata = #{metadata} @size = #{size} >"
 
-      content += sprintf formatter, '', name
+      content += formatter % ['', name]
       @index.each_with_index do |index, num|
-        content += sprintf formatter, index.to_s, (self[*index] || 'nil').to_s
+        content += formatter % [index.to_s, (self[*index] || 'nil').to_s]
         if num > threshold
-          content += sprintf formatter, '...', '...'
+          content += formatter % ['...', '...']
           break
         end
       end

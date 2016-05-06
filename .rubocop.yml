@@ -12,3 +12,6 @@ AllCops:
 
 Style/ExtraSpacing:
   AllowForAlignment: true
+
+Style/FormatString:
+  EnforcedStyle: percent

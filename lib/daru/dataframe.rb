@@ -2031,18 +2031,18 @@ module Daru
       (@vectors.size + 1).times { formatter += "%#{longest}.#{longest}s " }
       content += "\n#<" + self.class.to_s + ':' + object_id.to_s + ' @name = ' +
                  name.to_s + ' @size = ' + @size.to_s + '>'
-      content += sprintf formatter, '' , *@vectors.map(&:to_s)
+      content += formatter % ['' , *@vectors.map(&:to_s)]
       row_num  = 1
 
       each_row_with_index do |row, index|
-        content += sprintf formatter, index.to_s, *row.to_h.values.map { |e| (e || 'nil').to_s }
+        content += formatter % [index.to_s, *row.to_h.values.map { |e| (e || 'nil').to_s }]
         row_num += 1
         next if row_num <= threshold
 
         dots = []
 
         (@vectors.size + 1).times { dots << '...' }
-        content += sprintf formatter, *dots
+        content += formatter % dots
         break
       end
       content += "\n"

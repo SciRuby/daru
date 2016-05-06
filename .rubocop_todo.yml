@@ -201,15 +201,6 @@ Style/EmptyElse:
     - 'lib/daru/maths/statistics/vector.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 13
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: format, sprintf, percent
-Style/FormatString:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/monkeys.rb'
-    - 'lib/daru/vector.rb'
-
 # Offense count: 5
 # Configuration parameters: MinBodyLength.
 Style/GuardClause:

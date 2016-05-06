@@ -16,7 +16,7 @@ class Array
     collect do |n|
       if counter.key?(n)
         counter[n] += 1
-        format('%s_%d', n, counter[n])
+        '%s_%d' % [n, counter[n]]
       else
         n
       end
