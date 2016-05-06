@@ -28,10 +28,10 @@ module Daru
     12 => 31
   }
 
+  @lazy_update = false
+
   SPLIT_TOKEN = ','
   class << self
-    @@lazy_update = false
-
     # A variable which will set whether Vector metadata is updated immediately or lazily.
     # Call the #update method every time a values are set or removed in order to update
     # metadata like positions of missing values.
