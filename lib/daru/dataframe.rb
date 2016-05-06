@@ -967,7 +967,7 @@ module Daru
         tests.each do |test|
           next if test[2].call(row)
           values = ''
-          if test[1].size>0
+          unless test[1].empty?
             values = ' (' + test[1].collect{ |k| "#{k}=#{row[k]}" }.join(', ') + ')'
           end
           vr.push("#{i} [#{row[id]}]: #{test[0]}#{values}")
@@ -1513,7 +1513,7 @@ module Daru
     #   #      5          1        nil
 
     def sort! vector_order, opts={}
-      raise ArgumentError, 'Required atleast one vector name' if vector_order.size < 1
+      raise ArgumentError, 'Required atleast one vector name' if vector_order.empty?
       opts = {
         ascending: true,
         handle_nils: false,
@@ -1847,7 +1847,7 @@ module Daru
       numerics_as_arrays = []
       each_vector do |vector|
         numerics_as_arrays << vector.to_a if(vector.type == :numeric and
-          vector.missing_positions.size == 0)
+          vector.missing_positions.empty?)
       end
 
       numerics_as_arrays.transpose.to_nm
@@ -2287,7 +2287,7 @@ module Daru
         set_size
 
         @data.map! do |v|
-          if v.size == 0
+          if v.empty?
             Daru::Vector.new([nil]*@size, name: set_name(name), metadata: v.metadata, index: @index)
           else
             v

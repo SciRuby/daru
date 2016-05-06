@@ -421,6 +421,10 @@ module Daru
       self[(@size - q)..(@size-1)]
     end
 
+    def empty?
+      @index.empty?
+    end
+
     # Reports whether missing data is present in the Vector.
     def has_missing_data?
       !missing_positions.empty?
