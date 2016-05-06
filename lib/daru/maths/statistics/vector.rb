@@ -122,7 +122,7 @@ module Daru
         # given, counts the number of non-nil elements in the Vector.
         def count value=false
           if block_given?
-            @data.inject(0){ |memo, val| memo += 1 if yield val; memo}
+            @data.select{ |val| yield(val) }.count
           elsif value
             val = frequencies[value]
             val.nil? ? 0 : val

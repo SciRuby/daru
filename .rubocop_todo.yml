@@ -417,14 +417,6 @@ Style/RescueModifier:
     - 'lib/daru/dataframe.rb'
     - 'lib/daru/io/sql_data_source.rb'
 
-# Offense count: 3
-# Cop supports --auto-correct.
-# Configuration parameters: AllowAsExpressionSeparator.
-Style/Semicolon:
-  Exclude:
-    - 'lib/daru/maths/statistics/vector.rb'
-    - 'lib/daru/vector.rb'
-
 # Offense count: 12
 # Configuration parameters: Methods.
 # Methods: {"reduce"=>["a", "e"]}, {"inject"=>["a", "e"]}
