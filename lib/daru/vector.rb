@@ -143,9 +143,9 @@ module Daru
       value = opts[:value]
       opts.delete :value
       if block
-        vector = Daru::Vector.new n.times.map { |i| block.call(i) }, opts
+        vector = Daru::Vector.new Array.new(n) { |i| block.call(i) }, opts
       else
-        vector = Daru::Vector.new n.times.map { value }, opts
+        vector = Daru::Vector.new Array.new(n) { value }, opts
       end
       vector
     end

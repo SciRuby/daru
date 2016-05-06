@@ -114,9 +114,9 @@ Performance/RedundantMatch:
 
 # Offense count: 2
 # Cop supports --auto-correct.
-Performance/TimesMap:
-  Exclude:
-    - 'lib/daru/vector.rb'
+#Performance/TimesMap:
+  #Exclude:
+    #- 'lib/daru/vector.rb'
 
 # Offense count: 8
 # Cop supports --auto-correct.
