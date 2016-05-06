@@ -2,3 +2,5 @@
 Gemfile.lock
 doc/
 .yardoc/
+.bundle
+vendor/
