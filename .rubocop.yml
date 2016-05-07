@@ -10,6 +10,7 @@ AllCops:
     - 'benchmarks/*'
   DisplayCopNames: true
 
+# Preferred codebase style ---------------------------------------------
 Style/ExtraSpacing:
   AllowForAlignment: true
 
@@ -18,6 +19,22 @@ Style/FormatString:
 
 Style/AndOr:
   EnforcedStyle: conditionals
+
+Style/ParallelAssignment:
+  Enabled: false
+
+Style/DoubleNegation:
+  Enabled: false
+
+Style/SingleLineBlockParams:
+  Enabled: false
+
+# TODO -----------------------------------------------------------------
+
+Style/Documentation:
+  Enabled: false
+
+# To discuss and decide ------------------------------------------------
 
 # FIXME: in fact, rescue modifier is rarely a good choice
 #  but currently I can fully grasp the three places they are used
@@ -28,16 +45,14 @@ Style/RescueModifier:
     - 'lib/daru/dataframe.rb'
     - 'lib/daru/io/sql_data_source.rb'
 
-Style/ParallelAssignment:
-  Enabled: false
-
-Style/Documentation:
-  Enabled: false
-
-Style/DoubleNegation:
-  Enabled: false
-
-# FIXME: once we should enable and fix it
+# FIXME: once we should enable and fix it - zverok, 2016-05-07
 Style/Alias:
   Enabled: false
 
+# FIXME: should decide about this.
+# Personally I prefer (as most of Ruby community) to use parens, but
+# we also can enforce style to NOT using them. Yet it definitely should
+# be only one style. Current codebase uses ~400 method defs without and
+# ~ 100 method defs with them. - zverok, 2016-05-07
+Style/MethodDefParentheses:
+  Enabled: false

@@ -105,13 +105,6 @@ Style/EmptyElse:
     - 'lib/daru/maths/statistics/vector.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 337
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: require_parentheses, require_no_parentheses, require_no_parentheses_except_multiline
-Style/MethodDefParentheses:
-  Enabled: false
-
 # Offense count: 18
 Style/OpMethod:
   Exclude:
@@ -132,16 +125,6 @@ Style/PredicateName:
   Exclude:
     - 'lib/daru/dataframe.rb'
     - 'lib/daru/monkeys.rb'
-    - 'lib/daru/vector.rb'
-
-# Offense count: 12
-# Configuration parameters: Methods.
-# Methods: {"reduce"=>["a", "e"]}, {"inject"=>["a", "e"]}
-Style/SingleLineBlockParams:
-  Exclude:
-    - 'lib/daru/accessors/nmatrix_wrapper.rb'
-    - 'lib/daru/maths/statistics/dataframe.rb'
-    - 'lib/daru/maths/statistics/vector.rb'
     - 'lib/daru/vector.rb'
 
 # Offense count: 94
