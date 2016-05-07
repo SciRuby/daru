@@ -30,7 +30,7 @@ module Daru
         end
 
         def mode
-          frequencies.max {|a,b| a[1]<=>b[1]}.first
+          frequencies.max { |a,b| a[1]<=>b[1] }.first
         end
 
         # Create a summary of count, mean, standard deviation, min and max of
@@ -49,7 +49,7 @@ module Daru
 
         def median_absolute_deviation
           m = median
-          recode {|val| (val - m).abs }.median
+          recode { |val| (val - m).abs }.median
         end
 
         alias :mad :median_absolute_deviation
@@ -253,7 +253,7 @@ module Daru
         # == References
         #
         # This is the NIST recommended method (http://en.wikipedia.org/wiki/Percentile#NIST_method)
-        def percentile(q, strategy = :midpoint)
+        def percentile(q, strategy=:midpoint)
           sorted = only_valid(:array).sort
 
           case strategy
@@ -285,7 +285,7 @@ module Daru
         # Dichotomize the vector with 0 and 1, based on lowest value.
         # If parameter is defined, this value and lower will be 0
         # and higher, 1.
-        def dichotomize(low = nil)
+        def dichotomize(low=nil)
           low ||= factors.min
 
           recode do |x|
@@ -393,7 +393,7 @@ module Daru
               out.push(value) unless out.include?(value)
             end
 
-            out.collect {|i| valid[i]}
+            out.collect { |i| valid[i] }
           end
         end
 
@@ -414,12 +414,12 @@ module Daru
         #   #   t	   0.0
         #   #   i	   0.3333333333333333
         #   #   k          0.25
-        def percent_change periods = 1
+        def percent_change periods=1
           type == :numeric or raise TypeError, 'Vector must be numeric'
           value = only_valid
           arr = []
           i = 1
-          ind = @data.find_index {|x| !x.nil?}
+          ind = @data.find_index { |x| !x.nil? }
           (periods...size).each do |j|
             if j==ind || @missing_values.key?(@data[j])
               arr[j] = nil
@@ -449,7 +449,7 @@ module Daru
         #   ts.diff   # => [nil, -0.46, 0.21, 0.27, ...]
         #
         # @return [Daru::Vector]
-        def diff(max_lags = 1)
+        def diff(max_lags=1)
           ts = self
           difference = []
           max_lags.times do
@@ -533,7 +533,7 @@ module Daru
         #   ts.ema   # => [ ... nil, 0.455... , 0.395..., 0.323..., ... ]
         #
         # @return [Daru::Vector] Contains EMA
-        def ema(n = 10, wilder = false)
+        def ema(n=10, wilder=false)
           smoother = wilder ? 1.0 / n : 2.0 / (n + 1)
           # need to start everything from the first non-nil observation
           start = @data.index { |i| !i.nil? }
@@ -567,7 +567,7 @@ module Daru
         #   ts.emv   # => [ ... nil, 0.073... , 0.082..., 0.080..., ...]
         #
         # @return [Daru::Vector] contains EMV
-        def emv(n = 10, wilder = false)
+        def emv(n=10, wilder=false)
           smoother = wilder ? 1.0 / n : 2.0 / (n + 1)
           # need to start everything from the first non-nil observation
           start = @data.index { |i| !i.nil? }
@@ -576,7 +576,7 @@ module Daru
           mean_base = [nil] * (start + n - 1)
           mean_base << @data[start...(start + n)].inject(0.0) { |s, a| a.nil? ? s : s + a } / n
           # nth observation is just a moving variance_population
-          var_base << @data[start...(start + n)].inject(0.0) {|s,x| x.nil? ? s : s + (x - mean_base.last)**2} / n
+          var_base << @data[start...(start + n)].inject(0.0) { |s,x| x.nil? ? s : s + (x - mean_base.last)**2 } / n
           (start + n).upto size - 1 do |i|
             last = mean_base.last
             mean_base << self[i] * smoother + (1 - smoother) * last
@@ -604,7 +604,7 @@ module Daru
         #   ts.emsd   # => [ ... nil, 0.285... , 0.258..., 0.243..., ...]
         #
         # @return [Daru::Vector] contains EMSD
-        def emsd(n = 10, wilder = false)
+        def emsd(n=10, wilder=false)
           result = []
           emv_return = emv(n, wilder)
           emv_return.each do |d|
@@ -632,7 +632,7 @@ module Daru
         #
         # Array of two Daru::Vectors - comparison of fast EMA with slow and EMA with
         # signal value
-        def macd(fast = 12, slow = 26, signal = 9)
+        def macd(fast=12, slow=26, signal=9)
           series = ema(fast) - ema(slow)
           [series, series.ema(signal)]
         end
@@ -647,7 +647,7 @@ module Daru
         #
         #   ts.acf   # => array with first 21 autocorrelations
         #   ts.acf 3 # => array with first 3 autocorrelations
-        def acf(max_lags = nil)
+        def acf(max_lags=nil)
           max_lags ||= (10 * Math.log10(size)).to_i
 
           (0..max_lags).map do |i|
@@ -672,7 +672,7 @@ module Daru
         # == Returns
         #
         # Autocovariance value
-        def acvf(demean = true, unbiased = true)
+        def acvf(demean=true, unbiased=true)
           opts = {
             demean: true,
             unbaised: true

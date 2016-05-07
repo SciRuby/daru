@@ -549,7 +549,7 @@ module Daru
         date_time = helper.date_time_from date_time, date_precision
       end
 
-      result = @data.bsearch {|d| d[0] >= date_time }
+      result = @data.bsearch { |d| d[0] >= date_time }
       return false if result.nil?
       result[0] == date_time
     end

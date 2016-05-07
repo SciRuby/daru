@@ -20,6 +20,12 @@ Style/FormatString:
 Style/AndOr:
   EnforcedStyle: conditionals
 
+Style/SpaceAroundEqualsInParameterDefault:
+  EnforcedStyle: no_space
+
+Style/SpaceInsideBlockBraces:
+  EnforcedStyle: space
+
 Style/ParallelAssignment:
   Enabled: false
 
@@ -27,6 +33,9 @@ Style/DoubleNegation:
   Enabled: false
 
 Style/SingleLineBlockParams:
+  Enabled: false
+
+Style/PerlBackrefs:
   Enabled: false
 
 # TODO -----------------------------------------------------------------
@@ -56,3 +65,13 @@ Style/Alias:
 # ~ 100 method defs with them. - zverok, 2016-05-07
 Style/MethodDefParentheses:
   Enabled: false
+
+# Should be fixed, but require change of public API --------------------
+
+# Bans methods like `has_missing_data?`, `is_number?` and so on - started
+# with unnecessary has_ or is_.
+Style/PredicateName:
+  Exclude:
+    - 'lib/daru/dataframe.rb'
+    - 'lib/daru/monkeys.rb'
+    - 'lib/daru/vector.rb'

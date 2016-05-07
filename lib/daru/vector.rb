@@ -287,7 +287,7 @@ module Daru
       case other
       when Daru::Vector
         @index == other.index && @size == other.size &&
-          @index.all? {|index| self[index] == other[index]}
+          @index.all? { |index| self[index] == other[index] }
       else
         super
       end
@@ -491,7 +491,7 @@ module Daru
     # Get index of element
     def index_of element
       case dtype
-      when :array then @index.key @data.index {|x| x.eql? element}
+      when :array then @index.key @data.index { |x| x.eql? element }
       else @index.key @data.index(element)
       end
     end
@@ -865,7 +865,7 @@ module Daru
     end
 
     # Create a summary of the Vector using Report Builder.
-    def summary(method = :to_text)
+    def summary(method=:to_text)
       ReportBuilder.new(no_title: true).add(self).send(method)
     end
 
@@ -1092,13 +1092,13 @@ module Daru
     # Returns the database type for the vector, according to its content
     def db_type
       # first, detect any character not number
-      if @data.find {|v| v.to_s=~/\d{2,2}-\d{2,2}-\d{4,4}/} ||
-         @data.find {|v| v.to_s=~/\d{4,4}-\d{2,2}-\d{2,2}/}
+      if @data.find { |v| v.to_s=~/\d{2,2}-\d{2,2}-\d{4,4}/ } ||
+         @data.find { |v| v.to_s=~/\d{4,4}-\d{2,2}-\d{2,2}/ }
 
         return 'DATE'
-      elsif @data.find {|v| v.to_s=~/[^0-9e.-]/ }
+      elsif @data.find { |v| v.to_s=~/[^0-9e.-]/ }
         return 'VARCHAR (255)'
-      elsif @data.find {|v| v.to_s=~/\./}
+      elsif @data.find { |v| v.to_s=~/\./ }
         return 'DOUBLE'
       else
         return 'INTEGER'

@@ -7,8 +7,8 @@ module Daru
       end
 
       def vector_centered_compute(m)
-        Daru::Vector.new @data.collect {|x| (x.to_f - m)}, dtype: :gsl,
-                                                           index: @context.index, name: @context.name
+        Daru::Vector.new @data.collect { |x| (x.to_f - m) }, dtype: :gsl,
+                                                             index: @context.index, name: @context.name
       end
 
       def sample_with_replacement(sample=1)

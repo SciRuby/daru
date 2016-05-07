@@ -120,7 +120,7 @@ module Daru
         #   #   four	   0.3333333333333333  0.3333333333333333
         #   #   five       0.25                0.25
         #   #   six        0.2                 0.2
-        def percent_change periods = 1
+        def percent_change periods=1
           df_numeric = only_numerics.vectors.to_a
           df = Daru::DataFrame.new({}, order: @order, index: @index, name: @name)
           df_numeric.each do |vec|
@@ -191,7 +191,7 @@ module Daru
           v2a.reset_index!
           m1 = v1a.mean
           m2 = v2a.mean
-          v1a.size.times.inject(0) {|ac,i| ac+(v1a[i]-m1)*(v2a[i]-m2)}
+          v1a.size.times.inject(0) { |ac,i| ac+(v1a[i]-m1)*(v2a[i]-m2) }
         end
 
         def compute_stats method

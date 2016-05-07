@@ -105,23 +105,6 @@ Style/EmptyElse:
     - 'lib/daru/maths/statistics/vector.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 5
-# Cop supports --auto-correct.
-Style/PerlBackrefs:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-
-# Offense count: 6
-# Configuration parameters: NamePrefix, NamePrefixBlacklist, NameWhitelist.
-# NamePrefix: is_, has_, have_
-# NamePrefixBlacklist: is_, has_, have_
-# NameWhitelist: is_a?
-Style/PredicateName:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/monkeys.rb'
-    - 'lib/daru/vector.rb'
-
 # Offense count: 94
 # Cop supports --auto-correct.
 Style/SpaceAfterComma:
@@ -140,13 +123,6 @@ Style/SpaceAfterComma:
     - 'lib/daru/maths/statistics/vector.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 122
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: space, no_space
-Style/SpaceAroundEqualsInParameterDefault:
-  Enabled: false
-
 # Offense count: 110
 # Cop supports --auto-correct.
 # Configuration parameters: AllowForAlignment.
@@ -163,13 +139,6 @@ Style/SpaceAroundOperators:
     - 'lib/daru/maths/statistics/vector.rb'
     - 'lib/daru/plotting/dataframe.rb'
     - 'lib/daru/vector.rb'
-
-# Offense count: 33
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles, EnforcedStyleForEmptyBraces, SpaceBeforeBlockParameters.
-# SupportedStyles: space, no_space
-Style/SpaceInsideBlockBraces:
-  Enabled: false
 
 # Offense count: 9
 # Cop supports --auto-correct.

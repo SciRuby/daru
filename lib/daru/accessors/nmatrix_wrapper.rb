@@ -71,7 +71,7 @@ module Daru
         NMatrixWrapper.new @data[0...@size].to_a, @context, @nm_dtype
       end
 
-      def resize size = @size*2
+      def resize size=@size*2
         raise ArgumentError, 'Size must be greater than current size' if size < @size
 
         @data = NMatrix.new [size], @data.to_a, dtype: @nm_dtype

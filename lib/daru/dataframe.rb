@@ -1051,7 +1051,7 @@ module Daru
         name = row[tree_keys.last]
         if !block
           current[name] ||= []
-          current[name].push(row.to_h.delete_if { |key,value| tree_keys.include? key})
+          current[name].push(row.to_h.delete_if { |key,value| tree_keys.include? key })
         else
           current[name] = yield(row, current, name)
         end
@@ -1308,7 +1308,7 @@ module Daru
     #   df.index.to_a #=> ['a','b','c','d']
     #   df.row['a'].to_a #=> [1,11]
     def index= idx
-      @data.each { |vec| vec.index = idx}
+      @data.each { |vec| vec.index = idx }
       @index = idx
 
       self
@@ -1391,7 +1391,7 @@ module Daru
     end
 
     # Generate a summary of this DataFrame with ReportBuilder.
-    def summary(method = :to_text)
+    def summary(method=:to_text)
       ReportBuilder.new(no_title: true).add(self).send(method)
     end
 
@@ -2013,7 +2013,7 @@ module Daru
       longest = [@name.to_s.size,
                  (@vectors.map(&:to_s).map(&:size).max || 0),
                  (@index  .map(&:to_s).map(&:size).max || 0),
-                 (@data   .map { |v| v.map(&:to_s).map(&:size).max}.max || 0)].max
+                 (@data   .map { |v| v.map(&:to_s).map(&:size).max }.max || 0)].max
 
       name      = @name || 'nil'
       content   = ''

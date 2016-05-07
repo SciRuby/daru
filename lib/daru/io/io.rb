@@ -157,7 +157,7 @@ module Daru
         vectors = Hash[*fields.map { |name|
           [
             name,
-            Daru::Vector.new([]).tap {|v| v.rename name }
+            Daru::Vector.new([]).tap { |v| v.rename name }
           ]
         }.flatten]
 
