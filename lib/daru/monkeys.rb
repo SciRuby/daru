@@ -32,6 +32,10 @@ class Array
   def to_index
     Daru::Index.new self
   end
+
+  def all_are?(match)
+    grep(match).size == size
+  end
 end
 
 class Range

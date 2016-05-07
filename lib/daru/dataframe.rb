@@ -112,29 +112,17 @@ module Daru
       # Create DataFrame by specifying rows as an Array of Arrays or Array of
       # Daru::Vector objects.
       def rows source, opts={}
-        first = source.first
-
         raise SizeError, 'All vectors must have same length' \
-          unless source.all? { |v| v.size == first.size }
+          unless source.all? { |v| v.size == source.first.size }
 
-        index = []
-        opts[:order] ||=
-          case first
-          when Daru::Vector # assume that all are Vectors
-            index = source.map(&:name)
-            first.index.to_a
-          when Array
-            Array.new(first.size, &:to_s)
-          end
+        opts[:order] ||= guess_order(source)
 
-        if source.all? { |s| s.is_a?(Array) }
-          Daru::DataFrame.new(source.transpose, opts)
-        else # array of Daru::Vectors
-          Daru::DataFrame.new({}, opts).tap do |df|
-            source.each_with_index do |row, idx|
-              df[index[idx] || idx, :row] = row
-            end
-          end
+        if source.all_are?(Array)
+          DataFrame.new(source.transpose, opts)
+        elsif source.all_are?(Vector)
+          from_vectors(source, opts)
+        else
+          raise ArgumentError, "Can't create DataFrame from #{source}"
         end
       end
 
@@ -186,6 +174,27 @@ module Daru
         end
         df.update
         df
+      end
+
+      private
+
+      def guess_order source
+        case source.first
+        when Vector # assume that all are Vectors
+          source.first.index.to_a
+        when Array
+          Array.new(source.first.size, &:to_s)
+        end
+      end
+
+      def from_vectors source, opts
+        index = source.first.is_a?(Vector) ? source.map(&:name) : []
+
+        DataFrame.new({}, opts).tap do |df|
+          source.each_with_index do |row, idx|
+            df[index[idx] || idx, :row] = row
+          end
+        end
       end
     end
 
