@@ -258,7 +258,7 @@ module Daru
             @index   = try_create_index(index || source[0].size)
             @vectors = try_create_index(vectors)
 
-            @vectors.each_with_index do |vec,idx|
+            @vectors.each_with_index do |_vec,idx|
               @data << Daru::Vector.new(source[idx], index: @index)
             end
           elsif source.all? { |s| s.is_a?(Daru::Vector) }
@@ -1051,7 +1051,7 @@ module Daru
         name = row[tree_keys.last]
         if !block
           current[name] ||= []
-          current[name].push(row.to_h.delete_if { |key,value| tree_keys.include? key })
+          current[name].push(row.to_h.delete_if { |key,_value| tree_keys.include? key })
         else
           current[name] = yield(row, current, name)
         end
@@ -1063,7 +1063,7 @@ module Daru
     def vector_count_characters vecs=nil
       vecs ||= @vectors.to_a
 
-      collect_row_with_index do |row, i|
+      collect_rows do |row|
         vecs.inject(0) do |memo, vec|
           memo + (row[vec].nil? ? 0 : row[vec].to_s.size)
         end

@@ -86,7 +86,7 @@ module Daru
             new_date = offset + new_date
           end
         else
-          periods.times do |i|
+          periods.times do
             data << new_date
             new_date = offset + new_date
           end

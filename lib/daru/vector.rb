@@ -985,7 +985,7 @@ module Daru
       s ||= size
       h_est, es, bss = prepare_bootstrap(estimators)
 
-      nr.times do |i|
+      nr.times do
         bs = sample_with_replacement(s)
         es.each do |estimator|
           bss[estimator].push(h_est[estimator].call(bs))

@@ -51,7 +51,7 @@ module Daru
 
           (0...size).reduce([]) do |r, idx|
             key_values = on.map { |col| df_hash[col][idx] }
-            row_values = df_hash.map { |col, val| val[idx] }
+            row_values = df_hash.map { |_col, val| val[idx] }
             r << [key_values, row_values]
           end
 

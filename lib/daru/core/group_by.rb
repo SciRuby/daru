@@ -270,7 +270,7 @@ module Daru
         multi_index = multi_indexed_grouping?
         rows, order = [], []
 
-        @groups.each do |group, indexes|
+        @groups.each do |_group, indexes|
           single_row = []
           @non_group_vectors.each do |ngvector|
             vec = @context[ngvector]
