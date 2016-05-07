@@ -2078,8 +2078,8 @@ module Daru
     def create_logic_blocks vector_order, _by, ascending
       # Create blocks to handle nils
       blocks = {}
-      universal_block_ascending = lambda { |a| [a.nil? ? 0 : 1, a] }
-      universal_block_decending = lambda { |a| [a.nil? ? 1 : 0, a] }
+      universal_block_ascending = ->(a) { [a.nil? ? 0 : 1, a] }
+      universal_block_decending = ->(a) { [a.nil? ? 1 : 0, a] }
       vector_order.each_with_index do |vector, i|
         blocks[vector] =
           if ascending[i]

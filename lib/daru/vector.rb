@@ -1171,7 +1171,7 @@ module Daru
 
       if h_est.is_a? Array
         h_est = h_est.map do |est|
-          [est, lambda { |v| Daru::Vector.new(v).send(est) }]
+          [est, ->(v) { Daru::Vector.new(v).send(est) }]
         end.to_h
       end
       bss = h_est.keys.map { |v| [v, []] }.to_h

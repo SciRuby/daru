@@ -156,10 +156,10 @@ Style/EmptyElse:
 
 # Offense count: 3
 # Cop supports --auto-correct.
-Style/Lambda:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/vector.rb'
+#Style/Lambda:
+  #Exclude:
+    #- 'lib/daru/dataframe.rb'
+    #- 'lib/daru/vector.rb'
 
 # Offense count: 337
 # Cop supports --auto-correct.
