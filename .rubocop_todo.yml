@@ -65,21 +65,6 @@ Style/AccessorMethodName:
     - 'lib/daru/dataframe.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 40
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: prefer_alias, prefer_alias_method
-Style/Alias:
-  Exclude:
-    - 'lib/daru/accessors/gsl_wrapper.rb'
-    - 'lib/daru/core/query.rb'
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/index.rb'
-    - 'lib/daru/maths/statistics/dataframe.rb'
-    - 'lib/daru/maths/statistics/vector.rb'
-    - 'lib/daru/monkeys.rb'
-    - 'lib/daru/vector.rb'
-
 # Offense count: 25
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
@@ -108,17 +93,6 @@ Style/BlockDelimiters:
     - 'lib/daru/dataframe.rb'
     - 'lib/daru/io/io.rb'
     - 'lib/daru/maths/statistics/vector.rb'
-    - 'lib/daru/vector.rb'
-
-# Offense count: 5
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: braces, no_braces, context_dependent
-Style/BracesAroundHashParameters:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/date_time/index.rb'
-    - 'lib/daru/index.rb'
     - 'lib/daru/vector.rb'
 
 # Offense count: 3

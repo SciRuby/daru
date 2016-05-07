@@ -37,3 +37,7 @@ Style/Documentation:
 Style/DoubleNegation:
   Enabled: false
 
+# FIXME: once we should enable and fix it
+Style/Alias:
+  Enabled: false
+
