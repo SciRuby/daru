@@ -105,11 +105,6 @@ Style/EmptyElse:
     - 'lib/daru/maths/statistics/vector.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 18
-Style/OpMethod:
-  Exclude:
-    - 'lib/daru/date_time/offsets.rb'
-
 # Offense count: 5
 # Cop supports --auto-correct.
 Style/PerlBackrefs:

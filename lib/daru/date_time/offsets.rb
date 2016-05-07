@@ -1,4 +1,6 @@
 module Daru
+  # rubocop:disable Style/OpMethod
+
   # Generic class for generating date offsets.
   class DateOffset
     # A Daru::DateOffset object is created by a passing certain options
@@ -394,4 +396,6 @@ module Daru
       end
     end
   end
+
+  # rubocop:enable Style/OpMethod
 end
