@@ -28,20 +28,20 @@ module Daru
         types = extract_option :type, options
 
         diagram =
-        case
-        when !([:scatter, :bar, :line, :histogram] & types).empty?
-          if single_diagram? options
-            add_single_diagram plot, options
-          else
-            add_multiple_diagrams plot, options
-          end
-        when types.include?(:box)
-          numeric = only_numerics(clone: false).dup_only_valid
+          case
+          when !([:scatter, :bar, :line, :histogram] & types).empty?
+            if single_diagram? options
+              add_single_diagram plot, options
+            else
+              add_multiple_diagrams plot, options
+            end
+          when types.include?(:box)
+            numeric = only_numerics(clone: false).dup_only_valid
 
-          plot.add_with_df(
-            numeric.to_nyaplotdf,
-            :box, *numeric.vectors.to_a)
-        end
+            plot.add_with_df(
+              numeric.to_nyaplotdf,
+              :box, *numeric.vectors.to_a)
+          end
 
         yield(plot, diagram) if block_given?
 

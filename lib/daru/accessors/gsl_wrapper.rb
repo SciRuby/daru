@@ -3,18 +3,18 @@ module Daru
     module GSLStatistics
       def vector_standardized_compute(m,sd)
         Daru::Vector.new @data.collect { |x| (x.to_f - m).quo(sd) }, dtype: :gsl,
-          index: @context.index, name: @context.name
+                                                                     index: @context.index, name: @context.name
       end
 
       def vector_centered_compute(m)
         Daru::Vector.new @data.collect {|x| (x.to_f - m)}, dtype: :gsl,
-          index: @context.index, name: @context.name
+                                                           index: @context.index, name: @context.name
       end
 
       def sample_with_replacement(sample=1)
         r = GSL::Rng.alloc(GSL::Rng::MT19937,rand(10_000))
         Daru::Vector.new(r.sample(@data, sample).to_a, dtype: :gsl,
-          index: @context.index, name: @context.name)
+                                                       index: @context.index, name: @context.name)
       end
 
       def sample_without_replacement(sample=1)

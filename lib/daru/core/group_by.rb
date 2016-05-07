@@ -28,11 +28,11 @@ module Daru
       # Get a Daru::Vector of the size of each group.
       def size
         index =
-        if multi_indexed_grouping?
-          Daru::MultiIndex.from_tuples @groups.keys
-        else
-          Daru::Index.new @groups.keys.flatten
-        end
+          if multi_indexed_grouping?
+            Daru::MultiIndex.from_tuples @groups.keys
+          else
+            Daru::Index.new @groups.keys.flatten
+          end
 
         values = @groups.values.map(&:size)
         Daru::Vector.new(values, index: index, name: :size)
@@ -233,11 +233,11 @@ module Daru
         end
 
         index =
-        if multi_indexed_grouping?
-          Daru::MultiIndex.from_tuples result_hash.keys
-        else
-          Daru::Index.new result_hash.keys.flatten
-        end
+          if multi_indexed_grouping?
+            Daru::MultiIndex.from_tuples result_hash.keys
+          else
+            Daru::Index.new result_hash.keys.flatten
+          end
 
         Daru::Vector.new(result_hash.values, index: index)
       end

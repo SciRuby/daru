@@ -94,17 +94,6 @@ Style/Alias:
     - 'lib/daru/monkeys.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 6
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedHashRocketStyle, EnforcedColonStyle, EnforcedLastArgumentHashStyle, SupportedLastArgumentHashStyles.
-# SupportedLastArgumentHashStyles: always_inspect, always_ignore, ignore_implicit, ignore_explicit
-Style/AlignHash:
-  Exclude:
-    - 'lib/daru/accessors/gsl_wrapper.rb'
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/maths/arithmetic/dataframe.rb'
-    - 'lib/daru/vector.rb'
-
 # Offense count: 25
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
@@ -163,36 +152,6 @@ Style/EmptyElse:
   Exclude:
     - 'lib/daru/date_time/index.rb'
     - 'lib/daru/maths/statistics/vector.rb'
-    - 'lib/daru/vector.rb'
-
-# Offense count: 5
-# Configuration parameters: MinBodyLength.
-#Style/GuardClause:
-  #Exclude:
-    #- 'lib/daru/dataframe.rb'
-    #- 'lib/daru/date_time/index.rb'
-    #- 'lib/daru/vector.rb'
-    #- 'lib/daru/core/merge.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: SupportedStyles, IndentationWidth.
-# SupportedStyles: special_inside_parentheses, consistent, align_brackets
-Style/IndentArray:
-  Enabled: false
-
-# Offense count: 16
-# Cop supports --auto-correct.
-# Configuration parameters: IndentationWidth.
-Style/IndentAssignment:
-  Exclude:
-    - 'lib/daru/core/group_by.rb'
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/date_time/index.rb'
-    - 'lib/daru/date_time/offsets.rb'
-    - 'lib/daru/index.rb'
-    - 'lib/daru/plotting/dataframe.rb'
-    - 'lib/daru/plotting/vector.rb'
     - 'lib/daru/vector.rb'
 
 # Offense count: 3

@@ -1572,13 +1572,13 @@ module Daru
       vectors = opts[:vectors] || []
       aggregate_function = opts[:agg] || :mean
       values =
-      if opts[:values].is_a?(Symbol)
-        [opts[:values]]
-      elsif opts[:values].is_a?(Array)
-        opts[:values]
-      else # nil
-        (@vectors.to_a - (index | vectors)) & numeric_vector_names
-      end
+        if opts[:values].is_a?(Symbol)
+          [opts[:values]]
+        elsif opts[:values].is_a?(Array)
+          opts[:values]
+        else # nil
+          (@vectors.to_a - (index | vectors)) & numeric_vector_names
+        end
 
       raise IndexError, 'No numeric vectors to aggregate' if values.empty?
 
@@ -2180,7 +2180,7 @@ module Daru
 
         order = names.is_a?(Array) ? Daru::Index.new(names) : names
         Daru::DataFrame.new(new_vectors, order: order,
-          index: @index, name: @name)
+                                         index: @index, name: @name)
       end
     end
 
@@ -2299,11 +2299,11 @@ module Daru
       else
         name = name[0]
         v =
-        if vector.is_a?(Daru::Vector)
-          vector
-        else
-          Daru::Vector.new(vector, name: set_name(name), index: @vectors)
-        end
+          if vector.is_a?(Daru::Vector)
+            vector
+          else
+            Daru::Vector.new(vector, name: set_name(name), index: @vectors)
+          end
 
         if @index.include? name
           each_vector_with_index do |vector,i|
@@ -2394,15 +2394,15 @@ module Daru
 
     def symbolize arry
       symbolized_arry =
-      if arry.all? { |e| e.is_a?(Array) }
-        arry.map do |sub_arry|
-          sub_arry.map do |e|
-            e.is_a?(Numeric) ? e : e.to_sym
+        if arry.all? { |e| e.is_a?(Array) }
+          arry.map do |sub_arry|
+            sub_arry.map do |e|
+              e.is_a?(Numeric) ? e : e.to_sym
+            end
           end
+        else
+          arry.map { |e| e.is_a?(Numeric) ? e : e.to_sym }
         end
-      else
-        arry.map { |e| e.is_a?(Numeric) ? e : e.to_sym }
-      end
 
       symbolized_arry
     end

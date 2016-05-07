@@ -37,22 +37,22 @@ module Daru
       n = opts[:n] || 1
 
       @offset =
-      case
-      when opts[:secs]
-        Offsets::Second.new(n*opts[:secs])
-      when opts[:mins]
-        Offsets::Minute.new(n*opts[:mins])
-      when opts[:hours]
-        Offsets::Hour.new(n*opts[:hours])
-      when opts[:days]
-        Offsets::Day.new(n*opts[:days])
-      when opts[:weeks]
-        Offsets::Day.new(7*n*opts[:weeks])
-      when opts[:months]
-        Offsets::Month.new(n*opts[:months])
-      when opts[:years]
-        Offsets::Year.new(n*opts[:years])
-      end
+        case
+        when opts[:secs]
+          Offsets::Second.new(n*opts[:secs])
+        when opts[:mins]
+          Offsets::Minute.new(n*opts[:mins])
+        when opts[:hours]
+          Offsets::Hour.new(n*opts[:hours])
+        when opts[:days]
+          Offsets::Day.new(n*opts[:days])
+        when opts[:weeks]
+          Offsets::Day.new(7*n*opts[:weeks])
+        when opts[:months]
+          Offsets::Month.new(n*opts[:months])
+        when opts[:years]
+          Offsets::Year.new(n*opts[:years])
+        end
     end
 
     # Offset a DateTime forward.

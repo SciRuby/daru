@@ -1136,8 +1136,10 @@ module Daru
 
     def self._load(data) # :nodoc:
       h = Marshal.load(data)
-      Daru::Vector.new(h[:data], index: h[:index],
-        name: h[:name], metadata: h[:metadata], dtype: h[:dtype], missing_values: h[:missing_values])
+      Daru::Vector.new(h[:data],
+        index: h[:index],
+        name: h[:name], metadata: h[:metadata],
+        dtype: h[:dtype], missing_values: h[:missing_values])
     end
 
     def daru_vector(*)
@@ -1195,13 +1197,13 @@ module Daru
       source = @data.to_a if source.nil?
 
       new_vector =
-      case dtype
-      when :array   then Daru::Accessors::ArrayWrapper.new(source, self)
-      when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source, self, nm_dtype)
-      when :gsl then Daru::Accessors::GSLWrapper.new(source, self)
-      when :mdarray then raise NotImplementedError, 'MDArray not yet supported.'
-      else raise "Unknown dtype #{dtype}"
-      end
+        case dtype
+        when :array   then Daru::Accessors::ArrayWrapper.new(source, self)
+        when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source, self, nm_dtype)
+        when :gsl then Daru::Accessors::GSLWrapper.new(source, self)
+        when :mdarray then raise NotImplementedError, 'MDArray not yet supported.'
+        else raise "Unknown dtype #{dtype}"
+        end
 
       @dtype = dtype || :array
       new_vector
@@ -1221,12 +1223,12 @@ module Daru
 
     def set_name name
       @name =
-      if name.is_a?(Numeric)  then name
-      elsif name.is_a?(Array) then name.join # in case of MultiIndex tuple
-      elsif name              then name # anything but Numeric or nil
-      else
-        nil
-      end
+        if name.is_a?(Numeric)  then name
+        elsif name.is_a?(Array) then name.join # in case of MultiIndex tuple
+        elsif name              then name # anything but Numeric or nil
+        else
+          nil
+        end
     end
 
     def set_missing_positions

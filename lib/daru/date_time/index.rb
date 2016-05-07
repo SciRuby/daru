@@ -193,7 +193,7 @@ module Daru
             date_time,
             DateTime.new(date_time.year, date_time.month, date_time.day,
               date_time.hour, date_time.min, 59)
-           ]
+          ]
         else # second or when precision is same as offset
           [ date_time, date_time ]
         end
@@ -263,11 +263,11 @@ module Daru
       helper.possibly_convert_to_date_time data
 
       @offset =
-      case opts[:freq]
-      when :infer then helper.infer_offset(data)
-      when  nil   then nil
-      else  helper.offset_from_frequency(opts[:freq])
-      end
+        case opts[:freq]
+        when :infer then helper.infer_offset(data)
+        when  nil   then nil
+        else  helper.offset_from_frequency(opts[:freq])
+        end
 
       @frequency = @offset ? @offset.freq_string : nil
       @data      = data.zip(Array.new(data.size) { |i| i })
@@ -415,16 +415,16 @@ module Daru
         after_en = @data.bsearch { |d| d[0] > last_dt }
 
         result =
-        if @offset
-          en = after_en ? @data[after_en[1] - 1] : @data.last
-          return start[1] if start == en
-          DateTimeIndex.date_range start: start[0], end: en[0], freq: @offset
-        else
-          st = @data.index(start)
-          en = after_en ? @data.index(after_en) - 1 : helper.last_date(@data)[1]
-          return start[1] if st == en
-          DateTimeIndex.new(@data[st..en].transpose[0])
-        end
+          if @offset
+            en = after_en ? @data[after_en[1] - 1] : @data.last
+            return start[1] if start == en
+            DateTimeIndex.date_range start: start[0], end: en[0], freq: @offset
+          else
+            st = @data.index(start)
+            en = after_en ? @data.index(after_en) - 1 : helper.last_date(@data)[1]
+            return start[1] if st == en
+            DateTimeIndex.new(@data[st..en].transpose[0])
+          end
 
         result
       end
