@@ -1177,14 +1177,9 @@ module Daru
 
     def keep? a, b, order
       eval = yield(a, b)
-      if order == :ascending
-        return true  if eval == -1
-        return false if eval == 1
-      elsif order == :descending
-        return false if eval == -1
-        return true  if eval == 1
-      end
-      false
+      return false if eval.abs != 1 # only +1 and -1 are meaningful
+
+      order == :ascending ? eval < 0 : eval > 0
     end
 
     # Note: To maintain sanity, this _MUST_ be the _ONLY_ place in daru where the
