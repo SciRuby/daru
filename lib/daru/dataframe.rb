@@ -915,10 +915,10 @@ module Daru
 
     # Iterates over each row and retains it in a new DataFrame if the block returns
     # true for that row.
-    def filter_rows &block
+    def filter_rows
       return to_enum(:filter_rows) unless block_given?
 
-      keep_rows = @index.map { |index| block.call access_row(index) }
+      keep_rows = @index.map { |index| yield access_row(index) }
 
       where keep_rows
     end
@@ -1053,7 +1053,7 @@ module Daru
           current[name] ||= []
           current[name].push(row.to_h.delete_if { |key,value| tree_keys.include? key})
         else
-          current[name] = block.call(row, current,name)
+          current[name] = yield(row, current, name)
         end
       end
 

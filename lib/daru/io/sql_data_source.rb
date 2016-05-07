@@ -9,15 +9,15 @@ module Daru
           @query = query
         end
 
-        def each_column_name(&block)
+        def each_column_name
           result.column_names.each do |column_name|
-            block.call(column_name.to_sym)
+            yield(column_name.to_sym)
           end
         end
 
-        def each_row(&block)
+        def each_row
           result.fetch do |row|
-            block.call(row.to_a)
+            yield(row.to_a)
           end
         end
 
@@ -36,15 +36,15 @@ module Daru
           @query = query
         end
 
-        def each_column_name(&block)
+        def each_column_name
           result.columns.each do |column_name|
-            block.call(column_name.to_sym)
+            yield(column_name.to_sym)
           end
         end
 
-        def each_row(&block)
+        def each_row
           result.each do |row|
-            block.call(row.values)
+            yield(row.values)
           end
         end
 

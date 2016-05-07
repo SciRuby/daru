@@ -530,31 +530,27 @@ module Daru
     #   v = Daru::Vector.new ["My first guitar", "jazz", "guitar"]
     #   # Say you want to sort these strings by length.
     #   v.sort(ascending: false) { |a,b| a.length <=> b.length }
-    def sort opts={}, &block
+    def sort opts={}
       opts = {
         ascending: true
       }.merge(opts)
 
-      block = lambda { |a,b|
-        av, ai = a
-        bv, bi = b
-        return av <=> bv unless av.nil? || bv.nil?
-
-        if av.nil? && bv.nil?
-          ai <=> bi
-        elsif av.nil?
-          opts[:ascending] ? -1 : 1
-        else
-          opts[:ascending] ? 1 : -1
-        end
-      } unless block
-
       vector_index = @data.each_with_index
       vector_index =
         if block_given?
-          vector_index.sort { |a,b| block.call(a[0], b[0]) }
+          vector_index.sort { |a,b| yield(a[0], b[0]) }
         else
-          vector_index.sort { |a,b| block.call(a, b)}
+          vector_index.sort { |(av, ai), (bv, bi)|
+            if !av.nil? && !bv.nil?
+              av <=> bv
+            elsif av.nil? && bv.nil?
+              ai <=> bi
+            elsif av.nil?
+              opts[:ascending] ? -1 : 1
+            else
+              opts[:ascending] ? 1 : -1
+            end
+          }
         end
       vector_index.reverse! unless opts[:ascending]
       vector, index = vector_index.transpose
@@ -1179,8 +1175,8 @@ module Daru
       [h_est, h_est.keys, bss]
     end
 
-    def keep? a, b, order, &block
-      eval = block.call(a,b)
+    def keep? a, b, order
+      eval = yield(a, b)
       if order == :ascending
         return true  if eval == -1
         return false if eval == 1
