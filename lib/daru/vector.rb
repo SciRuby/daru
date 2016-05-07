@@ -825,29 +825,31 @@ module Daru
     # Convert to html for iruby
     def to_html threshold=30
       name = @name || 'nil'
-      html = '<table>' \
-        '<tr>' \
-          '<th colspan="2">' \
-            "Daru::Vector:#{object_id} " + " size: #{size}" \
-          '</th>' \
-        '</tr>'
-      html += '<tr><th> </th><th>' + name.to_s + '</th></tr>'
-      @index.each_with_index do |index, num|
-        html += '<tr><td>' + index.to_s + '</td>' + '<td>' + self[index].to_s + '</td></tr>'
 
-        next if num <= threshold
-        html += '<tr><td>...</td><td>...</td></tr>'
+      [
+        '<table>' \
+          '<tr>' \
+            '<th colspan="2">' \
+              "Daru::Vector:#{object_id} size: #{size}" \
+            '</th>' \
+          '</tr>',
+        "<tr><th> </th><th>#{name}</th></tr>",
 
-        last_index = @index.to_a.last
-        html += '<tr>' \
-                  '<td>' + last_index.to_s       + '</td>' \
-                  '<td>' + self[last_index].to_s + '</td>' \
-                '</tr>'
-        break
-      end
-      html += '</table>'
+        @index.first(threshold).map { |index|
+          "<tr><td>#{index}</td><td>#{self[index]}</td></tr>"
+        },
 
-      html
+        if size > threshold
+          last_index = @index.to_a.last
+          '<tr><td>...</td><td>...</td></tr>' \
+          '<tr>' \
+                "<td>#{last_index}</td>" \
+                "<td>#{self[last_index]}</td>" \
+              '</tr>'
+        end,
+
+        '</table>'
+      ].flatten.compact.join
     end
 
     def to_s
