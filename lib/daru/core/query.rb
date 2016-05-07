@@ -51,20 +51,11 @@ module Daru
 
       class << self
         def apply_scalar_operator operator, data, other
-          arry = data.each_with_object([]) do |d, memo|
-            memo << (d.send(operator, other) ? true : false)
-          end
-
-          BoolArray.new(arry)
+          BoolArray.new data.map { |d| !!d.send(operator, other) }
         end
 
         def apply_vector_operator operator, vector, other
-          bool_arry = []
-          vector.each_with_index do |d, i|
-            bool_arry << (d.send(operator, other[i]) ? true : false)
-          end
-
-          BoolArray.new(bool_arry)
+          BoolArray.new vector.zip(other).map { |d, o| !!d.send(operator, o) }
         end
 
         def df_where data_frame, bool_array
