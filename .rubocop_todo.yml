@@ -25,6 +25,9 @@ Metrics/ClassLength:
 #Metrics/CyclomaticComplexity:
   #Max: 21
 
+Metrics/CyclomaticComplexity:
+  Max: 7
+
 # Offense count: 273
 # Configuration parameters: AllowHeredoc, AllowURI, URISchemes.
 # URISchemes: http, https

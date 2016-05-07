@@ -219,10 +219,7 @@ module Daru
     def []=(*location, value)
       cast(dtype: :array) if value.nil? && dtype != :array
 
-      @possibly_changed_type = true if @type == :object  && (value.nil? ||
-        value.is_a?(Numeric))
-      @possibly_changed_type = true if @type == :numeric && (!value.is_a?(Numeric) &&
-        !value.nil?)
+      guard_type_check(value)
 
       pos = @index[*location]
 
@@ -1157,6 +1154,12 @@ module Daru
       elsif @index.size < @data.size
         raise IndexError, "Expected index size >= vector size. Index size : #{@index.size}, vector size : #{@data.size}"
       end
+    end
+
+    def guard_type_check value
+      @possibly_changed_type = true \
+        if @type == :object && (value.nil? || value.is_a?(Numeric)) ||
+           @type == :numeric && !value.is_a?(Numeric) && !value.nil?
     end
 
     # For an array or hash of estimators methods, returns
