@@ -245,7 +245,7 @@ module Daru
       MultiIndex.from_tuples(range.map { |index| key(index) })
     end
 
-    def retrieve_from_tuples key # rubocop:disable Metrics/AbcSize
+    def retrieve_from_tuples key
       chosen = []
 
       key.each_with_index do |k, depth|
