@@ -29,6 +29,9 @@ Style/SpaceInsideBlockBraces:
 Style/SpaceInsideHashLiteralBraces:
   EnforcedStyle: no_space
 
+Style/AlignParameters:
+  EnforcedStyle: with_fixed_indentation
+
 Style/ParallelAssignment:
   Enabled: false
 

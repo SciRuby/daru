@@ -59,7 +59,7 @@ module Daru
 
         def v2o_binary operation, other
           Daru::Vector.new map { |e| e.nil? ? nil : e.send(operation, other) },
-           name: @name, index: @index
+            name: @name, index: @index
         end
 
         def v2v_binary operation, other

@@ -186,7 +186,7 @@ module Daru
           [
             date_time,
             DateTime.new(date_time.year, date_time.month, date_time.day,
-            date_time.hour,59,59)
+              date_time.hour,59,59)
           ]
         when :min
           [
