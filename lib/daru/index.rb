@@ -23,19 +23,14 @@ module Daru
     def self.new *args, &block
       source = args[0]
 
-      idx =
-        if source && source[0].is_a?(Array)
-          Daru::MultiIndex.from_tuples source
-        elsif source && source.is_a?(Array) && !source.empty? &&
-              source.all? { |e| e.is_a?(DateTime) }
-          Daru::DateTimeIndex.new(source, freq: :infer)
-        else
-          i = allocate
-          i.send :initialize, *args, &block
-          i
-        end
-
-      idx
+      if source && source[0].is_a?(Array)
+        Daru::MultiIndex.from_tuples source
+      elsif source && source.is_a?(Array) && !source.empty? &&
+            source.all? { |e| e.is_a?(DateTime) }
+        Daru::DateTimeIndex.new(source, freq: :infer)
+      else
+        allocate.tap { |i| i.send :initialize, *args, &block }
+      end
     end
 
     def each(&block)

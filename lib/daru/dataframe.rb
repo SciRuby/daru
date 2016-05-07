@@ -358,9 +358,9 @@ module Daru
       end
 
       if axis == :vector
-        access_vector *names
+        access_vector(*names)
       elsif axis == :row
-        access_row *names
+        access_row(*names)
       else
         raise IndexError, "Expected axis to be row or vector not #{axis}"
       end
@@ -931,7 +931,7 @@ module Daru
       return to_enum(:filter_vectors) unless block_given?
 
       df = dup
-      df.keep_vector_if &block
+      df.keep_vector_if(&block)
 
       df
     end
@@ -1352,7 +1352,7 @@ module Daru
     #   df.vectors.to_a #=> [:alpha, :b, :gamma]
     def rename_vectors name_map
       existing_targets = name_map.select { |k,v| k != v }.values & vectors.to_a
-      delete_vectors *existing_targets
+      delete_vectors(*existing_targets)
 
       new_names = vectors.to_a.map { |v| name_map[v] ? name_map[v] : v }
       self.vectors = Daru::Index.new new_names
@@ -1513,7 +1513,7 @@ module Daru
         left <=> right
       end
 
-      idx = (0..@index.size-1).sort &block
+      idx = (0..@index.size-1).sort(&block)
 
       old_index = @index.to_a
       self.index = Daru::Index.new(idx.map { |i| old_index[i] })
@@ -1801,7 +1801,7 @@ module Daru
         numerics_as_arrays << self[n].to_a
       end
 
-      GSL::Matrix.alloc *numerics_as_arrays.transpose
+      GSL::Matrix.alloc(*numerics_as_arrays.transpose)
     end
 
     # Convert all vectors of type *:numeric* into a Matrix.
