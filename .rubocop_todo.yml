@@ -47,13 +47,3 @@ Metrics/ModuleLength:
 # Offense count: 22
 Metrics/PerceivedComplexity:
   Max: 28
-
-# Offense count: 3
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: empty, nil, both
-Style/EmptyElse:
-  Exclude:
-    - 'lib/daru/date_time/index.rb'
-    - 'lib/daru/maths/statistics/vector.rb'
-    - 'lib/daru/vector.rb'

@@ -32,6 +32,9 @@ Style/SpaceInsideHashLiteralBraces:
 Style/AlignParameters:
   EnforcedStyle: with_fixed_indentation
 
+Style/EmptyElse:
+  EnforcedStyle: empty
+
 Style/ParallelAssignment:
   Enabled: false
 
