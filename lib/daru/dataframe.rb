@@ -939,7 +939,7 @@ module Daru
     #
     # The function returns an array with all errors.
     def verify(*tests)
-      if(tests[0].is_a? Symbol)
+      if tests[0].is_a? Symbol
         id = tests[0]
         tests.shift
       else
@@ -954,7 +954,7 @@ module Daru
           next if test[2].call(row)
           values = ''
           unless test[1].empty?
-            values = ' (' + test[1].collect{ |k| "#{k}=#{row[k]}" }.join(', ') + ')'
+            values = ' (' + test[1].collect { |k| "#{k}=#{row[k]}" }.join(', ') + ')'
           end
           vr.push("#{i} [#{row[id]}]: #{test[0]}#{values}")
         end
@@ -1362,7 +1362,7 @@ module Daru
       numerics = []
 
       each_vector_with_index do |vec, i|
-        numerics << i if(vec.type == :numeric)
+        numerics << i if vec.type == :numeric
       end
       numerics
     end
@@ -1518,7 +1518,7 @@ module Daru
 
       vectors.each do |v|
         @data[@vectors[v]] = Daru::Vector.new(
-          idx.map{ |i| @data[@vectors[v]].data[i] },
+          idx.map { |i| @data[@vectors[v]].data[i] },
           name: self[v].name, metadata: self[v].metadata.dup, index: index)
       end
 
@@ -1806,7 +1806,7 @@ module Daru
     def to_matrix
       numerics_as_arrays = []
       each_vector do |vector|
-        numerics_as_arrays << vector.to_a if(vector.type == :numeric)
+        numerics_as_arrays << vector.to_a if vector.type == :numeric
       end
 
       Matrix.columns numerics_as_arrays
@@ -1821,8 +1821,8 @@ module Daru
     def to_nmatrix
       numerics_as_arrays = []
       each_vector do |vector|
-        numerics_as_arrays << vector.to_a if(vector.type == :numeric &&
-          vector.missing_positions.empty?)
+        numerics_as_arrays << vector.to_a if vector.type == :numeric &&
+                                             vector.missing_positions.empty?
       end
 
       numerics_as_arrays.transpose.to_nm
@@ -2013,7 +2013,7 @@ module Daru
       longest = [@name.to_s.size,
                  (@vectors.map(&:to_s).map(&:size).max || 0),
                  (@index  .map(&:to_s).map(&:size).max || 0),
-                 (@data   .map{ |v| v.map(&:to_s).map(&:size).max}.max || 0)].max
+                 (@data   .map { |v| v.map(&:to_s).map(&:size).max}.max || 0)].max
 
       name      = @name || 'nil'
       content   = ''
@@ -2023,7 +2023,7 @@ module Daru
       (@vectors.size + 1).times { formatter += "%#{longest}.#{longest}s " }
       content += "\n#<" + self.class.to_s + ':' + object_id.to_s + ' @name = ' +
                  name.to_s + ' @size = ' + @size.to_s + '>'
-      content += formatter % ['' , *@vectors.map(&:to_s)]
+      content += formatter % ['', *@vectors.map(&:to_s)]
       row_num  = 1
 
       each_row_with_index do |row, index|
@@ -2218,7 +2218,7 @@ module Daru
           rows << self.row[name].to_a
         end
 
-        Daru::DataFrame.rows rows, index: names ,name: @name, order: @vectors
+        Daru::DataFrame.rows rows, index: names,name: @name, order: @vectors
       end
     end
 

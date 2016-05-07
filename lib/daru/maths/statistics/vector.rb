@@ -30,7 +30,7 @@ module Daru
         end
 
         def mode
-          frequencies.max{|a,b| a[1]<=>b[1]}.first
+          frequencies.max {|a,b| a[1]<=>b[1]}.first
         end
 
         # Create a summary of count, mean, standard deviation, min and max of
@@ -104,7 +104,7 @@ module Daru
 
         def ranked
           sum = 0
-          r = frequencies.sort.each_with_object( {} ) do |val, memo|
+          r = frequencies.sort.each_with_object({}) do |val, memo|
             memo[val[0]] = ((sum + 1) + (sum + val[1])).quo(2)
             sum += val[1]
           end
@@ -122,7 +122,7 @@ module Daru
         # given, counts the number of non-nil elements in the Vector.
         def count value=false
           if block_given?
-            @data.select{ |val| yield(val) }.count
+            @data.select { |val| yield(val) }.count
           elsif value
             val = frequencies[value]
             val.nil? ? 0 : val
@@ -230,7 +230,7 @@ module Daru
             @data.kurtosis
           else
             m ||= mean
-            fo  = @data.inject(0){ |a, x| a + ((x - m) ** 4) }
+            fo  = @data.inject(0) { |a, x| a + ((x - m) ** 4) }
             fo.quo((@size - @missing_positions.size) * standard_deviation_sample(m) ** 4) - 3
           end
         end
@@ -238,9 +238,9 @@ module Daru
         def average_deviation_population m=nil
           type == :numeric or raise TypeError, 'Vector must be numeric'
           m ||= mean
-          (@data.inject( 0 ) { |memo, val|
-            @missing_values.key?(val) ? memo : ( val - m ).abs + memo
-          }).quo( n_valid )
+          (@data.inject(0) { |memo, val|
+            @missing_values.key?(val) ? memo : (val - m).abs + memo
+          }).quo(n_valid)
         end
 
         # Returns the value of the percentile q
@@ -259,7 +259,7 @@ module Daru
           case strategy
           when :midpoint
             v = (n_valid * q).quo(100)
-            if(v.to_i!=v)
+            if v.to_i!=v
               sorted[v.to_i]
             else
               (sorted[(v-0.5).to_i].to_f + sorted[(v+0.5).to_i]).quo(2)
@@ -323,7 +323,7 @@ module Daru
 
           recode do |x|
             if !x.nil?
-              if(lambda == 0)
+              if lambda == 0
                 Math.log(x)
               else
                 (x ** lambda - 1).quo(lambda)
@@ -369,7 +369,7 @@ module Daru
           else
             valid = missing_positions.empty? ? self : only_valid
             vds = valid.size
-            (0...sample).collect{ valid[rand(vds)] }
+            (0...sample).collect { valid[rand(vds)] }
           end
         end
 
@@ -393,7 +393,7 @@ module Daru
               out.push(value) unless out.include?(value)
             end
 
-            out.collect{|i| valid[i]}
+            out.collect {|i| valid[i]}
           end
         end
 
@@ -419,7 +419,7 @@ module Daru
           value = only_valid
           arr = []
           i = 1
-          ind = @data.find_index{|x|!x.nil?}
+          ind = @data.find_index {|x| !x.nil?}
           (periods...size).each do |j|
             if j==ind || @missing_values.key?(@data[j])
               arr[j] = nil

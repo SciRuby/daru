@@ -195,7 +195,7 @@ module Daru
               date_time.hour, date_time.min, 59)
           ]
         else # second or when precision is same as offset
-          [ date_time, date_time ]
+          [date_time, date_time]
         end
       end
 

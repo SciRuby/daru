@@ -178,7 +178,7 @@ module Daru
             end
           end
 
-          Daru::DataFrame.new(computed, index: @index, order: order ,clone: false)
+          Daru::DataFrame.new(computed, index: @index, order: order,clone: false)
         end
 
         def vector_cov v1a, v2a
@@ -186,7 +186,7 @@ module Daru
         end
 
         def sum_of_squares v1, v2
-          v1a,v2a = v1.only_valid ,v2.only_valid
+          v1a,v2a = v1.only_valid,v2.only_valid
           v1a.reset_index!
           v2a.reset_index!
           m1 = v1a.mean

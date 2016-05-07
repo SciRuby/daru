@@ -287,7 +287,7 @@ module Daru
       case other
       when Daru::Vector
         @index == other.index && @size == other.size &&
-          @index.all?{|index| self[index] == other[index]}
+          @index.all? {|index| self[index] == other[index]}
       else
         super
       end
@@ -491,7 +491,7 @@ module Daru
     # Get index of element
     def index_of element
       case dtype
-      when :array then @index.key @data.index{|x| x.eql? element}
+      when :array then @index.key @data.index {|x| x.eql? element}
       else @index.key @data.index(element)
       end
     end
@@ -884,7 +884,7 @@ module Daru
           s.table(name: 'Distribution') do |t|
             frequencies.sort_by(&:to_s).each do |k,v|
               key = @index.include?(k) ? @index[k] : k
-              t.row [key, v , ('%0.2f%%' % (v.quo(n_valid)*100))]
+              t.row [key, v, ('%0.2f%%' % (v.quo(n_valid)*100))]
             end
           end
         end
@@ -1087,7 +1087,7 @@ module Daru
       numeric_indexes = []
 
       each_with_index do |v, i|
-        numeric_indexes << i if(v.is_a?(Numeric) || @missing_values.key?(v))
+        numeric_indexes << i if v.is_a?(Numeric) || @missing_values.key?(v)
       end
 
       self[*numeric_indexes]

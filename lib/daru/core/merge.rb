@@ -43,7 +43,6 @@ module Daru
         end
 
         def arrayify_with_sort_keys(size, df_hash, on)
-
           # Converting to a hash and then to an array is more complex
           # than using df.to_a or df.map(:row).  However, it's
           # substantially faster this way.
@@ -99,7 +98,6 @@ module Daru
       end
 
       def merge_join(left: true, right: true)
-
         MergeHelper.verify_dataframes df1_hash, df2_hash, @on
         MergeHelper.resolve_duplicates df1_hash, df2_hash, @on
 

@@ -250,29 +250,12 @@ Style/SpaceAfterComma:
     - 'lib/daru/maths/statistics/vector.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyleInsidePipes, SupportedStyles.
-# SupportedStyles: space, no_space
-Style/SpaceAroundBlockParameters:
-  Exclude:
-    - 'lib/daru/maths/statistics/vector.rb'
-
 # Offense count: 122
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 # SupportedStyles: space, no_space
 Style/SpaceAroundEqualsInParameterDefault:
   Enabled: false
-
-# Offense count: 8
-# Cop supports --auto-correct.
-Style/SpaceAroundKeyword:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/maths/statistics/vector.rb'
-    - 'lib/daru/plotting/dataframe.rb'
-    - 'lib/daru/vector.rb'
 
 # Offense count: 110
 # Cop supports --auto-correct.
@@ -291,29 +274,6 @@ Style/SpaceAroundOperators:
     - 'lib/daru/plotting/dataframe.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 11
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: space, no_space
-Style/SpaceBeforeBlockBraces:
-  Enabled: false
-
-# Offense count: 6
-# Cop supports --auto-correct.
-Style/SpaceBeforeComma:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/maths/arithmetic/vector.rb'
-    - 'lib/daru/maths/statistics/dataframe.rb'
-    - 'lib/daru/vector.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: AllowForAlignment.
-Style/SpaceBeforeFirstArg:
-  Exclude:
-    - 'lib/daru/vector.rb'
-
 # Offense count: 33
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles, EnforcedStyleForEmptyBraces, SpaceBeforeBlockParameters.
@@ -321,24 +281,9 @@ Style/SpaceBeforeFirstArg:
 Style/SpaceInsideBlockBraces:
   Enabled: false
 
-# Offense count: 2
-# Cop supports --auto-correct.
-Style/SpaceInsideBrackets:
-  Exclude:
-    - 'lib/daru/date_time/index.rb'
-
 # Offense count: 9
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, EnforcedStyleForEmptyBraces, SupportedStyles.
 # SupportedStyles: space, no_space
 Style/SpaceInsideHashLiteralBraces:
-  Enabled: false
-
-# Offense count: 8
-# Cop supports --auto-correct.
-Style/SpaceInsideParens:
-  Exclude:
-    - 'lib/daru/maths/statistics/vector.rb'
-
-Style/EmptyLinesAroundMethodBody:
   Enabled: false

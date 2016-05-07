@@ -61,7 +61,7 @@ module Daru
           options[:x]
         ]
 
-        args << options[:y] if(options[:y])
+        args << options[:y] if options[:y]
 
         plot.add_with_df(*args)
       end
