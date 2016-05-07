@@ -50,6 +50,10 @@ Style/SpaceAfterComma:
 Style/SpaceAroundOperators:
   Enabled: false
 
+# Neither of prefered styles are good enough :(
+Style/BlockDelimiters:
+  Enabled: false
+
 # TODO -----------------------------------------------------------------
 
 Style/Documentation:
@@ -57,9 +61,9 @@ Style/Documentation:
 
 # To discuss and decide ------------------------------------------------
 
-# FIXME: in fact, rescue modifier is rarely a good choice
-#  but currently I can fully grasp the three places they are used
-#  so, leaving them intact. - zverok, 2016-05-07
+# FIXME: in fact, rescue modifier is rarely a good choice.
+#  But currently I can't fully grasp the three places they are used.
+#  So, leaving them intact. - zverok, 2016-05-07
 Style/RescueModifier:
   Exclude:
     - 'lib/daru/accessors/gsl_wrapper.rb'

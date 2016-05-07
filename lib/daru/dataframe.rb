@@ -112,27 +112,29 @@ module Daru
       # Create DataFrame by specifying rows as an Array of Arrays or Array of
       # Daru::Vector objects.
       def rows source, opts={}
-        raise SizeError, 'All vectors must have same length' \
-          unless source.all? { |v| v.size == source[0].size }
+        first = source.first
 
-        first = source[0]
+        raise SizeError, 'All vectors must have same length' \
+          unless source.all? { |v| v.size == first.size }
+
         index = []
         opts[:order] ||=
-          if first.is_a?(Daru::Vector) # assume that all are Vectors
-            source.each { |vec| index << vec.name }
+          case first
+          when Daru::Vector # assume that all are Vectors
+            index = source.map(&:name)
             first.index.to_a
-          elsif first.is_a?(Array)
+          when Array
             Array.new(first.size, &:to_s)
           end
 
         if source.all? { |s| s.is_a?(Array) }
           Daru::DataFrame.new(source.transpose, opts)
         else # array of Daru::Vectors
-          Daru::DataFrame.new({}, opts).tap{|df|
+          Daru::DataFrame.new({}, opts).tap do |df|
             source.each_with_index do |row, idx|
-              df[(index[idx] || idx), :row] = row
+              df[index[idx] || idx, :row] = row
             end
-          }
+          end
         end
       end
 

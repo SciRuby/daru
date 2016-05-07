@@ -48,21 +48,6 @@ Metrics/ModuleLength:
 Metrics/PerceivedComplexity:
   Max: 28
 
-# Offense count: 11
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles, ProceduralMethods, FunctionalMethods, IgnoredMethods.
-# SupportedStyles: line_count_based, semantic, braces_for_chaining
-# ProceduralMethods: benchmark, bm, bmbm, create, each_with_object, measure, new, realtime, tap, with_object
-# FunctionalMethods: let, let!, subject, watch
-# IgnoredMethods: lambda, proc, it
-Style/BlockDelimiters:
-  Exclude:
-    - 'lib/daru/core/merge.rb'
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/io/io.rb'
-    - 'lib/daru/maths/statistics/vector.rb'
-    - 'lib/daru/vector.rb'
-
 # Offense count: 3
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
