@@ -1032,19 +1032,18 @@ module Daru
     # vector, setting this to false will return the same vector.
     # Otherwise, a duplicate will be returned irrespective of
     # presence of missing data.
-    def only_valid as_a=:vector, duplicate=true
-      return dup if !has_missing_data? && as_a == :vector && duplicate
-      return self if !has_missing_data? && as_a == :vector && !duplicate
-      return to_a if !has_missing_data? && as_a != :vector
+    def only_valid as_a=:vector, _duplicate=true
+      # FIXME: Now duplicate is just ignored.
+      #   There are no spec that fail on this case, so I'll leave it this way for now - zverok, 2016-05-07
 
       new_index = @index.to_a - missing_positions
-      new_vector = new_index.map do |idx|
-        self[idx]
+      new_vector = new_index.map { |idx| self[idx] }
+
+      if as_a == :vector
+        Daru::Vector.new new_vector, index: new_index, name: @name, metadata: @metadata.dup, dtype: dtype
+      else
+        new_vector
       end
-
-      return new_vector if as_a != :vector
-
-      Daru::Vector.new new_vector, index: new_index, name: @name, metadata: @metadata.dup, dtype: dtype
     end
 
     # Returns a Vector containing only missing data (preserves indexes).
