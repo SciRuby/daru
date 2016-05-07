@@ -278,8 +278,8 @@ module Daru
 
             @vectors.each do |name|
               v = []
-              source.each do |hsh|
-                v << (hsh[name] || hsh[name.to_s])
+              source.each do |h|
+                v << (h[name] || h[name.to_s])
               end
 
               @data << Daru::Vector.new(v, name: set_name(name), index: @index)
@@ -2230,17 +2230,17 @@ module Daru
 
     def insert_or_modify_vector name, vector
       name = name[0] unless @vectors.is_a?(MultiIndex)
-      v = nil
+      vec = nil
 
       if @index.empty?
-        v = if vector.is_a?(Daru::Vector)
-              vector
-            else
-              Daru::Vector.new(vector.to_a, name: set_name(name))
-            end
+        vec = if vector.is_a?(Daru::Vector)
+                vector
+              else
+                Daru::Vector.new(vector.to_a, name: set_name(name))
+              end
 
-        @index = v.index
-        assign_or_add_vector name, v
+        @index = vec.index
+        assign_or_add_vector name, vec
         set_size
 
         @data.map! do |v|
@@ -2253,11 +2253,11 @@ module Daru
       else
         if vector.is_a?(Daru::Vector)
           if vector.index == @index # so that index-by-index assignment is avoided when possible.
-            v = vector.dup
+            vec = vector.dup
           else
-            v = Daru::Vector.new [], name: set_name(name), metadata: vector.metadata.dup, index: @index
+            vec = Daru::Vector.new [], name: set_name(name), metadata: vector.metadata.dup, index: @index
             @index.each do |idx|
-              v[idx] = vector.index.include?(idx) ? vector[idx] : nil
+              vec[idx] = vector.index.include?(idx) ? vector[idx] : nil
             end
           end
         else
@@ -2265,10 +2265,10 @@ module Daru
             "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}" if
             @size != vector.size
 
-          v = Daru::Vector.new(vector, name: set_name(name), index: @index)
+          vec = Daru::Vector.new(vector, name: set_name(name), index: @index)
         end
 
-        assign_or_add_vector name, v
+        assign_or_add_vector name, vec
       end
     end
 
@@ -2298,7 +2298,7 @@ module Daru
         # TODO
       else
         name = name[0]
-        v =
+        vec =
           if vector.is_a?(Daru::Vector)
             vector
           else
@@ -2306,13 +2306,13 @@ module Daru
           end
 
         if @index.include? name
-          each_vector_with_index do |vector,i|
-            vector[name] = v.index.include?(i) ? v[i] : nil
+          each_vector_with_index do |v,i|
+            v[name] = vec.index.include?(i) ? vec[i] : nil
           end
         else
           @index |= [name]
-          each_vector_with_index do |vector,i|
-            vector.concat((v.index.include?(i) ? v[i] : nil), name)
+          each_vector_with_index do |v,i|
+            v.concat((vec.index.include?(i) ? vec[i] : nil), name)
           end
         end
 

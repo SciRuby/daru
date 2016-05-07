@@ -11,11 +11,6 @@ Lint/AmbiguousOperator:
   Exclude:
     - 'lib/daru/dataframe.rb'
 
-# Offense count: 4
-Lint/ShadowingOuterLocalVariable:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-
 # Offense count: 7
 # Cop supports --auto-correct.
 # Configuration parameters: IgnoreEmptyBlocks.
@@ -135,15 +130,6 @@ Style/BracesAroundHashParameters:
     - 'lib/daru/index.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 35
-Style/Documentation:
-  Enabled: false
-
-# Offense count: 1
-Style/DoubleNegation:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-
 # Offense count: 3
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
@@ -153,13 +139,6 @@ Style/EmptyElse:
     - 'lib/daru/date_time/index.rb'
     - 'lib/daru/maths/statistics/vector.rb'
     - 'lib/daru/vector.rb'
-
-# Offense count: 3
-# Cop supports --auto-correct.
-#Style/Lambda:
-  #Exclude:
-    #- 'lib/daru/dataframe.rb'
-    #- 'lib/daru/vector.rb'
 
 # Offense count: 337
 # Cop supports --auto-correct.
