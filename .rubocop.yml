@@ -18,3 +18,12 @@ Style/FormatString:
 
 Style/AndOr:
   EnforcedStyle: conditionals
+
+# FIXME: in fact, rescue modifier is rarely a good choice
+#  but currently I can fully grasp the three places they are used
+#  so, leaving them intact. - zverok, 2016-05-07
+Style/RescueModifier:
+  Exclude:
+    - 'lib/daru/accessors/gsl_wrapper.rb'
+    - 'lib/daru/dataframe.rb'
+    - 'lib/daru/io/sql_data_source.rb'

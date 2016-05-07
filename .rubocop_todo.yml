@@ -214,14 +214,6 @@ Style/PredicateName:
     - 'lib/daru/monkeys.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 6
-# Cop supports --auto-correct.
-Style/RescueModifier:
-  Exclude:
-    - 'lib/daru/accessors/gsl_wrapper.rb'
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/io/sql_data_source.rb'
-
 # Offense count: 12
 # Configuration parameters: Methods.
 # Methods: {"reduce"=>["a", "e"]}, {"inject"=>["a", "e"]}
