@@ -93,30 +93,18 @@ module Daru
     #   vecarr = Daru::Vector.new [1,2,3,4], index: [:a, :e, :i, :o]
     #   vechsh = Daru::Vector.new({a: 1, e: 2, i: 3, o: 4})
     def initialize source, opts={}
-      index = nil
-      if source.is_a?(Hash)
-        index  = source.keys
-        source = source.values
-      else
-        index  = opts[:index]
-        source ||= []
-      end
-      name = opts[:name]
-      set_name name
+      index, source = parse_source(source, opts)
+      set_name opts[:name]
 
       @metadata = opts[:metadata] || {}
 
       @data  = cast_vector_to(opts[:dtype] || :array, source, opts[:nm_dtype])
       @index = try_create_index(index || @data.size)
 
-      if @index.size > @data.size
-        cast(dtype: :array) # NM with nils seg faults
-        (@index.size - @data.size).times { @data << nil }
-      elsif @index.size < @data.size
-        raise IndexError, "Expected index size >= vector size. Index size : #{@index.size}, vector size : #{@data.size}"
-      end
+      guard_sizes!
 
       @possibly_changed_type = true
+
       set_missing_values opts[:missing_values]
       set_missing_positions
       set_size
@@ -1152,6 +1140,23 @@ module Daru
 
       longest   = [longest, spacing].min
       "\n%#{longest}.#{longest}s %#{longest}.#{longest}s"
+    end
+
+    def parse_source source, opts
+      if source.is_a?(Hash)
+        [source.keys, source.values]
+      else
+        [opts[:index], source || []]
+      end
+    end
+
+    def guard_sizes!
+      if @index.size > @data.size
+        cast(dtype: :array) # NM with nils seg faults
+        @data.fill(nil, @data.size...@index.size)
+      elsif @index.size < @data.size
+        raise IndexError, "Expected index size >= vector size. Index size : #{@index.size}, vector size : #{@data.size}"
+      end
     end
 
     # For an array or hash of estimators methods, returns

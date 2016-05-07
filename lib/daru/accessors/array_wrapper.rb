@@ -54,6 +54,11 @@ module Daru
         set_size
       end
 
+      def fill(*arg)
+        @data.fill(*arg)
+        set_size
+      end
+
       def uniq
         @data.uniq
       end
