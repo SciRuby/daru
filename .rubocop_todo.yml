@@ -59,12 +59,6 @@ Metrics/ModuleLength:
 Metrics/PerceivedComplexity:
   Max: 28
 
-# Offense count: 3
-Style/AccessorMethodName:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/vector.rb'
-
 # Offense count: 25
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
@@ -104,39 +98,3 @@ Style/EmptyElse:
     - 'lib/daru/date_time/index.rb'
     - 'lib/daru/maths/statistics/vector.rb'
     - 'lib/daru/vector.rb'
-
-# Offense count: 94
-# Cop supports --auto-correct.
-Style/SpaceAfterComma:
-  Exclude:
-    - 'lib/daru/accessors/gsl_wrapper.rb'
-    - 'lib/daru/accessors/nmatrix_wrapper.rb'
-    - 'lib/daru/core/group_by.rb'
-    - 'lib/daru/core/merge.rb'
-    - 'lib/daru/core/query.rb'
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/date_time/index.rb'
-    - 'lib/daru/date_time/offsets.rb'
-    - 'lib/daru/io/io.rb'
-    - 'lib/daru/maths/arithmetic/vector.rb'
-    - 'lib/daru/maths/statistics/dataframe.rb'
-    - 'lib/daru/maths/statistics/vector.rb'
-    - 'lib/daru/vector.rb'
-
-# Offense count: 110
-# Cop supports --auto-correct.
-# Configuration parameters: AllowForAlignment.
-Style/SpaceAroundOperators:
-  Exclude:
-    - 'lib/daru/accessors/nmatrix_wrapper.rb'
-    - 'lib/daru/core/group_by.rb'
-    - 'lib/daru/core/merge.rb'
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/date_time/index.rb'
-    - 'lib/daru/date_time/offsets.rb'
-    - 'lib/daru/io/io.rb'
-    - 'lib/daru/maths/statistics/dataframe.rb'
-    - 'lib/daru/maths/statistics/vector.rb'
-    - 'lib/daru/plotting/dataframe.rb'
-    - 'lib/daru/vector.rb'
-

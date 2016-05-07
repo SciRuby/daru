@@ -2388,7 +2388,7 @@ module Daru
       index.is_a?(Index) ? index : Daru::Index.new(index)
     end
 
-    def set_name potential_name
+    def set_name potential_name # rubocop:disable Style/AccessorMethodName
       potential_name.is_a?(Array) ? potential_name.join : potential_name
     end
 

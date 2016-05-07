@@ -41,6 +41,12 @@ Style/SingleLineBlockParams:
 Style/PerlBackrefs:
   Enabled: false
 
+Style/SpaceAfterComma:
+  Enabled: false
+
+Style/SpaceAroundOperators:
+  Enabled: false
+
 # TODO -----------------------------------------------------------------
 
 Style/Documentation:

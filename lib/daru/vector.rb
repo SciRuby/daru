@@ -1217,7 +1217,7 @@ module Daru
       @size = @data.size
     end
 
-    def set_name name
+    def set_name name # rubocop:disable Style/AccessorMethodName
       @name =
         if name.is_a?(Numeric)  then name
         elsif name.is_a?(Array) then name.join # in case of MultiIndex tuple
@@ -1249,7 +1249,7 @@ module Daru
 
     # Setup missing_values. The missing_values instance variable is set
     # as a Hash for faster lookup times.
-    def set_missing_values values_arry
+    def set_missing_values values_arry # rubocop:disable Style/AccessorMethodName
       @missing_values = {}
       @missing_values[nil] = 0
       if values_arry
