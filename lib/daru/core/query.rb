@@ -9,25 +9,13 @@ module Daru
         end
 
         def & other
-          new_bool = []
-          other_barry = other.barry
-          @barry.each_with_index do |b, i|
-            new_bool << (b and other_barry[i])
-          end
-
-          BoolArray.new(new_bool)
+          BoolArray.new @barry.zip(other.barry).map { |b, o| b && o }
         end
 
         alias :and :&
 
         def | other
-          new_bool = []
-          other_barry = other.barry
-          @barry.each_with_index do |b, i|
-            new_bool << (b or other_barry[i])
-          end
-
-          BoolArray.new(new_bool)
+          BoolArray.new @barry.zip(other.barry).map { |b, o| b || o }
         end
 
         alias :or :|
