@@ -900,30 +900,17 @@ module Daru
 
     # Over rides original inspect for pretty printing in irb
     def inspect spacing=20, threshold=15
-      longest = [@name.to_s.size,
-                 (@index.to_a.map(&:to_s).map(&:size).max || 0),
-                 (@data.map(&:to_s).map(&:size).max || 0),
-                 3 # 'nil'.size
-                ].max
-
-      content   = ''
-      longest   = spacing if longest > spacing
       name      = @name || 'nil'
       metadata  = @metadata || 'nil'
-      formatter = "\n%#{longest}.#{longest}s %#{longest}.#{longest}s"
-      content  += "\n#<#{self.class}:#{object_id} @name = #{name} @metadata = #{metadata} @size = #{size} >"
+      formatter = make_format_string spacing
 
-      content += formatter % ['', name]
-      @index.each_with_index do |index, num|
-        content += formatter % [index.to_s, (self[*index] || 'nil').to_s]
-        if num > threshold
-          content += formatter % ['...', '...']
-          break
-        end
-      end
-      content += "\n"
-
-      content
+      [
+        "\n#<#{self.class}:#{object_id} @name = #{name} @metadata = #{metadata} @size = #{size} >",
+        formatter % ['', name],
+        @index.first(threshold).map { |idx| formatter % [idx, self[*idx] || 'nil'] },
+        size > threshold ? formatter % ['...', '...'] : '',
+        "\n"
+      ].flatten.join
     end
 
     # Create a new vector with a different index, and preserve the indexing of
@@ -1155,6 +1142,17 @@ module Daru
     end
 
     private
+
+    def make_format_string spacing
+      longest = [@name.to_s.size,
+                 (@index.to_a.map(&:to_s).map(&:size).max || 0),
+                 (@data.map(&:to_s).map(&:size).max || 0),
+                 3 # 'nil'.size
+                ].max
+
+      longest   = [longest, spacing].min
+      "\n%#{longest}.#{longest}s %#{longest}.#{longest}s"
+    end
 
     # For an array or hash of estimators methods, returns
     # an array with three elements
