@@ -21,16 +21,11 @@ module Daru
     # We over-ride the .new method so that any sort of Index can be generated
     # from Daru::Index based on the types of arguments supplied.
     def self.new *args, &block
-      source = args[0]
+      source = args.first
 
-      if source && source[0].is_a?(Array)
-        Daru::MultiIndex.from_tuples source
-      elsif source && source.is_a?(Array) && !source.empty? &&
-            source.all? { |e| e.is_a?(DateTime) }
-        Daru::DateTimeIndex.new(source, freq: :infer)
-      else
+      MultiIndex.try_from_tuples(source) ||
+        DateTimeIndex.try_create(source) ||
         allocate.tap { |i| i.send :initialize, *args, &block }
-      end
     end
 
     def each(&block)
@@ -66,30 +61,14 @@ module Daru
         @relation_hash.values == other.relation_hash.values
     end
 
-    def [](*key)
-      loc = key[0]
-
+    def [](key, *rest)
       case
-      when loc.is_a?(Range)
-        first = loc.first
-        last = loc.last
-
-        slice first, last
-      when key.size > 1
-        if include? key[0]
-          Daru::Index.new key.map { |k| k }
-        else
-          # Assume the user is specifing values for index not keys
-          # Return index object having keys corresponding to values provided
-          Daru::Index.new key.map { |k| key k }
-        end
+      when key.is_a?(Range)
+        by_range key
+      when !rest.empty?
+        by_multi_key key, *rest
       else
-        v = @relation_hash[loc]
-        unless v
-          return loc if loc.is_a?(Numeric) && loc < size
-          raise IndexError, "Specified index #{loc.inspect} does not exist"
-        end
-        v
+        by_single_key key
       end
     end
 
@@ -153,6 +132,32 @@ module Daru
     def conform(*)
       self
     end
+
+    private
+
+    def by_range rng
+      slice rng.begin, rng.end
+    end
+
+    def by_multi_key *key
+      if include? key[0]
+        Daru::Index.new key.map { |k| k }
+      else
+        # Assume the user is specifing values for index not keys
+        # Return index object having keys corresponding to values provided
+        Daru::Index.new key.map { |k| key k }
+      end
+    end
+
+    def by_single_key key
+      if @relation_hash.key?(key)
+        @relation_hash[key]
+      elsif key.is_a?(Numeric) && key < size
+        key
+      else
+        raise IndexError, "Specified index #{key.inspect} does not exist"
+      end
+    end
   end # class Index
 
   class MultiIndex < Index
@@ -172,19 +177,14 @@ module Daru
       @levels.map(&:keys)
     end
 
-    def initialize opts={}
-      labels = opts[:labels]
-      levels = opts[:levels]
-
-      raise ArgumentError,
-        'Must specify both labels and levels' unless labels && levels
+    def initialize labels:, levels:
       raise ArgumentError,
         'Labels and levels should be same size' if labels.size != levels.size
       raise ArgumentError,
         'Incorrect labels and levels' if incorrect_fields?(labels, levels)
 
       @labels = labels
-      @levels = levels.map { |e| Hash[e.map.with_index.to_a] }
+      @levels = levels.map { |e| e.map.with_index.to_h }
     end
 
     def incorrect_fields?(_labels, levels)
@@ -218,6 +218,10 @@ module Daru
       from_arrays tuples.transpose
     end
 
+    def self.try_from_tuples tuples
+      tuples.is_a?(Array) && tuples.first.is_a?(Array) ? from_tuples(tuples) : nil
+    end
+
     def [] *key
       key.flatten!
       case
@@ -241,7 +245,7 @@ module Daru
       MultiIndex.from_tuples(range.map { |index| key(index) })
     end
 
-    def retrieve_from_tuples key
+    def retrieve_from_tuples key # rubocop:disable Metrics/AbcSize
       chosen = []
 
       key.each_with_index do |k, depth|

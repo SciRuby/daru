@@ -68,7 +68,7 @@ describe Daru::Index do
     end
 
     it "unions an Index and an Array to return an Index" do
-      expect(@left | [:bob, :jimi, :richie]).to eq([:miles, :geddy, :eric, 
+      expect(@left | [:bob, :jimi, :richie]).to eq([:miles, :geddy, :eric,
         :bob, :jimi, :richie].to_index)
     end
   end
@@ -148,11 +148,11 @@ describe Daru::MultiIndex do
   context ".from_tuples" do
     it "creates 2 layer MultiIndex from tuples" do
       tuples = [
-        [:a, :one], 
-        [:a, :two], 
-        [:b, :one], 
-        [:b, :two], 
-        [:c, :one], 
+        [:a, :one],
+        [:a, :two],
+        [:b, :one],
+        [:b, :two],
+        [:c, :one],
         [:c, :two]
       ]
       mi = Daru::MultiIndex.from_tuples(tuples)
@@ -168,7 +168,27 @@ describe Daru::MultiIndex do
         [0,1,0,1,0,0,1,2,0,1,2,0]
       ])
     end
-  end 
+  end
+
+  context '.try_from_tuples' do
+    it 'creates MultiIndex, if there are tuples' do
+      tuples = [
+        [:a, :one],
+        [:a, :two],
+        [:b, :one],
+        [:b, :two],
+        [:c, :one],
+        [:c, :two]
+      ]
+      mi = Daru::MultiIndex.try_from_tuples(tuples)
+      expect(mi).to be_a Daru::MultiIndex
+    end
+
+    it 'returns nil, if MultiIndex can not be created' do
+      mi = Daru::MultiIndex.try_from_tuples([:a, :b, :c])
+      expect(mi).to be_nil
+    end
+  end
 
   context "#size" do
     it "returns size of MultiIndex" do
@@ -325,8 +345,8 @@ describe Daru::MultiIndex do
       expect(@mi1 | @mi2).to eq(Daru::MultiIndex.new(
         levels: [[:a, :b], [:one, :two], [:bar, :baz, :foo]],
         labels: [
-          [0, 0, 1, 1, 0, 0, 1], 
-          [0, 1, 0, 1, 1, 0, 1], 
+          [0, 0, 1, 1, 0, 0, 1],
+          [0, 1, 0, 1, 1, 0, 1],
           [0, 1, 2, 0, 0, 1, 1]
         ])
       )

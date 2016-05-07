@@ -224,6 +224,15 @@ module Daru
   class DateTimeIndex < Index
     include Enumerable
 
+    def self.try_create(source)
+      if source && source.is_a?(Array) && !source.empty? &&
+            source.all? { |e| e.is_a?(DateTime) }
+        new(source, freq: :infer)
+      else
+        nil
+      end
+    end
+
     def each(&block)
       to_a.each(&block)
     end

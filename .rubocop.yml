@@ -9,6 +9,7 @@ AllCops:
     - 'vendor/**/*'
     - 'benchmarks/*'
   DisplayCopNames: true
+  TargetRubyVersion: 2.1
 
 # Preferred codebase style ---------------------------------------------
 Style/ExtraSpacing:
