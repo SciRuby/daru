@@ -161,13 +161,6 @@ Style/Lambda:
     - 'lib/daru/dataframe.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 4
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: call, braces
-Style/LambdaCall:
-  Enabled: false
-
 # Offense count: 337
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
@@ -175,27 +168,10 @@ Style/LambdaCall:
 Style/MethodDefParentheses:
   Enabled: false
 
-# Offense count: 1
-Style/NestedTernaryOperator:
-  Exclude:
-    - 'lib/daru/core/group_by.rb'
-
 # Offense count: 18
 Style/OpMethod:
   Exclude:
     - 'lib/daru/date_time/offsets.rb'
-
-# Offense count: 1
-Style/OptionalArguments:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-
-# Offense count: 4
-# Cop supports --auto-correct.
-Style/ParallelAssignment:
-  Exclude:
-    - 'lib/daru/core/group_by.rb'
-    - 'lib/daru/maths/statistics/dataframe.rb'
 
 # Offense count: 5
 # Cop supports --auto-correct.

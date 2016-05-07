@@ -17,7 +17,14 @@ module Daru
         @context = context
         vectors = names.map { |vec| context[vec].to_a }
         tuples  = vectors[0].zip(*vectors[1..-1])
-        keys    = tuples.uniq.sort { |a,b| a && b ? a.compact <=> b.compact : a ? 1 : -1 }
+        keys    =
+          tuples.uniq.sort do |a,b|
+            if a && b
+              a.compact <=> b.compact
+            else
+              a ? 1 : -1
+            end
+          end
 
         keys.each do |key|
           @groups[key] = all_indices_for(tuples, key)

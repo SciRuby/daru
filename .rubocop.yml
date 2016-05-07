@@ -27,3 +27,6 @@ Style/RescueModifier:
     - 'lib/daru/accessors/gsl_wrapper.rb'
     - 'lib/daru/dataframe.rb'
     - 'lib/daru/io/sql_data_source.rb'
+
+Style/ParallelAssignment:
+  Enabled: false

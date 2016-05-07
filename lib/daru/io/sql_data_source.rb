@@ -11,13 +11,13 @@ module Daru
 
         def each_column_name(&block)
           result.column_names.each do |column_name|
-            block.(column_name.to_sym)
+            block.call(column_name.to_sym)
           end
         end
 
         def each_row(&block)
           result.fetch do |row|
-            block.(row.to_a)
+            block.call(row.to_a)
           end
         end
 
@@ -38,13 +38,13 @@ module Daru
 
         def each_column_name(&block)
           result.columns.each do |column_name|
-            block.(column_name.to_sym)
+            block.call(column_name.to_sym)
           end
         end
 
         def each_row(&block)
           result.each do |row|
-            block.(row.values)
+            block.call(row.values)
           end
         end
 
