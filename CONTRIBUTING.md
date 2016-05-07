@@ -21,6 +21,10 @@ And run the test suite (should be all green with pending tests):
 
 If you have problems installing nmatrix, please consult the [nmatrix installation wiki](https://github.com/SciRuby/nmatrix/wiki/Installation) or the [mailing list](https://groups.google.com/forum/#!forum/sciruby-dev).
 
+While preparing your pull requests, don't forget to check your code with Rubocop:
+
+  `bundle exec rubocop`
+
 ## Daru internals
 
 To get an overview of certain internals of daru and their implementation, go over [this blog post](http://v0dro.github.io/blog/2015/08/16/elaboration-on-certain-internals-of-daru/).

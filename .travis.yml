@@ -11,7 +11,9 @@ matrix:
   fast_finish:
     true
 
-script: "bundle exec rspec"
+script:
+  - bundle exec rspec
+  - bundle exec rubocop
 
 install:
   - gem install bundler
