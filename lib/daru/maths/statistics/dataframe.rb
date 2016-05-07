@@ -156,10 +156,10 @@ module Daru
         # Calculate the correlation between the numeric vectors.
         def correlation
           standard_deviation = std.to_matrix
-          corr_arry = (cov
-            .to_matrix
-            .elementwise_division(standard_deviation.transpose *
-            standard_deviation)).to_a
+          corr_arry = cov
+                      .to_matrix
+                      .elementwise_division(standard_deviation.transpose *
+            standard_deviation).to_a
 
           Daru::DataFrame.rows(corr_arry, index: numeric_vectors, order: numeric_vectors)
         end
@@ -191,7 +191,7 @@ module Daru
           v2a.reset_index!
           m1 = v1a.mean
           m2 = v2a.mean
-          (v1a.size).times.inject(0) {|ac,i| ac+(v1a[i]-m1)*(v2a[i]-m2)}
+          v1a.size.times.inject(0) {|ac,i| ac+(v1a[i]-m1)*(v2a[i]-m2)}
         end
 
         def compute_stats method

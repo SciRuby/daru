@@ -55,11 +55,11 @@ module Daru
         alias :mad :median_absolute_deviation
 
         def standard_error
-          standard_deviation_sample/(Math.sqrt((n_valid)))
+          standard_deviation_sample/Math.sqrt(n_valid)
         end
 
         def sum_of_squared_deviation
-          (@data.inject(0) { |a,x| x.square + a } - (sum.square.quo(n_valid)).to_f).to_f
+          (@data.inject(0) { |a,x| x.square + a } - sum.square.quo(n_valid).to_f).to_f
         end
 
         # Retrieve unique values of non-nil data
@@ -151,7 +151,7 @@ module Daru
           if @data.respond_to? :variance_sample
             @data.variance_sample m
           else
-            sum_of_squares(m).quo((n_valid) - 1)
+            sum_of_squares(m).quo(n_valid - 1)
           end
         end
 
@@ -161,7 +161,7 @@ module Daru
           if @data.respond_to? :variance_population
             @data.variance_population m
           else
-            sum_of_squares(m).quo((n_valid)).to_f
+            sum_of_squares(m).quo(n_valid).to_f
           end
         end
 
@@ -687,7 +687,7 @@ module Daru
           d = if unbiased
                 Array.new(size, size)
               else
-                ((1..size).to_a.reverse)[0..n]
+                (1..size).to_a.reverse[0..n]
               end
 
           0.upto(n - 1).map do |i|

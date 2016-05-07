@@ -133,7 +133,7 @@ module Daru
 
       def dataframe_write_sql ds, dbh, table
         require 'dbi'
-        query = "INSERT INTO #{table} ("+ds.vectors.to_a.join(',')+') VALUES ('+((['?']*ds.vectors.size).join(','))+')'
+        query = "INSERT INTO #{table} ("+ds.vectors.to_a.join(',')+') VALUES ('+(['?']*ds.vectors.size).join(',')+')'
         sth   = dbh.prepare(query)
         ds.each_row { |c| sth.execute(*c.to_a) }
         true

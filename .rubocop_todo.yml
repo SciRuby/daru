@@ -214,16 +214,6 @@ Style/PredicateName:
     - 'lib/daru/monkeys.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 12
-# Cop supports --auto-correct.
-Style/RedundantParentheses:
-  Exclude:
-    - 'lib/daru/dataframe.rb'
-    - 'lib/daru/io/io.rb'
-    - 'lib/daru/maths/statistics/dataframe.rb'
-    - 'lib/daru/maths/statistics/vector.rb'
-    - 'lib/daru/vector.rb'
-
 # Offense count: 6
 # Cop supports --auto-correct.
 Style/RescueModifier:
