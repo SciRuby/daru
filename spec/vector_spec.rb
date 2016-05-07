@@ -531,7 +531,7 @@ describe Daru::Vector do
             with_nils = Daru::Vector.new [22,4,nil,111,nil,2]
 
             expect(with_nils.sort(ascending: false)).to eq(
-              Daru::Vector.new [nil,nil,111,22,4,2], index: [4,2,3,0,1,5])
+              Daru::Vector.new [111,22,4,2,nil,nil], index: [3,0,1,5,4,2])
           end
 
           it "correctly sorts vector in ascending order with non-numeric data and nils" do
@@ -545,7 +545,7 @@ describe Daru::Vector do
             non_numeric = Daru::Vector.new ['a','b', nil, 'aa', '1234', nil]
 
             expect(non_numeric.sort(ascending: false)).to eq(
-              Daru::Vector.new [nil,nil,'b','aa','a','1234'], index: [5,2,1,3,0,4])
+              Daru::Vector.new ['b','aa','a','1234',nil,nil], index: [1,3,0,4,5,2])
           end
 
           it "retains the original vector metadata" do

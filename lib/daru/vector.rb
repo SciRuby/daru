@@ -515,34 +515,40 @@ module Daru
     #   v = Daru::Vector.new ["My first guitar", "jazz", "guitar"]
     #   # Say you want to sort these strings by length.
     #   v.sort(ascending: false) { |a,b| a.length <=> b.length }
-    def sort opts={}
-      opts = {
-        ascending: true
-      }.merge(opts)
+    def sort opts={}, &block
+      opts = {ascending: true}.merge(opts)
 
-      vector_index = @data.each_with_index
-      vector_index =
-        if block_given?
-          vector_index.sort { |a,b| yield(a[0], b[0]) }
-        else
-          vector_index.sort { |(av, ai), (bv, bi)|
-            if !av.nil? && !bv.nil?
-              av <=> bv
-            elsif av.nil? && bv.nil?
-              ai <=> bi
-            elsif av.nil?
-              opts[:ascending] ? -1 : 1
-            else
-              opts[:ascending] ? 1 : -1
-            end
-          }
-        end
-      vector_index.reverse! unless opts[:ascending]
+      vector_index = resort_index(@data.each_with_index, opts, &block)
       vector, index = vector_index.transpose
       old_index = @index.to_a
-      index = index.map { |i| old_index[i] }
+      index.map! { |i| old_index[i] }
 
       Daru::Vector.new(vector, index: index, name: @name, metadata: @metadata.dup, dtype: @dtype)
+    end
+
+    DEFAULT_SORTER = lambda { |(av, ai), (bv, bi)|
+      # FIXME: I suspect it can be replaced with just
+      #   [av || -Float::INFINITY, ai] <=> [bv || -Float::INFINITY, bi]
+      # but need more thorough check
+      case
+      when av.nil? && bv.nil?
+        ai <=> bi
+      when av.nil?
+        -1
+      when bv.nil?
+        1
+      else
+        av <=> bv
+      end
+    }
+
+    def resort_index vector_index, opts
+      if block_given?
+        vector_index.sort { |a,b| yield(a[0], b[0]) }
+      else
+        vector_index.sort(&DEFAULT_SORTER)
+      end
+        .tap { |res| res.reverse! unless opts[:ascending] }
     end
 
     # Just sort the data and get an Array in return using Enumerable#sort.
@@ -658,23 +664,22 @@ module Daru
     #
     def split_by_separator sep=','
       split_data = splitted sep
-      factors = split_data.flatten.uniq.compact
-
-      out = factors.map { |x| [x, []] }.to_h
-
-      split_data.each do |r|
-        if r.nil?
-          factors.each do |f|
-            out[f].push(nil)
+      split_data
+        .flatten.uniq.compact
+        .map do |key|
+        value = split_data.map { |v|
+          if v.nil?
+            nil
+          else
+            v.include?(key) ? 1 : 0
           end
-        else
-          factors.each do |f|
-            out[f].push(r.include?(f) ? 1 : 0)
-          end
-        end
-      end
+        }
 
-      out.map { |k, v| [k, Daru::Vector.new(v)] }.to_h
+        [
+          key,
+          Daru::Vector.new(value)
+        ]
+      end.to_h
     end
 
     def split_by_separator_freq(sep=',')
