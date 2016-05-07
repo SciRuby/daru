@@ -140,9 +140,3 @@ Style/SpaceAroundOperators:
     - 'lib/daru/plotting/dataframe.rb'
     - 'lib/daru/vector.rb'
 
-# Offense count: 9
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, EnforcedStyleForEmptyBraces, SupportedStyles.
-# SupportedStyles: space, no_space
-Style/SpaceInsideHashLiteralBraces:
-  Enabled: false

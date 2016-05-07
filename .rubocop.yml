@@ -26,6 +26,9 @@ Style/SpaceAroundEqualsInParameterDefault:
 Style/SpaceInsideBlockBraces:
   EnforcedStyle: space
 
+Style/SpaceInsideHashLiteralBraces:
+  EnforcedStyle: no_space
+
 Style/ParallelAssignment:
   Enabled: false
 

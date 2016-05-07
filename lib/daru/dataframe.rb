@@ -327,7 +327,7 @@ module Daru
             @index = try_create_index(index || source.values[0].size)
 
             @vectors.each do |name|
-              meta_opt = source[name].respond_to?(:metadata) ? { metadata: source[name].metadata.dup } : {}
+              meta_opt = source[name].respond_to?(:metadata) ? {metadata: source[name].metadata.dup} : {}
               @data << Daru::Vector.new(source[name].dup, name: set_name(name), **meta_opt, index: @index)
             end
           end
