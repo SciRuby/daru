@@ -40,16 +40,23 @@ module Daru
     attr_reader :relation_hash, :size
 
     def initialize index
-      index = 0 if index.nil?
-      index = Array.new(index) { |i| i } if index.is_a? Integer
-      index = index.to_a if index.is_a? Daru::Index
+      index =
+        case index
+        when nil
+          []
+        when Integer
+          index.times.to_a
+        when Index
+          index.to_a
+        when Array
+          index
+        else
+          raise ArgumentError, "Can't create index from #{index}"
+        end
 
-      @relation_hash = {}
-      index.each_with_index do |n, idx|
-        @relation_hash[n] = idx
-      end
-
-      @relation_hash.freeze
+      @relation_hash = index
+                       .each_with_index
+                       .map { |n, idx| [n, idx] }.to_h.freeze
       @keys = @relation_hash.keys
       @size = @relation_hash.size
     end

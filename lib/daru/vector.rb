@@ -28,14 +28,10 @@ module Daru
       # == Options
       # :value
       # All the rest like .new
-      def new_with_size n, opts={}, &block
-        value = opts[:value]
-        opts.delete :value
-        if block
-          Daru::Vector.new Array.new(n) { |i| block.call(i) }, opts
-        else
-          Daru::Vector.new Array.new(n) { value }, opts
-        end
+      def new_with_size n, opts={}, &_block
+        value = opts.delete :value
+        init = block_given? ? ->(i) { yield(i) } : ->(i) { value }
+        Daru::Vector.new Array.new(n, &init), opts
       end
 
       # Create a vector using (almost) any object

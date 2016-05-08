@@ -1454,69 +1454,20 @@ module Daru
     #   #     [:bar]         18         26
     #   #     [:foo]         10         12
     def pivot_table opts={}
-      raise ArgumentError,
-        'Specify grouping index' if !opts[:index] || opts[:index].empty?
+      raise ArgumentError, 'Specify grouping index' if opts[:index].to_a.empty?
 
-      index   = opts[:index]
-      vectors = opts[:vectors] || []
-      aggregate_function = opts[:agg] || :mean
-      values =
-        if opts[:values].is_a?(Symbol)
-          [opts[:values]]
-        elsif opts[:values].is_a?(Array)
-          opts[:values]
-        else # nil
-          (@vectors.to_a - (index | vectors)) & numeric_vector_names
-        end
-
+      index               = opts[:index]
+      vectors             = opts[:vectors] || []
+      aggregate_function  = opts[:agg] || :mean
+      values              = prepare_pivot_values index, vectors, opts
       raise IndexError, 'No numeric vectors to aggregate' if values.empty?
 
       grouped = group_by(index)
+      return grouped.send(aggregate_function) if vectors.empty?
 
-      if vectors.empty?
-        grouped.send(aggregate_function)
-      else
-        super_hash = {}
-        values.each do |value|
-          grouped.groups.each do |group_name, row_numbers|
-            super_hash[group_name] ||= {}
+      super_hash = make_pivot_hash grouped, vectors, values, aggregate_function
 
-            row_numbers.each do |num|
-              arry = []
-              arry << value
-              vectors.each { |v| arry << self[v][num] }
-              sub_hash = super_hash[group_name]
-              sub_hash[arry] ||= []
-
-              sub_hash[arry] << self[value][num]
-            end
-          end
-        end
-
-        super_hash.each_value do |sub_hash|
-          sub_hash.each do |group_name, aggregates|
-            sub_hash[group_name] = Daru::Vector.new(aggregates).send(aggregate_function)
-          end
-        end
-
-        df_index = Daru::MultiIndex.from_tuples super_hash.keys
-
-        vector_indexes = []
-        super_hash.each_value do |sub_hash|
-          vector_indexes.concat sub_hash.keys
-        end
-
-        df_vectors = Daru::MultiIndex.from_tuples vector_indexes.uniq
-        pivoted_dataframe = Daru::DataFrame.new({}, index: df_index, order: df_vectors)
-
-        super_hash.each do |row_index, sub_h|
-          sub_h.each do |vector_index, val|
-            # pivoted_dataframe[symbolize(vector_index)][symbolize(row_index)] = val
-            pivoted_dataframe[vector_index][row_index] = val
-          end
-        end
-        return pivoted_dataframe
-      end
+      pivot_dataframe super_hash
     end
 
     # Merge vectors from two DataFrames. In case of name collision,
@@ -1758,8 +1709,7 @@ module Daru
     def to_html threshold=30
       # FIXME: nowhere could be seen specs for it. So, it COULD be broken!
       path = File.expand_path('../iruby/templates/dataframe.html.erb', __FILE__)
-      template = ERB.new(File.read(path).strip)
-      template.result(binding)
+      ERB.new(File.read(path).strip).result(binding)
     end
 
     def to_s
@@ -2409,6 +2359,58 @@ module Daru
           ' (' + test[1].collect { |k| "#{k}=#{row[k]}" }.join(', ') + ')'
         end
       "#{i+1} [#{row[id]}]: #{test[0]}#{values}"
+    end
+
+    def prepare_pivot_values index, vectors, opts
+      case opts[:values]
+      when Symbol
+        [opts[:values]]
+      when Array
+        opts[:values]
+      when nil
+        (@vectors.to_a - (index | vectors)) & numeric_vector_names
+      else
+        raise ArgumentError, "Can't make pivot by #{opts[:values].class}"
+      end
+    end
+
+    def make_pivot_hash grouped, vectors, values, aggregate_function
+      grouped.groups.map { |n, _| [n, {}] }.to_h.tap do |super_hash|
+        values.each do |value|
+          grouped.groups.each do |group_name, row_numbers|
+            row_numbers.each do |num|
+              arry = [value, *vectors.map { |v| self[v][num] }]
+              sub_hash = super_hash[group_name]
+              sub_hash[arry] ||= []
+
+              sub_hash[arry] << self[value][num]
+            end
+          end
+        end
+
+        setup_pivot_aggregates super_hash, aggregate_function
+      end
+    end
+
+    def setup_pivot_aggregates super_hash, aggregate_function
+      super_hash.each_value do |sub_hash|
+        sub_hash.each do |group_name, aggregates|
+          sub_hash[group_name] = Daru::Vector.new(aggregates).send(aggregate_function)
+        end
+      end
+    end
+
+    def pivot_dataframe super_hash
+      df_index   = Daru::MultiIndex.from_tuples super_hash.keys
+      df_vectors = Daru::MultiIndex.from_tuples super_hash.values.flat_map(&:keys).uniq
+
+      Daru::DataFrame.new({}, index: df_index, order: df_vectors).tap do |pivoted_dataframe|
+        super_hash.each do |row_index, sub_h|
+          sub_h.each do |vector_index, val|
+            pivoted_dataframe[vector_index][row_index] = val
+          end
+        end
+      end
     end
   end
 end
