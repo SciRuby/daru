@@ -1936,36 +1936,34 @@ module Daru
 
     # Pretty print in a nice table format for the command line (irb/pry/iruby)
     def inspect spacing=10, threshold=15
+      name      = @name || 'nil'
+      formatter = make_formatter spacing
+
+      rows = [
+        ['', *@vectors],                                          # column titles
+        *each_row_with_index.first(threshold).map { |row, index|  # column values
+          [index, *row.to_h.values.map { |e| e || 'nil' }]
+        },
+        if size > threshold
+          ['...'] * (@vectors.size + 1)                           # ...more....
+        end
+      ].compact
+
+      [
+        "\n#<#{self.class}:#{object_id} @name = #{name} @size = #{@size}>", # header
+        *rows.map { |r| formatter % r },
+        "\n"
+      ].join
+    end
+
+    def make_formatter spacing
       longest = [@name.to_s.size,
                  (@vectors.map(&:to_s).map(&:size).max || 0),
                  (@index  .map(&:to_s).map(&:size).max || 0),
                  (@data   .map { |v| v.map(&:to_s).map(&:size).max }.max || 0)].max
 
-      name      = @name || 'nil'
-      content   = ''
-      longest   = spacing if longest > spacing
-      formatter = "\n"
-
-      (@vectors.size + 1).times { formatter += "%#{longest}.#{longest}s " }
-      content += "\n#<" + self.class.to_s + ':' + object_id.to_s + ' @name = ' +
-                 name.to_s + ' @size = ' + @size.to_s + '>'
-      content += formatter % ['', *@vectors.map(&:to_s)]
-      row_num  = 1
-
-      each_row_with_index do |row, index|
-        content += formatter % [index.to_s, *row.to_h.values.map { |e| (e || 'nil').to_s }]
-        row_num += 1
-        next if row_num <= threshold
-
-        dots = []
-
-        (@vectors.size + 1).times { dots << '...' }
-        content += formatter % dots
-        break
-      end
-      content += "\n"
-
-      content
+      longest = [longest, spacing].min
+      "\n" + "%#{longest}.#{longest}s " * (@vectors.size + 1)
     end
 
     # Query a DataFrame by passing a Daru::Core::Query::BoolArray object.
