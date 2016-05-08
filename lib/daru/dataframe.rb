@@ -1560,21 +1560,22 @@ module Daru
     # the vectors names are changed to x_1, x_2 ....
     #
     # @return {Daru::DataFrame}
-    def merge other_df
-      raise "Number of rows must be equal in this: #{nrows} and other: #{other_df.nrows}" unless nrows == other_df.nrows
+    def merge other_df # rubocop:disable Metrics/AbcSize
+      raise ArgumentError,
+        "Number of rows must be equal in this: #{nrows} and other: #{other_df.nrows}" \
+        unless nrows == other_df.nrows
 
       new_fields = (@vectors.to_a + other_df.vectors.to_a)
                    .recode_repeated
                    .map(&:to_sym)
-      df_new     = DataFrame.new({}, order: new_fields)
 
-      (0...nrows).to_a.each do |i|
-        row = self.row[i].to_a + other_df.row[i].to_a
-        df_new.add_row(row)
+      DataFrame.new({}, order: new_fields).tap do |df_new|
+        (0...nrows).each do |i|
+          df_new.add_row row[i].to_a + other_df.row[i].to_a
+        end
+
+        df_new.update
       end
-
-      df_new.update
-      df_new
     end
 
     # Join 2 DataFrames with SQL style joins. Currently supports inner, left
