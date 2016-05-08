@@ -2168,11 +2168,7 @@ module Daru
     end
 
     def insert_vector_in_empty name, vector
-      vec = if vector.is_a?(Daru::Vector)
-              vector
-            else
-              Daru::Vector.new(vector.to_a, name: set_name(name))
-            end
+      vec = Vector.coerce(vector.to_a, name: set_name(name))
 
       @index = vec.index
       assign_or_add_vector name, vec
@@ -2192,6 +2188,7 @@ module Daru
           end
         }
       else
+        # FIXME: No spec checks this case... And SizeError is not a thing - zverok, 2016-05-08
         raise SizeError,
           "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}" if
           @size != vector.size
@@ -2201,30 +2198,24 @@ module Daru
     end
 
     def insert_or_modify_row name, vector
-      if index.is_a?(MultiIndex)
-        # TODO
-      else
-        name = name[0]
-        vec =
-          if vector.is_a?(Daru::Vector)
-            vector
-          else
-            Daru::Vector.new(vector, name: set_name(name), index: @vectors)
-          end
+      raise NotImplementedError, "Still can't insert rows in multi index dataframes" \
+        if index.is_a?(MultiIndex)
 
-        if @index.include? name
-          each_vector_with_index do |v,i|
-            v[name] = vec.index.include?(i) ? vec[i] : nil
-          end
-        else
-          @index |= [name]
-          each_vector_with_index do |v,i|
-            v.concat((vec.index.include?(i) ? vec[i] : nil), name)
-          end
+      name = name[0]
+      vec = Vector.coerce(vector, name: set_name(name), index: @vectors)
+
+      if @index.include? name
+        each_vector_with_index do |v,i|
+          v[name] = vec.index.include?(i) ? vec[i] : nil
         end
-
-        set_size
+      else
+        @index |= [name]
+        each_vector_with_index do |v,i|
+          v.concat((vec.index.include?(i) ? vec[i] : nil), name)
+        end
       end
+
+      set_size
     end
 
     def create_empty_vectors

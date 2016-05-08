@@ -12,6 +12,96 @@ module Daru
     include Daru::Maths::Statistics::Vector
     include Daru::Plotting::Vector if Daru.has_nyaplot?
 
+    class << self
+      # Create a new vector by specifying the size and an optional value
+      # and block to generate values.
+      #
+      # == Description
+      #
+      # The *new_with_size* class method lets you create a Daru::Vector
+      # by specifying the size as the argument. The optional block, if
+      # supplied, is run once for populating each element in the Vector.
+      #
+      # The result of each run of the block is the value that is ultimately
+      # assigned to that position in the Vector.
+      #
+      # == Options
+      # :value
+      # All the rest like .new
+      def new_with_size n, opts={}, &block
+        value = opts[:value]
+        opts.delete :value
+        if block
+          Daru::Vector.new Array.new(n) { |i| block.call(i) }, opts
+        else
+          Daru::Vector.new Array.new(n) { value }, opts
+        end
+      end
+
+      # Create a vector using (almost) any object
+      # * Array: flattened
+      # * Range: transformed using to_a
+      # * Daru::Vector
+      # * Numeric and string values
+      #
+      # == Description
+      #
+      # The `Vector.[]` class method creates a vector from almost any
+      # object that has a `#to_a` method defined on it. It is similar
+      # to R's `c` method.
+      #
+      # == Usage
+      #
+      #   a = Daru::Vector[1,2,3,4,6..10]
+      #   #=>
+      #   # <Daru::Vector:99448510 @name = nil @size = 9 >
+      #   #   nil
+      #   # 0   1
+      #   # 1   2
+      #   # 2   3
+      #   # 3   4
+      #   # 4   6
+      #   # 5   7
+      #   # 6   8
+      #   # 7   9
+      #   # 8  10
+      def [](*args)
+        values = []
+        args.each do |a|
+          case a
+          when Array
+            values.concat a.flatten
+          when Daru::Vector
+            values.concat a.to_a
+          when Range
+            values.concat a.to_a
+          else
+            values << a
+          end
+        end
+        Daru::Vector.new(values)
+      end
+
+      def _load(data) # :nodoc:
+        h = Marshal.load(data)
+        Daru::Vector.new(h[:data],
+          index: h[:index],
+          name: h[:name], metadata: h[:metadata],
+          dtype: h[:dtype], missing_values: h[:missing_values])
+      end
+
+      def coerce(data, options={})
+        case data
+        when Daru::Vector
+          data
+        when Array, Hash
+          new(data, options)
+        else
+          raise ArgumentError, "Can't coerce #{data.class} to #{self}"
+        end
+      end
+    end
+
     def each(&block)
       return to_enum(:each) unless block_given?
 
@@ -108,75 +198,6 @@ module Daru
       set_missing_values opts[:missing_values]
       set_missing_positions
       set_size
-    end
-
-    # Create a new vector by specifying the size and an optional value
-    # and block to generate values.
-    #
-    # == Description
-    #
-    # The *new_with_size* class method lets you create a Daru::Vector
-    # by specifying the size as the argument. The optional block, if
-    # supplied, is run once for populating each element in the Vector.
-    #
-    # The result of each run of the block is the value that is ultimately
-    # assigned to that position in the Vector.
-    #
-    # == Options
-    # :value
-    # All the rest like .new
-    def self.new_with_size n, opts={}, &block
-      value = opts[:value]
-      opts.delete :value
-      if block
-        Daru::Vector.new Array.new(n) { |i| block.call(i) }, opts
-      else
-        Daru::Vector.new Array.new(n) { value }, opts
-      end
-    end
-
-    # Create a vector using (almost) any object
-    # * Array: flattened
-    # * Range: transformed using to_a
-    # * Daru::Vector
-    # * Numeric and string values
-    #
-    # == Description
-    #
-    # The `Vector.[]` class method creates a vector from almost any
-    # object that has a `#to_a` method defined on it. It is similar
-    # to R's `c` method.
-    #
-    # == Usage
-    #
-    #   a = Daru::Vector[1,2,3,4,6..10]
-    #   #=>
-    #   # <Daru::Vector:99448510 @name = nil @size = 9 >
-    #   #   nil
-    #   # 0   1
-    #   # 1   2
-    #   # 2   3
-    #   # 3   4
-    #   # 4   6
-    #   # 5   7
-    #   # 6   8
-    #   # 7   9
-    #   # 8  10
-    def self.[](*args)
-      values = []
-      args.each do |a|
-        case a
-        when Array
-          values.concat a.flatten
-        when Daru::Vector
-          values.concat a.to_a
-        when Range
-          values.concat a.to_a
-        else
-          values << a
-        end
-      end
-      Daru::Vector.new(values)
     end
 
     # Get one or more elements with specified index or a range.
@@ -1106,14 +1127,6 @@ module Daru
         metadata:       @metadata,
         index:          @index,
         missing_values: @missing_values)
-    end
-
-    def self._load(data) # :nodoc:
-      h = Marshal.load(data)
-      Daru::Vector.new(h[:data],
-        index: h[:index],
-        name: h[:name], metadata: h[:metadata],
-        dtype: h[:dtype], missing_values: h[:missing_values])
     end
 
     def daru_vector(*)
