@@ -1940,17 +1940,22 @@ module Daru
       formatter = make_formatter spacing
 
       rows = [
-        ['', *@vectors],                                          # column titles
-        *each_row_with_index.first(threshold).map { |row, index|  # column values
+        # column titles
+        ['', *@vectors],
+
+        # column values
+        *each_row_with_index.first(threshold).map { |row, index|
           [index, *row.to_h.values.map { |e| e || 'nil' }]
         },
+
+        # "more" dots
         if size > threshold
-          ['...'] * (@vectors.size + 1)                           # ...more....
+          ['...'] * (@vectors.size + 1)
         end
       ].compact
 
       [
-        "\n#<#{self.class}:#{object_id} @name = #{name} @size = #{@size}>", # header
+        "\n#<#{self.class}:#{object_id} @name = #{name} @size = #{@size}>",
         *rows.map { |r| formatter % r },
         "\n"
       ].join
