@@ -1756,44 +1756,10 @@ module Daru
 
     # Convert to html for IRuby.
     def to_html threshold=30
-      html = '<table>' \
-        '<tr>' \
-          "<th colspan=\"#{@vectors.size+1}\">" \
-            "Daru::DataFrame:#{object_id} " + " rows: #{nrows} " + " cols: #{ncols}" \
-          '</th>' \
-        '</tr>'
-      html +='<tr><th></th>'
-      @vectors.each { |vector| html += '<th>' + vector.to_s + '</th>' }
-      html += '</tr>'
-
-      @index.each_with_index do |index, num|
-        html += '<tr>'
-        html += '<td>' + index.to_s + '</td>'
-
-        row[index].each do |element|
-          html += '<td>' + element.to_s + '</td>'
-        end
-
-        html += '</tr>'
-        next if num <= threshold
-
-        html += '<tr>'
-        (@vectors.size + 1).times { html += '<td>...</td>' }
-        html += '</tr>'
-
-        last_index = @index.to_a.last
-        last_row = row[last_index]
-        html += '<tr>'
-        html += '<td>' + last_index.to_s + '</td>'
-        (0..(ncols - 1)).to_a.each do |i|
-          html += '<td>' + last_row[i].to_s + '</td>'
-        end
-        html += '</tr>'
-        break
-      end
-      html += '</table>'
-
-      html
+      # FIXME: nowhere could be seen specs for it. So, it COULD be broken!
+      path = File.expand_path('../iruby/templates/dataframe.html.erb', __FILE__)
+      template = ERB.new(File.read(path).strip)
+      template.result(binding)
     end
 
     def to_s

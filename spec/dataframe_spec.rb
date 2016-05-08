@@ -2372,4 +2372,17 @@ describe Daru::DataFrame do
     end
 
   end
+
+  context '#to_html' do
+    before do
+      @df = Daru::DataFrame.new({
+        a: [1, 2, 3],
+        b: [1, 2, 3]
+      })
+    end
+
+    it 'works, somehow' do
+      expect{@df.to_html}.not_to raise_error
+    end
+  end
 end if mri?
