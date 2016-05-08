@@ -1432,34 +1432,6 @@ module Daru
       self
     end
 
-    def prepare_sort_opts vector_order, opts
-      opts = {
-        ascending: true,
-        handle_nils: false,
-        by: {}
-      }.merge(opts)
-
-      opts[:ascending]   = coerce_sort_order vector_order, opts[:ascending]
-      opts[:handle_nils] = coerce_handle_nils vector_order, opts[:handle_nils]
-
-      opts
-    end
-
-    def prepare_sort_block vector_order, opts
-      blocks = create_logic_blocks vector_order, opts[:by], opts[:ascending]
-
-      lambda do |r1, r2|
-        # Build left and right array to compare two rows
-        left = build_array_from_blocks vector_order, opts, blocks, r1, r2
-        right = build_array_from_blocks vector_order, opts, blocks, r2, r1
-
-        # Resolve conflict by Index if all attributes are same
-        left << r1
-        right << r2
-        left <=> right
-      end
-    end
-
     # Non-destructive version of #sort!
     def sort vector_order, opts={}
       dup.sort! vector_order, opts
@@ -2464,6 +2436,34 @@ module Daru
       @vectors.each do |name|
         meta_opt = source[name].respond_to?(:metadata) ? {metadata: source[name].metadata.dup} : {}
         @data << Daru::Vector.new(source[name].dup, name: set_name(name), **meta_opt, index: @index)
+      end
+    end
+
+    def prepare_sort_opts vector_order, opts
+      opts = {
+        ascending: true,
+        handle_nils: false,
+        by: {}
+      }.merge(opts)
+
+      opts[:ascending]   = coerce_sort_order vector_order, opts[:ascending]
+      opts[:handle_nils] = coerce_handle_nils vector_order, opts[:handle_nils]
+
+      opts
+    end
+
+    def prepare_sort_block vector_order, opts
+      blocks = create_logic_blocks vector_order, opts[:by], opts[:ascending]
+
+      lambda do |r1, r2|
+        # Build left and right array to compare two rows
+        left = build_array_from_blocks vector_order, opts, blocks, r1, r2
+        right = build_array_from_blocks vector_order, opts, blocks, r2, r1
+
+        # Resolve conflict by Index if all attributes are same
+        left << r1
+        right << r2
+        left <=> right
       end
     end
   end
