@@ -2203,13 +2203,7 @@ module Daru
       assign_or_add_vector name, vec
       set_size
 
-      @data.map! do |v|
-        if v.empty?
-          Daru::Vector.new([nil]*@size, name: set_name(name), metadata: v.metadata, index: @index)
-        else
-          v
-        end
-      end
+      @data.map! { |v| v.empty? ? v.reindex(@index) : v }
     end
 
     def prepare_vector_for_insert name, vector
