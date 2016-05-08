@@ -1949,7 +1949,7 @@ module Daru
         },
 
         # "more" dots
-        size > threshold && ['...'] * (@vectors.size + 1)
+        size > threshold ? ['...'] * (@vectors.size + 1) : nil
       ].compact
 
       [
@@ -2083,42 +2083,74 @@ module Daru
       end
     end
 
-    def access_row *names
-      location = names[0]
+    def access_vector_multi_index *names
+      pos = @vectors[names]
 
-      if @index.is_a?(MultiIndex)
-        pos = @index[names]
-        if pos.is_a?(Integer)
-          return Daru::Vector.new(populate_row_for(pos), index: @vectors, name: pos)
-        end
+      return @data[pos] if pos.is_a?(Integer)
 
-        new_rows = pos.map { |tuple| populate_row_for(tuple) }
+      new_vectors = pos.map { |tuple| @data[@vectors[tuple]] }
 
-        if !location.is_a?(Range) && names.size < @index.width
-          pos = pos.drop_left_level names.size
-        end
+      pos = pos.drop_left_level(names.size) if names.size < @vectors.width
 
-        Daru::DataFrame.rows(new_rows, order: @vectors, name: @name, index: pos)
-      else
-        if names[1].nil?
-          names = @index[location]
-          if names.is_a?(Numeric)
-            row = []
-            @data.each do |vector|
-              row << vector[location]
-            end
+      Daru::DataFrame.new(new_vectors, index: @index, order: pos)
+    end
 
-            return Daru::Vector.new(row, index: @vectors, name: set_name(location))
-          end
-        end
-        # Access multiple rows
-        rows = []
-        names.each do |name|
-          rows << self.row[name].to_a
-        end
+    def access_vector_single_index *names
+      if names.count < 2
+        pos = @vectors[names.first]
 
-        Daru::DataFrame.rows rows, index: names,name: @name, order: @vectors
+        return @data[pos] if pos.is_a?(Numeric)
+
+        names = pos
       end
+
+      new_vectors = names.map { |name| [name, @data[@vectors[name]]] }.to_h
+
+      order = names.is_a?(Array) ? Daru::Index.new(names) : names
+      Daru::DataFrame.new(new_vectors, order: order,
+                                       index: @index, name: @name)
+    end
+
+    def access_row *names
+      if @index.is_a?(MultiIndex)
+        access_row_multi_index(*names)
+      else
+        access_row_single_index(*names)
+      end
+    end
+
+    def access_row_multi_index *names
+      location = names.first
+
+      pos = @index[names]
+      if pos.is_a?(Integer)
+        return Daru::Vector.new(populate_row_for(pos), index: @vectors, name: pos)
+      end
+
+      new_rows = pos.map { |tuple| populate_row_for(tuple) }
+
+      if !location.is_a?(Range) && names.size < @index.width
+        pos = pos.drop_left_level names.size
+      end
+
+      Daru::DataFrame.rows(new_rows, order: @vectors, name: @name, index: pos)
+    end
+
+    def access_row_single_index *names
+      location = names.first
+
+      if names.count < 2
+        names = @index[location]
+        if names.is_a?(Numeric)
+          row = @data.map { |vector| vector[location] }
+
+          return Daru::Vector.new(row, index: @vectors, name: set_name(location))
+        end
+      end
+      # Access multiple rows
+      rows = names.map { |name| self.row[name].to_a }
+
+      Daru::DataFrame.rows rows, index: names, name: @name, order: @vectors
     end
 
     def populate_row_for pos
@@ -2414,34 +2446,6 @@ module Daru
         meta_opt = source[name].respond_to?(:metadata) ? {metadata: source[name].metadata.dup} : {}
         @data << Daru::Vector.new(source[name].dup, name: set_name(name), **meta_opt, index: @index)
       end
-    end
-
-    def access_vector_multi_index *names
-      pos = @vectors[names]
-
-      return @data[pos] if pos.is_a?(Integer)
-
-      new_vectors = pos.map { |tuple| @data[@vectors[tuple]] }
-
-      pos = pos.drop_left_level(names.size) if names.size < @vectors.width
-
-      Daru::DataFrame.new(new_vectors, index: @index, order: pos)
-    end
-
-    def access_vector_single_index *names
-      if names.count < 2
-        pos = @vectors[names.first]
-
-        return @data[pos] if pos.is_a?(Numeric)
-
-        names = pos
-      end
-
-      new_vectors = names.map { |name| [name, @data[@vectors[name]]] }.to_h
-
-      order = names.is_a?(Array) ? Daru::Index.new(names) : names
-      Daru::DataFrame.new(new_vectors, order: order,
-                                       index: @index, name: @name)
     end
   end
 end
