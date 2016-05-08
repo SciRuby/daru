@@ -2180,17 +2180,27 @@ module Daru
         pos = name
       end
 
-      if pos.is_a?(Daru::Index)
-        pos.each do |p|
-          @data[@vectors[p]] = v
-        end
-      elsif pos == name &&
-            (@vectors.include?(name) || (pos.is_a?(Integer) && pos < @data.size))
+      case
+      when pos.is_a?(Daru::Index)
+        assign_multiple_vectors pos, v
+      when pos == name &&
+        (@vectors.include?(name) || (pos.is_a?(Integer) && pos < @data.size))
+
         @data[pos] = v
       else
-        @vectors |= [name] unless @vectors.include?(name)
-        @data[@vectors[name]] = v
+        assign_or_add_vector_rough name, v
       end
+    end
+
+    def assign_multiple_vectors pos, v
+      pos.each do |p|
+        @data[@vectors[p]] = v
+      end
+    end
+
+    def assign_or_add_vector_rough name, v
+      @vectors |= [name] unless @vectors.include?(name)
+      @data[@vectors[name]] = v
     end
 
     def insert_vector_in_empty name, vector
