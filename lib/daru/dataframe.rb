@@ -2161,43 +2161,11 @@ module Daru
 
     def insert_or_modify_vector name, vector
       name = name[0] unless @vectors.is_a?(MultiIndex)
-      vec = nil
 
       if @index.empty?
-        vec = if vector.is_a?(Daru::Vector)
-                vector
-              else
-                Daru::Vector.new(vector.to_a, name: set_name(name))
-              end
-
-        @index = vec.index
-        assign_or_add_vector name, vec
-        set_size
-
-        @data.map! do |v|
-          if v.empty?
-            Daru::Vector.new([nil]*@size, name: set_name(name), metadata: v.metadata, index: @index)
-          else
-            v
-          end
-        end
+        insert_vector_in_empty name, vector
       else
-        if vector.is_a?(Daru::Vector)
-          if vector.index == @index # so that index-by-index assignment is avoided when possible.
-            vec = vector.dup
-          else
-            vec = Daru::Vector.new [], name: set_name(name), metadata: vector.metadata.dup, index: @index
-            @index.each do |idx|
-              vec[idx] = vector.index.include?(idx) ? vector[idx] : nil
-            end
-          end
-        else
-          raise SizeError,
-            "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}" if
-            @size != vector.size
-
-          vec = Daru::Vector.new(vector, name: set_name(name), index: @index)
-        end
+        vec = prepare_vector_for_insert name, vector
 
         assign_or_add_vector name, vec
       end
@@ -2221,6 +2189,45 @@ module Daru
       else
         @vectors |= [name] unless @vectors.include?(name)
         @data[@vectors[name]] = v
+      end
+    end
+
+    def insert_vector_in_empty name, vector
+      vec = if vector.is_a?(Daru::Vector)
+              vector
+            else
+              Daru::Vector.new(vector.to_a, name: set_name(name))
+            end
+
+      @index = vec.index
+      assign_or_add_vector name, vec
+      set_size
+
+      @data.map! do |v|
+        if v.empty?
+          Daru::Vector.new([nil]*@size, name: set_name(name), metadata: v.metadata, index: @index)
+        else
+          v
+        end
+      end
+    end
+
+    def prepare_vector_for_insert name, vector
+      if vector.is_a?(Daru::Vector)
+        # so that index-by-index assignment is avoided when possible.
+        return vector.dup if vector.index == @index
+
+        Daru::Vector.new([], name: set_name(name), metadata: vector.metadata.dup, index: @index).tap { |v|
+          @index.each do |idx|
+            v[idx] = vector.index.include?(idx) ? vector[idx] : nil
+          end
+        }
+      else
+        raise SizeError,
+          "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}" if
+          @size != vector.size
+
+        Daru::Vector.new(vector, name: set_name(name), index: @index)
       end
     end
 
