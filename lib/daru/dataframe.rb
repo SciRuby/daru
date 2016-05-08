@@ -1949,9 +1949,7 @@ module Daru
         },
 
         # "more" dots
-        if size > threshold
-          ['...'] * (@vectors.size + 1)
-        end
+        size > threshold && ['...'] * (@vectors.size + 1)
       ].compact
 
       [
@@ -1962,6 +1960,7 @@ module Daru
     end
 
     def make_formatter spacing
+      # FIXME: for very large dataframes, this @data.map may be pretty costly?
       longest = [@name.to_s.size,
                  (@vectors.map(&:to_s).map(&:size).max || 0),
                  (@index  .map(&:to_s).map(&:size).max || 0),
@@ -2075,41 +2074,12 @@ module Daru
     end
 
     def access_vector *names
-      location = names[0]
-
-      return dup(@vectors[location]) if location.is_a?(Range)
-      if @vectors.is_a?(MultiIndex)
-        pos = @vectors[names]
-
-        return @data[pos] if pos.is_a?(Integer)
-
-        # MultiIndex
-        new_vectors = pos.map do |tuple|
-          @data[@vectors[tuple]]
-        end
-
-        if !location.is_a?(Range) && names.size < @vectors.width
-          pos = pos.drop_left_level names.size
-        end
-
-        Daru::DataFrame.new(new_vectors, index: @index, order: pos)
+      if names.first.is_a?(Range)
+        dup(@vectors[names.first])
+      elsif @vectors.is_a?(MultiIndex)
+        access_vector_multi_index(*names)
       else
-        unless names[1]
-          pos = @vectors[location]
-
-          return @data[pos] if pos.is_a?(Numeric)
-
-          names = pos
-        end
-
-        new_vectors = {}
-        names.each do |name|
-          new_vectors[name] = @data[@vectors[name]]
-        end
-
-        order = names.is_a?(Array) ? Daru::Index.new(names) : names
-        Daru::DataFrame.new(new_vectors, order: order,
-                                         index: @index, name: @name)
+        access_vector_single_index(*names)
       end
     end
 
@@ -2444,6 +2414,34 @@ module Daru
         meta_opt = source[name].respond_to?(:metadata) ? {metadata: source[name].metadata.dup} : {}
         @data << Daru::Vector.new(source[name].dup, name: set_name(name), **meta_opt, index: @index)
       end
+    end
+
+    def access_vector_multi_index *names
+      pos = @vectors[names]
+
+      return @data[pos] if pos.is_a?(Integer)
+
+      new_vectors = pos.map { |tuple| @data[@vectors[tuple]] }
+
+      pos = pos.drop_left_level(names.size) if names.size < @vectors.width
+
+      Daru::DataFrame.new(new_vectors, index: @index, order: pos)
+    end
+
+    def access_vector_single_index *names
+      if names.count < 2
+        pos = @vectors[names.first]
+
+        return @data[pos] if pos.is_a?(Numeric)
+
+        names = pos
+      end
+
+      new_vectors = names.map { |name| [name, @data[@vectors[name]]] }.to_h
+
+      order = names.is_a?(Array) ? Daru::Index.new(names) : names
+      Daru::DataFrame.new(new_vectors, order: order,
+                                       index: @index, name: @name)
     end
   end
 end
