@@ -869,27 +869,12 @@ module Daru
     #
     # The function returns an array with all errors.
     def verify(*tests)
-      if tests[0].is_a? Symbol
-        id = tests[0]
-        tests.shift
-      else
-        id = @vectors.first
-      end
+      id = tests[0].is_a?(Symbol) ? tests.shift : @vectors.first
 
-      vr = []
-      i  = 0
-      each(:row) do |row|
-        i += 1
-        tests.each do |test|
-          next if test[2].call(row)
-          values = ''
-          unless test[1].empty?
-            values = ' (' + test[1].collect { |k| "#{k}=#{row[k]}" }.join(', ') + ')'
-          end
-          vr.push("#{i} [#{row[id]}]: #{test[0]}#{values}")
-        end
-      end
-      vr
+      each_row_with_index.map do |row, i|
+        tests.reject { |t| t[2].call(row) }
+             .map { |test| verify_error row, test, id, i }
+      end.flatten
     end
 
     # DSL for yielding each row and returning a Daru::Vector based on the
@@ -2465,6 +2450,16 @@ module Daru
         right << r2
         left <=> right
       end
+    end
+
+    def verify_error row, test, id, i
+      values =
+        if test[1].empty?
+          ''
+        else
+          ' (' + test[1].collect { |k| "#{k}=#{row[k]}" }.join(', ') + ')'
+        end
+      "#{i+1} [#{row[id]}]: #{test[0]}#{values}"
     end
   end
 end
