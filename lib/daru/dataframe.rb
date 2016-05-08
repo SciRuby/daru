@@ -951,28 +951,25 @@ module Daru
     # hashes with other values. If block provided, is used to provide the
     # values, with parameters +row+ of dataset, +current+ last hash on
     # hierarchy and +name+ of the key to include
-    def nest *tree_keys, &block
+    def nest *tree_keys, &_block
       tree_keys = tree_keys[0] if tree_keys[0].is_a? Array
-      out = {}
 
-      each_row do |row|
-        current = out
+      each_row.each_with_object({}) do |row, current|
         # Create tree
-        tree_keys[0, tree_keys.size-1].each do |f|
+        *keys, last = tree_keys
+        current = keys.inject(current) { |c, f|
           root = row[f]
-          current[root] ||= {}
-          current = current[root]
-        end
-        name = row[tree_keys.last]
-        if !block
+          c[root] ||= {}
+        }
+        name = row[last]
+
+        if block_given?
+          current[name] = yield(row, current, name)
+        else
           current[name] ||= []
           current[name].push(row.to_h.delete_if { |key,_value| tree_keys.include? key })
-        else
-          current[name] = yield(row, current, name)
         end
       end
-
-      out
     end
 
     def vector_count_characters vecs=nil
