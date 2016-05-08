@@ -2179,13 +2179,13 @@ module Daru
         pos = name
       end
 
-      if !pos.is_a?(Daru::Index) && pos == name &&
-         (@vectors.include?(name) || (pos.is_a?(Integer) && pos < @data.size))
-        @data[pos] = v
-      elsif pos.is_a?(Daru::Index)
+      if pos.is_a?(Daru::Index)
         pos.each do |p|
           @data[@vectors[p]] = v
         end
+      elsif pos == name &&
+            (@vectors.include?(name) || (pos.is_a?(Integer) && pos < @data.size))
+        @data[pos] = v
       else
         @vectors |= [name] unless @vectors.include?(name)
         @data[@vectors[name]] = v
