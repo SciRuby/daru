@@ -10,7 +10,7 @@
 #Metrics/AbcSize:
   #Max: 110
 Metrics/AbcSize:
-  Max: 17
+  Max: 20
 
 # Offense count: 6
 #Metrics/BlockNesting:

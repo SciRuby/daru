@@ -36,6 +36,10 @@ class Array
   def all_are?(match)
     grep(match).size == size
   end
+
+  def single_class?
+    map(&:class).uniq.size == 1
+  end
 end
 
 class Range

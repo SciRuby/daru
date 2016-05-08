@@ -249,100 +249,19 @@ module Daru
     def initialize source, opts={}
       vectors = opts[:order]
       index   = opts[:index]
-      clone   = opts[:clone] == false ? false : true
-      @data   = []
 
-      temp_name = opts[:name]
-      @name = temp_name || SecureRandom.uuid
+      @data = []
+      @name = opts[:name] || SecureRandom.uuid
 
-      if source.empty?
+      case source
+      when ->(s) { s.empty? }
         @vectors = try_create_index vectors
         @index   = try_create_index index
         create_empty_vectors
-      else
-        case source
-        when Array
-          if source.all? { |s| s.is_a?(Array) }
-            raise ArgumentError, "Number of vectors (#{vectors.size}) should \
-              equal order size (#{source.size})" if source.size != vectors.size
-
-            @index   = try_create_index(index || source[0].size)
-            @vectors = try_create_index(vectors)
-
-            @vectors.each_with_index do |_vec,idx|
-              @data << Daru::Vector.new(source[idx], index: @index)
-            end
-          elsif source.all? { |s| s.is_a?(Daru::Vector) }
-            hsh = {}
-            vectors.each_with_index do |name, idx|
-              hsh[name] = source[idx]
-            end
-            initialize(hsh, index: index, order: vectors, name: @name, clone: clone)
-          else # array of hashes
-            @vectors =
-              if vectors.nil?
-                Daru::Index.new source[0].keys
-              else
-                Daru::Index.new((vectors + (source[0].keys - vectors)).uniq)
-              end
-            @index = Daru::Index.new(index || source.size)
-
-            @vectors.each do |name|
-              v = []
-              source.each do |h|
-                v << (h[name] || h[name.to_s])
-              end
-
-              @data << Daru::Vector.new(v, name: set_name(name), index: @index)
-            end
-          end
-        when Hash
-          create_vectors_index_with vectors, source
-          if all_daru_vectors_in_source? source
-            vectors_have_same_index = all_vectors_have_equal_indexes?(source)
-            if !index.nil?
-              @index = try_create_index index
-            elsif vectors_have_same_index
-              @index = source.values[0].index.dup
-            else
-              all_indexes = []
-              source.each_value do |vector|
-                all_indexes << vector.index.to_a
-              end
-              # sort only if missing indexes detected
-              all_indexes.flatten!.uniq!.sort!
-
-              @index = Daru::Index.new all_indexes
-              clone = true
-            end
-
-            if clone
-              @vectors.each do |vector|
-                # avoids matching indexes of vectors if all the supplied vectors
-                # have the same index.
-                if vectors_have_same_index
-                  v = source[vector].dup
-                else
-                  v = Daru::Vector.new([], name: vector, metadata: source[vector].metadata.dup, index: @index)
-
-                  @index.each do |idx|
-                    v[idx] = source[vector].index.include?(idx) ? source[vector][idx] : nil
-                  end
-                end
-                @data << v
-              end
-            else
-              @data.concat source.values
-            end
-          else
-            @index = try_create_index(index || source.values[0].size)
-
-            @vectors.each do |name|
-              meta_opt = source[name].respond_to?(:metadata) ? {metadata: source[name].metadata.dup} : {}
-              @data << Daru::Vector.new(source[name].dup, name: set_name(name), **meta_opt, index: @index)
-            end
-          end
-        end
+      when Array
+        initialize_from_array source, vectors, index, opts
+      when Hash
+        initialize_from_hash source, vectors, index, opts
       end
 
       set_size
@@ -2356,12 +2275,6 @@ module Daru
       validate_vector_sizes
     end
 
-    def all_daru_vectors_in_source? source
-      source.values.all? do |vector|
-        vector.is_a?(Daru::Vector)
-      end
-    end
-
     def set_size
       @size = @index.size
     end
@@ -2416,6 +2329,122 @@ module Daru
         end
 
       symbolized_arry
+    end
+
+    def initialize_from_array source, vectors, index, opts
+      raise ArgumentError, 'All objects in data source should be same class' \
+        unless source.single_class?
+
+      case source.first
+      when Array
+        initialize_from_array_of_arrays source, vectors, index, opts
+      when Vector
+        initialize_from_array_of_vectors source, vectors, index, opts
+      when Hash
+        initialize_from_array_of_hashes source, vectors, index, opts
+      else
+        raise ArgumentError, "Can't create DataFrame from #{source}"
+      end
+    end
+
+    def initialize_from_array_of_arrays source, vectors, index, _opts
+      raise ArgumentError, "Number of vectors (#{vectors.size}) should \
+        equal order size (#{source.size})" if source.size != vectors.size
+
+      @index   = try_create_index(index || source[0].size)
+      @vectors = try_create_index(vectors)
+
+      @data = @vectors.each_with_index.map do |_vec,idx|
+        Daru::Vector.new(source[idx], index: @index)
+      end
+    end
+
+    def initialize_from_array_of_vectors source, vectors, index, opts
+      clone = opts[:clone] != false
+      hsh = vectors.each_with_index.map do |name, idx|
+        [name, source[idx]]
+      end.to_h
+      initialize(hsh, index: index, order: vectors, name: @name, clone: clone)
+    end
+
+    def initialize_from_array_of_hashes source, vectors, index, _opts
+      names =
+        if vectors.nil?
+          source[0].keys
+        else
+          (vectors + source[0].keys).uniq
+        end
+      @vectors = Daru::Index.new(names)
+      @index = Daru::Index.new(index || source.size)
+
+      @data = @vectors.map do |name|
+        v = source.map { |h| h[name] || h[name.to_s] }
+        Daru::Vector.new(v, name: set_name(name), index: @index)
+      end
+    end
+
+    def initialize_from_hash source, vectors, index, opts
+      create_vectors_index_with vectors, source
+
+      if source.values.all_are? Vector
+        initialize_from_hash_with_vectors source, index, opts
+      else
+        initialize_from_hash_with_arrays source, index, opts
+      end
+    end
+
+    def initialize_from_hash_with_vectors source, index, opts
+      vectors_have_same_index = all_vectors_have_equal_indexes?(source)
+
+      clone = opts[:clone] != false
+      clone = true unless index || vectors_have_same_index
+
+      @index = deduce_index index, source, vectors_have_same_index
+
+      if clone
+        @data = clone_vectors source, vectors_have_same_index
+      else
+        @data.concat source.values
+      end
+    end
+
+    def deduce_index index, source, vectors_have_same_index
+      if !index.nil?
+        try_create_index index
+      elsif vectors_have_same_index
+        source.values[0].index.dup
+      else
+        all_indexes = source
+                      .values.map { |v| v.index.to_a }
+                      .flatten.uniq.sort # sort only if missing indexes detected
+
+        Daru::Index.new all_indexes
+      end
+    end
+
+    def clone_vectors source, vectors_have_same_index
+      @vectors.map do |vector|
+        # avoids matching indexes of vectors if all the supplied vectors
+        # have the same index.
+        if vectors_have_same_index
+          source[vector].dup
+        else
+          Daru::Vector.new([], name: vector, metadata: source[vector].metadata.dup, index: @index).tap do |v|
+            @index.each do |idx|
+              v[idx] = source[vector].index.include?(idx) ? source[vector][idx] : nil
+            end
+          end
+        end
+      end
+    end
+
+    def initialize_from_hash_with_arrays source, index, _opts
+      @index = try_create_index(index || source.values[0].size)
+
+      @vectors.each do |name|
+        meta_opt = source[name].respond_to?(:metadata) ? {metadata: source[name].metadata.dup} : {}
+        @data << Daru::Vector.new(source[name].dup, name: set_name(name), **meta_opt, index: @index)
+      end
     end
   end
 end
