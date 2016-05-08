@@ -133,6 +133,11 @@ module Daru
       self
     end
 
+    def reorder(new_order)
+      from = to_a
+      Daru::Index.new(new_order.map { |i| from[i] })
+    end
+
     private
 
     def by_range rng

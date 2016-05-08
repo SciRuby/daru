@@ -1416,17 +1416,39 @@ module Daru
 
     def sort! vector_order, opts={}
       raise ArgumentError, 'Required atleast one vector name' if vector_order.empty?
+
+      opts = prepare_sort_opts vector_order, opts
+      block = prepare_sort_block vector_order, opts
+
+      idx = (0..@index.size-1).sort(&block)
+      new_index = @index.reorder(idx)
+
+      vectors.each do |v|
+        @data[@vectors[v]] = @data[@vectors[v]].reindex(new_index)
+      end
+
+      self.index = new_index
+
+      self
+    end
+
+    def prepare_sort_opts vector_order, opts
       opts = {
         ascending: true,
         handle_nils: false,
         by: {}
       }.merge(opts)
 
-      opts[:ascending] = sort_order_array vector_order, opts[:ascending]
-      opts[:handle_nils] = handle_nils_array vector_order, opts[:handle_nils]
+      opts[:ascending]   = coerce_sort_order vector_order, opts[:ascending]
+      opts[:handle_nils] = coerce_handle_nils vector_order, opts[:handle_nils]
+
+      opts
+    end
+
+    def prepare_sort_block vector_order, opts
       blocks = create_logic_blocks vector_order, opts[:by], opts[:ascending]
 
-      block = lambda do |r1, r2|
+      lambda do |r1, r2|
         # Build left and right array to compare two rows
         left = build_array_from_blocks vector_order, opts, blocks, r1, r2
         right = build_array_from_blocks vector_order, opts, blocks, r2, r1
@@ -1436,19 +1458,6 @@ module Daru
         right << r2
         left <=> right
       end
-
-      idx = (0..@index.size-1).sort(&block)
-
-      old_index = @index.to_a
-      self.index = Daru::Index.new(idx.map { |i| old_index[i] })
-
-      vectors.each do |v|
-        @data[@vectors[v]] = Daru::Vector.new(
-          idx.map { |i| @data[@vectors[v]].data[i] },
-          name: self[v].name, metadata: self[v].metadata.dup, index: index)
-      end
-
-      self
     end
 
     # Non-destructive version of #sort!
@@ -2046,23 +2055,21 @@ module Daru
       end
     end
 
-    def sort_order_array vector_order, ascending
-      if ascending.is_a? Array
-        raise ArgumentError, 'Specify same number of vector names and sort orders' if
-          vector_order.size != ascending.size
-        return ascending
-      else
-        Array.new(vector_order.size, ascending)
-      end
+    def coerce_sort_order vector_order, ascending
+      coerce_boolean_array vector_order, ascending, 'sort orders'
     end
 
-    def handle_nils_array vector_order, handle_nils
-      if handle_nils.is_a? Array
-        raise ArgumentError, 'Specify same number of vector names and handle nils' if
-          vector_order.size != handle_nils.size
-        return handle_nils
+    def coerce_handle_nils vector_order, handle_nils
+      coerce_boolean_array vector_order, handle_nils, 'handle nils'
+    end
+
+    def coerce_boolean_array source, boolean, message
+      if boolean.is_a? Array
+        raise ArgumentError, "Specify same number of vector names and #{message}" if
+          source.size != boolean.size
+        boolean
       else
-        Array.new(vector_order.size, handle_nils)
+        Array.new(source.size, boolean)
       end
     end
 
