@@ -1161,21 +1161,17 @@ module Daru
       cl
     end
 
+    def get_vector_anyways(v)
+      @vectors.include?(v) ? self[v].to_a : [nil] * size
+    end
+
     # Concatenate another DataFrame along corresponding columns.
     # If columns do not exist in both dataframes, they are filled with nils
     def concat other_df
-      vectors = @vectors.to_a
-      data = []
+      vectors = (@vectors.to_a + other_df.vectors.to_a).uniq
 
-      vectors.each do |v|
-        other_vec = other_df.vectors.include?(v) ? other_df[v].to_a : [nil] * other_df.size
-        data << self[v].dup.to_a.concat(other_vec)
-      end
-
-      other_df.vectors.each do |v|
-        next if vectors.include?(v)
-        vectors << v
-        data << ([nil] * size).concat(other_df[v].to_a)
+      data = vectors.map do |v|
+        get_vector_anyways(v).dup.concat(other_df.get_vector_anyways(v))
       end
 
       Daru::DataFrame.new(data, order: vectors)
