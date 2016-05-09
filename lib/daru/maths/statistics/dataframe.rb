@@ -70,8 +70,9 @@ module Daru
         # @!method rolling_variance
         #   Calculate moving variance
         #   @param [Integer] n (10) Loopback length. Default to 10.
-        [:cumsum,:standardize,:acf,:ema,:rolling_mean,:rolling_median,:rolling_max,
-         :rolling_min,:rolling_count,:rolling_std,:rolling_variance, :rolling_sum
+        [
+          :cumsum,:standardize,:acf,:ema,:rolling_mean,:rolling_median,:rolling_max,
+          :rolling_min,:rolling_count,:rolling_std,:rolling_variance, :rolling_sum
         ].each do |meth|
           define_method(meth) do |*args|
             apply_method_to_numerics meth, *args

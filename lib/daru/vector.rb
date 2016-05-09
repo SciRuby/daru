@@ -212,7 +212,8 @@ module Daru
       # Form a new Vector using indexes and return it
       Daru::Vector.new(
         indexes.map { |loc| @data[@index[loc]] },
-        name: @name, metadata: @metadata.dup, index: indexes.conform(input_indexes), dtype: @dtype)
+        name: @name, metadata: @metadata.dup, index: indexes.conform(input_indexes), dtype: @dtype
+      )
     end
 
     # Just like in Hashes, you can specify the index label of the Daru::Vector
@@ -900,11 +901,13 @@ module Daru
 
     # Over rides original inspect for pretty printing in irb
     def inspect spacing=20, threshold=15
-      longest = [@name.to_s.size,
-                 (@index.to_a.map(&:to_s).map(&:size).max || 0),
-                 (@data.map(&:to_s).map(&:size).max || 0),
-                 3 # 'nil'.size
-                ].max
+      longest =
+        [
+          @name.to_s.size,
+          (@index.to_a.map(&:to_s).map(&:size).max || 0),
+          (@data.map(&:to_s).map(&:size).max || 0),
+          3 # 'nil'.size
+        ].max
 
       content   = ''
       longest   = spacing if longest > spacing
@@ -1032,7 +1035,8 @@ module Daru
         es.each do |estimator|
           # Add pseudovalue
           ps[estimator].push(
-            nb * est_n[estimator] - (nb-1) * h_est[estimator].call(other))
+            nb * est_n[estimator] - (nb-1) * h_est[estimator].call(other)
+          )
         end
       end
 
@@ -1127,7 +1131,8 @@ module Daru
         name:           @name,
         metadata:       @metadata,
         index:          @index,
-        missing_values: @missing_values)
+        missing_values: @missing_values
+      )
     end
 
     def self._load(data) # :nodoc:

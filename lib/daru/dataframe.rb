@@ -1521,7 +1521,8 @@ module Daru
       vectors.each do |v|
         @data[@vectors[v]] = Daru::Vector.new(
           idx.map { |i| @data[@vectors[v]].data[i] },
-          name: self[v].name, metadata: self[v].metadata.dup, index: index)
+          name: self[v].name, metadata: self[v].metadata.dup, index: index
+        )
       end
 
       self

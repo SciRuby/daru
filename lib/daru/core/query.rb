@@ -52,7 +52,8 @@ module Daru
           end
 
           Daru::DataFrame.new(
-            vecs, order: data_frame.vectors, index: vecs[0].index, clone: false)
+            vecs, order: data_frame.vectors, index: vecs[0].index, clone: false
+          )
         end
 
         def vector_where data, index, bool_array, dtype

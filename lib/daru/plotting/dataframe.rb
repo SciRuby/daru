@@ -40,7 +40,8 @@ module Daru
 
             plot.add_with_df(
               numeric.to_nyaplotdf,
-              :box, *numeric.vectors.to_a)
+              :box, *numeric.vectors.to_a
+            )
           end
 
         yield(plot, diagram) if block_given?
