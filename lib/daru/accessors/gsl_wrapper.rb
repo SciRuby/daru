@@ -26,8 +26,8 @@ module Daru
         GSL::Stats.median_from_sorted_data(@data.sort)
       end
 
-      def variance_sample(_m)
-        @data.variance_m # FIXME: I (zverok) suppose it may be variance(m) meant here
+      def variance_sample(m)
+        @data.variance(m)
       end
 
       def standard_deviation_sample(m)
