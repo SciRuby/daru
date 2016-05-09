@@ -607,7 +607,7 @@ module Daru
         #
         #   ts.acf   # => array with first 21 autocorrelations
         #   ts.acf 3 # => array with first 3 autocorrelations
-        def acf(max_lags=nil) # rubocop:disable Metrics/AbcSize
+        def acf(max_lags=nil)
           max_lags ||= (10 * Math.log10(size)).to_i
 
           (0..max_lags).map do |i|
@@ -698,7 +698,7 @@ module Daru
             end
         end
 
-        def midpoint_percentile(q) # rubocop:disable Metrics/AbcSize
+        def midpoint_percentile(q)
           sorted = only_valid(:array).sort
 
           v = (n_valid * q).quo(100)

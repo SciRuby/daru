@@ -152,11 +152,9 @@ module Daru
         cols_values = columns.factors
         cols_n      = cols_values.size
 
-        h_rows = rows.factors.each_with_object({}) do |v, a|
-          a[v] = cols_values.each_with_object({}) do |v1, a1|
-            a1[v1]=nil
-          end
-        end
+        h_rows = rows.factors.map do |v|
+          [v, cols_values.map { |v1| [v1, nil] }.to_h]
+        end.to_h
 
         values.each_index do |i|
           h_rows[rows[i]][columns[i]] = values[i]
