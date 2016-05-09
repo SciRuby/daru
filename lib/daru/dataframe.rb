@@ -1639,13 +1639,7 @@ module Daru
     # of the dataframe. Each element in the index array corresponds to its row
     # in the array of hashes, which has the same index.
     def to_a
-      arry = [[],[]]
-      each_row do |row|
-        arry[0] << row.to_h
-      end
-      arry[1] = @index.to_a
-
-      arry
+      [each_row.map(&:to_h), @index.to_a]
     end
 
     # Convert to json. If no_index is false then the index will NOT be included
@@ -1661,17 +1655,14 @@ module Daru
     # Converts DataFrame to a hash (explicit) with keys as vector names and values as
     # the corresponding vectors.
     def to_h
-      hsh = {}
-      @vectors.each_with_index do |vec_name, idx|
-        hsh[vec_name] = @data[idx]
-      end
-
-      hsh
+      @vectors
+        .each_with_index
+        .map { |vec_name, idx| [vec_name, @data[idx]] }.to_h
     end
 
     # Convert to html for IRuby.
     def to_html threshold=30
-      # FIXME: nowhere could be seen specs for it. So, it COULD be broken!
+      # FIXME: nowhere could be seen specs for it. So, it COULD be broken! - zverok
       path = File.expand_path('../iruby/templates/dataframe.html.erb', __FILE__)
       ERB.new(File.read(path).strip).result(binding)
     end
