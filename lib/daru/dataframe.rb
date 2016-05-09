@@ -1550,50 +1550,40 @@ module Daru
     #   #   ]
     def one_to_many(parent_fields, pattern)
       re      = Regexp.new pattern.gsub('%v','(.+?)').gsub('%n','(\\d+?)')
-      ds_vars = parent_fields.dup
+      ds_vars = parent_fields.dup + ['_col_id']
       vars    = []
       max_n   = 0
-      h       = parent_fields.each_with_object({}) { |v, a|
-        a[v] = Daru::Vector.new([])
-      }
-      # Adding _row_id
-      h['_col_id'] = Daru::Vector.new([])
-      ds_vars.push('_col_id')
 
-      @vectors.each do |f|
-        next unless f =~ re
-        unless vars.include? $1
-          vars.push($1)
-          h[$1] = Daru::Vector.new([])
-        end
-
-        max_n = $2.to_i if max_n < $2.to_i
+      @vectors.select { |v| v =~ re }.each do |v|
+        m = re.match(v)
+        vars << m[1]
+        max_n = [m[2].to_i, max_n].max
       end
-      ds = DataFrame.new(h, order: ds_vars+vars)
 
-      each_row do |row|
-        row_out = {}
-        parent_fields.each do |f|
-          row_out[f] = row[f]
-        end
+      vars.uniq!
+      h = (ds_vars + vars).map { |v| [v, Daru::Vector.new([])] }.to_h
 
-        max_n.times do |n1|
-          n = n1+1
-          any_data = false
-          vars.each do |v|
-            data = row[pattern.gsub('%v',v.to_s).gsub('%n',n.to_s)]
-            row_out[v] = data
-            any_data = true unless data.nil?
-          end
+      DataFrame.new(h, order: ds_vars+vars).tap do |ds|
+        each_row do |row|
+          row_out = parent_fields.map { |f| [f, row[f]] }.to_h
 
-          if any_data
-            row_out['_col_id'] = n
-            ds.add_row(row_out)
+          max_n.times do |n1|
+            n = n1+1
+            any_data = false
+            vars.each do |v|
+              data = row[pattern.gsub('%v',v.to_s).gsub('%n',n.to_s)]
+              row_out[v] = data
+              any_data = true unless data.nil?
+            end
+
+            if any_data
+              row_out['_col_id'] = n
+              ds.add_row(row_out)
+            end
           end
         end
+        ds.update
       end
-      ds.update
-      ds
     end
 
     def add_vectors_by_split_recode(name_, join='-', sep=Daru::SPLIT_TOKEN)
