@@ -1602,10 +1602,7 @@ module Daru
 
     # Convert all numeric vectors to GSL::Matrix
     def to_gsl
-      numerics_as_arrays = []
-      numeric_vectors.each do |n|
-        numerics_as_arrays << self[n].to_a
-      end
+      numerics_as_arrays = numeric_vectors.map { |n| self[n].to_a }
 
       GSL::Matrix.alloc(*numerics_as_arrays.transpose)
     end
