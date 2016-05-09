@@ -1565,15 +1565,13 @@ module Daru
       end
     end
 
-    def add_vectors_by_split_recode(name_, join='-', sep=Daru::SPLIT_TOKEN)
-      split = self[name_].split_by_separator(sep)
-      i = 1
-      split.each { |k,v|
-        new_field = name_.to_s + join + i.to_s
-        v.rename name_.to_s + ':' + k.to_s
-        self[new_field.to_sym] = v
-        i += 1
-      }
+    def add_vectors_by_split_recode(nm, join='-', sep=Daru::SPLIT_TOKEN)
+      self[nm]
+        .split_by_separator(sep)
+        .each_with_index do |(k, v), i|
+          v.rename "#{nm}:#{k}"
+          self["#{nm}#{join}#{i + 1}".to_sym] = v
+        end
     end
 
     # Create a sql, basen on a given Dataset
