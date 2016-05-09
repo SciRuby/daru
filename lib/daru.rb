@@ -28,7 +28,7 @@ module Daru
     12 => 31
   }.freeze
 
-  @lazy_update = false
+  @@lazy_update = false # rubocop:disable Style/ClassVars
 
   SPLIT_TOKEN = ','.freeze
 

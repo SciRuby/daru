@@ -217,7 +217,8 @@ module Daru
       # Form a new Vector using indexes and return it
       Daru::Vector.new(
         indexes.map { |loc| @data[@index[loc]] },
-        name: @name, metadata: @metadata.dup, index: indexes.conform(input_indexes), dtype: @dtype)
+        name: @name, metadata: @metadata.dup, index: indexes.conform(input_indexes), dtype: @dtype
+      )
     end
 
     # Just like in Hashes, you can specify the index label of the Daru::Vector
@@ -1028,7 +1029,8 @@ module Daru
         es.each do |estimator|
           # Add pseudovalue
           ps[estimator].push(
-            nb * est_n[estimator] - (nb-1) * h_est[estimator].call(other))
+            nb * est_n[estimator] - (nb-1) * h_est[estimator].call(other)
+          )
         end
       end
 
@@ -1122,7 +1124,8 @@ module Daru
         name:           @name,
         metadata:       @metadata,
         index:          @index,
-        missing_values: @missing_values)
+        missing_values: @missing_values
+      )
     end
 
     def daru_vector(*)

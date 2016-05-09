@@ -46,17 +46,14 @@ module Daru
           []
         when Integer
           index.times.to_a
-        when Index
+        when Enumerable
           index.to_a
-        when Array
-          index
         else
-          raise ArgumentError, "Can't create index from #{index}"
+          raise ArgumentError,
+            "Cannot create index from #{index.class} #{index.inspect}"
         end
 
-      @relation_hash = index
-                       .each_with_index
-                       .map { |n, idx| [n, idx] }.to_h.freeze
+      @relation_hash = index.each_with_index.to_h.freeze
       @keys = @relation_hash.keys
       @size = @relation_hash.size
     end
@@ -231,7 +228,11 @@ module Daru
     end
 
     def self.try_from_tuples tuples
-      tuples.is_a?(Array) && tuples.first.is_a?(Array) ? from_tuples(tuples) : nil
+      if tuples.respond_to?(:first) && tuples.first.is_a?(Array)
+        from_tuples(tuples)
+      else
+        nil
+      end
     end
 
     def [] *key

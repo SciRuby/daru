@@ -208,7 +208,8 @@ module Daru
             indexes
           end
         Daru::DataFrame.rows(
-          rows, index: new_index, order: @context.vectors)
+          rows, index: new_index, order: @context.vectors
+        )
       end
 
       # Iteratively applies a function to the values in a group and accumulates the result.

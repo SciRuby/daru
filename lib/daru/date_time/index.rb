@@ -139,7 +139,8 @@ module Daru
         when :month
           DateTime.new(
             date_string.match(/\d\d\d\d/).to_s.to_i,
-            date_string.match(/\-\d?\d/).to_s.delete('-').to_i)
+            date_string.match(/\-\d?\d/).to_s.delete('-').to_i
+          )
         else
           DateTime.parse date_string
         end
@@ -226,7 +227,7 @@ module Daru
 
     def self.try_create(source)
       if source && source.is_a?(Array) && !source.empty? &&
-            source.all? { |e| e.is_a?(DateTime) }
+            source.all_are?(DateTime)
         new(source, freq: :infer)
       else
         nil
