@@ -23,7 +23,7 @@ module Daru
     def self.new *args, &block
       source = args[0]
 
-      if source && source[0].is_a?(Array)
+      if source.respond_to?(:first) && source.first.is_a?(Array)
         Daru::MultiIndex.from_tuples source
       elsif source && source.is_a?(Array) && !source.empty? &&
             source.all? { |e| e.is_a?(DateTime) }
@@ -45,16 +45,20 @@ module Daru
     attr_reader :relation_hash, :size
 
     def initialize index
-      index = 0 if index.nil?
-      index = Array.new(index) { |i| i } if index.is_a? Integer
-      index = index.to_a if index.is_a? Daru::Index
+      index =
+        case index
+        when nil
+          []
+        when Integer
+          index.times.to_a
+        when Enumerable
+          index.to_a
+        else
+          raise ArgumentError,
+            "Cannot create index from #{index.class} #{index.inspect}"
+        end
 
-      @relation_hash = {}
-      index.each_with_index do |n, idx|
-        @relation_hash[n] = idx
-      end
-
-      @relation_hash.freeze
+      @relation_hash = index.each_with_index.to_h.freeze
       @keys = @relation_hash.keys
       @size = @relation_hash.size
     end
