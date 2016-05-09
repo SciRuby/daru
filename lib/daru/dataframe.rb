@@ -1549,37 +1549,16 @@ module Daru
     #   #   ["white", "2", 20]
     #   #   ]
     def one_to_many(parent_fields, pattern)
-      re      = Regexp.new pattern.gsub('%v','(.+?)').gsub('%n','(\\d+?)')
-      ds_vars = parent_fields.dup + ['_col_id']
-      vars    = []
-      max_n   = 0
+      vars, numbers = one_to_many_components(pattern)
 
-      @vectors.select { |v| v =~ re }.each do |v|
-        m = re.match(v)
-        vars << m[1]
-        max_n = [m[2].to_i, max_n].max
-      end
-
-      vars.uniq!
-      h = (ds_vars + vars).map { |v| [v, Daru::Vector.new([])] }.to_h
-
-      DataFrame.new(h, order: ds_vars+vars).tap do |ds|
+      DataFrame.new([], order: [*parent_fields, '_col_id', *vars]).tap do |ds|
         each_row do |row|
-          row_out = parent_fields.map { |f| [f, row[f]] }.to_h
+          verbatim = parent_fields.map { |f| [f, row[f]] }.to_h
+          numbers.each do |n|
+            generated = one_to_many_row row, n, vars, pattern
+            next if generated.values.all?(&:nil?)
 
-          max_n.times do |n1|
-            n = n1+1
-            any_data = false
-            vars.each do |v|
-              data = row[pattern.gsub('%v',v.to_s).gsub('%n',n.to_s)]
-              row_out[v] = data
-              any_data = true unless data.nil?
-            end
-
-            if any_data
-              row_out['_col_id'] = n
-              ds.add_row(row_out)
-            end
+            ds.add_row(verbatim.merge(generated).merge('_col_id' => n))
           end
         end
         ds.update
@@ -2401,6 +2380,25 @@ module Daru
           end
         end
       end
+    end
+
+    def one_to_many_components pattern
+      re = Regexp.new pattern.gsub('%v','(.+?)').gsub('%n','(\\d+?)')
+
+      vars, numbers =
+        @vectors
+        .map { |v| v.scan(re) }
+        .reject(&:empty?).flatten(1).transpose
+
+      [vars.uniq, numbers.map(&:to_i).sort.uniq]
+    end
+
+    def one_to_many_row row, number, vars, pattern
+      vars
+        .map { |v|
+          name = pattern.sub('%v', v).sub('%n', number.to_s)
+          [v, row[name]]
+        }.to_h
     end
   end
 end
