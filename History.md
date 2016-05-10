@@ -24,6 +24,8 @@
     - Sample and population covariance functions for Vector (@shahsaurabh0605).
     - Improve `DataFrame#dup` performance (@gnilrets).
     - Add `Daru::DataFrame::Core::GroupBy#reduce` for reducing groups by passing a block (@gnilrets).
+    - Add rubocop as development dependency and make changes suggested by it to conform to the Ruby Style Guide (@zverok).
+    - Allow Daru::Index to be initialized by a Range (@lokeshh).
 * Fixes
     - Fix conflict with narray that caused namespace clashes with nmatrix in case both narray and nmatrix were installed on the user's system (@lokeshh).
     - Fix bug with dataframe concatenation that caused modifying the arrays that
@@ -36,6 +38,7 @@
     - Handle nils in group_by keys (@gnilrets).
     - Handle nils for statistics methods in Vector and DataFrame for :array and :gsl data (@lokeshh).
     - Fix `DataFrame#clone` when no arguments have been passed to it (@lokeshh).
+    - Fix bug when joining empty dataframes (@gnilrets).
 
 
 # 0.1.2
