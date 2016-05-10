@@ -132,7 +132,7 @@ module Daru
 
             idx2 = idx2_start if idx1+1 < @df1.size && df1_array[idx1][0] == df1_array[idx1+1][0]
             idx1 += 1
-          elsif ([key1, key2].sort == [key1, key2] && idx1 < @df1.size) || idx2 == @df2.size
+          elsif ((key2.nil? || [key1,key2].sort == [key1,key2]) && idx1 < @df1.size) || idx2 == @df2.size
             add_merge_row_to_hash([df1_array[idx1], nil], joined_hash) if left
             idx1 += 1
           elsif idx2 < @df2.size || idx1 == @df1.size

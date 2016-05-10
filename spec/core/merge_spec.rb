@@ -15,6 +15,10 @@ describe Daru::DataFrame do
         :id => [1,1,1,1],
         :name => ['Rutabaga', 'Pirate', 'Darth Vader', 'Ninja']
       })
+      @empty = Daru::DataFrame.new({
+        :id => [],
+        :name => []
+      })
     end
 
     it "performs an inner join of two dataframes" do
@@ -53,6 +57,17 @@ describe Daru::DataFrame do
       expect(@left.join(@right, how: :left, on: [:name])).to eq(answer)
     end
 
+    it "performs a left join with an empty dataframe" do
+
+      answer = Daru::DataFrame.new({
+        :id_1 => [2,3,1,4],
+        :name => ["Monkey", "Ninja", "Pirate", "Spaghetti"],
+        :id_2 => [nil,nil,nil,nil]
+      }, order: [:id_1, :name, :id_2])
+
+      expect(@left.join(@empty, how: :left, on: [:name])).to eq(answer)
+    end
+
     it "performs a right outer join" do
       answer = Daru::DataFrame.new({
         :id_1 => [nil,3,1,nil],
@@ -61,5 +76,6 @@ describe Daru::DataFrame do
       }, order: [:id_1, :name, :id_2])
       expect(@left.join(@right, how: :right, on: [:name])).to eq(answer)
     end
+
   end
 end
