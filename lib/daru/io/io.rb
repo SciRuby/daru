@@ -5,12 +5,10 @@ module Daru
         row.to_a.map do |c|
           if empty.include?(c)
             nil
+          elsif c.is_a?(String) && c.is_number?
+            c =~ /^\d+$/ ? c.to_i : c.tr(',','.').to_f
           else
-            if c.is_a? String and c.is_number?
-              c =~ /^\d+$/ ? c.to_i : c.gsub(",",".").to_f
-            else
-              c
-            end
+            c
           end
         end
       end
@@ -23,7 +21,7 @@ module Daru
 
       def from_excel path, opts={}
         opts = {
-          :worksheet_id => 0,
+          worksheet_id: 0
         }.merge opts
 
         worksheet_id = opts[:worksheet_id]
@@ -41,10 +39,10 @@ module Daru
         df
       end
 
-      def dataframe_write_excel dataframe, path, opts={}
+      def dataframe_write_excel dataframe, path, _opts={}
         book   = Spreadsheet::Workbook.new
         sheet  = book.create_worksheet
-        format = Spreadsheet::Format.new :color => :blue, :weight => :bold
+        format = Spreadsheet::Format.new color: :blue, weight: :bold
 
         sheet.row(0).concat(dataframe.vectors.to_a.map(&:to_s)) # Unfreeze strings
         sheet.row(0).default_format = format
@@ -62,18 +60,26 @@ module Daru
         opts[:col_sep]           ||= ','
         opts[:converters]        ||= :numeric
 
-        daru_options = opts.keys.inject({}) do |hash, k|
+        daru_options = opts.keys.each_with_object({}) do |hash, k|
           if [:clone, :order, :index, :name].include?(k)
             hash[k] = opts[k]
             opts.delete k
           end
-
-          hash
         end
 
         # Preprocess headers for detecting and correcting repetition in
         # case the :headers option is not specified.
-        unless opts[:headers]
+        if opts[:headers]
+          opts[:header_converters] ||= :symbol
+
+          csv = ::CSV.read(path, 'rb',opts)
+          yield csv if block_given?
+
+          hsh = {}
+          csv.by_col.each do |col_name, values|
+            hsh[col_name] = values
+          end
+        else
           csv = ::CSV.open(path, 'rb', opts)
           yield csv if block_given?
 
@@ -89,16 +95,6 @@ module Daru
 
           # Order columns as given in CSV
           daru_options[:order] = headers.to_a
-        else
-          opts[:header_converters] ||= :symbol
-
-          csv = ::CSV.read(path, 'rb',opts)
-          yield csv if block_given?
-
-          hsh = {}
-          csv.by_col.each do |col_name, values|
-            hsh[col_name] = values
-          end
         end
 
         Daru::DataFrame.new(hsh,daru_options)
@@ -113,11 +109,11 @@ module Daru
         writer << dataframe.vectors.to_a unless options[:headers] == false
 
         dataframe.each_row do |row|
-          if options[:convert_comma]
-            writer << row.map { |v| v.to_s.gsub('.', ',') }
-          else
-            writer << row.to_a
-          end
+          writer << if options[:convert_comma]
+                      row.map { |v| v.to_s.tr('.', ',') }
+                    else
+                      row.to_a
+                    end
         end
 
         writer.close
@@ -137,10 +133,10 @@ module Daru
 
       def dataframe_write_sql ds, dbh, table
         require 'dbi'
-        query = "INSERT INTO #{table} ("+ds.vectors.to_a.join(",")+") VALUES ("+((["?"]*ds.vectors.size).join(","))+")"
-        sth   =  dbh.prepare(query)
+        query = "INSERT INTO #{table} ("+ds.vectors.to_a.join(',')+') VALUES ('+(['?']*ds.vectors.size).join(',')+')'
+        sth   = dbh.prepare(query)
         ds.each_row { |c| sth.execute(*c.to_a) }
-        return true
+        true
       end
 
       # Load dataframe from AR::Relation
@@ -161,7 +157,7 @@ module Daru
         vectors = Hash[*fields.map { |name|
           [
             name,
-            Daru::Vector.new([]).tap {|v| v.rename name }
+            Daru::Vector.new([]).tap { |v| v.rename name }
           ]
         }.flatten]
 
@@ -177,9 +173,9 @@ module Daru
 
       def from_plaintext filename, fields
         ds = Daru::DataFrame.new({}, order: fields)
-        fp = File.open(filename,"r")
+        fp = File.open(filename,'r')
         fp.each_line do |line|
-          row = Daru::IOHelpers.process_row(line.strip.split(/\s+/),[""])
+          row = Daru::IOHelpers.process_row(line.strip.split(/\s+/),[''])
           next if row == ["\x1A"]
           ds.add_row(row)
         end

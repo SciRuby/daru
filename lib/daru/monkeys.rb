@@ -6,32 +6,20 @@ class Array
   #   a.recode_repeated
   #   => ["a","b","c_1","c_2","d_1","d_2","d_3","e"]
   def recode_repeated
-    if size != uniq.size
-      # Find repeated
-      repeated = inject({}) do |acc, v|
-        if acc[v].nil?
-          acc[v] = 1
-        else
-          acc[v] += 1
-        end
-        acc
-      end.select { |_k, v| v > 1 }.keys
+    return self if size == uniq.size
 
-      ns = repeated.inject({}) do |acc, v|
-        acc[v] = 0
-        acc
-      end
+    duplicated = group_by { |n| n }
+                 .select { |_, g| g.size > 1 }.map(&:first)
 
-      collect do |f|
-        if repeated.include? f
-          ns[f] += 1
-          sprintf('%s_%d', f, ns[f])
-        else
-          f
-        end
+    counter = duplicated.collect { |n| [n, 0] }.to_h
+
+    collect do |n|
+      if counter.key?(n)
+        counter[n] += 1
+        '%s_%d' % [n, counter[n]]
+      else
+        n
       end
-    else
-      self
     end
   end
 
@@ -54,20 +42,20 @@ class Range
   alias_method :dv, :daru_vector
 
   def to_index
-    Daru::Index.new self.to_a
+    Daru::Index.new to_a
   end
 end
 
 class Hash
   def daru_vector index=nil, dtype=:array
-    Daru::Vector.new self.values[0], name: self.keys[0], index: index, dtype: dtype
+    Daru::Vector.new values[0], name: keys[0], index: index, dtype: dtype
   end
 
   alias_method :dv, :daru_vector
 end
 
 class NMatrix
-  def daru_vector name=nil, index=nil, dtype=NMatrix
+  def daru_vector(name=nil, index=nil, *)
     Daru::Vector.new self, name: name, index: index, dtype: :nmatrix
   end
 
@@ -75,7 +63,7 @@ class NMatrix
 end
 
 class MDArray
-  def daru_vector name=nil, index=nil, dtype=MDArray
+  def daru_vector(name=nil, index=nil, *)
     Daru::Vector.new self, name: name, index: index, dtype: :mdarray
   end
 
@@ -90,7 +78,7 @@ end
 
 class Matrix
   def elementwise_division other
-    self.map.with_index do |e, index|
+    map.with_index do |e, index|
       e / other.to_a.flatten[index]
     end
   end

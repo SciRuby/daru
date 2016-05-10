@@ -1,20 +1,20 @@
 module Daru
   module Plotting
     module DataFrame
-      # Plots a DataFrame with Nyaplot on IRuby using the given options. Yields 
+      # Plots a DataFrame with Nyaplot on IRuby using the given options. Yields
       # the corresponding Nyaplot::Plot object and the Nyaplot::Diagram object
       # to the block, if it is specified. See the nyaplot docs for info on how to
       # further use these objects.
-      # 
-      # Detailed instructions on use of the plotting API can be found in the 
+      #
+      # Detailed instructions on use of the plotting API can be found in the
       # notebooks whose links you can find in the README.
-      # 
+      #
       # == Options
-      # 
+      #
       # * +:type+  - Type of plot. Can be :scatter, :bar, :histogram, :line or :box.
       # * +:x+ - Vector to be used for X co-ordinates.
       # * +:y+ - Vector to be used for Y co-ordinates.
-      # 
+      #
       # == Usage
       #   # Simple bar chart
       #   df = Daru::DataFrame.new({a:['A', 'B', 'C', 'D', 'E'], b:[10,20,30,40,50]})
@@ -28,27 +28,28 @@ module Daru
         types = extract_option :type, options
 
         diagram =
-        case 
-        when !([:scatter, :bar, :line, :histogram] & types).empty?
-          if single_diagram? options
-            add_single_diagram plot, options
-          else
-            add_multiple_diagrams plot, options
-          end
-        when types.include?(:box)
-          numeric = self.only_numerics(clone: false).dup_only_valid
+          case
+          when !([:scatter, :bar, :line, :histogram] & types).empty?
+            if single_diagram? options
+              add_single_diagram plot, options
+            else
+              add_multiple_diagrams plot, options
+            end
+          when types.include?(:box)
+            numeric = only_numerics(clone: false).dup_only_valid
 
-          plot.add_with_df(
-            numeric.to_nyaplotdf,
-            :box, *numeric.vectors.to_a)
-        end
+            plot.add_with_df(
+              numeric.to_nyaplotdf,
+              :box, *numeric.vectors.to_a
+            )
+          end
 
         yield(plot, diagram) if block_given?
 
         plot.show
       end
 
-     private
+      private
 
       def single_diagram? options
         options[:x] and options[:x].is_a?(Symbol)
@@ -56,12 +57,12 @@ module Daru
 
       def add_single_diagram plot, options
         args = [
-          self.to_nyaplotdf, 
-          options[:type], 
+          to_nyaplotdf,
+          options[:type],
           options[:x]
         ]
 
-        args << options[:y] if(options[:y])
+        args << options[:y] if options[:y]
 
         plot.add_with_df(*args)
       end
@@ -72,10 +73,9 @@ module Daru
         y_vecs = extract_option :y, options
 
         diagrams   = []
-        nyaplot_df = self.to_nyaplotdf
+        nyaplot_df = to_nyaplotdf
         total      = x_vecs.size
         types = types.size < total ? types*total : types
-
 
         (0...total).each do |i|
           diagrams << plot.add_with_df(
@@ -95,11 +95,10 @@ module Daru
           o.is_a?(Array) ? o : [o]
         else
           arr = options.keys
-          arr.keep_if { |a| a =~ Regexp.new("\\A#{opt.to_s}") }.sort
+          arr.keep_if { |a| a =~ Regexp.new("\\A#{opt}") }.sort
           arr.map { |a| options[a] }
         end
       end
-
     end
   end
 end if Daru.has_nyaplot?

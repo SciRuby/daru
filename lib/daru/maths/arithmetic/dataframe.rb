@@ -2,15 +2,14 @@ module Daru
   module Maths
     # Module encapsulating all aritmetic methods on DataFrame.
     module Arithmetic
-      module DataFrame 
-
+      module DataFrame
         # Add a scalar or another DataFrame
         def + other
           binary_operation :+, other
         end
 
         # Subtract a scalar or another DataFrame.
-        def - other 
+        def - other
           binary_operation :-, other
         end
 
@@ -19,7 +18,7 @@ module Daru
           binary_operation :*, other
         end
 
-        # Divide a scalar or another DataFrame. 
+        # Divide a scalar or another DataFrame.
         def / other
           binary_operation :/, other
         end
@@ -36,18 +35,19 @@ module Daru
 
         # Calculate exponenential of all vectors with numeric values.
         def exp
-          only_numerics(clone: false).recode { |v| v.exp }
+          only_numerics(clone: false).recode(&:exp)
         end
 
         # Calcuate square root of numeric vectors.
         def sqrt
-          only_numerics(clone: false).recode { |v| v.sqrt }
+          only_numerics(clone: false).recode(&:sqrt)
         end
 
         def round precision=0
           only_numerics(clone: false).recode { |v| v.round(precision) }
         end
-       private
+
+        private
 
         def binary_operation operation, other
           case other
@@ -59,27 +59,27 @@ module Daru
         end
 
         def dataframe_binary_operation operation, other
-          all_vectors = (self.vectors.to_a | other.vectors.to_a).sort
-          all_indexes = (self.index.to_a   | other.index.to_a).sort
+          all_vectors = (vectors.to_a | other.vectors.to_a).sort
+          all_indexes = (index.to_a   | other.index.to_a).sort
 
           hsh = {}
           all_vectors.each do |vector_name|
-            this = self .has_vector?(vector_name) ? self[vector_name] : nil
+            this = has_vector?(vector_name) ? self[vector_name] : nil
             that = other.has_vector?(vector_name) ? other[vector_name] : nil
 
-            if this and that
-              hsh[vector_name] = this.send(operation, that)
-            else
-              hsh[vector_name] = Daru::Vector.new([], index: all_indexes, 
-                name: vector_name)
-            end
+            hsh[vector_name] =
+              if this && that
+                this.send(operation, that)
+              else
+                Daru::Vector.new([], index: all_indexes, name: vector_name)
+              end
           end
 
-          Daru::DataFrame.new(hsh, index: all_indexes, name: @name, dtype: @dtype)          
+          Daru::DataFrame.new(hsh, index: all_indexes, name: @name, dtype: @dtype)
         end
 
         def scalar_binary_operation operation, other
-          clone = self.dup
+          clone = dup
           clone.map_vectors! do |vector|
             vector = vector.send(operation, other) if vector.type == :numeric
             vector

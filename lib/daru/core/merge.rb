@@ -11,10 +11,10 @@ module Daru
             end
           }
 
-          if matched
-            hash[matcher] = hash[matched]
-            hash.delete matched
-          end
+          return unless matched
+
+          hash[matcher] = hash[matched]
+          hash.delete matched
         end
 
         def resolve_duplicates df_hash1, df_hash2, on
@@ -37,71 +37,67 @@ module Daru
         def arrayify df
           arr = df.to_a
           col_names = arr[0][0].keys
-          values = arr[0].map{|h| h.values}
+          values = arr[0].map(&:values)
 
-          return col_names, values
+          [col_names, values]
         end
 
         def arrayify_with_sort_keys(size, df_hash, on)
-
           # Converting to a hash and then to an array is more complex
           # than using df.to_a or df.map(:row).  However, it's
           # substantially faster this way.
 
-          idx_keys = on.map { |key| df_hash.keys.index(key) }
+          # idx_keys = on.map { |key| df_hash.keys.index(key) }
 
           (0...size).reduce([]) do |r, idx|
             key_values = on.map { |col| df_hash[col][idx] }
-            row_values = df_hash.map { |col, val| val[idx] }
+            row_values = df_hash.map { |_col, val| val[idx] }
             r << [key_values, row_values]
           end
 
           # Conceptually simpler and does the same thing, but slows down the
           # total merge algorithm by 2x.  Would be nice to improve the performance
           # of df.map(:row)
-  #        df.map(:row) do |row|
-  #          key_values = on.map { |key| row[key] }
-  #          [key_values, row.to_a]
-  #        end
+          #
+          # df.map(:row) do |row|
+          #   key_values = on.map { |key| row[key] }
+          #   [key_values, row.to_a]
+          # end
         end
 
         def verify_dataframes df_hash1, df_hash2, on
           raise ArgumentError,
-            "All fields in :on must be present in self" if !on.all? { |e| df_hash1[e] }
+            'All fields in :on must be present in self' unless on.all? { |e| df_hash1[e] }
           raise ArgumentError,
-            "All fields in :on must be present in other DF" if !on.all? { |e| df_hash2[e] }
+            'All fields in :on must be present in other DF' unless on.all? { |e| df_hash2[e] }
         end
       end
     end
 
-
-
     class MergeFrame
-
       def initialize(df1, df2, on: nil)
         @df1 = df1
         @df2 = df2
         @on = on
       end
 
-      def inner opts
+      def inner _opts
         merge_join(left: false, right: false)
       end
 
-      def left opts
+      def left _opts
         merge_join(left: true, right: false)
       end
 
-      def right opts
+      def right _opts
         merge_join(left: false, right: true)
       end
 
-      def outer opts
+      def outer _opts
         merge_join(left: true, right: true)
       end
 
       def merge_join(left: true, right: true)
-
         MergeHelper.verify_dataframes df1_hash, df2_hash, @on
         MergeHelper.resolve_duplicates df1_hash, df2_hash, @on
 
@@ -116,8 +112,7 @@ module Daru
         idx1 = 0
         idx2 = 0
 
-        merged = []
-        while (idx1 < @df1.size || idx2 < @df2.size) do
+        while idx1 < @df1.size || idx2 < @df2.size
 
           key1 = df1_array[idx1][0] if idx1 < @df1.size
           key2 = df2_array[idx2][0] if idx2 < @df2.size
@@ -125,7 +120,7 @@ module Daru
           if key1 == key2 && idx1 < @df1.size && idx2 < @df2.size
             idx2_start = idx2
 
-            while (idx2 < @df2.size) && (df1_array[idx1][0] == df2_array[idx2][0]) do
+            while (idx2 < @df2.size) && (df1_array[idx1][0] == df2_array[idx2][0])
               add_merge_row_to_hash([df1_array[idx1], df2_array[idx2]], joined_hash)
               idx2 += 1
             end
@@ -146,10 +141,7 @@ module Daru
         Daru::DataFrame.new(joined_hash, order: joined_hash.keys)
       end
 
-
-
       private
-
 
       def joined_hash
         return @joined_hash if @joined_hash
@@ -202,7 +194,6 @@ module Daru
         end
       end
     end
-
 
     # Private module containing methods for join, merge, concat operations on
     # dataframes and vectors.

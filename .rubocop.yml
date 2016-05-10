@@ -1,0 +1,99 @@
+inherit_from: .rubocop_todo.yml
+
+AllCops:
+  Include:
+    - 'lib/**/*'
+  Exclude:
+    - 'spec/*'
+    - 'spec/**/*'
+    - 'vendor/**/*'
+    - 'benchmarks/*'
+  DisplayCopNames: true
+
+# Preferred codebase style ---------------------------------------------
+Style/ExtraSpacing:
+  AllowForAlignment: true
+
+Style/FormatString:
+  EnforcedStyle: percent
+
+Style/AndOr:
+  EnforcedStyle: conditionals
+
+Style/SpaceAroundEqualsInParameterDefault:
+  EnforcedStyle: no_space
+
+Style/SpaceInsideBlockBraces:
+  EnforcedStyle: space
+
+Style/SpaceInsideHashLiteralBraces:
+  EnforcedStyle: no_space
+
+Style/AlignParameters:
+  EnforcedStyle: with_fixed_indentation
+
+Style/EmptyElse:
+  EnforcedStyle: empty
+
+Style/ParallelAssignment:
+  Enabled: false
+
+Style/DoubleNegation:
+  Enabled: false
+
+Style/SingleLineBlockParams:
+  Enabled: false
+
+Style/PerlBackrefs:
+  Enabled: false
+
+Style/SpaceAfterComma:
+  Enabled: false
+
+Style/SpaceAroundOperators:
+  Enabled: false
+
+Style/EmptyCaseCondition:
+  Enabled: false
+
+# Neither of prefered styles are good enough :(
+Style/BlockDelimiters:
+  Enabled: false
+
+# TODO -----------------------------------------------------------------
+
+Style/Documentation:
+  Enabled: false
+
+# To discuss and decide ------------------------------------------------
+
+# FIXME: in fact, rescue modifier is rarely a good choice.
+#  But currently I can't fully grasp the three places they are used.
+#  So, leaving them intact. - zverok, 2016-05-07
+Style/RescueModifier:
+  Exclude:
+    - 'lib/daru/accessors/gsl_wrapper.rb'
+    - 'lib/daru/dataframe.rb'
+    - 'lib/daru/io/sql_data_source.rb'
+
+# FIXME: once we should enable and fix it - zverok, 2016-05-07
+Style/Alias:
+  Enabled: false
+
+# FIXME: should decide about this.
+# Personally I prefer (as most of Ruby community) to use parens, but
+# we also can enforce style to NOT using them. Yet it definitely should
+# be only one style. Current codebase uses ~400 method defs without and
+# ~ 100 method defs with them. - zverok, 2016-05-07
+Style/MethodDefParentheses:
+  Enabled: false
+
+# Should be fixed, but require change of public API --------------------
+
+# Bans methods like `has_missing_data?`, `is_number?` and so on - started
+# with unnecessary has_ or is_.
+Style/PredicateName:
+  Exclude:
+    - 'lib/daru/dataframe.rb'
+    - 'lib/daru/monkeys.rb'
+    - 'lib/daru/vector.rb'

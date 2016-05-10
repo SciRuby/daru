@@ -9,15 +9,15 @@ module Daru
           @query = query
         end
 
-        def each_column_name(&block)
+        def each_column_name
           result.column_names.each do |column_name|
-            block.(column_name.to_sym)
+            yield(column_name.to_sym)
           end
         end
 
-        def each_row(&block)
+        def each_row
           result.fetch do |row|
-            block.(row.to_a)
+            yield(row.to_a)
           end
         end
 
@@ -36,15 +36,15 @@ module Daru
           @query = query
         end
 
-        def each_column_name(&block)
+        def each_column_name
           result.columns.each do |column_name|
-            block.(column_name.to_sym)
+            yield(column_name.to_sym)
           end
         end
 
-        def each_row(&block)
+        def each_row
           result.each do |row|
-            block.(row.values)
+            yield(row.values)
           end
         end
 
@@ -59,7 +59,7 @@ module Daru
       private_constant :ActiveRecordConnectionAdapter
 
       def self.make_dataframe(db, query)
-        self.new(db, query).make_dataframe
+        new(db, query).make_dataframe
       end
 
       def initialize(db, query)
@@ -105,11 +105,11 @@ module Daru
       end
 
       def check_dbi(obj)
-        DBI::DatabaseHandle === obj rescue false
+        obj.is_a?(DBI::DatabaseHandle)
       end
 
       def check_active_record_connection(obj)
-        ActiveRecord::ConnectionAdapters::AbstractAdapter === obj rescue false
+        obj.is_a?(ActiveRecord::ConnectionAdapters::AbstractAdapter)
       end
     end
   end
