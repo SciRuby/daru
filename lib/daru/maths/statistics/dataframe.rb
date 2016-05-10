@@ -2,24 +2,30 @@ module Daru
   module Maths
     module Statistics
       module DataFrame
-        # Calculate mean of numeric vectors.
-        def mean
-          compute_stats :mean
-        end
-
-        # Calculate sample standard deviation of numeric vectors.
-        def std
-          compute_stats :std
-        end
-
-        # Calculate sum of numeric vectors
-        def sum
-          compute_stats :sum
-        end
-
-        # Count the number of non-nil values in each vector.
-        def count
-          compute_stats :count
+        # @!method mean
+        #   Calculate mean of numeric vectors
+        # @!method variance_sample
+        #   Calculate sample variance of numeric vectors
+        # @!method range
+        #   Calculate range of numeric vectors
+        # @!method median
+        #   Calculate median of numeric vectors
+        # @!method mode
+        #   Calculate mode of numeric vectors
+        # @!method std
+        #   Calculate sample standard deviation of numeric vectors
+        # @!method sum
+        #   Calculate sum of numeric vectors
+        # @!method count
+        #   Count the number of non-nil values in each vector
+        # @!method min
+        #   Calculate the minimum value of each numeric vector
+        # @!method product
+        #   Compute the product of each numeric vector
+        [:mean, :variance_sample, :range, :median, :mode, :std, :sum, :count, :min, :product].each do |meth|
+          define_method(meth) do
+            compute_stats meth
+          end
         end
 
         # Calculate the maximum value of each numeric vector.
@@ -30,17 +36,7 @@ module Daru
             compute_stats :max
           end
         end
-
-        # Calculate the minimmum value of each numeric vector.
-        def min
-          compute_stats :min
-        end
-
-        # Compute the product of each numeric vector.
-        def product
-          compute_stats :product
-        end
-
+        
         # @!method cumsum
         #   Calculate cumulative sum of each numeric Vector
         # @!method standardize
@@ -98,6 +94,39 @@ module Daru
             description_hash[vec] = methods.map { |m| self[vec].send(m) }
           end
           Daru::DataFrame.new(description_hash, index: methods)
+        end
+
+        # The percent_change method computes the percent change over
+        # the given number of periods for numeric vectors.
+        #
+        # @param [Integer] periods (1) number of nils to insert at the beginning.
+        #
+        # @example
+        # 
+        #   df = Daru::DataFrame.new({
+        #        'col0' => [1,2,3,4,5,6],
+        #        'col2' => ['a','b','c','d','e','f'],
+        #        'col1' => [11,22,33,44,55,66]
+        #        }, 
+        #        index: ['one', 'two', 'three', 'four', 'five', 'six'], 
+        #        order: ['col0', 'col1', 'col2'])
+        #   df.percent_change
+        #   #=>
+        #   #   <Daru::DataFrame:23513280 @rows: 6 @cols: 2>
+        #   #              col0                col1
+        #   #   one	                           
+        #   #   two	   1.0	               1.0
+        #   #   three	   0.5                 0.5
+        #   #   four	   0.3333333333333333  0.3333333333333333
+        #   #   five       0.25                0.25
+        #   #   six        0.2                 0.2
+        def percent_change periods = 1 
+          df_numeric = only_numerics.vectors.to_a
+          df = Daru::DataFrame.new({}, order: @order, index: @index, name: @name)
+          df_numeric.each do |vec|
+            df[vec] = self[vec].percent_change periods
+          end
+          df
         end
 
         # Calculate sample variance-covariance between the numeric vectors.
@@ -176,6 +205,8 @@ module Daru
             end, name: method
           )
         end
+        alias :sds :std
+        alias :variance :variance_sample
       end
     end
   end

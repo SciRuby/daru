@@ -37,6 +37,16 @@ describe Daru::Index do
       expect(idx.to_a).to eq(['speaker', 'mic', 'guitar', 'amp'])
     end
 
+    it "creates an Index from Range" do
+      idx = Daru::Index.new 1..5
+
+      expect(idx).to eq(Daru::Index.new [1, 2, 3, 4, 5])
+    end
+
+    it "raises ArgumentError on invalid input type" do
+      expect { Daru::Index.new 'foo' }.to raise_error ArgumentError
+    end
+
     it "accepts all sorts of objects for Indexing" do
       idx = Daru::Index.new [:a, 'a', :hello, '23', 23]
 
@@ -202,6 +212,14 @@ describe Daru::MultiIndex do
         [:b,:two,:bar],
         [:b,:two,:baz]
       ]))
+    end
+
+    it "raises error when specifying invalid index" do
+      expect { @multi_mi[:a, :three] }.to raise_error IndexError
+      expect { @multi_mi[:a, :one, :xyz] }.to raise_error IndexError
+      expect { @multi_mi[:x] }.to raise_error IndexError
+      expect { @multi_mi[:x, :one] }.to raise_error IndexError
+      expect { @multi_mi[:x, :one, :bar] }.to raise_error IndexError
     end
 
     it "works with numerical first levels" do

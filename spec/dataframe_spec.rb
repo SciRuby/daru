@@ -133,14 +133,17 @@ describe Daru::DataFrame do
       end
 
       it "initializes from a Hash of Vectors" do
-        df = Daru::DataFrame.new({b: [11,12,13,14,15].dv(:b, [:one, :two, :three, :four, :five]),
-          a: [1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five])}, order: [:a, :b],
-          index: [:one, :two, :three, :four, :five])
+        va = Daru::Vector.new([1,2,3,4,5], metadata: { cdc_type: 2 }, index: [:one, :two, :three, :four, :five])
+        vb = Daru::Vector.new([11,12,13,14,15], index: [:one, :two, :three, :four, :five])
+
+        df = Daru::DataFrame.new({ b: vb, a: va }, order: [:a, :b], index: [:one, :two, :three, :four, :five])
 
         expect(df.index)  .to eq(Daru::Index.new [:one, :two, :three, :four, :five])
         expect(df.vectors).to eq(Daru::Index.new [:a, :b])
         expect(df.a.class).to eq(Daru::Vector)
         expect(df.a)      .to eq([1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five]))
+        expect(df.a.metadata).to eq({ cdc_type: 2 })
+        expect(df.b.metadata).to eq({})
       end
 
       it "initializes from an Array of Hashes" do
@@ -419,6 +422,13 @@ describe Daru::DataFrame do
         expect(@df[:a, :b]).to eq(temp)
       end
 
+      it "returns a DataFrame with metadata" do
+        @df[:a].metadata = "alpha"
+        @df[:b].metadata = "beta"
+        subset_df = @df[:a, :b]
+        expect([:a, :b].map { |v| subset_df[v].metadata }).to eq(["alpha", "beta"])
+      end
+
       it "accesses vector with Integer index" do
         expect(@df[0]).to eq([1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five]))
       end
@@ -521,14 +531,30 @@ describe Daru::DataFrame do
           }.to raise_error
       end
 
-    it "assigns correct name given empty dataframe" do
-      df_empty = Daru::DataFrame.new({})
-      df_empty[:a] = 1..5
-      df_empty[:b] = 1..5
+      it "assigns correct name given empty dataframe" do
+        df_empty = Daru::DataFrame.new({})
+        df_empty[:a] = 1..5
+        df_empty[:b] = 1..5
 
-      expect(df_empty[:a].name).to equal(:a)
-      expect(df_empty[:b].name).to equal(:b)
-    end
+        expect(df_empty[:a].name).to equal(:a)
+        expect(df_empty[:b].name).to equal(:b)
+      end
+
+      it "copies metadata when the target is a vector" do
+        vec = Daru::Vector.new(1.upto(@df.size), index: @df.index, metadata: { cdc_type: 2 })
+        @df[:woo] = vec.dup
+        expect(@df[:woo].metadata).to eq vec.metadata
+      end
+
+      it "doesn't delete metadata when the source is a dataframe with empty vectors" do
+        empty_df = Daru::DataFrame.new({
+          a: Daru::Vector.new([], metadata: 'alpha'),
+          b: Daru::Vector.new([], metadata: 'beta'),
+          })
+
+        empty_df[:c] = Daru::Vector.new(1.upto(3))
+        expect(empty_df[:a].metadata).to eq 'alpha'
+      end
 
       it "appends multiple vectors at a time" do
         # TODO
@@ -864,6 +890,16 @@ describe Daru::DataFrame do
       expect(cloned[:a].object_id).to eq(@data_frame[:a].object_id)
       expect(cloned[:b].object_id).to eq(@data_frame[:b].object_id)
     end
+
+    it "original dataframe remains unaffected when operations are applied
+      on cloned data frame" do
+      original = @data_frame.dup
+      cloned = @data_frame.clone
+      cloned.delete_vector :a
+
+      expect(@data_frame).to eq(original)
+    end
+
   end
 
   context "#clone_structure" do
@@ -1098,6 +1134,18 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#delete_vectors" do
+    context Daru::Index do
+      it "deletes the specified vectors" do
+        @data_frame.delete_vectors :a, :b
+
+        expect(@data_frame).to eq(Daru::DataFrame.new({
+                c: [11,22,33,44,55]}, order: [:c],
+                index: [:one, :two, :three, :four, :five]))
+      end
+    end
+  end
+
   context "#delete_row" do
     it "deletes the specified row" do
       @data_frame.delete_row :three
@@ -1203,9 +1251,9 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#to_hash" do
+  context "#to_h" do
     it "converts to a hash" do
-      expect(@data_frame.to_hash).to eq(
+      expect(@data_frame.to_h).to eq(
         {
           a: Daru::Vector.new([1,2,3,4,5],
             index: [:one, :two, :three, :four, :five]),
@@ -1232,6 +1280,7 @@ describe Daru::DataFrame do
     context Daru::Index do
       before :each do
         @df = Daru::DataFrame.new({a: [5,1,-6,7,5,5], b: [-2,-1,5,3,9,1], c: ['a','aa','aaa','aaaa','aaaaa','aaaaaa']})
+        @df[:a].metadata = { cdc_type: 2 }
       end
 
       it "sorts according to given vector order (bang)" do
@@ -1253,6 +1302,12 @@ describe Daru::DataFrame do
           )
         expect(ans).to_not eq(@df)
       end
+
+      it "retains the vector metadata from the original dataframe" do
+        ans = @df.sort([:a])
+        expect(ans[:a].metadata).to eq({ cdc_type: 2 })
+      end
+
     end
 
     context Daru::MultiIndex do
@@ -1330,7 +1385,7 @@ describe Daru::DataFrame do
 
         expect(non_numeric.sort!([:c], ascending: [true])).to eq(
           Daru::DataFrame.new({a: [-6, 5, 5, 1, 7, 5], b: [1, 1, nil, -1, nil, -1],
-            c: [nil, nil, "aaa", "aaa", "baaa", "xxx"]}, 
+            c: [nil, nil, "aaa", "aaa", "baaa", "xxx"]},
             index: [2, 5, 0, 1, 3, 4])
           )
       end
@@ -1341,7 +1396,7 @@ describe Daru::DataFrame do
 
         expect(non_numeric.sort!([:c], ascending: [false])).to eq(
           Daru::DataFrame.new({a: [-6, 5, 5, 7, 5, 1], b: [1, 1, -1, nil, nil, -1],
-            c: [nil, nil, "xxx", "baaa", "aaa", "aaa"]}, 
+            c: [nil, nil, "xxx", "baaa", "aaa", "aaa"]},
             index: [2, 5, 4, 3, 0, 1])
           )
       end
@@ -1352,7 +1407,7 @@ describe Daru::DataFrame do
 
         expect(non_numeric.sort!([:b], by: {b: lambda { |a| a.abs } }, handle_nils: true)).to eq(
           Daru::DataFrame.new({a: [5, 7, 1, -6, 5, 5], b: [nil, nil, -1, 1, -1, 1],
-            c: ["aaa", "baaa", "aaa", nil, "xxx", nil]}, 
+            c: ["aaa", "baaa", "aaa", nil, "xxx", nil]},
             index: [0, 3, 1, 2, 4, 5])
           )
       end
@@ -1363,7 +1418,7 @@ describe Daru::DataFrame do
 
       expect(non_numeric.sort!([:b], by: {b: lambda { |a| (a.nil?)?[1]:[0, a.abs]} }, handle_nils: false)).to eq(
         Daru::DataFrame.new({a: [1, -6, 5, 5, 5, 7], b: [-1, 1, -1, 1, nil, nil],
-          c: ["aaa", nil, "xxx", nil, "aaa", "baaa"]}, 
+          c: ["aaa", nil, "xxx", nil, "aaa", "baaa"]},
           index: [1, 2, 4, 5, 0, 3])
         )
       end
@@ -1420,6 +1475,37 @@ describe Daru::DataFrame do
       expect {
         @df.vectors = Daru::Index.new([1,2,'3',4,'5'])
       }.to raise_error(ArgumentError)
+    end
+  end
+
+  context "#rename_vectors" do
+    before do
+      @df = Daru::DataFrame.new({
+        a: [1,2,3,4,5],
+        b: [11,22,33,44,55],
+        c: %w(a b c d e)
+      })
+    end
+
+    it "renames vectors using a hash map" do
+      @df.rename_vectors :a => :alpha, :c => :gamma
+      expect(@df.vectors.to_a).to eq([:alpha, :b, :gamma])
+    end
+
+    it "overwrites vectors if the new name already exists" do
+      saved_vector = @df[:a].dup
+
+      @df.rename_vectors :a => :b
+      expect(@df.vectors.to_a).to eq([:b, :c])
+      expect(@df[:b]).to eq saved_vector
+    end
+
+    it "makes no changes if the old and new names are the same" do
+      saved_vector = @df[:a].dup
+
+      @df.rename_vectors :a => :a
+      expect(@df.vectors.to_a).to eq([:a, :b, :c])
+      expect(@df[:a]).to eq saved_vector
     end
   end
 
@@ -1709,6 +1795,56 @@ describe Daru::DataFrame do
       expect {
         @df.pivot_table
       }.to raise_error
+    end
+
+    it "aggregates when nils are present in value vector" do
+      df = Daru::DataFrame.new({
+        a: ['foo'  ,  'foo',  'foo',  'foo',  'foo',  'bar',  'bar',  'bar',  'ice'],
+        b: ['one'  ,  'one',  'one',  'two',  'two',  'one',  'one',  'two',  'two'],
+        c: ['small','large','large','small','small','large','small','large','small'],
+        d: [1,2,2,3,3,4,5,6,7],
+        e: [2,nil,4,6,6,8,10,12,nil]
+      })
+
+      expect(df.pivot_table index: [:a]).to eq(
+        Daru::DataFrame.new({
+          d:  [5.0, 2.2, 7],
+          e:  [10.0, 4.5, nil]
+        }, index: Daru::Index.new(['bar', 'foo', 'ice'])))
+    end
+
+    it "works when nils are present in value vector" do
+      df = Daru::DataFrame.new({
+        a: ['foo'  ,  'foo',  'foo',  'foo',  'foo',  'bar',  'bar',  'bar',  'ice'],
+        b: ['one'  ,  'one',  'one',  'two',  'two',  'one',  'one',  'two',  'two'],
+        c: ['small','large','large','small','small','large','small','large','small'],
+        d: [1,2,2,3,3,4,5,6,7],
+        e: [2,nil,4,6,6,8,10,12,nil]
+      })
+
+      agg_vectors = Daru::MultiIndex.from_tuples(
+        [
+          [:e, 'one'],
+          [:e, 'two']
+        ]
+      )
+
+      agg_index = Daru::MultiIndex.from_tuples(
+        [
+          ['bar'],
+          ['foo'],
+          ['ice']
+        ]
+      )
+
+      expect(df.pivot_table index: [:a], vectors: [:b], values: :e).to eq(
+        Daru::DataFrame.new(
+          [
+            [9, 3,  nil],
+            [12, 6, nil]
+          ], order: agg_vectors, index: agg_index
+        )
+      )
     end
   end
 

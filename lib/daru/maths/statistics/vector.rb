@@ -135,7 +135,7 @@ module Daru
           end
         end
 
-        # Count number of occurences of each value in the Vector
+        # Count number of occurrences of each value in the Vector
         def value_counts
           values = {}
           @data.each do |d|
@@ -167,6 +167,30 @@ module Daru
           else
             sum_of_squares(m).quo((n_valid)).to_f            
           end
+        end
+
+        # Sample covariance with denominator (N-1)
+        def covariance_sample other
+          @size == other.size or raise ArgumentError, "size of both the vectors must be equal"
+          mean_x = self.mean 
+          mean_y = other.mean
+          sum = 0
+          (0...size).each do |i| 
+            sum = sum + ((@missing_values.has_key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
+          end 
+          sum / (n_valid - 1)
+        end
+ 
+        # Population covariance with denominator (N)
+        def covariance_population other
+          @size == other.size or raise ArgumentError, "size of both the vectors must be equal"
+          mean_x = self.mean 
+          mean_y = other.mean
+          sum = 0
+          (0...size).each do |i| 
+            sum = sum + ((@missing_values.has_key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
+          end 
+          sum / n_valid
         end
 
         def sum_of_squares(m=nil)
@@ -377,6 +401,40 @@ module Daru
           end
         end
 
+        # The percent_change method computes the percent change over
+        # the given number of periods.
+        #
+        # @param [Integer] periods (1) number of nils to insert at the beginning.
+        #
+        # @example
+        # 
+        #   vector = Daru::Vector.new([4,6,6,8,10],index: ['a','f','t','i','k'])
+        #   vector.percent_change
+        #   #=>
+        #   #   <Daru::Vector:28713060 @name = nil @size: 5 >
+        #   #              nil
+        #   #   a	
+        #   #   f	   0.5
+        #   #   t	   0.0
+        #   #   i	   0.3333333333333333
+        #   #   k          0.25
+        def percent_change periods = 1
+          type == :numeric or raise TypeError, "Vector must be numeric"
+          value = self.only_valid
+          arr = []
+          i = 1 
+          ind = @data.find_index{|x|!x.nil?}
+          (periods...size).each do |j|
+            if j==ind || @missing_values.has_key?(@data[j])
+              arr[j] = nil
+            else
+              arr[j] = (value.data[i] - value.data[i - 1]) / value.data[i - 1].to_f
+              i+=1
+            end 
+          end
+          Daru::Vector.new(arr, index: @index, name: @name)
+        end
+
         # Performs the difference of the series.
         # Note: The first difference of series is X(t) - X(t-1)
         # But, second difference of series is NOT X(t) - X(t-2)
@@ -472,11 +530,11 @@ module Daru
         #
         # @example Using ema
         #
-        #   ts = (1..100).map { rand }.to_ts
-        #            # => [0.69, 0.23, 0.44, 0.71, ...]
+        #   ts = Daru::Vector.new((1..100).map { rand })
+        #            # => [0.577..., 0.123..., 0.173..., 0.233..., ...]
         #
         #   # first 9 observations are nil
-        #   ts.ema   # => [ ... nil, 0.509... , 0.433..., ... ]
+        #   ts.ema   # => [ ... nil, 0.455... , 0.395..., 0.323..., ... ]
         #
         # @return [Daru::Vector] Contains EMA
         def ema(n = 10, wilder = false)
@@ -491,7 +549,72 @@ module Daru
             base << self[i] * smoother + (1 - smoother) * base.last
           end
 
-          Daru::Vector.new(base, index: @index)
+          Daru::Vector.new(base, index: @index, name: @name)
+        end
+
+        # Exponential Moving Variance.
+        # Calculates an exponential moving variance of the series using a
+        # specified parameter. If wilder is false (the default) then the EMV
+        # uses a smoothing value of 2 / (n + 1), if it is true then it uses the
+        # Welles Wilder smoother of 1 / n.
+        #
+        # @param [Integer] n (10) Loopback length.
+        # @param [TrueClass, FalseClass] wilder (false) If true, 1/n value is 
+        #   used for smoothing; if false, uses 2/(n+1) value
+        #
+        # @example Using emv
+        #
+        #   ts = Daru::Vector.new((1..100).map { rand })
+        #            # => [0.047..., 0.23..., 0.836..., 0.845..., ...]
+        #
+        #   # first 9 observations are nil
+        #   ts.emv   # => [ ... nil, 0.073... , 0.082..., 0.080..., ...]
+        #
+        # @return [Daru::Vector] contains EMV
+        def emv(n = 10, wilder = false)
+          smoother = wilder ? 1.0 / n : 2.0 / (n + 1)
+          # need to start everything from the first non-nil observation
+          start = @data.index { |i| i != nil }
+          # first n - 1 observations are nil
+          var_base = [nil] * (start + n - 1)
+          mean_base = [nil] * (start + n - 1)
+          mean_base << @data[start...(start + n)].inject(0.0) { |s, a| a.nil? ? s : s + a } / n
+          # nth observation is just a moving variance_population
+          var_base << @data[start...(start + n)].inject(0.0) {|s,x| x.nil? ? s : s + (x - mean_base.last)**2} / n
+          (start + n).upto size - 1 do |i|
+            last = mean_base.last
+            mean_base << self[i] * smoother + (1 - smoother) * last
+            var_base << (1 - smoother) * var_base.last + smoother * (self[i] - last) * (self[i] - mean_base.last)
+          end
+          Daru::Vector.new(var_base, index: @index, name: @name)	
+        end
+
+        # Exponential Moving Standard Deviation.
+        # Calculates an exponential moving standard deviation of the series using a
+        # specified parameter. If wilder is false (the default) then the EMSD
+        # uses a smoothing value of 2 / (n + 1), if it is true then it uses the
+        # Welles Wilder smoother of 1 / n.
+        #
+        # @param [Integer] n (10) Loopback length.
+        # @param [TrueClass, FalseClass] wilder (false) If true, 1/n value is 
+        #   used for smoothing; if false, uses 2/(n+1) value
+        #
+        # @example Using emsd
+        #
+        #   ts = Daru::Vector.new((1..100).map { rand })
+        #            # => [0.400..., 0.727..., 0.862..., 0.013..., ...]
+        #
+        #   # first 9 observations are nil
+        #   ts.emsd   # => [ ... nil, 0.285... , 0.258..., 0.243..., ...]
+        #
+        # @return [Daru::Vector] contains EMSD
+        def emsd(n = 10, wilder = false)
+          result = []
+          emv_return = emv(n, wilder)
+          emv_return.each do |d|
+            result << (d.nil? ? nil : Math::sqrt(d))
+          end
+          Daru::Vector.new(result, index: @index, name: @name)
         end
 
         # Moving Average Convergence-Divergence.
@@ -601,7 +724,8 @@ module Daru
         alias :std :sds
         alias :adp :average_deviation_population
         alias :cov :coefficient_of_variation
-        alias :variance :variance_sample    
+        alias :variance :variance_sample   
+        alias :covariance :covariance_sample  
         alias :sd :standard_deviation_sample
         alias :ss :sum_of_squares
         alias :percentil :percentile

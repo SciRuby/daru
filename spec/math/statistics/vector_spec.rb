@@ -6,12 +6,15 @@ describe Daru::Vector do
       before do
         @dv = Daru::Vector.new [323, 11, 555, 666, 234, 21, 666, 343, 1, 2], dtype: dtype
         @dv_with_nils = Daru::Vector.new [323, 11, 555, nil, 666, 234, 21, 666, 343, nil, 1, 2]
+        @dv_with_missing = Daru::Vector.new [1, 2, 3, 3], missing_values: [3], dtype: dtype
+        @dv_with_all_missing = Daru::Vector.new [3, 3], missing_values: [3], dtype: dtype
       end
 
       context "#mean" do
         it "calculates mean" do
           expect(@dv.mean).to eq(282.2)
-          expect(@dv_with_nils.mean).to eq(282.2)
+          expect(@dv_with_missing.mean).to eq(1.5)
+          expect(@dv_with_all_missing.mean).to eq(nil)
         end
       end
 
@@ -46,6 +49,22 @@ describe Daru::Vector do
         end
       end
 
+      context "#covariance_sample" do
+        it "calculates sample covariance" do
+          @dv_1 = Daru::Vector.new [323, 11, 555, 666, 234, 21, 666, 343, 1, 2]
+          @dv_2 = Daru::Vector.new [123, 22, 444, 555, 324, 21, 666, 434, 5, 8]
+          expect(@dv_1.covariance @dv_2).to be_within(0.00001).of(65603.62222)
+        end
+      end
+
+      context "#covariance_population" do
+        it "calculates population covariance" do
+          @dv_1 = Daru::Vector.new [323, 11, 555, 666, 234, 21, 666, 343, 1, 2]
+          @dv_2 = Daru::Vector.new [123, 22, 444, 555, 324, 21, 666, 434, 5, 8]
+          expect(@dv_1.covariance_population @dv_2).to be_within(0.01).of(59043.26)
+        end
+      end
+
       context "#sum_of_squared_deviation" do
         it "calculates sum of squared deviation" do
           expect(@dv.sum_of_squared_deviation).to eq(676069.6)
@@ -60,26 +79,58 @@ describe Daru::Vector do
 
       context "#max" do
         it "returns the max value" do
-          @dv.max
+          expect(@dv.max).to eq(666)
         end
+        
+        it "returns the max value without considering values set as missing" do
+          expect(@dv_with_missing.max).to eq(2)
+        end
+        
+        it "returns nil when all values are set missing" do
+          expect(@dv_with_all_missing.max).to eq(nil)
+        end          
       end
 
       context "#min" do
         it "returns the min value" do
-          @dv.min
+          expect(@dv.min).to eq(1)
         end
+        
+        it "returns the min value without considering values set as missing" do
+          expect(@dv_with_missing.min).to eq(1)
+        end
+        
+        it "returns nil when all values are set missing" do
+          expect(@dv_with_all_missing.min).to eq(nil)
+        end          
       end 
 
       context "#sum" do
         it "returns the sum" do
-          @dv.sum
+          expect(@dv.sum).to eq(2822)
         end
+        
+        it "returns the sum without considering values set as missing" do
+          expect(@dv_with_missing.sum).to eq(3)
+        end
+        
+        it "returns nil when all values are set missing" do
+          expect(@dv_with_all_missing.sum).to eq(nil)
+        end        
       end
 
       context "#product" do
         it "returns the product" do
           v = Daru::Vector.new [1, 2, 3, 4, 5], dtype: dtype
           expect(v.product).to eq(120)
+        end
+
+        it "returns the product without considering values set as missing" do
+          expect(@dv_with_missing.product).to eq(2)
+        end
+        
+        it "returns nil when all values are set missing" do
+          expect(@dv_with_all_missing.product).to eq(nil)
         end
       end
 
@@ -383,6 +434,20 @@ describe Daru::Vector do
       expect(acf[3]).to be_within(0.001) .of(0.486)
     end
   end
+  
+  context "#percent_change" do
+    it "calculates percent change" do
+      vector = Daru::Vector.new([4,6,6,8,10],index: ['a','f','t','i','k'])
+      expect(vector.percent_change).to eq(
+      Daru::Vector.new([nil, 0.5, 0.0, 0.3333333333333333, 0.25], index: ['a','f','t','i','k']))
+    end
+
+    it "tests for numerical vectors with nils" do
+      vector2 = Daru::Vector.new([nil,6,nil,8,10],index: ['a','f','t','i','k'])
+      expect(vector2.percent_change).to eq(
+      Daru::Vector.new([nil, nil, nil, 0.3333333333333333, 0.25], index: ['a','f','t','i','k']))
+    end
+  end
 
   context "#diff" do
     it "performs the difference of the series" do
@@ -473,12 +538,12 @@ describe Daru::Vector do
       expect(ema10[-5]) .to be_within(0.00001).of( 17.19187)
       expect(ema10[-10]).to be_within(0.00001).of( 17.54918)
 
-      # test with a different lookback period
+      # test with a different loopback period
       ema5 = @shares.ema 5
 
-      expect(ema5[-1]) .to be_within( 0.0001).of(16.71299)
-      expect(ema5[-10]).to be_within( 0.0001).of(17.49079)
-      expect(ema5[-15]).to be_within( 0.0001).of(17.70067)
+      expect(ema5[-1]) .to be_within( 0.00001).of(16.71299)
+      expect(ema5[-10]).to be_within( 0.00001).of(17.49079)
+      expect(ema5[-15]).to be_within( 0.00001).of(17.70067)
 
       # test with a different smoother
       ema_w = @shares.ema 10, true
@@ -486,6 +551,56 @@ describe Daru::Vector do
       expect(ema_w[-1]) .to be_within(0.00001).of(17.08044)
       expect(ema_w[-5]) .to be_within(0.00001).of(17.33219)
       expect(ema_w[-10]).to be_within(0.00001).of(17.55810)
+    end
+  end
+
+  context "#emv" do
+    it "calculates exponential moving variance" do
+      # test default
+      emv10 = @shares.emv
+
+      expect(emv10[-1]) .to be_within(0.00001).of(0.14441)
+      expect(emv10[-5]) .to be_within(0.00001).of(0.10797)
+      expect(emv10[-10]).to be_within(0.00001).of(0.03979)
+
+      # test with a different loopback period
+      emv5 = @shares.emv 5
+
+      expect(emv5[-1]) .to be_within(0.00001).of(0.05172)
+      expect(emv5[-10]).to be_within(0.00001).of(0.01736)
+      expect(emv5[-15]).to be_within(0.00001).of(0.04410)
+
+      # test with a different smoother
+      emv_w = @shares.emv 10, true
+
+      expect(emv_w[-1]) .to be_within(0.00001).of(0.20318)
+      expect(emv_w[-5]) .to be_within(0.00001).of(0.11319)
+      expect(emv_w[-10]).to be_within(0.00001).of(0.04289)
+    end
+  end
+
+  context "#emsd" do
+    it "calculates exponential moving standard deviation" do
+      # test default
+      emsd10 = @shares.emsd
+
+      expect(emsd10[-1]) .to be_within(0.00001).of(0.38002)
+      expect(emsd10[-5]) .to be_within(0.00001).of(0.32859)
+      expect(emsd10[-10]).to be_within(0.00001).of(0.19947)
+
+      # test with a different loopback period
+      emsd5 = @shares.emsd 5
+
+      expect(emsd5[-1]) .to be_within(0.00001).of(0.22742)
+      expect(emsd5[-10]).to be_within(0.00001).of(0.13174)
+      expect(emsd5[-15]).to be_within(0.00001).of(0.21000)
+
+      # test with a different smoother
+      emsd_w = @shares.emsd 10, true
+
+      expect(emsd_w[-1]) .to be_within(0.00001).of(0.45076)
+      expect(emsd_w[-5]) .to be_within(0.00001).of(0.33644)
+      expect(emsd_w[-10]).to be_within(0.00001).of(0.20710)
     end
   end
 

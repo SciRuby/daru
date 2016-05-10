@@ -83,6 +83,13 @@ describe Daru::Vector do
           expect(dv.to_a).to eq([1,2,3,4])
           expect(dv.index.to_a).to eq(['a', 'b', :r, 0])
         end
+
+        it "accepts a metadata attribute" do
+          dv = Daru::Vector.new [1,2,3,4,5], metadata: { cdc_type: 2 }
+
+          expect(dv.metadata) .to eq({ cdc_type: 2 })
+        end
+
       end
 
       context ".new_with_size" do
@@ -122,7 +129,7 @@ describe Daru::Vector do
       context "#[]" do
         context Daru::Index do
           before :each do
-            @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga,
+            @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, metadata: { cdc_type: 2 },
               index: [:yoda, :anakin, :obi, :padme, :r2d2], dtype: dtype
           end
 
@@ -165,6 +172,10 @@ describe Daru::Vector do
           it "raises exception for invalid index" do
             expect { @dv[:foo] }.to raise_error(IndexError)
             expect { @dv[:obi, :foo] }.to raise_error(IndexError)
+          end
+
+          it "retains the original vector metadata" do
+            expect(@dv[:yoda, :anakin].metadata).to eq({ cdc_type: 2 })
           end
         end
 
@@ -240,6 +251,7 @@ describe Daru::Vector do
           it "raises exception for invalid index" do
             expect { @vector[:foo] }.to raise_error(IndexError)
             expect { @vector[:a, :two, :foo] }.to raise_error(IndexError)
+            expect { @vector[:x, :one] }.to raise_error(IndexError)
           end
         end
       end
@@ -434,13 +446,13 @@ describe Daru::Vector do
         end
       end
 
-      context "#to_hash" do
+      context "#to_h" do
         context Daru::Index do
           it "returns the vector as a hash" do
             dv = Daru::Vector.new [1,2,3,4,5], name: :a,
               index: [:one, :two, :three, :four, :five], dtype: dtype
 
-            expect(dv.to_hash).to eq({one: 1, two: 2, three: 3, four: 4, five: 5})
+            expect(dv.to_h).to eq({one: 1, two: 2, three: 3, four: 4, five: 5})
           end
         end
 
@@ -455,7 +467,7 @@ describe Daru::Vector do
           #     [:b,:two,:bar]
           #   ])
           #   vector = Daru::Vector.new([1,2,3,4], index: mi, dtype: dtype)
-          #   expect(vector.to_hash).to eq({
+          #   expect(vector.to_h).to eq({
           #     [:a,:two,:bar] => 1,
           #     [:a,:two,:baz] => 2,
           #     [:b,:one,:bar] => 3,
@@ -467,10 +479,14 @@ describe Daru::Vector do
 
       context "#uniq" do
         before do
-          @v = Daru::Vector.new [1, 2, 2, 2.0, 3, 3.0], index:[:a, :b, :c, :d, :e, :f]
+          @v = Daru::Vector.new [1, 2, 2, 2.0, 3, 3.0], index:[:a, :b, :c, :d, :e, :f], metadata: { cdc_type: 2 }
         end
         it "keeps only unique values" do
           expect(@v.uniq).to eq(Daru::Vector.new [1, 2, 2.0, 3, 3.0], index: [:a, :b, :d, :e, :f])
+        end
+
+        it "retains the original vector metadata" do
+          expect(@v.uniq.metadata).to eq({ cdc_type: 2 })
         end
       end
 
@@ -487,7 +503,7 @@ describe Daru::Vector do
       context "#sort" do
         context Daru::Index do
           before do
-            @dv = Daru::Vector.new [33,2,15,332,1], name: :dv, index: [:a, :b, :c, :d, :e]
+            @dv = Daru::Vector.new [33,2,15,332,1], name: :dv, index: [:a, :b, :c, :d, :e], metadata: { cdc_type: 2 }
           end
 
           it "sorts the vector with defaults and returns a new vector, preserving indexing" do
@@ -530,6 +546,10 @@ describe Daru::Vector do
 
             expect(non_numeric.sort(ascending: false)).to eq(
               Daru::Vector.new [nil,nil,'b','aa','a','1234'], index: [5,2,1,3,0,4])
+          end
+
+          it "retains the original vector metadata" do
+            expect(@dv.sort.metadata).to eq({ cdc_type: 2 })
           end
         end
 
@@ -605,12 +625,50 @@ describe Daru::Vector do
       end
 
       context "#reindex" do
+        before do
+          @vector = Daru::Vector.new([1,2,3,4,5], metadata: { cdc_type: 2 })
+          @index = Daru::Index.new([3,4,1,0,6])
+        end
         it "intelligently reindexes" do
-          vector = Daru::Vector.new([1,2,3,4,5])
-          index = Daru::Index.new([3,4,1,0,6])
+          expect(@vector.reindex(@index)).to eq(
+            Daru::Vector.new([4,5,2,1,nil], index: @index))
+        end
+        it "retains the original vector metadata" do
+          expect(@vector.reindex(@index).metadata).to eq({ cdc_type: 2 })
+        end
+      end
 
-          expect(vector.reindex(index)).to eq(
-            Daru::Vector.new([4,5,2,1,nil], index: index))
+      context "#dup" do
+        before do
+          @dv = Daru::Vector.new [1,2], name: :yoda, metadata: { cdc_type: 2 }, index: [:happy, :lightsaber]
+        end
+
+        it "copies the original data" do
+          expect(@dv.dup.send(:data)).to eq([1,2])
+        end
+
+        it "creates a new data object" do
+          expect(@dv.dup.send(:data).object_id).not_to eq(@dv.send(:data).object_id)
+        end
+
+        it "copies the name" do
+          expect(@dv.dup.name).to eq(:yoda)
+        end
+
+        it "copies the original vector metadata" do
+          expect(@dv.dup.metadata).to eq({ cdc_type: 2 })
+        end
+
+        it "creates a new metadata object" do
+          expect(@dv.dup.metadata.object_id).not_to eq(@dv.metadata.object_id)
+        end
+
+        it "copies the original index" do
+          expect(@dv.dup.index).to eq(Daru::Index.new([:happy, :lightsaber]))
+        end
+
+        it "creates a new index object" do
+          expect(@dv.dup.index.object_id).not_to eq(@dv.index.object_id)
         end
       end
 
@@ -781,9 +839,16 @@ describe Daru::Vector do
 
   context "#clone_structure" do
     context Daru::Index do
+      before do
+        @vec = Daru::Vector.new([1,2,3,4,5], metadata: { cdc_type: 2 }, index: [:a,:b,:c,:d,:e])
+      end
+
       it "clones a vector with its index and fills it with nils" do
-        vec = Daru::Vector.new([1,2,3,4,5], index: [:a,:b,:c,:d,:e])
-        expect(vec.clone_structure).to eq(Daru::Vector.new([nil,nil,nil,nil,nil], index: [:a,:b,:c,:d,:e]))
+        expect(@vec.clone_structure).to eq(Daru::Vector.new([nil,nil,nil,nil,nil], index: [:a,:b,:c,:d,:e]))
+      end
+
+      it "retains the original vector metadata" do
+        expect(@vec.clone_structure.metadata).to eq({ cdc_type: 2 })
       end
     end
 
@@ -905,11 +970,22 @@ describe Daru::Vector do
   end
 
   context "#only_valid" do
-    it "returns a Vector of only non-nil data" do
-      vector = Daru::Vector.new [1,2,3,4,nil,3,nil],
-        index: [:a, :b, :c, :d, :e, :f, :g]
-      expect(vector.only_valid).to eq(Daru::Vector.new([1,2,3,4,3],
-        index: [:a, :b, :c, :d, :f]))
+    [:array, :gsl].each do |dtype|
+      describe dtype do
+        before do
+          @vector = Daru::Vector.new [1,2,3,4,5,3,5], metadata: { cdc_type: 2 },
+            index: [:a, :b, :c, :d, :e, :f, :g], dtype: dtype, missing_values: [3, 5]
+        end
+
+        it "returns a Vector of only non-missing data" do
+          expect(@vector.only_valid).to eq(Daru::Vector.new([1,2,4],
+            index: [:a, :b, :d], dtype: dtype))
+        end
+
+        it "retains the original vector metadata" do
+          expect(@vector.only_valid.metadata).to eq({ cdc_type: 2 })
+        end
+      end
     end
   end
 
@@ -1063,19 +1139,34 @@ describe Daru::Vector do
   end
 
   context "#lag" do
+    before do
+      @xiu = Daru::Vector.new([17.28, 17.45, 17.84, 17.74, 17.82, 17.85, 17.36, 17.3, 17.56, 17.49, 17.46, 17.4, 17.03, 17.01,
+        16.86, 16.86, 16.56, 16.36, 16.66, 16.77], metadata: { cdc_type: 2 })
+    end
+
     it "lags the vector by specified amount" do
-      xiu = Daru::Vector.new([17.28, 17.45, 17.84, 17.74, 17.82, 17.85, 17.36, 17.3, 17.56, 17.49, 17.46, 17.4, 17.03, 17.01,
-        16.86, 16.86, 16.56, 16.36, 16.66, 16.77])
-      lag1 = xiu.lag
+      lag1 = @xiu.lag
 
       expect(lag1[lag1.size - 1]).to be_within(0.001).of(16.66)
       expect(lag1[lag1.size - 2]).to be_within(0.001).of(16.36)
 
       #test with different lagging unit
-      lag2 = xiu.lag(2)
+      lag2 = @xiu.lag(2)
 
       expect(lag2[lag2.size - 1]).to be_within(0.001).of(16.36)
       expect(lag2[lag2.size - 2]).to be_within(0.001).of(16.56)
     end
+
+    it "retains the original vector metadata" do
+      expect(@xiu.lag(1).metadata).to eq({ cdc_type: 2 })
+    end
   end
+
+  context "#metadata" do
+    it "defaults to an empty hash for metadata" do
+      dv = Daru::Vector.new [1,2,3,4,5]
+      expect(dv.metadata).to eq({})
+    end
+  end
+
 end if mri?

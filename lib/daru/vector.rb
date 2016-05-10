@@ -61,6 +61,8 @@ module Daru
     attr_accessor :labels
     # Store vector data in an array
     attr_reader :data
+    # Attach arbitrary metadata to vector (usu a hash)
+    attr_accessor :metadata
 
     # Create a Vector object.
     #
@@ -103,6 +105,8 @@ module Daru
       end
       name   = opts[:name]
       set_name name
+
+      @metadata = opts[:metadata] || {}
 
       @data  = cast_vector_to(opts[:dtype] || :array, source, opts[:nm_dtype])
       @index = try_create_index(index || @data.size)
@@ -213,7 +217,7 @@ module Daru
       # Form a new Vector using indexes and return it
       Daru::Vector.new(
         indexes.map { |loc| @data[@index[loc]] },
-        name: @name, index: indexes.conform(input_indexes), dtype: @dtype)
+        name: @name, metadata: @metadata.dup, index: indexes.conform(input_indexes), dtype: @dtype)
     end
 
     # Just like in Hashes, you can specify the index label of the Daru::Vector
@@ -510,7 +514,7 @@ module Daru
         acc
       end
 
-      Daru::Vector.new uniq_vector, name: @name, index: new_index, dtype: @dtype
+      Daru::Vector.new uniq_vector, name: @name, metadata: @metadata.dup, index: new_index, dtype: @dtype
     end
 
     def any? &block
@@ -541,7 +545,7 @@ module Daru
       opts = {
         ascending: true,
       }.merge(opts)
-      
+
       block = lambda { |a,b|
         av, ai = a
         bv, bi = b
@@ -554,7 +558,7 @@ module Daru
         else
           opts[:ascending]? 1:-1
         end
-      } unless block      
+      } unless block
 
       vector_index = @data.each_with_index
       if block_given?
@@ -567,7 +571,7 @@ module Daru
       old_index = @index.to_a
       index = index.map { |i| old_index[i] }
 
-      Daru::Vector.new(vector, index: index, name: @name, dtype: @dtype)
+      Daru::Vector.new(vector, index: index, name: @name, metadata: @metadata.dup, dtype: @dtype)
     end
 
     # Just sort the data and get an Array in return using Enumerable#sort.
@@ -789,7 +793,7 @@ module Daru
       (dat.size - 1).downto(k) { |i| dat[i] = dat[i - k] }
       (0...k).each { |i| dat[i] = nil }
 
-      Daru::Vector.new(dat, index: @index, name: @name)
+      Daru::Vector.new(dat, index: @index, name: @name, metadata: @metadata.dup)
     end
 
     def detach_index
@@ -843,8 +847,8 @@ module Daru
       end
     end
 
-    # Convert to hash. Hash keys are indexes and values are the correspoding elements
-    def to_hash
+    # Convert to hash (explicit). Hash keys are indexes and values are the correspoding elements
+    def to_h
       @index.inject({}) do |hsh, index|
         hsh[index] = self[index]
         hsh
@@ -856,9 +860,9 @@ module Daru
       @data.to_a
     end
 
-    # Convert the hash from to_hash to json
+    # Convert the hash from to_h to json
     def to_json *args
-      self.to_hash.to_json
+      self.to_h.to_json
     end
 
     # Convert to html for iruby
@@ -940,8 +944,9 @@ module Daru
       content   = ""
       longest   = spacing if longest > spacing
       name      = @name || 'nil'
+      metadata  = @metadata || 'nil'
       formatter = "\n%#{longest}.#{longest}s %#{longest}.#{longest}s"
-      content  += "\n#<" + self.class.to_s + ":" + self.object_id.to_s + " @name = " + name.to_s + " @size = " + size.to_s + " >"
+      content  += "\n#<" + self.class.to_s + ":" + self.object_id.to_s + " @name = " + name.to_s + " @metadata = " + @metadata.to_s + " @size = " + size.to_s + " >"
 
       content += sprintf formatter, "", name
       @index.each_with_index do |index, num|
@@ -959,7 +964,7 @@ module Daru
     # Create a new vector with a different index, and preserve the indexing of
     # current elements.
     def reindex new_index
-      vector = Daru::Vector.new([], index: new_index, name: @name)
+      vector = Daru::Vector.new([], index: new_index, name: @name, metadata: @metadata.dup)
 
       new_index.each do |idx|
         if @index.include?(idx)
@@ -997,7 +1002,7 @@ module Daru
 
     # Duplicate elements and indexes
     def dup
-      Daru::Vector.new @data.dup, name: @name, index: @index.dup
+      Daru::Vector.new @data.dup, name: @name, metadata: @metadata.dup, index: @index.dup
     end
 
     # == Bootstrap
@@ -1102,7 +1107,7 @@ module Daru
 
       return new_vector if as_a != :vector
 
-      Daru::Vector.new new_vector, index: new_index, name: @name, dtype: dtype
+      Daru::Vector.new new_vector, index: new_index, name: @name, metadata: @metadata.dup, dtype: dtype
     end
 
     # Returns a Vector containing only missing data (preserves indexes).
@@ -1143,7 +1148,7 @@ module Daru
     # Copies the structure of the vector (i.e the index, size, etc.) and fills all
     # all values with nils.
     def clone_structure
-      Daru::Vector.new(([nil]*@size), name: @name, index: @index.dup)
+      Daru::Vector.new(([nil]*@size), name: @name, metadata: @metadata.dup, index: @index.dup)
     end
 
     # Save the vector to a file
@@ -1157,17 +1162,18 @@ module Daru
 
     def _dump(depth) # :nodoc:
       Marshal.dump({
-        data:  @data.to_a,
-        dtype: @dtype,
-        name:  @name,
-        index: @index,
+        data:           @data.to_a,
+        dtype:          @dtype,
+        name:           @name,
+        metadata:       @metadata,
+        index:          @index,
         missing_values: @missing_values})
     end
 
     def self._load(data) # :nodoc:
       h = Marshal.load(data)
       Daru::Vector.new(h[:data], index: h[:index],
-        name: h[:name], dtype: h[:dtype], missing_values: h[:missing_values])
+        name: h[:name], metadata: h[:metadata], dtype: h[:dtype], missing_values: h[:missing_values])
     end
 
     def daru_vector *name
@@ -1289,6 +1295,8 @@ module Daru
       @missing_values[nil] = 0
       if values_arry
         values_arry.each do |e|
+        # If dtype is :gsl then missing values have to be converted to float
+          e = e.to_f if dtype == :gsl && e.is_a?(Numeric)
           @missing_values[e] = 0
         end
       end

@@ -296,10 +296,10 @@ module Daru
         when Hash
           create_vectors_index_with vectors, source
           if all_daru_vectors_in_source? source
+            vectors_have_same_index = all_vectors_have_equal_indexes?(source)
             if !index.nil?
               @index = try_create_index index
-            elsif all_vectors_have_equal_indexes?(source)
-              vectors_have_same_index = true
+            elsif vectors_have_same_index
               @index = source.values[0].index.dup
             else
               all_indexes = []
@@ -320,7 +320,7 @@ module Daru
                 if vectors_have_same_index
                   v = source[vector].dup
                 else
-                  v = Daru::Vector.new([], name: vector, index: @index)
+                  v = Daru::Vector.new([], name: vector, metadata: source[vector].metadata.dup, index: @index)
 
                   @index.each do |idx|
                     if source[vector].index.include? idx
@@ -339,7 +339,8 @@ module Daru
             @index = try_create_index(index || source.values[0].size)
 
             @vectors.each do |name|
-              @data << Daru::Vector.new(source[name].dup, name: set_name(name), index: @index)
+              meta_opt = source[name].respond_to?(:metadata) ? { metadata: source[name].metadata.dup } : {}
+              @data << Daru::Vector.new(source[name].dup, name: set_name(name), **meta_opt, index: @index)
             end
           end
         end
@@ -357,8 +358,7 @@ module Daru
 
     # Access row or vector. Specify name of row/vector followed by axis(:row, :vector).
     # Defaults to *:vector*. Use of this method is not recommended for accessing
-    # rows or vectors. Use df.row[:a] for accessing row with index ':a' or
-    # df.vector[:vec] for accessing vector with index *:vec*.
+    # rows. Use df.row[:a] for accessing row with index ':a'.
     def [](*names)
       if names[-1] == :vector or names[-1] == :row
         axis = names[-1]
@@ -433,7 +433,7 @@ module Daru
 
       src = []
       vectors_to_dup.each do |vec|
-        src << @data[@vectors[vec]].to_a.dup
+        src << @data[@vectors[vec]].dup
       end
       new_order = Daru::Index.new(vectors_to_dup)
 
@@ -454,7 +454,7 @@ module Daru
     # a view of the whole data frame otherwise.
     def clone *vectors_to_clone
       vectors_to_clone.flatten! unless vectors_to_clone.all? { |a| !a.is_a?(Array) }
-      return super if vectors_to_clone.empty?
+      vectors_to_clone = @vectors.to_a if vectors_to_clone.empty?
 
       h = vectors_to_clone.inject({}) do |hsh, vec|
         hsh[vec] = self[vec]
@@ -865,6 +865,13 @@ module Daru
       self
     end
 
+    # Deletes a list of vectors
+    def delete_vectors *vectors
+      Array(vectors).each { |vec| delete_vector vec }
+
+      self
+    end
+
     # Delete a row
     def delete_row index
       idx = named_index_for index
@@ -923,7 +930,7 @@ module Daru
         d.push(row[vec]) if yield row
       end
 
-      Daru::Vector.new(d)
+      Daru::Vector.new(d, metadata: self[vec].metadata.dup)
     end
 
     # Iterates over each row and retains it in a new DataFrame if the block returns
@@ -931,19 +938,9 @@ module Daru
     def filter_rows &block
       return to_enum(:filter_rows) unless block_given?
 
-      df = Daru::DataFrame.new({}, order: @vectors.to_a)
-      marked = []
+      keep_rows = @index.map { |index| block.call access_row(index) }
 
-      @index.each do |index|
-        keep_row = yield access_row(index)
-        marked << index if keep_row
-      end
-
-      marked.each do |idx|
-        df.row[idx] = self[idx, :row]
-      end
-
-      df
+      where keep_rows
     end
 
     # Iterates over each vector and retains it in a new DataFrame if the block returns
@@ -1075,7 +1072,7 @@ module Daru
         name = row[tree_keys.last]
         if !block
           current[name] ||= []
-          current[name].push(row.to_hash.delete_if { |key,value| tree_keys.include? key})
+          current[name].push(row.to_h.delete_if { |key,value| tree_keys.include? key})
         else
           current[name] = block.call(row, current,name)
         end
@@ -1365,6 +1362,30 @@ module Daru
       self
     end
 
+
+    # Renames the vectors
+    #
+    # == Arguments
+    #
+    # * name_map - A hash where the keys are the exising vector names and
+    #              the values are the new names.  If a vector is renamed
+    #              to a vector name that is already in use, the existing
+    #              one is overwritten.
+    #
+    # == Usage
+    #
+    #   df = Daru::DataFrame.new({ a: [1,2,3,4], b: [:a,:b,:c,:d], c: [11,22,33,44] })
+    #   df.rename_vectors :a => :alpha, :c => :gamma
+    #   df.vectors.to_a #=> [:alpha, :b, :gamma]
+    def rename_vectors name_map
+      existing_targets = name_map.select { |k,v| k != v }.values & self.vectors.to_a
+      delete_vectors *existing_targets
+
+      new_names = self.vectors.to_a.map { |v| name_map[v] ? name_map[v] : v }
+      self.vectors = Daru::Index.new new_names
+    end
+
+
     # Return the indexes of all the numeric vectors. Will include vectors with nils
     # alongwith numbers.
     def numeric_vectors
@@ -1428,38 +1449,38 @@ module Daru
     #   to be used for sorting, for each vector name in *order* as a hash of
     #   vector name and lambda expressions. In case a lambda for a vector is not
     #   specified, the default will be used.
-    # @option opts [TrueClass,FalseClass,Array] :handle_nils (false) Handle nils 
-    #   automatically or not when a block is provided. 
-    #   If set to True, nils will appear at top after sorting. 
+    # @option opts [TrueClass,FalseClass,Array] :handle_nils (false) Handle nils
+    #   automatically or not when a block is provided.
+    #   If set to True, nils will appear at top after sorting.
     #
     # @example Sort a dataframe with a vector sequence.
-    # 
+    #
     #
     #   df = Daru::DataFrame.new({a: [1,2,1,2,3], b: [5,4,3,2,1]})
     #
     #   df.sort [:a, :b]
-    #   # => 
+    #   # =>
     #   # <Daru::DataFrame:30604000 @name = d6a9294e-2c09-418f-b646-aa9244653444 @size = 5>
-    #   #                   a          b 
-    #   #        2          1          3 
-    #   #        0          1          5 
-    #   #        3          2          2 
-    #   #        1          2          4 
-    #   #        4          3          1  
+    #   #                   a          b
+    #   #        2          1          3
+    #   #        0          1          5
+    #   #        3          2          2
+    #   #        1          2          4
+    #   #        4          3          1
     #
     # @example Sort a dataframe without a block. Here nils will be handled automatically.
     #
     #   df = Daru::DataFrame.new({a: [-3,nil,-1,nil,5], b: [4,3,2,1,4]})
-    #   
+    #
     #   df.sort([:a])
-    #   # => 
+    #   # =>
     #   # <Daru::DataFrame:14810920 @name = c07fb5c7-2201-458d-b679-6a1f7ebfe49f @size = 5>
-    #   #                    a          b 
+    #   #                    a          b
     #   #         1        nil          3
-    #   #         3        nil          1 
-    #   #         0         -3          4 
-    #   #         2         -1          2 
-    #   #         4          5          4 
+    #   #         3        nil          1
+    #   #         0         -3          4
+    #   #         2         -1          2
+    #   #         4          5          4
     #
     # @example Sort a dataframe with a block with nils handled automatically.
     #
@@ -1529,7 +1550,7 @@ module Daru
       self.vectors.each do |v|
         @data[@vectors[v]] = Daru::Vector.new(
           idx.map{ |i| @data[@vectors[v]].data[i] },
-          name: self[v].name, index: self.index)
+          name: self[v].name, metadata: self[v].metadata.dup, index: self.index)
       end
 
       self
@@ -1848,7 +1869,7 @@ module Daru
     def to_a
       arry = [[],[]]
       self.each_row do |row|
-        arry[0] << row.to_hash
+        arry[0] << row.to_h
       end
       arry[1] = @index.to_a
 
@@ -1865,9 +1886,9 @@ module Daru
       end
     end
 
-    # Converts DataFrame to a hash with keys as vector names and values as
+    # Converts DataFrame to a hash (explicit) with keys as vector names and values as
     # the corresponding vectors.
-    def to_hash
+    def to_h
       hsh = {}
       @vectors.each_with_index do |vec_name, idx|
         hsh[vec_name] = @data[idx]
@@ -2040,7 +2061,7 @@ module Daru
       row_num  = 1
 
       self.each_row_with_index do |row, index|
-        content += sprintf formatter, index.to_s, *row.to_hash.values.map { |e| (e || 'nil').to_s }
+        content += sprintf formatter, index.to_s, *row.to_h.values.map { |e| (e || 'nil').to_s }
         row_num += 1
         if row_num > threshold
           dots = []
@@ -2198,13 +2219,13 @@ module Daru
           end
         end
 
-        new_vcs = []
+        new_vectors = {}
         names.each do |name|
-          new_vcs << @data[@vectors[name]].to_a
+          new_vectors[name] = @data[@vectors[name]]
         end
 
         order = names.is_a?(Array) ? Daru::Index.new(names) : names
-        Daru::DataFrame.new(new_vcs, order: order,
+        Daru::DataFrame.new(new_vectors, order: order,
           index: @index, name: @name)
       end
     end
@@ -2267,7 +2288,7 @@ module Daru
 
         @data.map! do |v|
           if v.size == 0
-            Daru::Vector.new([nil]*@size, name: set_name(name), index: @index)
+            Daru::Vector.new([nil]*@size, name: set_name(name), metadata: v.metadata, index: @index)
           else
             v
           end
@@ -2277,7 +2298,7 @@ module Daru
           if vector.index == @index # so that index-by-index assignment is avoided when possible.
             v = vector.dup
           else
-            v = Daru::Vector.new [], name: set_name(name), index: @index
+            v = Daru::Vector.new [], name: set_name(name), metadata: vector.metadata.dup, index: @index
             @index.each do |idx|
               if vector.index.include? idx
                 v[idx] = vector[idx]

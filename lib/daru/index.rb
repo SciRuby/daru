@@ -24,7 +24,7 @@ module Daru
       source = args[0]
 
       idx =
-      if source and source[0].is_a?(Array)
+      if source.respond_to?(:first) && source.first.is_a?(Array)
         Daru::MultiIndex.from_tuples source
       elsif source and source.is_a?(Array) and !source.empty? and 
         source.all? { |e| e.is_a?(DateTime) }
@@ -50,16 +50,19 @@ module Daru
     attr_reader :relation_hash, :size
 
     def initialize index
-      index = 0                         if index.nil?
-      index = Array.new(index) { |i| i} if index.is_a? Integer
-      index = index.to_a                if index.is_a? Daru::Index
-
-      @relation_hash = {}
-      unless index.nil?
-        index.each_with_index do |n, idx|
-          @relation_hash[n] = idx 
-        end
+      index = case index
+        when nil
+          []
+        when Integer
+          index.times.to_a
+        when Enumerable
+          index.to_a
+        else
+          raise ArgumentError,
+            "Cannot create index from #{index.class} #{index.inspect}"
       end
+
+      @relation_hash = index.each_with_index.to_h.freeze
 
       @relation_hash.freeze
       @keys = @relation_hash.keys
@@ -199,7 +202,6 @@ module Daru
     def incorrect_fields? labels, levels
       max_level = levels[0].size
 
-      correct = labels.all? { |e| e.size == max_level }
       correct = levels.all? { |e| e.uniq.size == e.size }
 
       !correct
@@ -256,6 +258,7 @@ module Daru
 
       key.each_with_index do |k, depth|
         level_index = @levels[depth][k]
+        raise IndexError, "Specified index #{key.inspect} do not exist" if level_index.nil?
         label = @labels[depth]
         chosen = find_all_indexes label, level_index, chosen
       end

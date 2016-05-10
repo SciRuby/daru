@@ -24,28 +24,40 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#variance_sample" do
+    it "calculates variance of single level numeric only vectors and returns values in a Vector" do
+      expect(@df.variance_sample).to eq(Daru::Vector.new([4.0, 16.0, 400.0], index: [:d, :e, :f]))
+    end
+  end
+
   context "#std" do
-    it "calculates standard deviation of single leavel numeric only vectors and returns values in a Vector" do
+    it "calculates standard deviation of single level numeric only vectors and returns values in a Vector" do
       expect(@df.std).to eq(Daru::Vector.new([2, 4, 20], index: [:d, :e, :f]))
     end
   end
 
   context "#sum" do
     it "calculates sum of single level numeric only vectors and returns values in a Vector" do
-      # TODO - write tests
+      expect(@df.sum).to eq(Daru::Vector.new([33, 66, 330], index: [:d, :e, :f]))
     end
   end
 
   context "#count" do
-    # TODO
+    it "counts number of non-nil single level numeric only vectors and returns values in a Vector" do
+      expect(@df.count).to eq(Daru::Vector.new([9, 9, 9], index: [:d, :e, :f]))
+    end
   end
 
   context "#mode" do
-    # TODO
+    it "calculates mode of single level numeric only vectors and returns values in a Vector" do
+      expect(@df.mode).to eq(Daru::Vector.new([2, 4, 20], index: [:d, :e, :f]))
+    end
   end
 
   context "#median" do
-    # TODO
+    it "calculates median of single level numeric only vectors and returns values in a Vector" do
+      expect(@df.median).to eq(Daru::Vector.new([3, 6, 30], index: [:d, :e, :f]))
+    end
   end
 
   context "#max" do
@@ -61,11 +73,21 @@ describe Daru::DataFrame do
   end
 
   context "#min" do
-    # TODO
+    it "calculates mininum of single level numeric only vectors and returns values in a Vector" do
+      expect(@df.min).to eq(Daru::Vector.new([1, 2, 10], index: [:d, :e, :f]))
+    end
+  end
+
+  context "#range" do
+    it "calculates range of single level numeric only vectors and returns values in a Vector" do
+      expect(@df.range).to eq(Daru::Vector.new([6, 12, 60], index: [:d, :e, :f]))
+    end
   end
 
   context "#product" do
-    # TODO
+    it "calculates product of single level numeric only vectors and returns values in a Vector" do
+      expect(@df.product).to eq(Daru::Vector.new([30240, 15482880, 30240000000000], index: [:d, :e, :f]))
+    end
   end
 
   context "#describe" do
@@ -75,6 +97,16 @@ describe Daru::DataFrame do
         e: [9.00, 7.33 ,4.00 , 2.00, 14.00],
         f: [9.00, 36.67,20.00,10.00, 70.00]
         }, index: [:count, :mean, :std, :min, :max]
+      ))
+    end
+  end
+
+  context "percent_change" do
+    it "calculates percent change of numeric vectors" do
+      expect(@df.percent_change.round(2)).to eq(Daru::DataFrame.new({
+        d: [nil, 1.0, 0.0, 0.5, 0.0, 0.33, 0.25, 0.2, 0.17],
+        e: [nil, 1.0, 0.0, 0.5, 0.0, 0.33, 0.25, 0.2, 0.17],
+        f: [nil, 1.0, 0.0, 0.5, 0.0, 0.33, 0.25, 0.2, 0.17] }
       ))
     end
   end

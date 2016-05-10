@@ -205,6 +205,47 @@ module Daru
           rows, index: new_index, order: @context.vectors)
       end
 
+
+      # Iteratively applies a function to the values in a group and accumulates the result.
+      # @param init (nil) The initial value of the accumulator.
+      # @param block [Proc] A proc or lambda that accepts two arguments.  The first argument
+      #                     is the accumulated result.  The second argument is a DataFrame row.
+      # @example Usage of reduce
+      #   df = Daru::DataFrame.new({
+      #     a: ['a','b'] * 3,
+      #     b: [1,2,3] * 2,
+      #     c: 'A'..'F'
+      #   })
+      #   df.group_by([:a]).reduce('') { |result, row| result += row[:c]; result }
+      #   # =>
+      #   # #<Daru::Vector:70343147159900 @name = nil @metadata = {} @size = 2 >
+      #   #     nil
+      #   #   a ACE
+      #   #   b BDF
+      def reduce(init=nil, &block)
+        result_hash = @groups.reduce({}) do |h, (group, indices)|
+          group_indices = indices.map { |v| @context.index.to_a[v] }
+
+          grouped_result = init
+          group_indices.each do |idx|
+            grouped_result = block.call(grouped_result, @context.row[idx])
+          end
+
+          h[group] = grouped_result
+          h
+        end
+
+        index =
+        if multi_indexed_grouping?
+          Daru::MultiIndex.from_tuples result_hash.keys
+        else
+          Daru::Index.new result_hash.keys.flatten
+        end
+
+        Daru::Vector.new(result_hash.values, index: index)
+      end
+
+
      private
 
       def select_groups_from method, quantity
@@ -232,7 +273,7 @@ module Daru
             vec = @context[ngvector]
             if method_type == :numeric and vec.type == :numeric
               slice = vec[*indexes]
-              single_row << (slice.is_a?(Numeric) ? slice : slice.send(method))
+              single_row << (slice.is_a?(Daru::Vector) ? slice.send(method) : slice)
             end
           end
 
@@ -263,7 +304,8 @@ module Daru
       end
 
       def multi_indexed_grouping?
-        @groups.keys[0][1] ? true : false
+        return false unless @groups.keys[0]
+        @groups.keys[0].size > 1 ? true : false
       end
     end
   end

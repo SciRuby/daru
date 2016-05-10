@@ -179,7 +179,6 @@ Docs can be found [here](https://rubygems.org/gems/daru).
 * Statistics on DataFrame over rows.
 * Calculate percentage change.
 * Have some sample data sets for users to play around with. Should be able to load these from the code itself.
-* Sorting with missing data present.
 
 ## Contributing
 

@@ -56,12 +56,23 @@ module Daru
       extend Forwardable
       include Daru::Accessors::GSLStatistics
 
-      def_delegators :@data, :[], :size, :to_a, :each, :mean, 
-        :sum, :prod, :max, :min
-
-      alias :product :prod
+      def_delegators :@data, :[], :size, :to_a, :each
 
       attr_reader :data
+
+      def compact
+        # set missing to [] incase @context is not Daru::Vector
+        missing = @context.missing_values rescue []
+        ::GSL::Vector.alloc(@data.to_a - missing.map(&:to_f))
+      end
+
+      [:mean, :min, :max, :prod, :sum].each do |method|
+        define_method(method) do
+          compact.send(method.to_sym) rescue nil
+        end
+      end
+
+      alias :product :prod
 
       def each(&block)
         @data.each(&block)
