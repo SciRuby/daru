@@ -2276,7 +2276,6 @@ module Daru
     end
 
     def insert_or_modify_vector name, vector
-      name = name[0] unless @vectors.is_a?(MultiIndex)
       v = nil
 
       if @index.empty?
@@ -2314,30 +2313,30 @@ module Daru
 
           v = Daru::Vector.new(vector, name: set_name(name), index: @index)
         end
-
         assign_or_add_vector name, v
       end
     end
 
     def assign_or_add_vector name, v
-      #FIXME: fix this jugaad. need to make changes in Indexing itself.
-      begin
-        pos = @vectors[name]
-      rescue IndexError
-        pos = name
+      pos = @vectors[*name]
+
+      # Update an existing vector based on its index
+      if pos.is_a? Daru::Index
+        # If there are multiple vectors associated with this name modify all of them
+        # This could be in case of Index, MultiIndex as well as DateTimeIndex
+        pos.each { |p| @data[@vectors[p]] = v }
+      else
+        @data[pos] = v
       end
 
-      if !pos.kind_of?(Daru::Index) and pos == name and
-        (@vectors.include?(name) or (pos.is_a?(Integer) and pos < @data.size))
-        @data[pos] = v
-      elsif pos.kind_of?(Daru::Index)
-        pos.each do |p|
-          @data[@vectors[p]] = v
-        end
-      else
-        @vectors = @vectors | [name] if !@vectors.include?(name)
-        @data[@vectors[name]] = v
-      end
+    rescue IndexError
+      # IndexError tells that this vector isn't in the dataframe
+      # Therefore add a new vector with this name
+      # Perhaps not a good idea to use exception handling for this purpose
+      # Doing this because other method like @index.include? are insufficient
+      # for this purpose.
+      @vectors |= name
+      @data[@vectors[*name]] = v
     end
 
     def insert_or_modify_row name, vector
@@ -2436,7 +2435,9 @@ module Daru
     end
 
     def set_name potential_name
-      potential_name.is_a?(Array) ? potential_name.join : potential_name
+      return potential_name unless potential_name.is_a? Array
+      return potential_name[0] if potential_name.size == 1
+      return potential_name.join
     end
 
     def symbolize arry

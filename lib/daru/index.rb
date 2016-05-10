@@ -313,7 +313,9 @@ module Daru
     end
 
     def | other
-      MultiIndex.from_tuples(to_a | other.to_a)
+      other = other.to_a
+      other = [other] unless other[0].is_a? Array
+      MultiIndex.from_tuples(to_a | other)
     end
 
     def & other
