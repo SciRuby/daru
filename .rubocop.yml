@@ -4,6 +4,7 @@ AllCops:
   Include:
     - 'lib/**/*'
   Exclude:
+    - '**/*.erb'
     - 'spec/*'
     - 'spec/**/*'
     - 'vendor/**/*'
