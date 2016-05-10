@@ -93,3 +93,8 @@ class String
     end
   end
 end
+
+class Daru::DataFrame
+  # NOTE: This alias will soon be removed. Use to_h in all future work.
+  alias :to_hash :to_h
+end
