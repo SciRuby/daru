@@ -1400,8 +1400,7 @@ module Daru
       opts = prepare_sort_opts vector_order, opts
       block = prepare_sort_block vector_order, opts
 
-      idx = (0..@index.size-1).sort(&block)
-      new_index = @index.reorder(idx)
+      new_index = @index.reorder @index.size.times.sort(&block)
 
       vectors.each do |v|
         @data[@vectors[v]] = @data[@vectors[v]].reindex(new_index)
@@ -2292,14 +2291,14 @@ module Daru
     def prepare_sort_block vector_order, opts
       blocks = create_logic_blocks vector_order, opts[:by], opts[:ascending]
 
-      lambda do |r1, r2|
+      lambda do |index1, index2|
         # Build left and right array to compare two rows
-        left = build_array_from_blocks vector_order, opts, blocks, r1, r2
-        right = build_array_from_blocks vector_order, opts, blocks, r2, r1
+        left  = build_array_from_blocks vector_order, opts, blocks, index1, index2
+        right = build_array_from_blocks vector_order, opts, blocks, index2, index1
 
         # Resolve conflict by Index if all attributes are same
-        left << r1
-        right << r2
+        left  << index1
+        right << index2
         left <=> right
       end
     end
