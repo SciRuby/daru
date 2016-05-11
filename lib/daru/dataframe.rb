@@ -1872,21 +1872,13 @@ module Daru
       end
     end
 
-    def coerce_sort_order vector_order, ascending
-      coerce_boolean_array vector_order, ascending, 'sort orders'
-    end
-
-    def coerce_handle_nils vector_order, handle_nils
-      coerce_boolean_array vector_order, handle_nils, 'handle nils'
-    end
-
-    def coerce_boolean_array source, boolean, message
+    def coerce_boolean_array boolean, size, message
       if boolean.is_a? Array
         raise ArgumentError, "Specify same number of vector names and #{message}" if
-          source.size != boolean.size
+          size != boolean.size
         boolean
       else
-        Array.new(source.size, boolean)
+        Array.new(size, boolean)
       end
     end
 
@@ -2282,8 +2274,8 @@ module Daru
         by: {}
       }.merge(opts)
 
-      opts[:ascending]   = coerce_sort_order vector_order, opts[:ascending]
-      opts[:handle_nils] = coerce_handle_nils vector_order, opts[:handle_nils]
+      opts[:ascending]   = coerce_boolean_array opts[:ascending], vector_order.size, ':ascending'
+      opts[:handle_nils] = coerce_boolean_array opts[:handle_nils], vector_order.size, ':handle_nils'
 
       opts
     end
