@@ -1,3 +1,8 @@
+# 0.1.3.1 (12 May 2016)
+
+* Fixes
+    - Fixed small error with usage of newly introduced #each_with_object.
+
 # 0.1.3 (May 2016)
 
 * Enhancements
