@@ -1397,8 +1397,7 @@ module Daru
     def sort! vector_order, opts={}
       raise ArgumentError, 'Required atleast one vector name' if vector_order.empty?
 
-      opts = prepare_sort_opts vector_order, opts
-      block = prepare_sort_block vector_order, opts
+      block = sort_prepare_block vector_order, opts
 
       new_index = @index.reorder @index.size.times.sort(&block)
 
@@ -1835,53 +1834,6 @@ module Daru
       end
     end
 
-    def create_logic_blocks vector_order, _by, ascending
-      # Create blocks to handle nils
-      blocks = {}
-      universal_block_ascending = ->(a) { [a.nil? ? 0 : 1, a] }
-      universal_block_decending = ->(a) { [a.nil? ? 1 : 0, a] }
-      vector_order.each_with_index do |vector, i|
-        blocks[vector] =
-          if ascending[i]
-            universal_block_ascending
-          else
-            universal_block_decending
-          end
-      end
-
-      blocks
-    end
-
-    def build_array_from_blocks vector_order, opts, blocks, r1, r2
-      # Create an array to be used for comparison of two rows in sorting
-      vector_order.zip(opts[:handle_nils], opts[:ascending])
-                  .map do |v, handle_nil, ascending|
-        value = @data[@vectors[v]].data[ascending ? r1 : r2]
-        by = opts[:by][v]
-        block = blocks[v]
-
-        case
-        when !by          # Block not given
-          block.call value
-        when handle_nil   # Block given and nils handled automatically
-          value = by.call(value) rescue nil
-          block.call value
-        else              # Block given and nils handled manually
-          by.call value
-        end
-      end
-    end
-
-    def coerce_boolean_array boolean, size, message
-      if boolean.is_a? Array
-        raise ArgumentError, "Specify same number of vector names and #{message}" if
-          size != boolean.size
-        boolean
-      else
-        Array.new(size, boolean)
-      end
-    end
-
     def vectors_index_for location
       if @vectors.include?(location)
         @vectors[location]
@@ -2267,26 +2219,57 @@ module Daru
       end
     end
 
-    def prepare_sort_opts vector_order, opts
-      opts = {
-        ascending: true,
-        handle_nils: false,
-        by: {}
-      }.merge(opts)
+    def sort_build_row vector_order, by_blocks, ascending, handle_nils, r1, r2
+      # Create an array to be used for comparison of two rows in sorting
+      vector_order
+        .zip(by_blocks, ascending, handle_nils)
+        .map do |v, by, asc, handle_nil|
+        value = @data[@vectors[v]].data[asc ? r1 : r2]
 
-      opts[:ascending]   = coerce_boolean_array opts[:ascending], vector_order.size, ':ascending'
-      opts[:handle_nils] = coerce_boolean_array opts[:handle_nils], vector_order.size, ':handle_nils'
+        value = by.call(value) rescue nil if by
 
-      opts
+        # FIXME: if there was no `by` block, nils always handled? - zverok, 2016-05-13
+        sort_handle_nils value, asc, handle_nil || !by
+      end
     end
 
-    def prepare_sort_block vector_order, opts
-      blocks = create_logic_blocks vector_order, opts[:by], opts[:ascending]
+    def sort_handle_nils value, asc, handle_nil
+      case
+      when !handle_nil
+        value
+      when asc
+        [value.nil? ? 0 : 1, value]
+      else
+        [value.nil? ? 1 : 0, value]
+      end
+    end
+
+    def sort_coerce_boolean opts, symbol, default, size
+      val = opts[symbol]
+      case val
+      when true, false
+        Array.new(size, val)
+      when nil
+        Array.new(size, default)
+      when Array
+        raise ArgumentError, "Specify same number of vector names and #{symbol}" if
+          size != val.size
+        val
+      else
+        raise ArgumentError, "Can't coerce #{symbol} from #{val.class} to boolean option"
+      end
+    end
+
+    def sort_prepare_block vector_order, opts
+      ascending   = sort_coerce_boolean opts, :ascending, true, vector_order.size
+      handle_nils = sort_coerce_boolean opts, :handle_nils, false, vector_order.size
+
+      by_blocks = vector_order.map { |v| (opts[:by] || {})[v] }
 
       lambda do |index1, index2|
         # Build left and right array to compare two rows
-        left  = build_array_from_blocks vector_order, opts, blocks, index1, index2
-        right = build_array_from_blocks vector_order, opts, blocks, index2, index1
+        left  = sort_build_row vector_order, by_blocks, ascending, handle_nils, index1, index2
+        right = sort_build_row vector_order, by_blocks, ascending, handle_nils, index2, index1
 
         # Resolve conflict by Index if all attributes are same
         left  << index1

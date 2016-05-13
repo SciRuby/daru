@@ -1158,13 +1158,15 @@ module Daru
     private
 
     def make_format_string spacing
-      longest = [@name.to_s.size,
-                 (@index.to_a.map(&:to_s).map(&:size).max || 0),
-                 (@data.map(&:to_s).map(&:size).max || 0),
-                 3 # 'nil'.size
-                ].max
+      longest =
+        [
+          @name.to_s.size,
+          (@index.to_a.map(&:to_s).map(&:size).max || 0),
+          (@data.map(&:to_s).map(&:size).max || 0),
+          3 # 'nil'.size
+        ].max
 
-      longest   = [longest, spacing].min
+      longest = [longest, spacing].min
       "\n%#{longest}.#{longest}s %#{longest}.#{longest}s"
     end
 
@@ -1259,8 +1261,8 @@ module Daru
 
     def set_missing_positions
       @missing_positions = []
-      @index.each do |e|
-        @missing_positions << e if @missing_values.key?(self[e])
+      each_with_index do |val, i|
+        @missing_positions << i if @missing_values.key?(val)
       end
     end
 
