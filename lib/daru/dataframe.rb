@@ -2219,12 +2219,12 @@ module Daru
       end
     end
 
-    def sort_build_row vector_order, by_blocks, ascending, handle_nils, r1, r2
+    def sort_build_row vector_locs, by_blocks, ascending, handle_nils, r1, r2
       # Create an array to be used for comparison of two rows in sorting
-      vector_order
+      vector_locs
         .zip(by_blocks, ascending, handle_nils)
-        .map do |v, by, asc, handle_nil|
-        value = @data[@vectors[v]].data[asc ? r1 : r2]
+        .map do |vector_loc, by, asc, handle_nil|
+        value = @data[vector_loc].data[asc ? r1 : r2]
 
         value = by.call(value) rescue nil if by
 
@@ -2265,11 +2265,12 @@ module Daru
       handle_nils = sort_coerce_boolean opts, :handle_nils, false, vector_order.size
 
       by_blocks = vector_order.map { |v| (opts[:by] || {})[v] }
+      vector_locs = vector_order.map { |v| @vectors[v] }
 
       lambda do |index1, index2|
         # Build left and right array to compare two rows
-        left  = sort_build_row vector_order, by_blocks, ascending, handle_nils, index1, index2
-        right = sort_build_row vector_order, by_blocks, ascending, handle_nils, index2, index1
+        left  = sort_build_row vector_locs, by_blocks, ascending, handle_nils, index1, index2
+        right = sort_build_row vector_locs, by_blocks, ascending, handle_nils, index2, index1
 
         # Resolve conflict by Index if all attributes are same
         left  << index1
