@@ -9,6 +9,7 @@ AllCops:
     - 'spec/**/*'
     - 'vendor/**/*'
     - 'benchmarks/*'
+    - 'profile/*'
   DisplayCopNames: true
   TargetRubyVersion: 2.1
 
