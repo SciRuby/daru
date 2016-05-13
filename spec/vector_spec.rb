@@ -624,6 +624,18 @@ describe Daru::Vector do
         end
       end
 
+      context "#reindex!" do
+        before do
+          @vector = Daru::Vector.new([1,2,3,4,5], metadata: { cdc_type: 2 })
+          @index = Daru::Index.new([3,4,1,0,6])
+        end
+        it "intelligently reindexes" do
+          @vector.reindex!(@index)
+          expect(@vector).to eq(
+            Daru::Vector.new([4,5,2,1,nil], index: @index))
+        end
+      end
+
       context "#reindex" do
         before do
           @vector = Daru::Vector.new([1,2,3,4,5], metadata: { cdc_type: 2 })

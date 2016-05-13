@@ -923,16 +923,27 @@ module Daru
       ].flatten.join
     end
 
+    # Sets new index for vector. Preserves index->value correspondence.
+    # Sets nil for new index keys absent from original index.
+    def reindex! new_index
+      values = []
+      each_with_index do |val, i|
+        values[new_index[i]] = val if new_index.include?(i)
+      end
+      values.fill(nil, values.size, new_index.size - values.size)
+
+      @data = cast_vector_to @dtype, values
+      @index = new_index
+      set_missing_positions unless Daru.lazy_update
+      set_size
+
+      self
+    end
+
     # Create a new vector with a different index, and preserve the indexing of
     # current elements.
     def reindex new_index
-      vector = Daru::Vector.new([], index: new_index, name: @name, metadata: @metadata.dup)
-
-      new_index.each do |idx|
-        vector[idx] = @index.include?(idx) ? self[idx] : nil
-      end
-
-      vector
+      dup.reindex!(new_index)
     end
 
     def index= idx

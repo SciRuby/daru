@@ -238,8 +238,10 @@ module Daru
     def [] *key
       key.flatten!
       case
-      when key[0].is_a?(Range) then retrieve_from_range(key[0])
-      when (key[0].is_a?(Integer) and key.size == 1) then try_retrieve_from_integer(key[0])
+      when key[0].is_a?(Range)
+        retrieve_from_range(key[0])
+      when key[0].is_a?(Integer) && key.size == 1
+        try_retrieve_from_integer(key[0])
       else
         begin
           retrieve_from_tuples key
