@@ -80,3 +80,5 @@ require 'daru/core/merge.rb'
 
 require 'daru/date_time/offsets.rb'
 require 'daru/date_time/index.rb'
+
+require 'backports'
