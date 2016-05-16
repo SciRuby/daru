@@ -107,17 +107,10 @@ module Daru
       end
 
       def infer_offset data
-        possible_freq = data[1] - data[0]
-        inferred = true
-        data.each_cons(2) do |d|
-          if d[1] - d[0] != possible_freq
-            inferred = false
-            break
-          end
-        end
+        diffs = data.each_cons(2).map { |d1, d2| d2 - d1 }
 
-        if inferred
-          TIME_INTERVALS[possible_freq].new
+        if diffs.uniq.count == 1
+          TIME_INTERVALS[diffs.first].new
         else
           nil
         end
@@ -221,7 +214,7 @@ module Daru
     Helper = DateTimeIndexHelper
 
     def self.try_create(source)
-      if source && source.is_a?(Array) && !source.empty? && source.all_are?(DateTime)
+      if source && source.is_a?(Array) && source.all_are?(DateTime)
         new(source, freq: :infer)
       else
         nil
@@ -258,10 +251,7 @@ module Daru
     #     DateTime.new(2012,4,8), DateTime.new(2012,4,9), DateTime.new(2012,4,10),
     #     DateTime.new(2012,4,11), DateTime.new(2012,4,12)], freq: :infer)
     #   #=>#<DateTimeIndex:84198340 offset=D periods=8 data=[2012-04-05T00:00:00+00:00...2012-04-12T00:00:00+00:00]>
-    def initialize *args
-      data = args[0]
-      opts = args[1] || {freq: nil}
-
+    def initialize data, opts={freq: nil}
       Helper.possibly_convert_to_date_time data
 
       @offset =
@@ -272,8 +262,8 @@ module Daru
         end
 
       @frequency = @offset ? @offset.freq_string : nil
-      @data      = data.zip(Array.new(data.size) { |i| i })
-      @data.sort_by!(&:first) if @offset.nil?
+      @data      = data.zip(data.size.times)
+      @data.sort_by!(&:first) # unless @offset
 
       @periods = data.size
     end
@@ -358,29 +348,21 @@ module Daru
     def [] *key
       return slice(*key) if key.size != 1
       key = key[0]
-      return key if key.is_a?(Numeric)
-
-      if key.is_a?(Range)
-        first = key.first
-        last = key.last
-        return slice(first, last) if
-          first.is_a?(Fixnum) && last.is_a?(Fixnum)
-
-        raise ArgumentError, "Keys #{first} and #{last} are out of bounds" if
-          Helper.key_out_of_bounds?(first, @data) && Helper.key_out_of_bounds?(last, @data)
-
-        slice_begin = Helper.find_date_string_bounds(first)[0]
-        slice_end   = Helper.find_date_string_bounds(last)[1]
-      elsif key.is_a?(DateTime)
-        return Helper.find_index_of_date(@data, key)
+      case key
+      when Numeric
+        key
+      when DateTime
+        Helper.find_index_of_date(@data, key)
+      when Range
+        # FIXME: get_by_range is suspiciously close to just #slice,
+        #   but one of specs fails when replacing it with just slice
+        get_by_range(key.first, key.last)
       else
         raise ArgumentError, "Key #{key} is out of bounds" if
           Helper.key_out_of_bounds?(key, @data)
 
-        slice_begin, slice_end = Helper.find_date_string_bounds key
+        slice(*Helper.find_date_string_bounds(key))
       end
-
-      slice slice_begin, slice_end
     end
 
     # Retrive a slice of the index by specifying first and last members of the slice.
@@ -401,8 +383,11 @@ module Daru
     # Return the DateTimeIndex as an Array of DateTime objects.
     # @return [Array<DateTime>] Array of containing DateTimes.
     def to_a
-      return @data.sort_by { |d| d[1] }.transpose[0] unless @offset
-      @data.transpose[0]
+      if @offset
+        @data
+      else
+        @data.sort_by(&:last)
+      end.transpose.first
     end
 
     # Size of index.
@@ -415,7 +400,7 @@ module Daru
     end
 
     def inspect
-      "#<DateTimeIndex:#{object_id} offset=#{offset_freq_string}" \
+      "#<DateTimeIndex:#{object_id} offset=#{@frequency || 'nil'}" \
          " periods=#{@periods}" \
          " data=[#{@data.first[0]}...#{@data.last[0]}]>"
     end
@@ -527,8 +512,13 @@ module Daru
 
     private
 
-    def offset_freq_string
-      @offset ? @offset.freq_string : 'nil'
+    def get_by_range first, last
+      return slice(first, last) if first.is_a?(Fixnum) && last.is_a?(Fixnum)
+
+      raise ArgumentError, "Keys #{first} and #{last} are out of bounds" if
+        Helper.key_out_of_bounds?(first, @data) && Helper.key_out_of_bounds?(last, @data)
+
+      slice first, last
     end
 
     def slice_between_dates first, last

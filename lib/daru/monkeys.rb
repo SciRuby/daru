@@ -34,7 +34,7 @@ class Array
   end
 
   def all_are?(match)
-    grep(match).size == size
+    !empty? && grep(match).size == size
   end
 
   def single_class?
