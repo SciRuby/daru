@@ -112,10 +112,11 @@ module Daru
       self
     end
 
-    def each_with_index
+    def each_with_index &block
       return to_enum(:each_with_index) unless block_given?
 
-      @index.each { |i| yield(self[i], i) }
+      @data.zip(@index.to_a).each(&block)
+
       self
     end
 

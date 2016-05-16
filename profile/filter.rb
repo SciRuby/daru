@@ -1,10 +1,5 @@
 require_relative '_base'
 
-$:.unshift File.expand_path("../../lib", __FILE__)
-
-require 'benchmark'
-require 'daru'
-
 df = Daru::DataFrame.new({
   a: [1,2,3,4,5,6]*1000,
   b: ['a','b','c','d','e','f']*1000,
