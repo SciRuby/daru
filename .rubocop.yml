@@ -63,6 +63,17 @@ Style/EmptyCaseCondition:
 Style/BlockDelimiters:
   Enabled: false
 
+# Current preferred metrics --------------------------------------------
+# Better values are encouraged, but not required.
+Metrics/AbcSize:
+  Max: 20
+
+Metrics/MethodLength:
+  Max: 15
+
+Metrics/CyclomaticComplexity:
+  Max: 7
+
 # TODO -----------------------------------------------------------------
 
 Style/Documentation:

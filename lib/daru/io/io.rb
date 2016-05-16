@@ -126,12 +126,7 @@ module Daru
           fields = fields.map(&:to_sym)
         end
 
-        vectors = Hash[*fields.map { |name|
-          [
-            name,
-            Daru::Vector.new([]).tap { |v| v.rename name }
-          ]
-        }.flatten]
+        vectors = fields.map { |name| [name, Daru::Vector.new([], name: name)] }.to_h
 
         Daru::DataFrame.new(vectors, order: fields).tap do |df|
           relation.pluck(*fields).each do |record|

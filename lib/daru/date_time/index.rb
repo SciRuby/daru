@@ -152,7 +152,7 @@ module Daru
           raise ArgumentError, "Unacceptable date string #{date_string}"
       end
 
-      def generate_bounds date_time, date_precision # rubocop:disable Metrics/AbcSize
+      def generate_bounds date_time, date_precision # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
         # about that ^ disable: I'd like to use my zverok/time_boots here, which will simplify things
         case date_precision
         when :year

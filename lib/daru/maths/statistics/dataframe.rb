@@ -132,17 +132,15 @@ module Daru
 
         # Calculate sample variance-covariance between the numeric vectors.
         def covariance
-          cache={}
+          cache = Hash.new do |h, (col, row)|
+            h[[col, row]] = vector_cov(self[row],self[col])
+          end
           vectors = numeric_vectors
 
           mat_rows = vectors.collect do |row|
             vectors.collect do |col|
               if row == col
                 self[row].variance
-              elsif cache[[col,row]].nil?
-                cov = vector_cov(self[row],self[col])
-                cache[[row,col]] = cov
-                cov
               else
                 cache[[col,row]]
               end

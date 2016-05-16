@@ -684,27 +684,26 @@ module Daru
     def split_by_separator sep=','
       split_data = splitted sep
       split_data
-        .flatten.uniq.compact
-        .map do |key|
-        value = split_data.map { |v|
-          if v.nil?
-            nil
-          else
-            v.include?(key) ? 1 : 0
-          end
-        }
-
+        .flatten.uniq.compact.map do |key|
         [
           key,
-          Daru::Vector.new(value)
+          Daru::Vector.new(split_data.map { |v| split_value(key, v) })
         ]
       end.to_h
     end
 
     def split_by_separator_freq(sep=',')
-      split_by_separator(sep).map do |k, v|
-        [k, v.inject { |s,x| s+x.to_i }]
-      end.to_h
+      split_by_separator(sep).map { |k, v|
+        [k, v.map(&:to_i).inject(:+)]
+      }.to_h
+    end
+
+    def split_value key, v
+      case
+      when v.nil?           then nil
+      when v.include?(key)  then 1
+      else                       0
+      end
     end
 
     def reset_index!
