@@ -152,7 +152,8 @@ module Daru
           raise ArgumentError, "Unacceptable date string #{date_string}"
       end
 
-      def generate_bounds date_time, date_precision
+      def generate_bounds date_time, date_precision # rubocop:disable Metrics/AbcSize
+        # about that ^ disable: I'd like to use my zverok/time_boots here, which will simplify things
         case date_precision
         when :year
           [
@@ -196,15 +197,30 @@ module Daru
       end
 
       def key_out_of_bounds? key, data
+        dates = data.transpose.first
+
         precision = determine_date_precision_of key
         date_time = date_time_from key, precision
+
+        # FIXME: I'm pretty suspicious about logic here - zverok 2016-05-16
+
         case precision
         when :year
-          date_time.year < data[0][0].year || date_time.year > data[-1][0].year
+          year_out_of_bounds?(date_time, dates)
         when :month
-          (date_time.year < data[0][0].year && date_time.month < data[0][0].month) ||
-            (date_time.year > data[-1][0].year and date_time.month > data[-1][0].month)
+          year_month_out_of_bounds?(date_time, dates)
         end
+      end
+
+      private
+
+      def year_out_of_bounds?(date_time, dates)
+        date_time.year < dates.first.year || date_time.year > dates.last.year
+      end
+
+      def year_month_out_of_bounds?(date_time, dates)
+        date_time.year < dates.first.year && date_time.month < dates.first.month ||
+          date_time.year > dates.last.year && date_time.month > dates.last.month
       end
     end
   end
@@ -262,8 +278,8 @@ module Daru
         end
 
       @frequency = @offset ? @offset.freq_string : nil
-      @data      = data.zip(data.size.times)
-      @data.sort_by!(&:first) # unless @offset
+      @data      = data.each_with_index.to_a.sort_by(&:first)
+      # @data.sort_by!(&:first) unless @offset
 
       @periods = data.size
     end
@@ -521,7 +537,9 @@ module Daru
       slice first, last
     end
 
-    def slice_between_dates first, last
+    def slice_between_dates first, last # rubocop:disable Metrics/AbcSize
+      # about that ^ disable: I'm waiting for cleaner understanding
+      # of offsets logic. Reference: https://github.com/v0dro/daru/commit/7e1c34aec9516a9ba33037b4a1daaaaf1de0726a#diff-a95ef410a8e1f4ea3cc48d231bb880faR250
       start    = @data.bsearch { |d| d[0] >= first }
       after_en = @data.bsearch { |d| d[0] > last }
 
