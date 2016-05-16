@@ -1,0 +1,27 @@
+<table>
+  <tr>
+    <th colspan="2">
+      Daru::Vector:<%= object_id %> size: <%= size %>
+    </th>
+  </tr>
+  <tr>
+      <th> </th>
+      <th><%= name || 'nil' %></th>
+  </tr>
+
+  <% @index.first(threshold).each do |index| %>
+    <tr>
+      <td><%= index %></td>
+      <td><%= self[index] %></td>
+    </tr>
+  <% end %>
+
+  <% if size > threshold %>
+    <% last_index = @index.to_a.last %>
+    <tr><td>...</td><td>...</td></tr>
+    <tr>
+      <td><%= last_index %></td>
+      <td><%= self[last_index] %></td>
+    </tr>
+  <% end %>
+</table>

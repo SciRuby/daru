@@ -842,32 +842,8 @@ module Daru
 
     # Convert to html for iruby
     def to_html threshold=30
-      name = @name || 'nil'
-
-      [
-        '<table>' \
-          '<tr>' \
-            '<th colspan="2">' \
-              "Daru::Vector:#{object_id} size: #{size}" \
-            '</th>' \
-          '</tr>',
-        "<tr><th> </th><th>#{name}</th></tr>",
-
-        @index.first(threshold).map { |index|
-          "<tr><td>#{index}</td><td>#{self[index]}</td></tr>"
-        },
-
-        if size > threshold
-          last_index = @index.to_a.last
-          '<tr><td>...</td><td>...</td></tr>' \
-          '<tr>' \
-                "<td>#{last_index}</td>" \
-                "<td>#{self[last_index]}</td>" \
-              '</tr>'
-        end,
-
-        '</table>'
-      ].flatten.compact.join
+      path = File.expand_path('../iruby/templates/vector.html.erb', __FILE__)
+      ERB.new(File.read(path).strip).result(binding)
     end
 
     def to_s
