@@ -424,6 +424,10 @@ module Daru
       @index.empty?
     end
 
+    def numeric?
+      type == :numeric
+    end
+
     # Reports whether missing data is present in the Vector.
     def has_missing_data?
       !missing_positions.empty?

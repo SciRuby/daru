@@ -941,10 +941,7 @@ module Daru
       each_row.each_with_object({}) do |row, current|
         # Create tree
         *keys, last = tree_keys
-        current = keys.inject(current) { |c, f|
-          root = row[f]
-          c[root] ||= {}
-        }
+        current = keys.inject(current) { |c, f| c[row[f]] ||= {} }
         name = row[last]
 
         if block_given?
@@ -960,15 +957,14 @@ module Daru
       vecs ||= @vectors.to_a
 
       collect_rows do |row|
-        vecs.inject(0) do |memo, vec|
-          memo + (row[vec].nil? ? 0 : row[vec].to_s.size)
-        end
+        vecs.map { |v| row[v].to_s.size }.inject(:+)
       end
     end
 
     def add_vectors_by_split(name,join='-',sep=Daru::SPLIT_TOKEN)
-      split = self[name].split_by_separator(sep)
-      split.each { |k,v| self[(name.to_s + join + k.to_s).to_sym] = v }
+      self[name]
+        .split_by_separator(sep)
+        .each { |k,v| self["#{name}#{join}#{k}".to_sym] = v }
     end
 
     # Return the number of rows and columns of the DataFrame in an Array.
@@ -1026,10 +1022,7 @@ module Daru
       if axis == :vector || axis == :column
         @data.all?(&block)
       elsif axis == :row
-        each_row do |row|
-          return false unless yield(row)
-        end
-        return true
+        each_row.all?(&block)
       else
         raise ArgumentError, "Unidentified axis #{axis}"
       end
@@ -1054,16 +1047,12 @@ module Daru
     alias :last :tail
 
     # Returns a vector with sum of all vectors specified in the argument.
-    # Tf vecs parameter is empty, sum all numeric vector.
+    # If vecs parameter is empty, sum all numeric vector.
     def vector_sum vecs=nil
       vecs ||= numeric_vectors
       sum = Daru::Vector.new [0]*@size, index: @index, name: @name, dtype: @dtype
 
-      vecs.each do |n|
-        sum += self[n]
-      end
-
-      sum
+      vecs.inject(sum) { |memo, n| memo + self[n] }
     end
 
     # Calculate mean of the rows of the dataframe.
@@ -1075,11 +1064,9 @@ module Daru
     def vector_mean max_missing=0
       mean_vec = Daru::Vector.new [0]*@size, index: @index, name: "mean_#{@name}"
 
-      each_row_with_index do |row, i|
-        mean_vec[i] = row.missing_positions.size > max_missing ? nil : row.mean
+      each_row_with_index.each_with_object(mean_vec) do |(row, i), memo|
+        memo[i] = row.missing_positions.size > max_missing ? nil : row.mean
       end
-
-      mean_vec
     end
 
     # Group elements by vector to perform operations on them. Returns a
@@ -1120,11 +1107,9 @@ module Daru
         "subclasses, not #{new_index.class}" unless new_vectors.is_a?(Daru::Index)
 
       cl = Daru::DataFrame.new({}, order: new_vectors, index: @index, name: @name)
-      new_vectors.each do |vec|
-        cl[vec] = @vectors.include?(vec) ? self[vec] : cl[vec] = [nil]*nrows
+      new_vectors.each_with_object(cl) do |vec, memo|
+        memo[vec] = @vectors.include?(vec) ? self[vec] : [nil]*nrows
       end
-
-      cl
     end
 
     def get_vector_anyways(v)
@@ -1181,11 +1166,9 @@ module Daru
         "subclasses, not #{new_index.class}" unless new_index.is_a?(Daru::Index)
 
       cl = Daru::DataFrame.new({}, order: @vectors, index: new_index, name: @name)
-      new_index.each do |idx|
-        cl.row[idx] = @index.include?(idx) ? row[idx] : [nil]*ncols
+      new_index.each_with_object(cl) do |idx, memo|
+        memo.row[idx] = @index.include?(idx) ? row[idx] : [nil]*ncols
       end
-
-      cl
     end
 
     # Reassign index with a new index of type Daru::Index or any of its subclasses.
@@ -1251,21 +1234,13 @@ module Daru
     # Return the indexes of all the numeric vectors. Will include vectors with nils
     # alongwith numbers.
     def numeric_vectors
-      numerics = []
-
-      each_vector_with_index do |vec, i|
-        numerics << i if vec.type == :numeric
-      end
-      numerics
+      each_vector_with_index
+        .select { |vec, _i| vec.numeric? }
+        .map(&:last)
     end
 
     def numeric_vector_names
-      numerics = []
-
-      @vectors.each do |v|
-        numerics << v if self[v].type == :numeric
-      end
-      numerics
+      @vectors.select { |v| self[v].numeric? }
     end
 
     # Return a DataFrame of only the numerical Vectors. If clone: false
@@ -1273,12 +1248,9 @@ module Daru
     # returned. Defaults to clone: true.
     def only_numerics opts={}
       cln = opts[:clone] == false ? false : true
-      nv = numeric_vectors
-      arry = nv.each_with_object([]) do |v, arr|
-        arr << self[v]
-      end
+      arry = numeric_vectors.map { |v| self[v] }
 
-      order = Index.new(nv)
+      order = Index.new(numeric_vectors)
       Daru::DataFrame.new(arry, clone: cln, order: order, index: @index)
     end
 
@@ -1591,12 +1563,7 @@ module Daru
 
     # Convert all vectors of type *:numeric* into a Matrix.
     def to_matrix
-      numerics_as_arrays = []
-      each_vector do |vector|
-        numerics_as_arrays << vector.to_a if vector.type == :numeric
-      end
-
-      Matrix.columns numerics_as_arrays
+      Matrix.columns each_vector.select(&:numeric?).map(&:to_a)
     end
 
     # Return a Nyaplot::DataFrame from the data of this DataFrame.
@@ -1606,13 +1573,9 @@ module Daru
 
     # Convert all vectors of type *:numeric* and not containing nils into an NMatrix.
     def to_nmatrix
-      numerics_as_arrays = []
-      each_vector do |vector|
-        numerics_as_arrays << vector.to_a if vector.type == :numeric &&
-                                             vector.missing_positions.empty?
-      end
-
-      numerics_as_arrays.transpose.to_nm
+      each_vector.select do |vector|
+        vector.numeric? && !vector.has_missing_data?
+      end.map(&:to_a).transpose.to_nm
     end
 
     # Converts the DataFrame into an array of hashes where key is vector name
