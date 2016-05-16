@@ -57,45 +57,17 @@ module Daru
 
       # Functions for loading/writing CSV files
       def from_csv path, opts={}
-        opts[:col_sep]           ||= ','
-        opts[:converters]        ||= :numeric
-
-        daru_options = opts.keys.each_with_object({}) do |hash, k|
-          if [:clone, :order, :index, :name].include?(k)
-            hash[k] = opts[k]
-            opts.delete k
-          end
-        end
+        daru_options, opts = from_csv_prepare_opts opts
 
         # Preprocess headers for detecting and correcting repetition in
         # case the :headers option is not specified.
-        if opts[:headers]
-          opts[:header_converters] ||= :symbol
-
-          csv = ::CSV.read(path, 'rb',opts)
-          yield csv if block_given?
-
-          hsh = {}
-          csv.by_col.each do |col_name, values|
-            hsh[col_name] = values
+        hsh =
+          if opts[:headers]
+            from_csv_hash_with_headers(path, opts)
+          else
+            from_csv_hash(path, opts)
+              .tap { |hash| daru_options[:order] = hash.keys }
           end
-        else
-          csv = ::CSV.open(path, 'rb', opts)
-          yield csv if block_given?
-
-          csv_as_arrays = csv.to_a
-          headers       = csv_as_arrays[0].recode_repeated.map
-          csv_as_arrays.delete_at 0
-          csv_as_arrays = csv_as_arrays.transpose
-
-          hsh = {}
-          headers.each_with_index do |h, i|
-            hsh[h] = csv_as_arrays[i]
-          end
-
-          # Order columns as given in CSV
-          daru_options[:order] = headers.to_a
-        end
 
         Daru::DataFrame.new(hsh,daru_options)
       end
@@ -199,6 +171,43 @@ module Daru
         else
           false
         end
+      end
+
+      private
+
+      def from_csv_prepare_opts opts
+        opts[:col_sep]           ||= ','
+        opts[:converters]        ||= :numeric
+
+        daru_options = opts.keys.each_with_object({}) do |hash, k|
+          if [:clone, :order, :index, :name].include?(k)
+            hash[k] = opts[k]
+            opts.delete k
+          end
+        end
+        [daru_options, opts]
+      end
+
+      def from_csv_hash_with_headers(path, opts)
+        opts[:header_converters] ||= :symbol
+
+        ::CSV
+          .read(path, 'rb',opts)
+          .tap { |c| yield c if block_given? }
+          .by_col.map { |col_name, values| [col_name, values] }.to_h
+      end
+
+      def from_csv_hash(path, opts)
+        csv_as_arrays =
+          ::CSV
+          .open(path, 'rb', opts)
+          .tap { |c| yield c if block_given? }
+          .to_a
+
+        headers       = csv_as_arrays.shift.recode_repeated.map
+        csv_as_arrays = csv_as_arrays.transpose
+
+        headers.each_with_index.map { |h, i| [h, csv_as_arrays[i]] }.to_h
       end
     end
   end
