@@ -268,31 +268,28 @@ module Daru
       end
 
       def apply_method method_type, method
-        multi_index = multi_indexed_grouping?
-        rows, order = [], []
+        order = @non_group_vectors.select do |ngvec|
+          method_type == :numeric && @context[ngvec].type == :numeric
+        end
 
-        @groups.each do |_group, indexes|
-          single_row = []
-          @non_group_vectors.each do |ngvector|
-            vec = @context[ngvector]
-            if method_type == :numeric && vec.type == :numeric
-              slice = vec[*indexes]
-              single_row << (slice.is_a?(Daru::Vector) ? slice.send(method) : slice)
-            end
+        rows = @groups.map do |_group, indexes|
+          order.map do |ngvector|
+            slice = @context[ngvector][*indexes]
+            slice.is_a?(Daru::Vector) ? slice.send(method) : slice
           end
-
-          rows << single_row
         end
 
-        @non_group_vectors.each do |ngvec|
-          order << ngvec if
-            method_type == :numeric && @context[ngvec].type == :numeric
-        end
-
-        index = @groups.keys
-        index = multi_index ? Daru::MultiIndex.from_tuples(index) : Daru::Index.new(index.flatten)
+        index = apply_method_index
         order = Daru::Index.new(order)
         Daru::DataFrame.new(rows.transpose, index: index, order: order)
+      end
+
+      def apply_method_index
+        if multi_indexed_grouping?
+          Daru::MultiIndex.from_tuples(@groups.keys)
+        else
+          Daru::Index.new(@groups.keys.flatten)
+        end
       end
 
       def all_indices_for arry, element
