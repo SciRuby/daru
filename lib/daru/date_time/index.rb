@@ -151,7 +151,7 @@ module Daru
       end
 
       DATE_PRECISION_REGEXP = /^(\d\d\d\d)(-\d{1,2}(-\d{1,2}( \d{1,2}(:\d{1,2}(:\d{1,2})?)?)?)?)?$/
-      DATE_PRECISIONS = [nil, :year, :month, :day, :hour, :min, :sec]
+      DATE_PRECISIONS = [nil, :year, :month, :day, :hour, :min, :sec].freeze
 
       def determine_date_precision_of date_string
         components = date_string.scan(DATE_PRECISION_REGEXP).flatten.compact
@@ -218,6 +218,7 @@ module Daru
 
   class DateTimeIndex < Index
     include Enumerable
+    Helper = DateTimeIndexHelper
 
     def self.try_create(source)
       if source && source.is_a?(Array) && !source.empty? && source.all_are?(DateTime)
@@ -258,23 +259,21 @@ module Daru
     #     DateTime.new(2012,4,11), DateTime.new(2012,4,12)], freq: :infer)
     #   #=>#<DateTimeIndex:84198340 offset=D periods=8 data=[2012-04-05T00:00:00+00:00...2012-04-12T00:00:00+00:00]>
     def initialize *args
-      helper = DateTimeIndexHelper
-
       data = args[0]
       opts = args[1] || {freq: nil}
 
-      helper.possibly_convert_to_date_time data
+      Helper.possibly_convert_to_date_time data
 
       @offset =
         case opts[:freq]
-        when :infer then helper.infer_offset(data)
+        when :infer then Helper.infer_offset(data)
         when  nil   then nil
-        else  helper.offset_from_frequency(opts[:freq])
+        else  Helper.offset_from_frequency(opts[:freq])
         end
 
       @frequency = @offset ? @offset.freq_string : nil
       @data      = data.zip(Array.new(data.size) { |i| i })
-      @data.sort_by! { |d| d[0] } if @offset.nil?
+      @data.sort_by!(&:first) if @offset.nil?
 
       @periods = data.size
     end
@@ -343,13 +342,11 @@ module Daru
     #     :start => '2012-5-2', :periods => 50, :freq => 'ME')
     #   #=> #<DateTimeIndex:83549940 offset=ME periods=50 data=[2012-05-31T00:00:00+00:00...2016-06-30T00:00:00+00:00]>
     def self.date_range opts={}
-      helper = DateTimeIndexHelper
-
-      start  = helper.start_date opts[:start]
-      en     = helper.end_date opts[:end]
-      helper.verify_start_and_end(start, en) unless en.nil?
-      offset = helper.offset_from_frequency opts[:freq]
-      data   = helper.generate_data start, en, offset, opts[:periods]
+      start  = Helper.start_date opts[:start]
+      en     = Helper.end_date opts[:end]
+      Helper.verify_start_and_end(start, en) unless en.nil?
+      offset = Helper.offset_from_frequency opts[:freq]
+      data   = Helper.generate_data start, en, offset, opts[:periods]
 
       DateTimeIndex.new(data, freq: offset)
     end
@@ -359,8 +356,6 @@ module Daru
     # @param [String, DateTime] Specify a date partially (as a String) or
     #   completely to retrieve.
     def [] *key
-      helper = DateTimeIndexHelper
-
       return slice(*key) if key.size != 1
       key = key[0]
       return key if key.is_a?(Numeric)
@@ -372,17 +367,17 @@ module Daru
           first.is_a?(Fixnum) && last.is_a?(Fixnum)
 
         raise ArgumentError, "Keys #{first} and #{last} are out of bounds" if
-          helper.key_out_of_bounds?(first, @data) && helper.key_out_of_bounds?(last, @data)
+          Helper.key_out_of_bounds?(first, @data) && Helper.key_out_of_bounds?(last, @data)
 
-        slice_begin = helper.find_date_string_bounds(first)[0]
-        slice_end   = helper.find_date_string_bounds(last)[1]
+        slice_begin = Helper.find_date_string_bounds(first)[0]
+        slice_end   = Helper.find_date_string_bounds(last)[1]
       elsif key.is_a?(DateTime)
-        return helper.find_index_of_date(@data, key)
+        return Helper.find_index_of_date(@data, key)
       else
         raise ArgumentError, "Key #{key} is out of bounds" if
-          helper.key_out_of_bounds?(key, @data)
+          Helper.key_out_of_bounds?(key, @data)
 
-        slice_begin, slice_end = helper.find_date_string_bounds key
+        slice_begin, slice_end = Helper.find_date_string_bounds key
       end
 
       slice slice_begin, slice_end
@@ -393,43 +388,13 @@ module Daru
     # @param [String, DateTime] first Start of the slice as a string or DateTime.
     # @param [String, DateTime] last End of the slice as a string or DateTime.
     def slice first, last
-      helper = DateTimeIndexHelper
-
-      if first.is_a?(String) && last.is_a?(String)
-        self[first..last]
-      elsif first.is_a?(Fixnum) && last.is_a?(Fixnum)
+      if first.is_a?(Fixnum) && last.is_a?(Fixnum)
         DateTimeIndex.new(to_a[first..last], freq: @offset)
       else
-        first_dt =
-          if first.is_a?(String)
-            helper.find_date_string_bounds(first)[0]
-          else
-            first
-          end
+        first = Helper.find_date_string_bounds(first)[0] if first.is_a?(String)
+        last  = Helper.find_date_string_bounds(last)[1] if last.is_a?(String)
 
-        last_dt =
-          if last.is_a?(String)
-            helper.find_date_string_bounds(last)[1]
-          else
-            last
-          end
-
-        start    = @data.bsearch { |d| d[0] >= first_dt }
-        after_en = @data.bsearch { |d| d[0] > last_dt }
-
-        result =
-          if @offset
-            en = after_en ? @data[after_en[1] - 1] : @data.last
-            return start[1] if start == en
-            DateTimeIndex.date_range start: start[0], end: en[0], freq: @offset
-          else
-            st = @data.index(start)
-            en = after_en ? @data.index(after_en) - 1 : helper.last_date(@data)[1]
-            return start[1] if st == en
-            DateTimeIndex.new(@data[st..en].transpose[0])
-          end
-
-        result
+        slice_between_dates first, last
       end
     end
 
@@ -544,10 +509,10 @@ module Daru
     # you pass a string. Recommened specifying the full date as a DateTime object.
     def include? date_time
       return false unless date_time.is_a?(String) || date_time.is_a?(DateTime)
-      helper = DateTimeIndexHelper
+
       if date_time.is_a?(String)
-        date_precision = helper.determine_date_precision_of date_time
-        date_time = helper.date_time_from date_time, date_precision
+        date_precision = Helper.determine_date_precision_of date_time
+        date_time = Helper.date_time_from date_time, date_precision
       end
 
       result = @data.bsearch { |d| d[0] >= date_time }
@@ -564,6 +529,22 @@ module Daru
 
     def offset_freq_string
       @offset ? @offset.freq_string : 'nil'
+    end
+
+    def slice_between_dates first, last
+      start    = @data.bsearch { |d| d[0] >= first }
+      after_en = @data.bsearch { |d| d[0] > last }
+
+      if @offset
+        en = after_en ? @data[after_en[1] - 1] : @data.last
+        return start[1] if start == en
+        DateTimeIndex.date_range start: start[0], end: en[0], freq: @offset
+      else
+        st = @data.index(start)
+        en = after_en ? @data.index(after_en) - 1 : Helper.last_date(@data)[1]
+        return start[1] if st == en
+        DateTimeIndex.new(@data[st..en].transpose[0])
+      end
     end
   end
 end

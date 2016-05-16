@@ -37,24 +37,14 @@ module Daru
     #   #=> #<DateTime: 2011-05-03T03:15:00+00:00 ((2455685j,11700s,0n),+0s,2299161j)>
     def initialize opts={}
       n = opts[:n] || 1
-
-      @offset =
-        case
-        when opts[:secs]
-          Offsets::Second.new(n*opts[:secs])
-        when opts[:mins]
-          Offsets::Minute.new(n*opts[:mins])
-        when opts[:hours]
-          Offsets::Hour.new(n*opts[:hours])
-        when opts[:days]
-          Offsets::Day.new(n*opts[:days])
-        when opts[:weeks]
-          Offsets::Day.new(7*n*opts[:weeks])
-        when opts[:months]
-          Offsets::Month.new(n*opts[:months])
-        when opts[:years]
-          Offsets::Year.new(n*opts[:years])
+      Offsets::LIST.each do |key, klass|
+        if opts.key?(key)
+          @offset = klass.new(n * opts[key])
+          break
         end
+      end
+
+      @offset = Offsets::Day.new(7*n*opts[:weeks]) if opts[:weeks]
     end
 
     # Offset a DateTime forward.
@@ -73,17 +63,25 @@ module Daru
   end
 
   module Offsets
+    class DateOffsetType < DateOffset
+      def initialize n=1
+        @n = n
+      end
+
+      def freq_string
+        (@n == 1 ? '' : @n.to_s) + self.class::FREQ
+      end
+    end
+
     # Private superclass for Offsets with equal inter-frequencies.
     # @abstract
     # @private
-    class Tick < DateOffset
+    class Tick < DateOffsetType
+      # @method initialize
       # Initialize one of the subclasses of Tick with the number of the times
       # the offset should be applied, which is the supplied as the argument.
       #
       # @param n [Integer] The number of times an offset should be applied.
-      def initialize n=1
-        @n = n
-      end
 
       def + date_time
         date_time + @n*multiplier
@@ -102,12 +100,10 @@ module Daru
     #   offset + DateTime.new(2012,5,1,4,3)
     #   #=> #<DateTime: 2012-05-01T04:03:05+00:00 ((2456049j,14585s,0n),+0s,2299161j)>
     class Second < Tick
+      FREQ = 'S'.freeze
+
       def multiplier
         1.1574074074074073e-05
-      end
-
-      def freq_string
-        (@n == 1 ? '' : @n.to_s) + 'S'
       end
     end
 
@@ -119,12 +115,10 @@ module Daru
     #   offset + DateTime.new(2012,5,1,4,3)
     #   #=> #<DateTime: 2012-05-01T04:11:00+00:00 ((2456049j,15060s,0n),+0s,2299161j)>
     class Minute < Tick
+      FREQ = 'M'.freeze
+
       def multiplier
         0.0006944444444444445
-      end
-
-      def freq_string
-        (@n == 1 ? '' : @n.to_s) + 'M'
       end
     end
 
@@ -136,12 +130,10 @@ module Daru
     #   offset + DateTime.new(2012,5,1,4,3)
     #   #=> #<DateTime: 2012-05-01T12:03:00+00:00 ((2456049j,43380s,0n),+0s,2299161j)>
     class Hour < Tick
+      FREQ = 'H'.freeze
+
       def multiplier
         0.041666666666666664
-      end
-
-      def freq_string
-        (@n == 1 ? '' : @n.to_s) + 'H'
       end
     end
 
@@ -153,12 +145,10 @@ module Daru
     #   offset + DateTime.new(2012,5,1,4,3)
     #   #=> #<DateTime: 2012-05-03T04:03:00+00:00 ((2456051j,14580s,0n),+0s,2299161j)>
     class Day < Tick
+      FREQ = 'D'.freeze
+
       def multiplier
         1.0
-      end
-
-      def freq_string
-        (@n == 1 ? '' : @n.to_s) + 'D'
       end
     end
 
@@ -170,9 +160,7 @@ module Daru
     #   offset + DateTime.new(2012,5,1,4,3)
     #   #=> #<DateTime: 2012-10-01T04:03:00+00:00 ((2456202j,14580s,0n),+0s,2299161j)>
     class Month < Tick
-      def freq_string
-        (@n == 1 ? '' : @n.to_s) + 'MONTH'
-      end
+      FREQ = 'MONTH'.freeze
 
       def + date_time
         date_time >> @n
@@ -191,9 +179,7 @@ module Daru
     #   offset + DateTime.new(2012,5,1,4,3)
     #   #=> #<DateTime: 2014-05-01T04:03:00+00:00 ((2456779j,14580s,0n),+0s,2299161j)>
     class Year < Tick
-      def freq_string
-        (@n == 1 ? '' : @n.to_s) + 'YEAR'
-      end
+      FREQ = 'YEAR'.freeze
 
       def + date_time
         date_time >> @n*12
@@ -247,14 +233,8 @@ module Daru
     #   offset = Daru::Offsets::MonthBegin.new(2)
     #   offset + DateTime.new(2012,5,5)
     #   #=> #<DateTime: 2012-07-01T00:00:00+00:00 ((2456110j,0s,0n),+0s,2299161j)>
-    class MonthBegin < DateOffset
-      def initialize n=1
-        @n = n
-      end
-
-      def freq_string
-        (@n == 1 ? '' : @n.to_s) + 'MB'
-      end
+    class MonthBegin < DateOffsetType
+      FREQ = 'MB'.freeze
 
       def + date_time
         @n.times do
@@ -288,14 +268,8 @@ module Daru
     #   offset = Daru::Offsets::MonthEnd.new
     #   offset + DateTime.new(2012,5,5)
     #   #=> #<DateTime: 2012-05-31T00:00:00+00:00 ((2456079j,0s,0n),+0s,2299161j)>
-    class MonthEnd < DateOffset
-      def initialize n=1
-        @n = n
-      end
-
-      def freq_string
-        (@n == 1 ? '' : @n.to_s) + 'ME'
-      end
+    class MonthEnd < DateOffsetType
+      FREQ = 'ME'.freeze
 
       def + date_time
         @n.times do
@@ -333,14 +307,8 @@ module Daru
     #   offset = Daru::Offsets::YearBegin.new(3)
     #   offset + DateTime.new(2012,5,5)
     #   #=> #<DateTime: 2015-01-01T00:00:00+00:00 ((2457024j,0s,0n),+0s,2299161j)>
-    class YearBegin < DateOffset
-      def initialize n=1
-        @n = n
-      end
-
-      def freq_string
-        (@n == 1 ? '' : @n.to_s) + 'YB'
-      end
+    class YearBegin < DateOffsetType
+      FREQ = 'YB'.freeze
 
       def + date_time
         DateTime.new(date_time.year + @n, 1, 1,
@@ -368,14 +336,8 @@ module Daru
     #   offset = Daru::Offsets::YearEnd.new
     #   offset + DateTime.new(2012,5,5)
     #   #=> #<DateTime: 2012-12-31T00:00:00+00:00 ((2456293j,0s,0n),+0s,2299161j)>
-    class YearEnd < DateOffset
-      def initialize n=1
-        @n = n
-      end
-
-      def freq_string
-        (@n == 1 ? '' : @n.to_s) + 'YE'
-      end
+    class YearEnd < DateOffsetType
+      FREQ = 'YE'.freeze
 
       def + date_time
         if on_offset?(date_time)
@@ -395,6 +357,15 @@ module Daru
         date_time.month == 12 and date_time.day == 31
       end
     end
+
+    LIST = {
+      secs: Second,
+      mins: Minute,
+      hours: Hour,
+      days: Day,
+      months: Month,
+      years: Year
+    }.freeze
   end
 
   # rubocop:enable Style/OpMethod
