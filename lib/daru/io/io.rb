@@ -170,15 +170,14 @@ module Daru
 
       private
 
+      DARU_OPT_KEYS = [:clone, :order, :index, :name].freeze
+
       def from_csv_prepare_opts opts
         opts[:col_sep]           ||= ','
         opts[:converters]        ||= :numeric
 
-        daru_options = opts.keys.each_with_object({}) do |hash, k|
-          if [:clone, :order, :index, :name].include?(k)
-            hash[k] = opts[k]
-            opts.delete k
-          end
+        daru_options = opts.keys.each_with_object({}) do |k, hash|
+          hash[k] = opts.delete(k) if DARU_OPT_KEYS.include?(k)
         end
         [daru_options, opts]
       end
