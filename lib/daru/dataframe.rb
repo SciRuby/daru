@@ -149,29 +149,17 @@ module Daru
         raise 'Three vectors should be equal size' if
           rows.size != columns.size || rows.size!=values.size
 
-        cols_values = columns.factors
-        cols_n      = cols_values.size
+        data = Hash.new { |h, col|
+          h[col] = rows.factors.map { |r| [r, nil] }.to_h
+        }
+        columns.zip(rows, values).each { |c, r, v| data[c][r] = v }
 
-        h_rows = rows.factors.map do |v|
-          [v, cols_values.map { |v1| [v1, nil] }.to_h]
-        end.to_h
+        # FIXME: in fact, WITHOUT this line you'll obtain more "right"
+        # data: with vectors having "rows" as an index...
+        data = data.map { |c, r| [c, r.values] }.to_h
+        data[:_id] = rows.factors
 
-        values.each_index do |i|
-          h_rows[rows[i]][columns[i]] = values[i]
-        end
-        df = Daru::DataFrame.new({}, order: [:_id] + cols_values.to_a)
-
-        rows.factors.each do |row|
-          n_row = Array.new(cols_n+1)
-          n_row[0] = row
-          cols_values.each_index do |i|
-            n_row[i+1] = h_rows[row][cols_values[i]]
-          end
-
-          df.add_row(n_row)
-        end
-        df.update
-        df
+        DataFrame.new(data)
       end
 
       private
