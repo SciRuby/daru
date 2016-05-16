@@ -390,6 +390,7 @@ module Daru
       return to_enum(:each_index) unless block_given?
 
       @index.each(&block)
+
       self
     end
 
@@ -606,26 +607,21 @@ module Daru
     def recode_rows
       block_given? or return to_enum(:recode_rows)
 
-      df = dup
-      df.each_row_with_index do |r, i|
-        ret = yield r
-        ret.is_a?(Daru::Vector) or raise TypeError, "Every iteration must return Daru::Vector not #{ret.class}"
-        df.row[i] = ret
+      dup.tap do |df|
+        df.each_row_with_index do |r, i|
+          df.row[i] = yield(r).tap do |recoded|
+            recoded.is_a?(Daru::Vector) or
+              raise TypeError, "Every iteration must return Daru::Vector not #{recoded.class}"
+          end
+        end
       end
-
-      df
     end
 
     # Map each vector and return an Array.
-    def map_vectors
+    def map_vectors &block
       return to_enum(:map_vectors) unless block_given?
 
-      arry = []
-      @data.each do |vec|
-        arry << yield(vec)
-      end
-
-      arry
+      @data.map(&block)
     end
 
     # Destructive form of #map_vectors
@@ -633,9 +629,9 @@ module Daru
       return to_enum(:map_vectors!) unless block_given?
 
       vectors.dup.each do |n|
-        v = yield self[n]
-        v.is_a?(Daru::Vector) or raise TypeError, "Must return a Daru::Vector not #{v.class}"
-        self[n] = v
+        self[n] = yield(self[n]).tap do |v|
+          v.is_a?(Daru::Vector) or raise TypeError, "Must return a Daru::Vector not #{v.class}"
+        end
       end
 
       self
@@ -645,44 +641,33 @@ module Daru
     def map_vectors_with_index
       return to_enum(:map_vectors_with_index) unless block_given?
 
-      dt = []
-      each_vector_with_index do |vector, name|
-        dt << yield(vector, name)
+      each_vector_with_index.map do |vector, name|
+        yield(vector, name)
       end
-
-      dt
     end
 
     # Map each row
     def map_rows
       return to_enum(:map_rows) unless block_given?
 
-      dt = []
-      each_row do |row|
-        dt << yield(row)
-      end
-
-      dt
+      each_row.map { |row| yield(row) }
     end
 
     def map_rows_with_index
       return to_enum(:map_rows_with_index) unless block_given?
 
-      dt = []
-      each_row_with_index do |row, index|
-        dt << yield(row, index)
+      each_row_with_index.map do |row, index|
+        yield(row, index)
       end
-
-      dt
     end
 
     def map_rows!
       return to_enum(:map_rows!) unless block_given?
 
       index.dup.each do |i|
-        r = yield row[i]
-        r.is_a?(Daru::Vector) or raise TypeError, "Returned object must be Daru::Vector not #{r.class}"
-        row[i] = r
+        row[i] = yield(row[i]).tap do |r|
+          r.is_a?(Daru::Vector) or raise TypeError, "Returned object must be Daru::Vector not #{r.class}"
+        end
       end
 
       self
@@ -690,48 +675,32 @@ module Daru
 
     # Retrieves a Daru::Vector, based on the result of calculation
     # performed on each row.
-    def collect_rows
+    def collect_rows &block
       return to_enum(:collect_rows) unless block_given?
 
-      data = []
-      each_row do |row|
-        data.push yield(row)
-      end
-
-      Daru::Vector.new(data, index: @index)
+      Daru::Vector.new(each_row.map(&block), index: @index)
     end
 
-    def collect_row_with_index
+    def collect_row_with_index &block
       return to_enum(:collect_row_with_index) unless block_given?
 
-      data = []
-      each_row_with_index do |row, i|
-        data.push yield(row, i)
-      end
+      data = each_row_with_index.map &block
 
       Daru::Vector.new(data, index: @index)
     end
 
     # Retrives a Daru::Vector, based on the result of calculation
     # performed on each vector.
-    def collect_vectors
+    def collect_vectors &block
       return to_enum(:collect_vectors) unless block_given?
 
-      data = []
-      each_vector do |vec|
-        data.push yield(vec)
-      end
-
-      Daru::Vector.new(data, index: @vectors)
+      Daru::Vector.new(each_vector.map(&block), index: @vectors)
     end
 
-    def collect_vector_with_index
+    def collect_vector_with_index &block
       return to_enum(:collect_vector_with_index) unless block_given?
 
-      data = []
-      each_vector_with_index do |vec, i|
-        data.push yield(vec, i)
-      end
+      data = each_vector_with_index.map(&block)
 
       Daru::Vector.new(data, index: @vectors)
     end
@@ -797,16 +766,9 @@ module Daru
     end
 
     def keep_row_if
-      deletion = []
-
-      @index.each do |index|
-        keep_row = yield access_row(index)
-
-        deletion << index unless keep_row
-      end
-      deletion.each { |idx|
-        delete_row idx
-      }
+      @index
+        .reject { |idx| yield access_row(idx) }
+        .each { |idx| delete_row idx }
     end
 
     def keep_vector_if
@@ -818,11 +780,8 @@ module Daru
     end
 
     # creates a new vector with the data of a given field which the block returns true
-    def filter_vector vec
-      d = []
-      each_row do |row|
-        d.push(row[vec]) if yield row
-      end
+    def filter_vector vec, &block
+      d = each_row.select(&block).map { |row| row[vec] }
 
       Daru::Vector.new(d, metadata: self[vec].metadata.dup)
     end
@@ -842,10 +801,7 @@ module Daru
     def filter_vectors &block
       return to_enum(:filter_vectors) unless block_given?
 
-      df = dup
-      df.keep_vector_if(&block)
-
-      df
+      dup.tap { |df| df.keep_vector_if(&block) }
     end
 
     # Test each row with one or more tests. Each test is a Proc with the form
@@ -1706,12 +1662,13 @@ module Daru
 
     # Transpose a DataFrame, tranposing elements and row, column indexing.
     def transpose
-      arrys = []
-      each_vector do |vec|
-        arrys << vec.to_a
-      end
-
-      Daru::DataFrame.new(arrys.transpose, index: @vectors, order: @index, dtype: @dtype, name: @name)
+      Daru::DataFrame.new(
+        each_vector.map(&:to_a).transpose,
+        index: @vectors,
+        order: @index,
+        dtype: @dtype,
+        name: @name
+      )
     end
 
     # Pretty print in a nice table format for the command line (irb/pry/iruby)
@@ -2038,18 +1995,11 @@ module Daru
     end
 
     def symbolize arry
-      symbolized_arry =
-        if arry.all? { |e| e.is_a?(Array) }
-          arry.map do |sub_arry|
-            sub_arry.map do |e|
-              e.is_a?(Numeric) ? e : e.to_sym
-            end
-          end
-        else
-          arry.map { |e| e.is_a?(Numeric) ? e : e.to_sym }
-        end
-
-      symbolized_arry
+      if arry.all_are?(Array)
+        arry.map { |sub_arry| sumbolize(sub_arry) }
+      else
+        arry.map { |e| e.is_a?(Numeric) ? e : e.to_sym }
+      end
     end
 
     def initialize_from_array source, vectors, index, opts
