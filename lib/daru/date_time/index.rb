@@ -24,30 +24,35 @@ module Daru
         Rational(1,86_400) => Daru::Offsets::Second
       }.freeze
 
+      DOW_REGEXP = Regexp.new(Daru::DAYS_OF_WEEK.keys.join('|'))
+      FREQUENCY_PATTERN = /^
+        (?<multiplier>[0-9]+)?
+        (
+          (?<offset>MONTH|YEAR|S|H|MB|ME|M|D|YB|YE) |
+          (?<offset>W)(-(?<weekday>#{DOW_REGEXP}))?
+        )$/x
+
       # Generates a Daru::DateOffset object for generic offsets or one of the
       # specialized classed within Daru::Offsets depending on the 'frequency'
       # string.
       def offset_from_frequency frequency
-        frequency = 'D' if frequency.nil?
         return frequency if frequency.is_a?(Daru::DateOffset)
+        frequency ||= 'D'
 
-        matched = /([0-9]*)(MONTH|YEAR|S|H|MB|ME|M|D|W|YB|YE)/.match(frequency)
+        matched = FREQUENCY_PATTERN.match(frequency)
         raise ArgumentError,
           "Invalid frequency string #{frequency}" if matched.nil?
 
-        n             = matched[1] == '' ? 1 : matched[1].to_i
-        offset_string = matched[2]
-        offset_klass  = OFFSETS_HASH[offset_string]
+        n             = (matched[:multiplier] || 1).to_i
+        offset_string = matched[:offset]
+        offset_klass  = OFFSETS_HASH[offset_string] or
+          raise ArgumentError, "Cannont interpret offset #{offset_string}"
 
-        raise ArgumentError,
-          "Cannont interpret offset #{offset_string}" if offset_klass.nil?
-
-        if offset_string =~ /W/
-          day = Regexp.new(Daru::DAYS_OF_WEEK.keys.join('|')).match(frequency).to_s
-          return offset_klass.new(n, weekday: Daru::DAYS_OF_WEEK[day])
+        if offset_string == 'W'
+          offset_klass.new(n, weekday: Daru::DAYS_OF_WEEK[matched[:weekday]])
+        else
+          offset_klass.new(n)
         end
-
-        offset_klass.new(n)
       end
 
       def start_date start
