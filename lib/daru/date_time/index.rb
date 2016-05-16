@@ -39,9 +39,8 @@ module Daru
         return frequency if frequency.is_a?(Daru::DateOffset)
         frequency ||= 'D'
 
-        matched = FREQUENCY_PATTERN.match(frequency)
-        raise ArgumentError,
-          "Invalid frequency string #{frequency}" if matched.nil?
+        matched = FREQUENCY_PATTERN.match(frequency) or
+          raise ArgumentError, "Invalid frequency string #{frequency}"
 
         n             = (matched[:multiplier] || 1).to_i
         offset_string = matched[:offset]
@@ -151,23 +150,13 @@ module Daru
         end
       end
 
+      DATE_PRECISION_REGEXP = /^(\d\d\d\d)(-\d{1,2}(-\d{1,2}( \d{1,2}(:\d{1,2}(:\d{1,2})?)?)?)?)?$/
+      DATE_PRECISIONS = [nil, :year, :month, :day, :hour, :min, :sec]
+
       def determine_date_precision_of date_string
-        case date_string
-        when /\d\d\d\d\-\d?\d\-\d?\d \d?\d:\d?\d:\d?\d/
-          :sec
-        when /\d\d\d\d\-\d?\d\-\d?\d \d?\d:\d?\d/
-          :min
-        when /\d\d\d\d\-\d?\d\-\d?\d \d?\d/
-          :hour
-        when /\d\d\d\d\-\d?\d\-\d?\d/
-          :day
-        when /\d\d\d\d\-\d?\d/
-          :month
-        when /\d\d\d\d/
-          :year
-        else
+        components = date_string.scan(DATE_PRECISION_REGEXP).flatten.compact
+        DATE_PRECISIONS[components.count] or
           raise ArgumentError, "Unacceptable date string #{date_string}"
-        end
       end
 
       def generate_bounds date_time, date_precision
@@ -231,8 +220,7 @@ module Daru
     include Enumerable
 
     def self.try_create(source)
-      if source && source.is_a?(Array) && !source.empty? &&
-            source.all_are?(DateTime)
+      if source && source.is_a?(Array) && !source.empty? && source.all_are?(DateTime)
         new(source, freq: :infer)
       else
         nil
@@ -462,11 +450,9 @@ module Daru
     end
 
     def inspect
-      string = '#<DateTimeIndex:' + object_id.to_s + ' offset=' +
-               (@offset ? @offset.freq_string : 'nil') + ' periods=' + @periods.to_s +
-               ' data=[' + @data.first[0].to_s + '...' + @data.last[0].to_s + ']'+ '>'
-
-      string
+      "#<DateTimeIndex:#{object_id} offset=#{offset_freq_string}" \
+         " periods=#{@periods}" \
+         " data=[#{@data.first[0]}...#{@data.last[0]}]>"
     end
 
     # Shift all dates in the index by a positive number in the future. The dates
@@ -572,6 +558,12 @@ module Daru
     # Return true if the DateTimeIndex is empty.
     def empty?
       @data.empty?
+    end
+
+    private
+
+    def offset_freq_string
+      @offset ? @offset.freq_string : 'nil'
     end
   end
 end
