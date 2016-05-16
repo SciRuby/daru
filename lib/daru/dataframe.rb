@@ -232,10 +232,8 @@ module Daru
     #   #  b          7          2
     #   #  c          8          3
     #   #  d          9          4
-    def initialize source, opts={}
-      vectors = opts[:order]
-      index   = opts[:index]
-
+    def initialize source, opts={} # rubocop:disable Metrics/MethodLength
+      vectors, index = opts[:order], opts[:index] # FIXME: just keyword arges after Ruby 2.1
       @data = []
       @name = opts[:name] || SecureRandom.uuid
 

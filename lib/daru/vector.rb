@@ -879,7 +879,7 @@ module Daru
       ReportBuilder.new(no_title: true).add(self).send(method)
     end
 
-    def report_building b # rubocop:disable Metrics/AbcSize
+    def report_building b # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
       b.section(name: name) do |s|
         s.text "n :#{size}"
         s.text "n valid:#{n_valid}"
@@ -1024,7 +1024,7 @@ module Daru
     #
     # == Reference:
     # * Sawyer, S. (2005). Resampling Data: Using a Statistical Jacknife.
-    def jackknife(estimators, k=1) # rubocop:disable Metrics/AbcSize
+    def jackknife(estimators, k=1) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
       raise "n should be divisible by k:#{k}" unless size % k==0
 
       nb = (size / k).to_i
