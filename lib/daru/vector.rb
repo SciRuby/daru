@@ -115,7 +115,7 @@ module Daru
     def each_with_index &block
       return to_enum(:each_with_index) unless block_given?
 
-      @data.zip(@index.to_a).each(&block)
+      @data.to_a.zip(@index.to_a).each(&block)
 
       self
     end
