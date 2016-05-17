@@ -75,14 +75,15 @@ module Daru
       end
 
       def row(lkey, rkey)
-        if lkey == rkey
-          merge_rows(left.shift, right.shift)
-        elsif !rkey || lkey && lt(lkey, rkey)
-          left_row
-        elsif !lkey || lt(rkey, lkey)
-          right_row
-        else
+        case
+        when !lkey && !rkey
           raise 'Unexpected condition met during merge'
+        when lkey == rkey
+          merge_rows(left.shift, right.shift)
+        when !rkey || lt(lkey, rkey)
+          left_row
+        else # !lkey || lt(rkey, lkey)
+          right_row
         end
       end
 
