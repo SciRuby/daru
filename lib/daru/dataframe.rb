@@ -684,7 +684,7 @@ module Daru
     def collect_row_with_index &block
       return to_enum(:collect_row_with_index) unless block_given?
 
-      data = each_row_with_index.map &block
+      data = each_row_with_index.map(&block)
 
       Daru::Vector.new(data, index: @index)
     end

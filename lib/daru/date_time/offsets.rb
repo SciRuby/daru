@@ -60,6 +60,24 @@ module Daru
     def - date_time
       @offset - date_time
     end
+
+    def -@
+      NegativeDateOffset.new(self)
+    end
+  end
+
+  class NegativeDateOffset
+    def initialize(offset)
+      @offset = offset
+    end
+
+    def + date_time
+      @offset - date_time
+    end
+
+    def - date_time
+      @offset + date_time
+    end
   end
 
   module Offsets

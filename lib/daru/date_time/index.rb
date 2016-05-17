@@ -442,16 +442,10 @@ module Daru
     #   index.shift(4)
     #   #=>#<DateTimeIndex:83979630 offset=YEAR periods=10 data=[2016-01-01T00:00:00+00:00...2025-01-01T00:00:00+00:00]>
     def shift distance
-      if distance.is_a?(Fixnum)
-        raise IndexError, "Distance #{distance} cannot be negative" if distance < 0
-        raise IndexError, 'To shift non-freq date time index pass an offset.' unless @offset
+      distance.is_a?(Fixnum) && distance < 0 and
+        raise IndexError, "Distance #{distance} cannot be negative"
 
-        start = @data[0][0]
-        distance.times { start = @offset + start }
-        DateTimeIndex.date_range(start: start, periods: @periods, freq: @offset)
-      else # its a Daru::Offset/DateOffset
-        DateTimeIndex.new(to_a.map { |e| distance + e }, freq: :infer)
-      end
+      _shift(distance)
     end
 
     # Shift all dates in the index to the past. The dates are shifted by the same
@@ -464,16 +458,10 @@ module Daru
     #   that it was created with.
     # @return [DateTimeIndex] A new lagged DateTimeIndex object.
     def lag distance
-      if distance.is_a?(Fixnum)
-        raise IndexError, "Distance #{distance} cannot be negative" if distance < 0
-        raise IndexError, 'To lag non-freq date time index pass an offset.' unless @offset
+      distance.is_a?(Fixnum) && distance < 0 and
+        raise IndexError, "Distance #{distance} cannot be negative"
 
-        start = @data[0][0]
-        distance.times { start = @offset - start }
-        DateTimeIndex.date_range(start: start, periods: @periods, freq: @offset)
-      else
-        DateTimeIndex.new(to_a.map { |e| distance - e }, freq: :infer)
-      end
+      _shift(-distance)
     end
 
     def _dump(_depth)
@@ -552,6 +540,19 @@ module Daru
         en = after_en ? @data.index(after_en) - 1 : Helper.last_date(@data)[1]
         return start[1] if st == en
         DateTimeIndex.new(@data[st..en].transpose[0])
+      end
+    end
+
+    def _shift distance
+      if distance.is_a?(Fixnum)
+        raise IndexError, 'To lag non-freq date time index pass an offset.' unless @offset
+
+        start = @data[0][0]
+        off = distance > 0 ? @offset : -@offset
+        distance.abs.times { start = off + start }
+        DateTimeIndex.date_range(start: start, periods: @periods, freq: @offset)
+      else
+        DateTimeIndex.new(to_a.map { |e| distance + e }, freq: :infer)
       end
     end
   end

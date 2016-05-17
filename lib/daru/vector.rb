@@ -606,14 +606,7 @@ module Daru
     def delete_if
       return to_enum(:delete_if) unless block_given?
 
-      keep_e = []
-      keep_i = []
-      each_with_index do |n, i|
-        unless yield(n)
-          keep_e << n
-          keep_i << i
-        end
-      end
+      keep_e, keep_i = each_with_index.select { |n, _i| !yield(n) }.transpose
 
       @data = cast_vector_to @dtype, keep_e
       @index = Daru::Index.new(keep_i)
@@ -627,32 +620,16 @@ module Daru
     def keep_if
       return to_enum(:keep_if) unless block_given?
 
-      keep_e = []
-      keep_i = []
-      each_with_index do |n, i|
-        if yield(n)
-          keep_e << n
-          keep_i << i
-        end
-      end
-
-      @data = cast_vector_to @dtype, keep_e
-      @index = Daru::Index.new(keep_i)
-      set_missing_positions unless Daru.lazy_update
-      set_size
-
-      self
+      delete_if { |val| !yield(val) }
     end
 
     # Reports all values that doesn't comply with a condition.
     # Returns a hash with the index of data and the invalid data.
     def verify
-      h = {}
-      (0...size).each do |i|
-        h[i] = @data[i] unless yield(@data[i])
-      end
-
-      h
+      (0...size)
+        .map { |i| [i, @data[i]] }
+        .reject { |_i, val| yield(val) }
+        .to_h
     end
 
     # Return an Array with the data splitted by a separator.
