@@ -1,5 +1,9 @@
 module Daru
   module Core
+    # FIXME: Its fast and (seemingly) correct, yet pretty naive:
+    # * doesn't check preconditions (no specs for that!);
+    # * will not work with multi-column join (no specs for that!).
+    #
     class MergeFrame
       def initialize left_df, right_df, opts={}
         @on = opts[:on]
