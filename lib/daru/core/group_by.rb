@@ -11,20 +11,21 @@ module Daru
         end
       end
 
+      TUPLE_SORTER = lambda do |a, b|
+        if a && b
+          a.compact <=> b.compact
+        else
+          a ? 1 : -1
+        end
+      end
+
       def initialize context, names
         @groups = {}
         @non_group_vectors = context.vectors.to_a - names
         @context = context
         vectors = names.map { |vec| context[vec].to_a }
         tuples  = vectors[0].zip(*vectors[1..-1])
-        keys    =
-          tuples.uniq.sort do |a,b|
-            if a && b
-              a.compact <=> b.compact
-            else
-              a ? 1 : -1
-            end
-          end
+        keys    = tuples.uniq.sort(&TUPLE_SORTER)
 
         keys.each do |key|
           @groups[key] = all_indices_for(tuples, key)
@@ -189,17 +190,9 @@ module Daru
       #   #         5        bar        two          6         66
       def get_group group
         indexes   = @groups[group]
-        elements  = []
-
-        @context.each_vector do |vector|
-          elements << vector.to_a
-        end
-        rows = []
+        elements  = @context.each_vector.map(&:to_a)
         transpose = elements.transpose
-
-        indexes.each do |idx|
-          rows << transpose[idx]
-        end
+        rows      = indexes.each.map { |idx| transpose[idx] }
 
         new_index =
           begin
@@ -207,6 +200,7 @@ module Daru
           rescue IndexError
             indexes
           end
+
         Daru::DataFrame.rows(
           rows, index: new_index, order: @context.vectors
         )

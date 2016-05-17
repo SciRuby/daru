@@ -632,7 +632,7 @@ module Daru
         # == Returns
         #
         # Autocovariance value
-        def acvf(demean=true, unbiased=true) # rubocop:disable Metrics/AbcSize
+        def acvf(demean=true, unbiased=true) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
           opts = {
             demean: true,
             unbaised: true
