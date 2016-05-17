@@ -5,7 +5,7 @@ require 'daru/plotting/dataframe.rb'
 require 'daru/io/io.rb'
 
 module Daru
-  class DataFrame
+  class DataFrame # rubocop:disable Metrics/ClassLength
     include Daru::Maths::Arithmetic::DataFrame
     include Daru::Maths::Statistics::DataFrame
     include Daru::Plotting::DataFrame if Daru.has_nyaplot?

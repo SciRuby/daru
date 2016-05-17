@@ -6,7 +6,7 @@ require 'daru/accessors/nmatrix_wrapper.rb'
 require 'daru/accessors/gsl_wrapper.rb'
 
 module Daru
-  class Vector
+  class Vector # rubocop:disable Metrics/ClassLength
     include Enumerable
     include Daru::Maths::Arithmetic::Vector
     include Daru::Maths::Statistics::Vector
