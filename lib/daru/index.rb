@@ -186,7 +186,9 @@ module Daru
       @levels.map(&:keys)
     end
 
-    def initialize labels:, levels:
+    def initialize opts={}
+      labels = opts[:labels]
+      levels = opts[:levels]
       raise ArgumentError,
         'Labels and levels should be same size' if labels.size != levels.size
       raise ArgumentError,

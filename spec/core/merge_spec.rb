@@ -30,7 +30,7 @@ describe Daru::DataFrame do
       expect(@left.join(@right, how: :inner, on: [:name])).to eq(answer)
     end
 
-    it "performs an inner join of two dataframes that has one to many mapping" do
+    xit "performs an inner join of two dataframes that has one to many mapping" do
       answer = Daru::DataFrame.new({
         :name_1 => ['Pirate', 'Pirate', 'Pirate', 'Pirate'],
         :id => [1,1,1,1],
