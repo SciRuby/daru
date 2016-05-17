@@ -5,8 +5,8 @@ module Daru
         @on = opts[:on]
         @keep_left, @keep_right = extract_left_right(opts[:how])
 
-        @left  = left_df.to_a.first.sort_by { |h| h[on.first] }
-        @right = right_df.to_a.first.sort_by { |h| h[on.first] }
+        @left  = df_to_a(left_df).sort_by { |h| h[on.first] }
+        @right = df_to_a(right_df).sort_by { |h| h[on.first] }
 
         @left_keys, @right_keys = merge_keys(left_df, right_df, on)
       end
@@ -41,6 +41,13 @@ module Daru
       def extract_left_right(how)
         LEFT_RIGHT_COMBINATIONS[how] or
           raise ArgumentError, "Unrecognized join option: #{how}"
+      end
+
+      def df_to_a df
+        # FIXME: much faster than "native" DataFrame#to_a. Should not be
+        h = df.to_h
+        keys = h.keys
+        h.values.map(&:to_a).transpose.map { |r| keys.zip(r).to_h }
       end
 
       def merge_keys(df1, df2, on)
