@@ -38,6 +38,9 @@ Style/AlignParameters:
 Style/EmptyElse:
   EnforcedStyle: empty
 
+Metrics/LineLength:
+  Max: 120
+
 Style/ParallelAssignment:
   Enabled: false
 

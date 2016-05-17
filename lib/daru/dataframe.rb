@@ -1449,7 +1449,11 @@ module Daru
     #     ['2','fred','green',15,'orange',30,'white',20],
     #     ['3','alfred',nil,nil,nil,nil,nil,nil]
     #   ]
-    #   ds=Daru::DataFrame.rows(cases, order: [:id, :name, :car_color1, :car_value1, :car_color2, :car_value2, :car_color3, :car_value3])
+    #   ds=Daru::DataFrame.rows(cases, order:
+    #     [:id, :name,
+    #      :car_color1, :car_value1,
+    #      :car_color2, :car_value2,
+    #      :car_color3, :car_value3])
     #   ds.one_to_many([:id],'car_%v%n').to_matrix
     #   #=> Matrix[
     #   #   ["red", "1", 10],
@@ -1935,7 +1939,8 @@ module Daru
     end
 
     def validate_labels
-      raise IndexError, "Expected equal number of vector names (#{@vectors.size}) for number of vectors (#{@data.size})." if
+      raise IndexError, "Expected equal number of vector names (#{@vectors.size}) " \
+        "for number of vectors (#{@data.size})." if
         @vectors && @vectors.size != @data.size
 
       raise IndexError, 'Expected number of indexes same as number of rows' if
@@ -2118,7 +2123,7 @@ module Daru
       end
     end
 
-    def sort_build_row vector_locs, by_blocks, ascending, handle_nils, r1, r2
+    def sort_build_row vector_locs, by_blocks, ascending, handle_nils, r1, r2 # rubocop:disable  Metrics/ParameterLists
       # Create an array to be used for comparison of two rows in sorting
       vector_locs
         .zip(by_blocks, ascending, handle_nils)
