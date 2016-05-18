@@ -183,7 +183,7 @@ module Daru
       @possibly_changed_type = true
 
       set_missing_values opts[:missing_values]
-      set_missing_positions
+      set_missing_positions(true)
       set_size
     end
 
@@ -243,7 +243,7 @@ module Daru
       end
 
       set_size
-      set_missing_positions unless Daru.lazy_update
+      set_missing_positions
     end
 
     # The values to be treated as 'missing'. *nil* is the default missing
@@ -263,7 +263,7 @@ module Daru
     #   #=> [2]
     def missing_values= values
       set_missing_values values
-      set_missing_positions unless Daru.lazy_update
+      set_missing_positions
     end
 
     # Method for updating the metadata (i.e. missing value positions) of the
@@ -272,7 +272,7 @@ module Daru
     # assignment/deletion of elements is done. Updating data this way is called
     # lazy loading. To set or unset lazy loading, see the .lazy_update= method.
     def update
-      Daru.lazy_update and set_missing_positions
+      Daru.lazy_update and set_missing_positions(true)
     end
 
     # Two vectors are equal if the have the exact same index values corresponding
@@ -432,7 +432,7 @@ module Daru
       @data[@index[index]] = element
 
       set_size
-      set_missing_positions unless Daru.lazy_update
+      set_missing_positions
     end
     alias :push :concat
     alias :<< :concat
@@ -461,7 +461,7 @@ module Daru
       @index = Daru::Index.new(@index.to_a - [index])
 
       set_size
-      set_missing_positions unless Daru.lazy_update
+      set_missing_positions
     end
 
     # The type of data contained in the vector. Can be :object or :numeric. If
@@ -597,7 +597,7 @@ module Daru
 
       @data = cast_vector_to @dtype, keep_e
       @index = Daru::Index.new(keep_i)
-      set_missing_positions unless Daru.lazy_update
+      set_missing_positions
       set_size
 
       self
@@ -878,7 +878,7 @@ module Daru
 
       @data = cast_vector_to @dtype, values
       @index = new_index
-      set_missing_positions unless Daru.lazy_update
+      set_missing_positions
       set_size
 
       self
@@ -1205,7 +1205,9 @@ module Daru
         end
     end
 
-    def set_missing_positions
+    def set_missing_positions forced = false
+      return if Daru.lazy_update && !forced
+
       @missing_positions = []
       each_with_index do |val, i|
         @missing_positions << i if @missing_values.key?(val)
