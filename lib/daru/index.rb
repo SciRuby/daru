@@ -8,11 +8,6 @@ module Daru
     # and then we use an inherited hook such that the old new method (from
     # Object) is once again the default .new for the subclass.
     # Refer http://blog.sidu.in/2007/12/rubys-new-as-factory.html
-    #
-    # FIXME: I'm not sure this clever trick really deserves our attention.
-    # Most of common ruby libraries just avoid it in favor of usual
-    # factor method, like `Index.create`. When `Index.new(...).class != Index`
-    # it just leads to confusion and surprises. - zverok, 2016-05-18
     class << self
       alias :__new__ :new
 
@@ -26,6 +21,10 @@ module Daru
     # We over-ride the .new method so that any sort of Index can be generated
     # from Daru::Index based on the types of arguments supplied.
     def self.new *args, &block
+      # FIXME: I'm not sure this clever trick really deserves our attention.
+      # Most of common ruby libraries just avoid it in favor of usual
+      # factor method, like `Index.create`. When `Index.new(...).class != Index`
+      # it just leads to confusion and surprises. - zverok, 2016-05-18
       source = args.first
 
       MultiIndex.try_from_tuples(source) ||
@@ -199,6 +198,8 @@ module Daru
       labels = opts[:labels]
       levels = opts[:levels]
       raise ArgumentError,
+        'Must specify both labels and levels' unless labels && levels
+      raise ArgumentError,
         'Labels and levels should be same size' if labels.size != levels.size
       raise ArgumentError,
         'Incorrect labels and levels' if incorrect_fields?(labels, levels)
@@ -217,16 +218,10 @@ module Daru
 
     def self.from_arrays arrays
       levels = arrays.map { |e| e.uniq.sort_by(&:to_s) }
-      labels = []
 
-      arrays.each_with_index do |arry, level_index|
-        label = []
+      labels = arrays.each_with_index.map do |arry, level_index|
         level = levels[level_index]
-        arry.each do |lvl|
-          label << level.index(lvl)
-        end
-
-        labels << label
+        arry.map { |lvl| level.index(lvl) }
       end
 
       MultiIndex.new labels: labels, levels: levels
@@ -261,8 +256,7 @@ module Daru
     end
 
     def try_retrieve_from_integer int
-      return retrieve_from_tuples([int]) if @levels[0].key?(int)
-      int
+      @levels[0].key?(int) ? retrieve_from_tuples([int]) : int
     end
 
     def retrieve_from_range range
@@ -303,17 +297,9 @@ module Daru
       raise ArgumentError,
         "Key #{index} is too large" if index >= @labels[0].size
 
-      level_indexes =
-        @labels.each_with_object([]) do |label, memo|
-          memo << label[index]
-        end
-
-      tuple = []
-      level_indexes.each_with_index do |level_index, i|
-        tuple << @levels[i].keys[level_index]
-      end
-
-      tuple
+      @labels
+        .each_with_index
+        .map { |label, i| @levels[i].keys[label[index]] }
     end
 
     def dup
@@ -337,11 +323,8 @@ module Daru
     end
 
     def include? tuple
-      tuple.flatten!
-      tuple.each_with_index do |tup, i|
-        return false unless @levels[i][tup]
-      end
-      true
+      tuple.flatten.each_with_index
+           .all? { |tup, i| @levels[i][tup] }
     end
 
     def size
