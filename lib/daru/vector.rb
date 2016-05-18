@@ -414,7 +414,8 @@ module Daru
     end
 
     def tail q=10
-      self[(@size - q)..(@size-1)]
+      start = [@size - q, 0].max
+      self[start..(@size-1)]
     end
 
     def empty?
@@ -570,7 +571,10 @@ module Daru
     # Returns *true* if the value passed is actually exists or is not marked as
     # a *missing value*.
     def exists? value
-      !@missing_values.key?(self[index_of(value)])
+      # FIXME: I'm not sure how this method should really work,
+      # or whether it is needed at all. - zverok
+      idx = index_of(value)
+      !!idx && !@missing_values.key?(self[idx])
     end
 
     # Like map, but returns a Daru::Vector with the returned values.
@@ -870,6 +874,7 @@ module Daru
       ReportBuilder.new(no_title: true).add(self).send(method)
     end
 
+    # :nocov:
     def report_building b
       b.section(name: name) do |s|
         s.text "n :#{size}"
@@ -898,6 +903,7 @@ module Daru
         end
       end
     end
+    # :nocov:
 
     # Over rides original inspect for pretty printing in irb
     def inspect spacing=20, threshold=15
@@ -956,11 +962,6 @@ module Daru
     #
     # @param new_name [Symbol] The new name.
     def rename new_name
-      if new_name.is_a?(Numeric)
-        @name = new_name
-        return
-      end
-
       @name = new_name
     end
 
@@ -1150,8 +1151,10 @@ module Daru
     alias :dv :daru_vector
 
     def method_missing(name, *args, &block)
+      # FIXME: it is shamefully fragile. Should be either made stronger
+      # (string/symbol dychotomy, informative errors) or removed totally. - zverok
       if name =~ /(.+)\=/
-        self[name] = args[0]
+        self[$1.to_sym] = args[0]
       elsif has_index?(name)
         self[name]
       else
@@ -1178,18 +1181,6 @@ module Daru
       bss = h_est.keys.map { |v| [v, []] }.to_h
 
       [h_est, h_est.keys, bss]
-    end
-
-    def keep? a, b, order
-      eval = yield(a, b)
-      if order == :ascending
-        return true  if eval == -1
-        return false if eval == 1
-      elsif order == :descending
-        return false if eval == -1
-        return true  if eval == 1
-      end
-      false
     end
 
     # Note: To maintain sanity, this _MUST_ be the _ONLY_ place in daru where the
@@ -1245,11 +1236,6 @@ module Daru
       else
         Daru::Index.new(potential_index)
       end
-    end
-
-    def element_from_numeric_index location
-      pos = index_for location
-      pos ? @data[pos] : nil
     end
 
     # Setup missing_values. The missing_values instance variable is set
