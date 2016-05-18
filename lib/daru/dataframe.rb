@@ -791,7 +791,7 @@ module Daru
 
       each_row_with_index.map do |row, i|
         tests.reject { |*_, block| block.call(row) }
-             .map { |test| verify_error row, test, id, i }
+             .map { |test| verify_error_message row, test, id, i }
       end.flatten
     end
 
@@ -1718,6 +1718,11 @@ module Daru
 
     private
 
+    def should_be_vector! val
+      return val if val.is_a?(Daru::Vector)
+      raise TypeError, "Every iteration must return Daru::Vector not #{val.class}"
+    end
+
     # FIXME: question mark for method returning not boolean - zverok, 2016-05-18
     def possibly_multi_index? index
       if @index.is_a?(MultiIndex)
@@ -1806,7 +1811,7 @@ module Daru
         if names.is_a?(Numeric)
           row = @data.map { |vector| vector[location] }
 
-          return Daru::Vector.new(row, index: @vectors, name: set_name(location))
+          return Daru::Vector.new(row, index: @vectors, name: coerce_name(location))
         end
       end
       # Access multiple rows
@@ -1863,7 +1868,7 @@ module Daru
     end
 
     def insert_vector_in_empty name, vector
-      vec = Vector.coerce(vector.to_a, name: set_name(name))
+      vec = Vector.coerce(vector.to_a, name: coerce_name(name))
 
       @index = vec.index
       assign_or_add_vector name, vec
@@ -1877,7 +1882,7 @@ module Daru
         # so that index-by-index assignment is avoided when possible.
         return vector.dup if vector.index == @index
 
-        Daru::Vector.new([], name: set_name(name), metadata: vector.metadata.dup, index: @index).tap { |v|
+        Daru::Vector.new([], name: coerce_name(name), metadata: vector.metadata.dup, index: @index).tap { |v|
           @index.each do |idx|
             v[idx] = vector.index.include?(idx) ? vector[idx] : nil
           end
@@ -1888,7 +1893,7 @@ module Daru
           "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}" if
           @size != vector.size
 
-        Daru::Vector.new(vector, name: set_name(name), index: @index)
+        Daru::Vector.new(vector, name: coerce_name(name), index: @index)
       end
     end
 
@@ -1897,7 +1902,7 @@ module Daru
         if index.is_a?(MultiIndex)
 
       name = name[0]
-      vec = Vector.coerce(vector, name: set_name(name), index: @vectors)
+      vec = Vector.coerce(vector, name: coerce_name(name), index: @vectors)
 
       if @index.include? name
         each_vector_with_index do |v,i|
@@ -1914,8 +1919,8 @@ module Daru
     end
 
     def create_empty_vectors
-      @vectors.each do |name|
-        @data << Daru::Vector.new([], name: set_name(name), index: @index)
+      @data = @vectors.map do |name|
+        Daru::Vector.new([], name: coerce_name(name), index: @index)
       end
     end
 
@@ -1970,7 +1975,7 @@ module Daru
       source.values.all? { |vector| idx == vector.index }
     end
 
-    def set_name potential_name # rubocop:disable Style/AccessorMethodName
+    def coerce_name potential_name
       potential_name.is_a?(Array) ? potential_name.join : potential_name
     end
 
@@ -2030,7 +2035,7 @@ module Daru
 
       @data = @vectors.map do |name|
         v = source.map { |h| h[name] || h[name.to_s] }
-        Daru::Vector.new(v, name: set_name(name), index: @index)
+        Daru::Vector.new(v, name: coerce_name(name), index: @index)
       end
     end
 
@@ -2094,7 +2099,7 @@ module Daru
 
       @vectors.each do |name|
         meta_opt = source[name].respond_to?(:metadata) ? {metadata: source[name].metadata.dup} : {}
-        @data << Daru::Vector.new(source[name].dup, name: set_name(name), **meta_opt, index: @index)
+        @data << Daru::Vector.new(source[name].dup, name: coerce_name(name), **meta_opt, index: @index)
       end
     end
 
@@ -2157,7 +2162,7 @@ module Daru
       end
     end
 
-    def verify_error row, test, id, i
+    def verify_error_message row, test, id, i
       description, fields, = test
       values =
         if fields.empty?
@@ -2237,11 +2242,6 @@ module Daru
           name = pattern.sub('%v', v).sub('%n', number.to_s)
           [v, row[name]]
         }.to_h
-    end
-
-    def should_be_vector! val
-      return val if val.is_a?(Daru::Vector)
-      raise TypeError, "Every iteration must return Daru::Vector not #{val.class}"
     end
   end
 end
