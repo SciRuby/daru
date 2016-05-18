@@ -168,16 +168,11 @@ module Daru
         private
 
         def apply_method_to_numerics method, *args
-          order = []
-          computed = @vectors.to_a.each_with_object([]) do |n, memo|
-            v = @data[@vectors[n]]
-            if v.type == :numeric
-              memo << v.send(method, *args)
-              order << n
-            end
-          end
+          numerics = @vectors.to_a.map { |n| [n, @data[@vectors[n]]] }
+                             .select { |_n, v| v.numeric? }
+          computed = numerics.map { |_n, v| v.send(method, *args) }
 
-          Daru::DataFrame.new(computed, index: @index, order: order,clone: false)
+          Daru::DataFrame.new(computed, index: @index, order: numerics.map(&:first), clone: false)
         end
 
         def vector_cov v1a, v2a
