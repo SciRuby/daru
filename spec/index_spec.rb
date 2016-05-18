@@ -63,7 +63,17 @@ describe Daru::Index do
   end
 
   context "#&" do
-    it "returns an intersection of 2 index objects" do
+    before :each do
+      @left = Daru::Index.new [:miles, :geddy, :eric]
+      @right = Daru::Index.new [:geddy, :richie, :miles]
+    end
+
+    it "intersects 2 indexes and returns an Index" do
+      expect(@left & @right).to eq([:miles, :geddy].to_index)
+    end
+
+    it "intersects an Index and an Array to return an Index" do
+      expect(@left & [:bob, :geddy, :richie]).to eq([:geddy].to_index)
     end
   end
 
@@ -78,7 +88,7 @@ describe Daru::Index do
     end
 
     it "unions an Index and an Array to return an Index" do
-      expect(@left | [:bob, :jimi, :richie]).to eq([:miles, :geddy, :eric, 
+      expect(@left | [:bob, :jimi, :richie]).to eq([:miles, :geddy, :eric,
         :bob, :jimi, :richie].to_index)
     end
   end
@@ -158,11 +168,11 @@ describe Daru::MultiIndex do
   context ".from_tuples" do
     it "creates 2 layer MultiIndex from tuples" do
       tuples = [
-        [:a, :one], 
-        [:a, :two], 
-        [:b, :one], 
-        [:b, :two], 
-        [:c, :one], 
+        [:a, :one],
+        [:a, :two],
+        [:b, :one],
+        [:b, :two],
+        [:c, :one],
         [:c, :two]
       ]
       mi = Daru::MultiIndex.from_tuples(tuples)
@@ -178,7 +188,7 @@ describe Daru::MultiIndex do
         [0,1,0,1,0,0,1,2,0,1,2,0]
       ])
     end
-  end 
+  end
 
   context "#size" do
     it "returns size of MultiIndex" do
@@ -283,6 +293,12 @@ describe Daru::MultiIndex do
     end
   end
 
+  context "inspect" do
+    it "provides reasonable inspect" do
+      expect(@multi_mi.inspect).to eq '#<Daru::MultiIndex(:a,:b,:c > :one,:two > :bar,:baz,:foo)>'
+    end
+  end
+
   context "#==" do
     it "returns false for unequal MultiIndex comparisons" do
       mi1 = Daru::MultiIndex.from_tuples([
@@ -335,8 +351,8 @@ describe Daru::MultiIndex do
       expect(@mi1 | @mi2).to eq(Daru::MultiIndex.new(
         levels: [[:a, :b], [:one, :two], [:bar, :baz, :foo]],
         labels: [
-          [0, 0, 1, 1, 0, 0, 1], 
-          [0, 1, 0, 1, 1, 0, 1], 
+          [0, 0, 1, 1, 0, 0, 1],
+          [0, 1, 0, 1, 1, 0, 1],
           [0, 1, 2, 0, 0, 1, 1]
         ])
       )
@@ -344,7 +360,23 @@ describe Daru::MultiIndex do
   end
 
   context "#&" do
+    before do
+      @mi1 = Daru::MultiIndex.from_tuples([
+        [:a, :one],
+        [:a, :two],
+        [:b, :two]
+        ])
+      @mi2 = Daru::MultiIndex.from_tuples([
+        [:a, :two],
+        [:b, :one],
+        [:b, :three]
+        ])
+    end
+
     it "returns the intersection of two MI objects" do
+      expect(@mi1 & @mi2).to eq(Daru::MultiIndex.from_tuples([
+        [:a, :two],
+      ]))
     end
   end
 

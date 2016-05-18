@@ -118,6 +118,7 @@ module Daru
 
     # Produce a new index from the set intersection of two indexes
     def & other
+      Index.new(to_a & other.to_a)
     end
 
     def to_a
@@ -343,7 +344,7 @@ module Daru
     end
 
     def inspect
-      "Daru::MultiIndex:#{object_id} (levels: #{levels}\nlabels: #{labels})"
+      "#<Daru::MultiIndex(#{levels.map { |l| l.map(&:inspect).join(',') }.join(' > ')})>"
     end
 
     # Provide a MultiIndex for sub vector produced
