@@ -417,6 +417,10 @@ module Daru
       type == :numeric
     end
 
+    def object?
+      type == :object
+    end
+
     # Reports whether missing data is present in the Vector.
     def has_missing_data?
       !missing_positions.empty?
@@ -1108,8 +1112,8 @@ module Daru
 
     def guard_type_check value
       @possibly_changed_type = true \
-        if @type == :object && (value.nil? || value.is_a?(Numeric)) ||
-           @type == :numeric && !value.is_a?(Numeric) && !value.nil?
+        if object? && (value.nil? || value.is_a?(Numeric)) ||
+           numeric? && !value.is_a?(Numeric) && !value.nil?
     end
 
     def split_value key, v

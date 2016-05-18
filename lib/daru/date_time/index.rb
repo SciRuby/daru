@@ -54,29 +54,14 @@ module Daru
         end
       end
 
-      def start_date start
-        if start.is_a?(String)
-          date_time_from(start, determine_date_precision_of(start))
-        else
-          start
-        end
-      end
-
-      def end_date en
-        if en.is_a?(String)
-          date_time_from(en, determine_date_precision_of(en))
-        else
-          en
-        end
+      def coerce_date date
+        return date unless date.is_a?(String)
+        date_time_from(date, determine_date_precision_of(date))
       end
 
       def begin_from_offset? offset, start
-        if offset.is_a?(Daru::Offsets::Tick) ||
-           (offset.respond_to?(:on_offset?) && offset.on_offset?(start))
-          true
-        else
-          false
-        end
+        offset.is_a?(Daru::Offsets::Tick) ||
+          offset.respond_to?(:on_offset?) && offset.on_offset?(start)
       end
 
       def generate_data start, en, offset, periods
@@ -153,7 +138,7 @@ module Daru
       end
 
       def generate_bounds date_time, date_precision # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
-        # about that ^ disable: I'd like to use my zverok/time_boots here, which will simplify things
+        # FIXME: about that ^ disable: I'd like to use my zverok/time_boots here, which will simplify things
         case date_precision
         when :year
           [
@@ -202,7 +187,8 @@ module Daru
         precision = determine_date_precision_of key
         date_time = date_time_from key, precision
 
-        # FIXME: I'm pretty suspicious about logic here - zverok 2016-05-16
+        # FIXME: I'm pretty suspicious about logic here:
+        # why only year & month? - zverok 2016-05-16
 
         case precision
         when :year
@@ -279,7 +265,6 @@ module Daru
 
       @frequency = @offset ? @offset.freq_string : nil
       @data      = data.each_with_index.to_a.sort_by(&:first)
-      # @data.sort_by!(&:first) unless @offset
 
       @periods = data.size
     end
@@ -348,8 +333,8 @@ module Daru
     #     :start => '2012-5-2', :periods => 50, :freq => 'ME')
     #   #=> #<DateTimeIndex:83549940 offset=ME periods=50 data=[2012-05-31T00:00:00+00:00...2016-06-30T00:00:00+00:00]>
     def self.date_range opts={}
-      start  = Helper.start_date opts[:start]
-      en     = Helper.end_date opts[:end]
+      start  = Helper.coerce_date opts[:start]
+      en     = Helper.coerce_date opts[:end]
       Helper.verify_start_and_end(start, en) unless en.nil?
       offset = Helper.offset_from_frequency opts[:freq]
       data   = Helper.generate_data start, en, offset, opts[:periods]
@@ -504,9 +489,8 @@ module Daru
         date_time = Helper.date_time_from date_time, date_precision
       end
 
-      result = @data.bsearch { |d| d[0] >= date_time }
-      return false if result.nil?
-      result[0] == date_time
+      result, = @data.bsearch { |d| d[0] >= date_time }
+      result && result == date_time
     end
 
     # Return true if the DateTimeIndex is empty.

@@ -81,13 +81,9 @@ module Daru
         end
 
         def scalar_binary_operation operation, other
-          clone = dup
-          clone.map_vectors! do |vector|
-            vector = vector.send(operation, other) if vector.type == :numeric
-            vector
+          dup.map_vectors! do |vector|
+            vector.numeric? ? vector.send(operation, other) : vector
           end
-
-          clone
         end
       end
     end
