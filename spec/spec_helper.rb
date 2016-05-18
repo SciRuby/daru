@@ -22,7 +22,9 @@ end
 RSpec::Expectations.configuration.warn_about_potential_false_positives = false
 
 require 'simplecov'
-SimpleCov.start
+SimpleCov.start do
+ add_filter 'spec'
+end
 
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
