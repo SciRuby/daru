@@ -69,4 +69,5 @@ EOF
   spec.add_development_dependency 'activerecord', '~> 4.0'
   spec.add_development_dependency 'sqlite3'
   spec.add_development_dependency 'rubocop', '>= 0.40.0'
+  spec.add_development_dependency 'simplecov'
 end
