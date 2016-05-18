@@ -102,6 +102,14 @@ class String
   end
 end
 
+class Object
+  if RUBY_VERSION < '2.2'
+    def itself
+      self
+    end
+  end
+end
+
 module Daru
   class DataFrame
     # NOTE: This alias will soon be removed. Use to_h in all future work.

@@ -622,12 +622,10 @@ module Daru
     end
 
     # Map vectors alongwith the index.
-    def map_vectors_with_index
+    def map_vectors_with_index &block
       return to_enum(:map_vectors_with_index) unless block_given?
 
-      each_vector_with_index.map do |vector, name|
-        yield(vector, name)
-      end
+      each_vector_with_index.map(&block)
     end
 
     # Map each row
@@ -815,10 +813,7 @@ module Daru
     #   # 5 666
     #   # 6 777
     def vector_by_calculation &block
-      a = []
-      each_row do |r|
-        a.push r.instance_eval(&block)
-      end
+      a = each_row.map { |r| r.instance_eval(&block) }
 
       Daru::Vector.new a, index: @index
     end
