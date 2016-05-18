@@ -186,7 +186,7 @@ module Daru
       @metadata = opts[:metadata] || {}
 
       @data  = cast_vector_to(opts[:dtype] || :array, source, opts[:nm_dtype])
-      @index = try_create_index(index || @data.size)
+      @index = Index.coerce(index || @data.size)
 
       guard_sizes!
 
@@ -1217,14 +1217,6 @@ module Daru
       @missing_positions = []
       each_with_index do |val, i|
         @missing_positions << i if @missing_values.key?(val)
-      end
-    end
-
-    def try_create_index potential_index
-      if potential_index.is_a?(Daru::MultiIndex) || potential_index.is_a?(Daru::Index)
-        potential_index
-      else
-        Daru::Index.new(potential_index)
       end
     end
 

@@ -239,8 +239,8 @@ module Daru
 
       case source
       when ->(s) { s.empty? }
-        @vectors = try_create_index vectors
-        @index   = try_create_index index
+        @vectors = Index.coerce vectors
+        @index   = Index.coerce index
         create_empty_vectors
       when Array
         initialize_from_array source, vectors, index, opts
@@ -1718,6 +1718,7 @@ module Daru
 
     private
 
+    # FIXME: question mark for method returning not boolean - zverok, 2016-05-18
     def possibly_multi_index? index
       if @index.is_a?(MultiIndex)
         Daru::MultiIndex.from_tuples(index)
@@ -1815,9 +1816,7 @@ module Daru
     end
 
     def populate_row_for pos
-      @data.map do |vector|
-        vector[pos]
-      end
+      @data.map { |vector| vector[pos] }
     end
 
     def insert_or_modify_vector name, vector
@@ -1968,13 +1967,7 @@ module Daru
     def all_vectors_have_equal_indexes? source
       idx = source.values[0].index
 
-      source.values.all? do |vector|
-        idx == vector.index
-      end
-    end
-
-    def try_create_index index
-      index.is_a?(Index) ? index : Daru::Index.new(index)
+      source.values.all? { |vector| idx == vector.index }
     end
 
     def set_name potential_name # rubocop:disable Style/AccessorMethodName
@@ -2009,8 +2002,8 @@ module Daru
       raise ArgumentError, "Number of vectors (#{vectors.size}) should \
         equal order size (#{source.size})" if source.size != vectors.size
 
-      @index   = try_create_index(index || source[0].size)
-      @vectors = try_create_index(vectors)
+      @index   = Index.coerce(index || source[0].size)
+      @vectors = Index.coerce(vectors)
 
       @data = @vectors.each_with_index.map do |_vec,idx|
         Daru::Vector.new(source[idx], index: @index)
@@ -2068,7 +2061,7 @@ module Daru
 
     def deduce_index index, source, vectors_have_same_index
       if !index.nil?
-        try_create_index index
+        Index.coerce index
       elsif vectors_have_same_index
         source.values[0].index.dup
       else
@@ -2097,7 +2090,7 @@ module Daru
     end
 
     def initialize_from_hash_with_arrays source, index, _opts
-      @index = try_create_index(index || source.values[0].size)
+      @index = Index.coerce(index || source.values[0].size)
 
       @vectors.each do |name|
         meta_opt = source[name].respond_to?(:metadata) ? {metadata: source[name].metadata.dup} : {}

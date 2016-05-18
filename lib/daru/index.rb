@@ -8,6 +8,11 @@ module Daru
     # and then we use an inherited hook such that the old new method (from
     # Object) is once again the default .new for the subclass.
     # Refer http://blog.sidu.in/2007/12/rubys-new-as-factory.html
+    #
+    # FIXME: I'm not sure this clever trick really deserves our attention.
+    # Most of common ruby libraries just avoid it in favor of usual
+    # factor method, like `Index.create`. When `Index.new(...).class != Index`
+    # it just leads to confusion and surprises. - zverok, 2016-05-18
     class << self
       alias :__new__ :new
 
@@ -26,6 +31,10 @@ module Daru
       MultiIndex.try_from_tuples(source) ||
         DateTimeIndex.try_create(source) ||
         allocate.tap { |i| i.send :initialize, *args, &block }
+    end
+
+    def self.coerce maybe_index
+      maybe_index.is_a?(Index) ? maybe_index : Daru::Index.new(maybe_index)
     end
 
     def each(&block)
