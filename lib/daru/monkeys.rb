@@ -96,12 +96,10 @@ class Matrix
 end
 
 class String
+  NUMBER_PATTERN = /^-?\d+[,.]?\d*(e-?\d+)?$/
+
   def is_number?
-    if self =~ /^-?\d+[,.]?\d*(e-?\d+)?$/
-      true
-    else
-      false
-    end
+    !!self =~ NUMBER_PATTERN
   end
 end
 
