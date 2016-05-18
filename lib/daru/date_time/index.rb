@@ -148,17 +148,17 @@ module Daru
 
       def determine_date_precision_of date_string
         case date_string
-        when /\d\d\d\d\-\d?\d\-\d?\d \d?\d:\d?\d:\d?\d/
+        when /^\d\d\d\d\-\d?\d\-\d?\d \d?\d:\d?\d:\d?\d$/
           :sec
-        when /\d\d\d\d\-\d?\d\-\d?\d \d?\d:\d?\d/
+        when /^\d\d\d\d\-\d?\d\-\d?\d \d?\d:\d?\d$/
           :min
-        when /\d\d\d\d\-\d?\d\-\d?\d \d?\d/
+        when /^\d\d\d\d\-\d?\d\-\d?\d \d?\d$/
           :hour
-        when /\d\d\d\d\-\d?\d\-\d?\d/
+        when /^\d\d\d\d\-\d?\d\-\d?\d$/
           :day
-        when /\d\d\d\d\-\d?\d/
+        when /^\d\d\d\d\-\d?\d$/
           :month
-        when /\d\d\d\d/
+        when /^\d\d\d\d$/
           :year
         else
           raise ArgumentError, "Unacceptable date string #{date_string}"
@@ -510,6 +510,7 @@ module Daru
       end
     end
 
+    # :nocov:
     def _dump(_depth)
       Marshal.dump(data: to_a, freq: @offset)
     end
@@ -519,6 +520,7 @@ module Daru
 
       Daru::DateTimeIndex.new(h[:data], freq: h[:freq])
     end
+    # :nocov:
 
     # @!method year
     #   @return [Array<Fixnum>] Array containing year of each index.
