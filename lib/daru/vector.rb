@@ -550,9 +550,6 @@ module Daru
     end
 
     DEFAULT_SORTER = lambda { |(av, ai), (bv, bi)|
-      # FIXME: I suspect it can be replaced with just
-      #   [av || -Float::INFINITY, ai] <=> [bv || -Float::INFINITY, bi]
-      # but need more thorough check
       case
       when av.nil? && bv.nil?
         ai <=> bi

@@ -199,11 +199,9 @@ module Daru
     end
 
     def incorrect_fields?(_labels, levels)
-      levels[0].size # FIXME: without this call everything fails
+      levels[0].size # FIXME: without this exact call some specs are failing
 
-      correct = levels.all? { |e| e.uniq.size == e.size }
-
-      !correct
+      levels.any? { |e| e.uniq.size != e.size }
     end
 
     private :incorrect_fields?

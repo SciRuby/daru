@@ -20,6 +20,8 @@ module Daru
       #   df = Daru::DataFrame.new({a:['A', 'B', 'C', 'D', 'E'], b:[10,20,30,40,50]})
       #   df.plot type: :bar, x: :a, y: :b
       def plot opts={}
+        # FIXME: NO specs for plot at all.
+        # May be broken in tens of different ways.
         plot = Nyaplot::Plot.new
 
         diagram =

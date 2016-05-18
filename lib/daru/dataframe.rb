@@ -333,10 +333,7 @@ module Daru
     def dup vectors_to_dup=nil
       vectors_to_dup = @vectors.to_a unless vectors_to_dup
 
-      src = []
-      vectors_to_dup.each do |vec|
-        src << @data[@vectors[vec]].dup
-      end
+      src = vectors_to_dup.map { |vec| @data[@vectors[vec]].dup }
       new_order = Daru::Index.new(vectors_to_dup)
 
       Daru::DataFrame.new src, order: new_order, index: @index.dup, name: @name, clone: true
@@ -355,12 +352,10 @@ module Daru
     # +vectors_to_clone+ - Names of vectors to clone. Optional. Will return
     # a view of the whole data frame otherwise.
     def clone *vectors_to_clone
-      vectors_to_clone.flatten! unless vectors_to_clone.all? { |a| !a.is_a?(Array) }
+      vectors_to_clone.flatten! if vectors_to_clone.all_are?(Array)
       vectors_to_clone = @vectors.to_a if vectors_to_clone.empty?
 
-      h = vectors_to_clone.each_with_object({}) do |vec, hsh|
-        hsh[vec] = self[vec]
-      end
+      h = vectors_to_clone.map { |vec| [vec, self[vec]] }.to_h
       Daru::DataFrame.new(h, clone: false)
     end
 
@@ -377,9 +372,7 @@ module Daru
     # Creates a new duplicate dataframe containing only rows
     # without a single missing value.
     def dup_only_valid vecs=nil
-      rows_with_nil = @data.each_with_object([]) do |vector, memo|
-        memo.concat vector.missing_positions
-      end.uniq
+      rows_with_nil = @data.map(&:missing_positions).inject(&:concat).uniq
 
       row_indexes = @index.to_a
       (vecs.nil? ? self : dup(vecs)).row[*(row_indexes - rows_with_nil)]
@@ -593,15 +586,11 @@ module Daru
     def recode_vectors
       block_given? or return to_enum(:recode_vectors)
 
-      df = dup
-      df.each_vector_with_index do |v, i|
-        ret = yield v
-        ret.is_a?(Daru::Vector) or
-          raise TypeError, "Every iteration must return Daru::Vector not #{ret.class}"
-        df[*i] = ret
+      dup.tap do |df|
+        df.each_vector_with_index do |v, i|
+          df[*i] = should_be_vector!(yield(v))
+        end
       end
-
-      df
     end
 
     def recode_rows
@@ -609,10 +598,7 @@ module Daru
 
       dup.tap do |df|
         df.each_row_with_index do |r, i|
-          df.row[i] = yield(r).tap do |recoded|
-            recoded.is_a?(Daru::Vector) or
-              raise TypeError, "Every iteration must return Daru::Vector not #{recoded.class}"
-          end
+          df.row[i] = should_be_vector!(yield(r))
         end
       end
     end
@@ -629,9 +615,7 @@ module Daru
       return to_enum(:map_vectors!) unless block_given?
 
       vectors.dup.each do |n|
-        self[n] = yield(self[n]).tap do |v|
-          v.is_a?(Daru::Vector) or raise TypeError, "Must return a Daru::Vector not #{v.class}"
-        end
+        self[n] = should_be_vector!(yield(self[n]))
       end
 
       self
@@ -647,27 +631,23 @@ module Daru
     end
 
     # Map each row
-    def map_rows
+    def map_rows &block
       return to_enum(:map_rows) unless block_given?
 
-      each_row.map { |row| yield(row) }
+      each_row.map(&block)
     end
 
-    def map_rows_with_index
+    def map_rows_with_index &block
       return to_enum(:map_rows_with_index) unless block_given?
 
-      each_row_with_index.map do |row, index|
-        yield(row, index)
-      end
+      each_row_with_index.map(&block)
     end
 
     def map_rows!
       return to_enum(:map_rows!) unless block_given?
 
       index.dup.each do |i|
-        row[i] = yield(row[i]).tap do |r|
-          r.is_a?(Daru::Vector) or raise TypeError, "Returned object must be Daru::Vector not #{r.class}"
-        end
+        row[i] = should_be_vector!(yield(row[i]))
       end
 
       self
@@ -684,9 +664,7 @@ module Daru
     def collect_row_with_index &block
       return to_enum(:collect_row_with_index) unless block_given?
 
-      data = each_row_with_index.map(&block)
-
-      Daru::Vector.new(data, index: @index)
+      Daru::Vector.new(each_row_with_index.map(&block), index: @index)
     end
 
     # Retrives a Daru::Vector, based on the result of calculation
@@ -700,9 +678,7 @@ module Daru
     def collect_vector_with_index &block
       return to_enum(:collect_vector_with_index) unless block_given?
 
-      data = each_vector_with_index.map(&block)
-
-      Daru::Vector.new(data, index: @vectors)
+      Daru::Vector.new(each_vector_with_index.map(&block), index: @vectors)
     end
 
     # Generate a matrix, based on vector names of the DataFrame.
@@ -757,12 +733,12 @@ module Daru
     # @return {Daru::DataFrame}
     def bootstrap(n=nil)
       n ||= nrows
-      ds_boot = Daru::DataFrame.new({}, order: @vectors)
-      n.times do
-        ds_boot.add_row(row[rand(n)])
+      Daru::DataFrame.new({}, order: @vectors).tap do |df_boot|
+        n.times do
+          df_boot.add_row(row[rand(n)])
+        end
+        df_boot.update
       end
-      ds_boot.update
-      ds_boot
     end
 
     def keep_row_if
@@ -773,9 +749,7 @@ module Daru
 
     def keep_vector_if
       @vectors.each do |vector|
-        keep_vector = yield @data[@vectors[vector]], vector
-
-        delete_vector vector unless keep_vector
+        delete_vector(vector) unless yield(@data[@vectors[vector]], vector)
       end
     end
 
@@ -808,11 +782,15 @@ module Daru
     # *Proc.new {|row| row[:age] > 0}*
     #
     # The function returns an array with all errors.
+    #
+    # FIXME: description here is too sparse. As far as I can get,
+    # it should tell something about that each test is [descr, fields, block],
+    # and that first value may be column name to output. - zverok, 2016-05-18
     def verify(*tests)
-      id = tests[0].is_a?(Symbol) ? tests.shift : @vectors.first
+      id = tests.first.is_a?(Symbol) ? tests.shift : @vectors.first
 
       each_row_with_index.map do |row, i|
-        tests.reject { |t| t[2].call(row) }
+        tests.reject { |*_, block| block.call(row) }
              .map { |test| verify_error row, test, id, i }
       end.flatten
     end
@@ -869,10 +847,9 @@ module Daru
     # * +missing_values+ - An Array of the values that should be
     # treated as 'missing'. The default missing value is *nil*.
     def missing_values_rows missing_values=[nil]
-      number_of_missing = []
-      each_row do |row|
+      number_of_missing = each_row.map do |row|
         row.missing_values = missing_values
-        number_of_missing << row.missing_positions.size
+        row.missing_positions.size
       end
 
       Daru::Vector.new number_of_missing, index: @index, name: "#{@name}_missing_rows"
@@ -925,17 +902,17 @@ module Daru
 
     # Return the number of rows and columns of the DataFrame in an Array.
     def shape
-      [@index.size, @vectors.size]
+      [nrows, ncols]
     end
 
     # The number of rows
     def nrows
-      shape[0]
+      @index.size
     end
 
     # The number of vectors
     def ncols
-      shape[1]
+      @vectors.size
     end
 
     # Check if a vector is present
@@ -1018,6 +995,8 @@ module Daru
     # * +max_missing+ - The maximum number of elements in the row that can be
     # zero for the mean calculation to happen. Default to 0.
     def vector_mean max_missing=0
+      # FIXME: in vector_sum we preserve created vector dtype, but
+      # here we are not. Is this by design or ...? - zverok, 2016-05-18
       mean_vec = Daru::Vector.new [0]*@size, index: @index, name: "mean_#{@name}"
 
       each_row_with_index.each_with_object(mean_vec) do |(row, i), memo|
@@ -1051,6 +1030,8 @@ module Daru
     #   # ["foo", "two", 3]=>[2, 4]}
     def group_by *vectors
       vectors.flatten!
+      # FIXME: wouldn't it better to do vectors - @vectors here and
+      # raise one error with all non-existent vector names?.. - zverok, 2016-05-18
       vectors.each { |v|
         raise(ArgumentError, "Vector #{v} does not exist") unless has_vector?(v)
       }
@@ -1190,6 +1171,7 @@ module Daru
     # Return the indexes of all the numeric vectors. Will include vectors with nils
     # alongwith numbers.
     def numeric_vectors
+      # FIXME: Why _with_index ?..
       each_vector_with_index
         .select { |vec, _i| vec.numeric? }
         .map(&:last)
@@ -1315,8 +1297,8 @@ module Daru
 
       new_index = @index.reorder @index.size.times.sort(&block)
 
-      vectors.each do |v|
-        @data[@vectors[v]] = @data[@vectors[v]].reindex(new_index)
+      @data.each do |vector|
+        vector.reindex!(new_index)
       end
 
       self.index = new_index
@@ -2132,7 +2114,6 @@ module Daru
 
         value = by.call(value) rescue nil if by
 
-        # FIXME: if there was no `by` block, nils always handled? - zverok, 2016-05-13
         sort_handle_nils value, asc, handle_nil || !by
       end
     end
@@ -2184,13 +2165,14 @@ module Daru
     end
 
     def verify_error row, test, id, i
+      description, fields, = test
       values =
-        if test[1].empty?
+        if fields.empty?
           ''
         else
-          ' (' + test[1].collect { |k| "#{k}=#{row[k]}" }.join(', ') + ')'
+          ' (' + fields.collect { |k| "#{k}=#{row[k]}" }.join(', ') + ')'
         end
-      "#{i+1} [#{row[id]}]: #{test[0]}#{values}"
+      "#{i+1} [#{row[id]}]: #{description}#{values}"
     end
 
     def prepare_pivot_values index, vectors, opts
@@ -2262,6 +2244,11 @@ module Daru
           name = pattern.sub('%v', v).sub('%n', number.to_s)
           [v, row[name]]
         }.to_h
+    end
+
+    def should_be_vector! val
+      return val if val.is_a?(Daru::Vector)
+      raise TypeError, "Every iteration must return Daru::Vector not #{val.class}"
     end
   end
 end
