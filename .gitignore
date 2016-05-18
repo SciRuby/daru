@@ -4,3 +4,4 @@ doc/
 .yardoc/
 .bundle
 vendor/
+coverage/
