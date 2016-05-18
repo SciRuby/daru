@@ -242,8 +242,7 @@ module Daru
         end
       end
 
-      set_size
-      set_missing_positions
+      update_internal_state
     end
 
     # The values to be treated as 'missing'. *nil* is the default missing
@@ -431,8 +430,7 @@ module Daru
       @index |= [index]
       @data[@index[index]] = element
 
-      set_size
-      set_missing_positions
+      update_internal_state
     end
     alias :push :concat
     alias :<< :concat
@@ -460,8 +458,7 @@ module Daru
       @data.delete_at @index[index]
       @index = Daru::Index.new(@index.to_a - [index])
 
-      set_size
-      set_missing_positions
+      update_internal_state
     end
 
     # The type of data contained in the vector. Can be :object or :numeric. If
@@ -497,9 +494,7 @@ module Daru
     # Keep only unique elements of the vector alongwith their indexes.
     def uniq
       uniq_vector = @data.uniq
-      new_index   = uniq_vector.each_with_object([]) do |element, acc|
-        acc << index_of(element)
-      end
+      new_index   = uniq_vector.map { |element| index_of(element) }
 
       Daru::Vector.new uniq_vector, name: @name, metadata: @metadata.dup, index: new_index, dtype: @dtype
     end
@@ -539,22 +534,22 @@ module Daru
       Daru::Vector.new(vector, index: index, name: @name, metadata: @metadata.dup, dtype: @dtype)
     end
 
-    DEFAULT_SORTER = lambda { |(av, ai), (bv, bi)|
+    DEFAULT_SORTER = lambda { |(lv, li), (rv, ri)|
       case
-      when av.nil? && bv.nil?
-        ai <=> bi
-      when av.nil?
+      when lv.nil? && rv.nil?
+        li <=> ri
+      when lv.nil?
         -1
-      when bv.nil?
+      when rv.nil?
         1
       else
-        av <=> bv
+        lv <=> rv
       end
     }
 
     def resort_index vector_index, opts
       if block_given?
-        vector_index.sort { |a,b| yield(a[0], b[0]) }
+        vector_index.sort { |(lv, _li), (rv, _ri)| yield(lv, rv) }
       else
         vector_index.sort(&DEFAULT_SORTER)
       end
@@ -597,8 +592,8 @@ module Daru
 
       @data = cast_vector_to @dtype, keep_e
       @index = Daru::Index.new(keep_i)
-      set_missing_positions
-      set_size
+
+      update_internal_state
 
       self
     end
@@ -666,14 +661,6 @@ module Daru
       }.to_h
     end
 
-    def split_value key, v
-      case
-      when v.nil?           then nil
-      when v.include?(key)  then 1
-      else                       0
-      end
-    end
-
     def reset_index!
       @index = Daru::Index.new(Array.new(size) { |i| i })
       self
@@ -693,23 +680,15 @@ module Daru
     #   #  1  false
     #   #  2  false
     #   #  3  true
+    #
     def is_nil?
-      nil_truth_vector = clone_structure
-      @index.each do |idx|
-        nil_truth_vector[idx] = self[idx].nil? ? true : false
-      end
-
-      nil_truth_vector
+      # FIXME: EXTREMELY bad name for method not returning boolean - zverok, 2016-05-18
+      recode(&:nil?)
     end
 
     # Opposite of #is_nil?
     def not_nil?
-      nil_truth_vector = clone_structure
-      @index.each do |idx|
-        nil_truth_vector[idx] = self[idx].nil? ? false : true
-      end
-
-      nil_truth_vector
+      recode { |v| !v.nil? }
     end
 
     # Replace all nils in the vector with the value passed as an argument. Destructive.
@@ -878,8 +857,8 @@ module Daru
 
       @data = cast_vector_to @dtype, values
       @index = new_index
-      set_missing_positions
-      set_size
+
+      update_internal_state
 
       self
     end
@@ -905,11 +884,6 @@ module Daru
     #
     # @param new_name [Symbol] The new name.
     def rename new_name
-      if new_name.is_a?(Numeric)
-        @name = new_name
-        return
-      end
-
       @name = new_name
     end
 
@@ -1033,11 +1007,10 @@ module Daru
     # Returns a Vector with only numerical data. Missing data is included
     # but non-Numeric objects are excluded. Preserves index.
     def only_numerics
-      numeric_indexes = []
-
-      each_with_index do |v, i|
-        numeric_indexes << i if v.is_a?(Numeric) || @missing_values.key?(v)
-      end
+      numeric_indexes =
+        each_with_index
+        .select { |v, _i| v.is_a?(Numeric) || @missing_values.key?(v) }
+        .map(&:last)
 
       self[*numeric_indexes]
     end
@@ -1139,6 +1112,14 @@ module Daru
            @type == :numeric && !value.is_a?(Numeric) && !value.nil?
     end
 
+    def split_value key, v
+      case
+      when v.nil?           then nil
+      when v.include?(key)  then 1
+      else                       0
+      end
+    end
+
     # For an array or hash of estimators methods, returns
     # an array with three elements
     # 1.- A hash with estimators names as keys and lambdas as values
@@ -1172,10 +1153,14 @@ module Daru
 
       new_vector =
         case dtype
-        when :array   then Daru::Accessors::ArrayWrapper.new(source, self)
-        when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source, self, nm_dtype)
-        when :gsl then Daru::Accessors::GSLWrapper.new(source, self)
-        when :mdarray then raise NotImplementedError, 'MDArray not yet supported.'
+        when :array
+          Daru::Accessors::ArrayWrapper.new(source, self)
+        when :nmatrix
+          Daru::Accessors::NMatrixWrapper.new(source, self, nm_dtype)
+        when :gsl
+          Daru::Accessors::GSLWrapper.new(source, self)
+        when :mdarray
+          raise NotImplementedError, 'MDArray not yet supported.'
         else raise "Unknown dtype #{dtype}"
         end
 
@@ -1205,7 +1190,7 @@ module Daru
         end
     end
 
-    def set_missing_positions forced = false
+    def set_missing_positions forced=false # rubocop:disable Style/AccessorMethodName
       return if Daru.lazy_update && !forced
 
       @missing_positions = []
@@ -1231,6 +1216,11 @@ module Daru
           @missing_values[e] = 0
         end
       end
+    end
+
+    def update_internal_state
+      set_size
+      set_missing_positions
     end
   end
 end
