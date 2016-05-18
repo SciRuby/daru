@@ -126,6 +126,7 @@ module Daru
     end
 
     def key(value)
+      return nil unless value.is_a?(Numeric)
       @relation_hash.keys[value]
     end
 

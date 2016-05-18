@@ -342,6 +342,43 @@ describe Daru::Vector do
         end
       end
 
+
+      context '#head' do
+        subject(:vector) do
+          Daru::Vector.new (1..20).to_a, dtype: dtype
+        end
+
+        it 'takes 10 by default' do
+          expect(vector.head).to eq Daru::Vector.new (1..10).to_a
+        end
+
+        it 'takes num if provided' do
+          expect(vector.head(3)).to eq Daru::Vector.new (1..3).to_a
+        end
+
+        it 'does not fail on too large num' do
+          expect(vector.head(3000)).to eq vector
+        end
+      end
+
+      context '#tail' do
+        subject(:vector) do
+          Daru::Vector.new (1..20).to_a, dtype: dtype
+        end
+
+        it 'takes 10 by default' do
+          expect(vector.tail).to eq Daru::Vector.new (11..20).to_a, index: (10..19).to_a
+        end
+
+        it 'takes num if provided' do
+          expect(vector.tail(3)).to eq Daru::Vector.new (18..20).to_a, index: (17..19).to_a
+        end
+
+        it 'does not fail on too large num' do
+          expect(vector.tail(3000)).to eq vector
+        end
+      end
+
       context "#concat" do
         before :each do
           @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga,
@@ -837,6 +874,18 @@ describe Daru::Vector do
     end
   end
 
+  context "#not_nil?" do
+    before(:each) do
+      @with_md    = Daru::Vector.new([1,2,nil,3,4,nil])
+      @without_md = Daru::Vector.new([1,2,3,4,5,6])
+    end
+
+    it "verifies missing data presence" do
+      expect(@with_md.not_nil?)   .to eq(Daru::Vector.new([true,true,false,true,true,false]))
+      expect(@without_md.not_nil?).to eq(Daru::Vector.new([true,true,true,true,true,true]))
+    end
+  end
+
   context "#clone_structure" do
     context Daru::Index do
       before do
@@ -892,6 +941,24 @@ describe Daru::Vector do
           ['F',2003]
         ])
       end
+    end
+  end
+
+  context '#exists?' do
+    it 'shows if value exists with default missing_values' do
+      vec = Daru::Vector.new([1,2,nil,3,4,nil])
+      expect(vec.exists?(2)).to eq true
+      expect(vec.exists?(6)).to eq false
+      expect(vec.exists?(nil)).to eq false
+    end
+
+    it 'shows if value exists with custom default missing_values' do
+      vec = Daru::Vector.new([1,2,nil,3,4,nil])
+      vec.missing_values = [3]
+      expect(vec.exists?(2)).to eq true
+      expect(vec.exists?(6)).to eq false
+      expect(vec.exists?(3)).to eq false
+      # expect(vec.exists?(nil)).to eq true - FIXME: right behavior here?.. - zverok
     end
   end
 
@@ -1118,12 +1185,16 @@ describe Daru::Vector do
   end
 
   context "#only_missing" do
-    it "returns a vector (with proper index) of all the elements marked 'missing'" do
-      v = Daru::Vector.new([1,2,3,4,5,6,4,5,5,4,4,nil,nil,nil])
-      v.missing_values = [nil, 5]
+    let(:v) { Daru::Vector.new([1,2,3,4,5,6,4,5,5,4,4,nil,nil,nil]) }
+    before { v.missing_values = [nil, 5] }
 
+    it "returns a vector (with proper index) of all the elements marked 'missing'" do
       expect(v.only_missing).to eq(Daru::Vector.new([5,5,5,nil,nil,nil],
         index: [4,7,8,11,12,13]))
+    end
+
+    it "returns an array if asked to" do
+      expect(v.only_missing(:array)).to eq [5,5,5,nil,nil,nil]
     end
   end
 
@@ -1166,6 +1237,49 @@ describe Daru::Vector do
     it "defaults to an empty hash for metadata" do
       dv = Daru::Vector.new [1,2,3,4,5]
       expect(dv.metadata).to eq({})
+    end
+  end
+
+  context '#method_missing' do
+    context 'getting' do
+      subject(:vector) { Daru::Vector.new [1,2,3], index: [:a, :b, :c] }
+
+      it 'returns value for existing index' do
+        expect(vector.a).to eq 1
+      end
+
+      it 'raises on getting non-existent index' do
+        expect { vector.d }.to raise_error NoMethodError
+      end
+
+      it 'sets existing index' do
+        vector.a = 5
+        expect(vector[:a]).to eq 5
+      end
+
+      it 'raises on non-existent index setting' do
+        # FIXME: inconsistency between IndexError here and NoMethodError on getting - zverok
+        expect { vector.d = 5 }.to raise_error IndexError
+      end
+    end
+  end
+
+  context 'db_type' do
+    it 'is DATE for vector with any date in it' do
+      # FIXME: is it sane?.. - zverok
+      expect(Daru::Vector.new(['2016-03-01', 'foo', 4]).db_type).to eq 'DATE'
+    end
+
+    it 'is INTEGER for digits-only values' do
+      expect(Daru::Vector.new(['123', 456, 789]).db_type).to eq 'INTEGER'
+    end
+
+    it 'is DOUBLE for digits-and-point values' do
+      expect(Daru::Vector.new(['123.4', 456, 789e-10]).db_type).to eq 'DOUBLE'
+    end
+
+    it 'is VARCHAR for everyting else' do
+      expect(Daru::Vector.new(['123 and stuff', 456, 789e-10]).db_type).to eq 'VARCHAR (255)'
     end
   end
 

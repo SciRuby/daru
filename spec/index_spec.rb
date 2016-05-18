@@ -54,6 +54,22 @@ describe Daru::Index do
     end
   end
 
+  context '#keys' do
+    subject(:idx) { Daru::Index.new ['speaker', 'mic', 'guitar', 'amp'] }
+
+    it 'returns key by position' do
+      expect(idx.key(2)).to eq 'guitar'
+    end
+
+    it 'returns nil on too large pos' do
+      expect(idx.key(20)).to be_nil
+    end
+
+    it 'returns nil on wrong arg type' do
+      expect(idx.key(nil)).to be_nil
+    end
+  end
+
   context "#size" do
     it "correctly returns the size of the index" do
       idx = Daru::Index.new ['speaker', 'mic', 'guitar', 'amp']
