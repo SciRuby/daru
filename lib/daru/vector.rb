@@ -62,19 +62,9 @@ module Daru
       #   # 7   9
       #   # 8  10
       def [](*args)
-        values = []
-        args.each do |a|
-          case a
-          when Array
-            values.concat a.flatten
-          when Daru::Vector
-            values.concat a.to_a
-          when Range
-            values.concat a.to_a
-          else
-            values << a
-          end
-        end
+        values = args.map do |a|
+          a.respond_to?(:to_a) ? a.to_a : a
+        end.flatten
         Daru::Vector.new(values)
       end
 
@@ -1018,7 +1008,8 @@ module Daru
     # presence of missing data.
     def only_valid as_a=:vector, _duplicate=true
       # FIXME: Now duplicate is just ignored.
-      #   There are no spec that fail on this case, so I'll leave it this way for now - zverok, 2016-05-07
+      #   There are no spec that fail on this case, so I'll leave it
+      #   this way for now - zverok, 2016-05-07
 
       new_index = @index.to_a - missing_positions
       new_vector = new_index.map { |idx| self[idx] }
@@ -1051,19 +1042,20 @@ module Daru
       self[*numeric_indexes]
     end
 
+    DATE_REGEXP = /^(\d{2}-\d{2}-\d{4}|\d{4}-\d{2}-\d{2})$/
+
     # Returns the database type for the vector, according to its content
     def db_type
       # first, detect any character not number
-      if @data.find { |v| v.to_s=~/\d{2,2}-\d{2,2}-\d{4,4}/ } ||
-         @data.find { |v| v.to_s=~/\d{4,4}-\d{2,2}-\d{2,2}/ }
-
-        return 'DATE'
-      elsif @data.find { |v| v.to_s=~/[^0-9e.-]/ }
-        return 'VARCHAR (255)'
-      elsif @data.find { |v| v.to_s=~/\./ }
-        return 'DOUBLE'
+      case
+      when @data.any? { |v| v.to_s =~ DATE_REGEXP }
+        'DATE'
+      when @data.any? { |v| v.to_s =~ /[^0-9e.-]/ }
+        'VARCHAR (255)'
+      when @data.any? { |v| v.to_s =~ /\./ }
+        'DOUBLE'
       else
-        return 'INTEGER'
+        'INTEGER'
       end
     end
 
