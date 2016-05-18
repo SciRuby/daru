@@ -8,11 +8,14 @@ class Array
   def recode_repeated
     return self if size == uniq.size
 
-    duplicated = group_by { |n| n }
-                 .select { |_, g| g.size > 1 }.map(&:first)
+    # create hash of { <name> => 0}
+    # for all names which are more than one time in array
+    counter = group_by(&:itself)
+              .select { |_, g| g.size > 1 }
+              .map(&:first)
+              .collect { |n| [n, 0] }.to_h
 
-    counter = duplicated.collect { |n| [n, 0] }.to_h
-
+    # ...and use this hash for actual recode
     collect do |n|
       if counter.key?(n)
         counter[n] += 1
