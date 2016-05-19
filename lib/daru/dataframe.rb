@@ -262,19 +262,11 @@ module Daru
     # Defaults to *:vector*. Use of this method is not recommended for accessing
     # rows. Use df.row[:a] for accessing row with index ':a'.
     def [](*names)
-      if names[-1] == :vector || names[-1] == :row
-        axis = names[-1]
-        names = names[0..-2]
-      else
-        axis = :vector
-      end
-
-      if axis == :vector
+      case extract_axis(names, :vector)
+      when :vector
         access_vector(*names)
-      elsif axis == :row
+      when :row
         access_row(*names)
-      else
-        raise IndexError, "Expected axis to be row or vector not #{axis}"
       end
     end
 
@@ -286,19 +278,14 @@ module Daru
     # of the vector will be matched against the row/vector indexes of the DataFrame
     # before an insertion is performed. Unmatched indexes will be set to nil.
     def []=(*args)
-      axis = args.include?(:row) ? :row : :vector
-      args.delete :vector
-      args.delete :row
+      vector = args.pop
+      names = args
 
-      name = args[0..-2]
-      vector = args[-1]
-
-      if axis == :vector
-        insert_or_modify_vector name, vector
-      elsif axis == :row
-        insert_or_modify_row name, vector
-      else
-        raise IndexError, "Expected axis to be row or vector, not #{axis}."
+      case extract_axis(names, :vector)
+      when :vector
+        insert_or_modify_vector names, vector
+      when :row
+        insert_or_modify_row names, vector
       end
     end
 
@@ -1716,6 +1703,16 @@ module Daru
     def should_be_vector! val
       return val if val.is_a?(Daru::Vector)
       raise TypeError, "Every iteration must return Daru::Vector not #{val.class}"
+    end
+
+    AXES = [:row, :vector].freeze
+
+    def extract_axis(names, default)
+      if AXES.include?(names.last)
+        names.pop
+      else
+        default
+      end
     end
 
     # FIXME: question mark for method returning not boolean - zverok, 2016-05-18
