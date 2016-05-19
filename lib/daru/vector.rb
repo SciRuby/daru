@@ -242,11 +242,15 @@ module Daru
       if pos.is_a?(Numeric)
         @data[pos] = value
       else
-        begin
-          pos.each { |tuple| self[tuple] = value }
-        rescue NoMethodError
-          raise IndexError, "Specified index #{pos.inspect} does not exist."
-        end
+        pos.each { |tuple| self[tuple] = value }
+
+        # FIXME: Can't guess how to activate this rescue branch -- zverok
+        #
+        # begin
+        #   pos.each { |tuple| self[tuple] = value }
+        # rescue NoMethodError
+        #   raise IndexError, "Specified index #{pos.inspect} does not exist."
+        # end
       end
 
       set_size
@@ -564,9 +568,11 @@ module Daru
 
     # Just sort the data and get an Array in return using Enumerable#sort.
     # Non-destructive.
+    # :nocov:
     def sorted_data &block
       @data.to_a.sort(&block)
     end
+    # :nocov:
 
     # Returns *true* if the value passed is actually exists or is not marked as
     # a *missing value*.
@@ -843,14 +849,14 @@ module Daru
       html = '<table>' \
         '<tr>' \
           '<th colspan="2">' \
-            "Daru::Vector:#{object_id} " + " size: #{size}" \
+            "Daru::Vector:#{object_id} " + "size: #{size}" \
           '</th>' \
         '</tr>'
       html += '<tr><th> </th><th>' + name.to_s + '</th></tr>'
       @index.each_with_index do |index, num|
         html += '<tr><td>' + index.to_s + '</td>' + '<td>' + self[index].to_s + '</td></tr>'
 
-        next if num <= threshold
+        next if num <= threshold - 2
         html += '<tr><td>...</td><td>...</td></tr>'
 
         last_index = @index.to_a.last
@@ -920,17 +926,18 @@ module Daru
       name      = @name || 'nil'
       metadata  = @metadata || 'nil'
       formatter = "\n%#{longest}.#{longest}s %#{longest}.#{longest}s"
-      content  += "\n#<#{self.class}:#{object_id} @name = #{name} @metadata = #{metadata} @size = #{size} >"
+      # content  += "\n#<#{self.class}:#{object_id} @name = #{name} @metadata = #{metadata} @size = #{size} >"
+      content  += "#<#{self.class}:#{object_id} @name = #{name} @metadata = #{metadata} @size = #{size} >"
 
       content += formatter % ['', name]
       @index.each_with_index do |index, num|
         content += formatter % [index.to_s, (self[*index] || 'nil').to_s]
-        if num > threshold
+        if num >= threshold - 1
           content += formatter % ['...', '...']
           break
         end
       end
-      content += "\n"
+      # content += "\n" -- FIXME: I'm removing \n before/after because it is unusual for Ruby's inspects. -- zverok, 2016-05-19
 
       content
     end
@@ -1144,9 +1151,11 @@ module Daru
         dtype: h[:dtype], missing_values: h[:missing_values])
     end
 
+    # :nocov:
     def daru_vector(*)
       self
     end
+    # :nocov:
 
     alias :dv :daru_vector
 
@@ -1194,19 +1203,11 @@ module Daru
         when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source, self, nm_dtype)
         when :gsl then Daru::Accessors::GSLWrapper.new(source, self)
         when :mdarray then raise NotImplementedError, 'MDArray not yet supported.'
-        else raise "Unknown dtype #{dtype}"
+        else raise ArgumentError, "Unknown dtype #{dtype}"
         end
 
       @dtype = dtype || :array
       new_vector
-    end
-
-    def index_for index
-      if @index.include?(index)
-        @index[index]
-      elsif index.is_a?(Numeric)
-        index
-      end
     end
 
     def set_size

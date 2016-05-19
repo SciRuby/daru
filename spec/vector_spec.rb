@@ -339,6 +339,12 @@ describe Daru::Vector do
             expect(@vector).to eq(Daru::Vector.new([0,1,2,3,4,5,6,69,8,9,10,11],
               index: @multi_index, name: :precise_assignment, dtype: dtype))
           end
+
+          it "fails predictably on unknown index" do
+            expect { @vector[:d] = 69 }.to raise_error(IndexError)
+            expect { @vector[:b, :three] = 69 }.to raise_error(IndexError)
+            expect { @vector[:b, :two, :test] = 69 }.to raise_error(IndexError)
+          end
         end
       end
 
@@ -512,6 +518,15 @@ describe Daru::Vector do
           #   })
           # end
         end
+      end
+
+      context "#to_json" do
+        subject(:vector) do
+          Daru::Vector.new [1,2,3,4,5], name: :a,
+              index: [:one, :two, :three, :four, :five], dtype: dtype
+        end
+
+        its(:to_json) { is_expected.to eq(vector.to_h.to_json) }
       end
 
       context "#uniq" do
@@ -1034,6 +1049,10 @@ describe Daru::Vector do
     it "converts Daru::Vector to a vertical Ruby Matrix" do
       expect(@vector.to_matrix(:vertical)).to eq(Matrix.columns([[1,2,3,4,5,6]]))
     end
+
+    it 'raises on wrong axis' do
+      expect { @vector.to_matrix(:strange) }.to raise_error(ArgumentError)
+    end
   end
 
   context "#only_valid" do
@@ -1264,7 +1283,7 @@ describe Daru::Vector do
     end
   end
 
-  context 'db_type' do
+  context '#db_type' do
     it 'is DATE for vector with any date in it' do
       # FIXME: is it sane?.. - zverok
       expect(Daru::Vector.new(['2016-03-01', 'foo', 4]).db_type).to eq 'DATE'
@@ -1280,6 +1299,134 @@ describe Daru::Vector do
 
     it 'is VARCHAR for everyting else' do
       expect(Daru::Vector.new(['123 and stuff', 456, 789e-10]).db_type).to eq 'VARCHAR (255)'
+    end
+  end
+
+  context '#inspect' do
+    context 'simple' do
+      subject(:vector) { Daru::Vector.new [1,2,3], index: [:a, :b, :c], name: 'test' }
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::Vector:#{vector.object_id} @name = test @metadata = {} @size = 3 >
+        |     test
+        |   a    1
+        |   b    2
+        |   c    3
+      }.unindent }
+    end
+
+    context 'with nils' do
+      subject(:vector) { Daru::Vector.new [1,nil,3], index: [:a, :b, :c], name: 'test' }
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::Vector:#{vector.object_id} @name = test @metadata = {} @size = 3 >
+        |     test
+        |   a    1
+        |   b  nil
+        |   c    3
+      }.unindent }
+    end
+
+    context 'very large amount of data' do
+      subject(:vector) { Daru::Vector.new [1,2,3] * 100, name: 'test' }
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::Vector:#{vector.object_id} @name = test @metadata = {} @size = 300 >
+        |     test
+        |   0    1
+        |   1    2
+        |   2    3
+        |   3    1
+        |   4    2
+        |   5    3
+        |   6    1
+        |   7    2
+        |   8    3
+        |   9    1
+        |  10    2
+        |  11    3
+        |  12    1
+        |  13    2
+        |  14    3
+        | ...  ...
+      }.unindent }
+    end
+
+    context 'really long name or data' do
+      subject(:vector) { Daru::Vector.new [1,2,'this is ridiculously long'],
+        index: [:a, :b, :c], name: 'and this is not much better faithfully'
+      }
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::Vector:#{vector.object_id} @name = and this is not much better faithfully @metadata = {} @size = 3 >
+        |                     and this is not much
+        |                   a                    1
+        |                   b                    2
+        |                   c this is ridiculously
+      }.unindent }
+    end
+
+    context 'threshold and spacing settings' do
+    end
+  end
+
+  context '#to_html' do
+    let(:doc) { Nokogiri::HTML(vector.to_html) }
+    subject(:table) { doc.at('table') }
+
+    context 'simple' do
+      let(:vector) { Daru::Vector.new [1,nil,3], index: [:a, :b, :c], name: 'test' }
+      it { is_expected.not_to be_nil }
+
+      describe 'header' do
+        subject(:header) { table.at('tr:first-child > th:first-child') }
+        it { is_expected.not_to be_nil }
+        its(['colspan']) { is_expected.to eq '2' }
+        its(:text) { is_expected.to eq "Daru::Vector:#{vector.object_id} size: 3" }
+      end
+
+      describe 'name' do
+        subject(:name) { table.at('tr:nth-child(2) > th:nth-child(2)') }
+        it { is_expected.not_to be_nil }
+        its(:text) { is_expected.to eq 'test' }
+      end
+
+      describe 'index' do
+        subject(:indexes) { table.search('tr > td:first-child').map(&:text) }
+        its(:count) { is_expected.to eq vector.size }
+        it { is_expected.to eq vector.index.to_a.map(&:to_s) }
+      end
+
+      describe 'values' do
+        subject(:indexes) { table.search('tr > td:last-child').map(&:text) }
+        its(:count) { is_expected.to eq vector.size }
+        it { is_expected.to eq vector.to_a.map(&:to_s) }
+      end
+    end
+
+    context 'large vector' do
+      subject(:vector) { Daru::Vector.new [1,2,3] * 100, name: 'test' }
+      it 'has only 30 rows (+ 2 header rows, + 2 finishing rows' do
+        expect(table.search('tr').size).to eq 34
+      end
+
+      describe '"skipped" row' do
+        subject(:row) { table.search('tr:nth-child(33) td').map(&:text) }
+        its(:count) { is_expected.to eq 2 }
+        it { is_expected.to eq ['...', '...'] }
+      end
+
+      describe 'last row' do
+        subject(:row) { table.search('tr:nth-child(34) td').map(&:text) }
+        its(:count) { is_expected.to eq 2 }
+        it { is_expected.to eq ['299', '3'] }
+      end
+    end
+  end
+
+  context 'on wrong dtypes' do
+    it 'should not accept mdarray' do
+      expect { Daru::Vector.new([], dtype: :mdarray) }.to raise_error(NotImplementedError)
+    end
+
+    it 'should not accept anything else' do
+      expect { Daru::Vector.new([], dtype: :kittens) }.to raise_error(ArgumentError)
     end
   end
 

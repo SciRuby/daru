@@ -1,9 +1,11 @@
 require 'rspec'
+require 'rspec/its'
 require 'matrix'
 require 'awesome_print'
 require 'distribution'
 require 'tempfile'
 require 'pry-byebug'
+require 'nokogiri'
 
 def mri?
   RUBY_ENGINE == 'ruby'
@@ -43,6 +45,20 @@ end
 def expect_correct_df_in_delta df1, df2, delta
   df1.each_vector_with_index do |vector, i|
     expect_correct_vector_in_delta vector, df2[i], delta
+  end
+end
+
+class String
+  # allows to pretty test agains multiline strings:
+  #   %Q{
+  #     |test
+  #     |me
+  #   }.unindent # =>
+  # "test
+  # me"
+  def unindent
+    gsub(/\n\s+?\|/, "\n").  # for all lines looking like "<spaces>|" -- remove this.
+    gsub(/^\n|\n\s+$/, '')   # remove empty strings before and after
   end
 end
 
