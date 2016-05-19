@@ -121,7 +121,11 @@ module Daru
         opts[:order] ||=
           case first
           when Daru::Vector # assume that all are Vectors
+            # FIXME: Not sure, why index is set from vectors
+            # ONLY when order is not provided -- zverok
             index = source.map(&:name)
+                          .each_with_index.map { |n, i| n || i}
+                          .recode_repeated
             first.index.to_a
           when Array
             Array.new(first.size, &:to_s)
@@ -356,8 +360,6 @@ module Daru
         access_vector(*names)
       elsif axis == :row
         access_row(*names)
-      else
-        raise IndexError, "Expected axis to be row or vector not #{axis}"
       end
     end
 
@@ -380,8 +382,6 @@ module Daru
         insert_or_modify_vector name, vector
       elsif axis == :row
         insert_or_modify_row name, vector
-      else
-        raise IndexError, "Expected axis to be row or vector, not #{axis}."
       end
     end
 
@@ -1615,7 +1615,6 @@ module Daru
 
         super_hash.each do |row_index, sub_h|
           sub_h.each do |vector_index, val|
-            # pivoted_dataframe[symbolize(vector_index)][symbolize(row_index)] = val
             pivoted_dataframe[vector_index][row_index] = val
           end
         end
@@ -2060,14 +2059,6 @@ module Daru
 
     private
 
-    def possibly_multi_index? index
-      if @index.is_a?(MultiIndex)
-        Daru::MultiIndex.from_tuples(index)
-      else
-        Daru::Index.new(index)
-      end
-    end
-
     def create_logic_blocks vector_order, _by, ascending
       # Create blocks to handle nils
       blocks = {}
@@ -2127,14 +2118,6 @@ module Daru
         return handle_nils
       else
         Array.new(vector_order.size, handle_nils)
-      end
-    end
-
-    def vectors_index_for location
-      if @vectors.include?(location)
-        @vectors[location]
-      elsif location[0].is_a?(Integer)
-        location[0]
       end
     end
 
@@ -2383,21 +2366,6 @@ module Daru
 
     def set_name potential_name # rubocop:disable Style/AccessorMethodName
       potential_name.is_a?(Array) ? potential_name.join : potential_name
-    end
-
-    def symbolize arry
-      symbolized_arry =
-        if arry.all? { |e| e.is_a?(Array) }
-          arry.map do |sub_arry|
-            sub_arry.map do |e|
-              e.is_a?(Numeric) ? e : e.to_sym
-            end
-          end
-        else
-          arry.map { |e| e.is_a?(Numeric) ? e : e.to_sym }
-        end
-
-      symbolized_arry
     end
   end
 end

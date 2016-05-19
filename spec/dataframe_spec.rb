@@ -66,6 +66,33 @@ describe Daru::DataFrame do
         expect(df.vectors)    .to eq(Daru::Index.new [:a,:b,:c,:d,:e])
         expect(df[:a]) .to eq(Daru::Vector.new [1,1,1,1])
       end
+
+      it 'derives index & order from arrays' do
+        df = Daru::DataFrame.rows @rows
+        expect(df.index)    .to eq(Daru::Index.new [0,1,2,3])
+        expect(df.vectors)  .to eq(Daru::Index.new %w[0 1 2 3 4])
+      end
+
+      it 'derives index & order from vectors' do
+        rows = @rows.zip(%w[w x y z]).map { |r, n| Daru::Vector.new r, index: [:a,:b,:c,:d,:e], name: n }
+        df = Daru::DataFrame.rows rows
+        expect(df.index)    .to eq(Daru::Index.new %w[w x y z])
+        expect(df.vectors)  .to eq(Daru::Index.new [:a,:b,:c,:d,:e])
+      end
+
+      it 'behaves, when rows are repeated' do
+        rows = @rows.zip(%w[w w y z]).map { |r, n| Daru::Vector.new r, index: [:a,:b,:c,:d,:e], name: n }
+        df = Daru::DataFrame.rows rows
+        expect(df.index)    .to eq(Daru::Index.new %w[w_1 w_2 y z])
+        expect(df.vectors)  .to eq(Daru::Index.new [:a,:b,:c,:d,:e])
+      end
+
+      it 'behaves, when vectors are unnamed' do
+        rows = @rows.map { |r| Daru::Vector.new r, index: [:a,:b,:c,:d,:e] }
+        df = Daru::DataFrame.rows rows
+        expect(df.index)    .to eq(Daru::Index.new [0,1,2,3])
+        expect(df.vectors)  .to eq(Daru::Index.new [:a,:b,:c,:d,:e])
+      end
     end
 
     context Daru::MultiIndex do
@@ -439,6 +466,11 @@ describe Daru::DataFrame do
           b: [11,12,13,14,15],
           c: [11,22,33,44,55]
           }, index: [:one, :two, :three, :four, :five]))
+      end
+
+      it 'accepts axis parameter as a last argument' do
+        expect(@df[:a, :vector]).to eq @df[:a]
+        expect(@df[:one, :row]).to eq [1, 11, 11].dv(:one, [:a, :b, :c])
       end
     end
 
