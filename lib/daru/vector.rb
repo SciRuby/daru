@@ -1254,7 +1254,7 @@ module Daru
     end
 
     def group_by *args
-      to_df.group_by *args
+      to_df.group_by(*args)
     end
 
     # Converts a non category type vector to category type vector.
