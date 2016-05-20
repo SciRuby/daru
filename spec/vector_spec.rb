@@ -1402,7 +1402,7 @@ describe Daru::Vector do
 
     context 'large vector' do
       subject(:vector) { Daru::Vector.new [1,2,3] * 100, name: 'test' }
-      it 'has only 30 rows (+ 2 header rows, + 2 finishing rows' do
+      it 'has only 30 rows (+ 2 header rows, + 2 finishing rows)' do
         expect(table.search('tr').size).to eq 34
       end
 
