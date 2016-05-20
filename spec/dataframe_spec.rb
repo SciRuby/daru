@@ -638,6 +638,24 @@ describe Daru::DataFrame do
     end
   end
 
+  context '#add_vector' do
+    subject(:data_frame) {
+      Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
+        c: [11,22,33,44,55]}, order: [:a, :b, :c],
+        index: [:one, :two, :three, :four, :five])
+    }
+    before {
+      data_frame.add_vector :a, [100,200,300,400,500]
+    }
+
+    it { is_expected.to eq(Daru::DataFrame.new({
+          b: [11,12,13,14,15],
+          a: [100,200,300,400,500],
+          c: [11,22,33,44,55]}, order: [:a, :b, :c],
+          index: [:one, :two, :three, :four, :five]))
+    }
+  end
+
   context "#row[]=" do
     context Daru::Index do
       before :each do
@@ -822,6 +840,37 @@ describe Daru::DataFrame do
   end
 
   context "#add_row" do
+    subject(:data_frame) {
+      Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
+        c: [11,22,33,44,55]}, order: [:a, :b, :c],
+        index: [:one, :two, :three, :four, :five])
+    }
+    context 'named' do
+      before {
+        data_frame.add_row [100,200,300], :six
+      }
+
+      it { is_expected.to eq(Daru::DataFrame.new({
+            a: [1,2,3,4,5,100],
+            b: [11,12,13,14,15,200],
+            c: [11,22,33,44,55,300]}, order: [:a, :b, :c],
+            index: [:one, :two, :three, :four, :five, :six]))
+      }
+    end
+
+    context 'unnamed' do
+      before {
+        data_frame.add_row [100,200,300]
+      }
+
+      it { is_expected.to eq(Daru::DataFrame.new({
+            a: [1,2,3,4,5,100],
+            b: [11,12,13,14,15,200],
+            c: [11,22,33,44,55,300]}, order: [:a, :b, :c],
+            index: [:one, :two, :three, :four, :five, 5]))
+      }
+    end
+
     it "allows adding rows after making empty DF by specfying only order" do
       df = Daru::DataFrame.new({}, order: [:a, :b, :c])
       df.add_row [1,2,3]
@@ -834,6 +883,40 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#first" do
+    it 'works' do
+      expect(@data_frame.first(2)).to eq(
+        Daru::DataFrame.new({b: [11,12], a: [1,2], c: [11,22]},
+        order: [:a, :b, :c],
+        index: [:one, :two]))
+    end
+
+    it 'works with too large values' do
+      expect(@data_frame.first(200)).to eq(@data_frame)
+    end
+
+    it 'has synonym' do
+      expect(@data_frame.first(2)).to eq(@data_frame.head(2))
+    end
+  end
+
+  context "#last" do
+    it 'works' do
+      expect(@data_frame.last(2)).to eq(
+        Daru::DataFrame.new({b: [14,15], a: [4,5], c: [44,55]},
+        order: [:a, :b, :c],
+        index: [:four, :five]))
+    end
+
+    it 'works with too large values' do
+      expect(@data_frame.last(200)).to eq(@data_frame)
+    end
+
+    it 'has synonym' do
+      expect(@data_frame.last(2)).to eq(@data_frame.tail(2))
+    end
+  end
+
   context "#==" do
     it "compares by vectors, index and values of a DataFrame (ignores name)" do
       a = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]},
@@ -843,6 +926,13 @@ describe Daru::DataFrame do
         order: [:a, :b], index: [:one, :two, :three, :four, :five])
 
       expect(a).to eq(b)
+    end
+  end
+
+  context '#rename' do
+    it 'renames, you know' do
+      @data_frame.rename('other')
+      expect(@data_frame.name).to eq 'other'
     end
   end
 
@@ -934,6 +1024,27 @@ describe Daru::DataFrame do
 
   end
 
+  context "#clone_only_valid" do
+    let(:df_with_missing) {
+      Daru::DataFrame.new({
+        a: [1  , 2, 3, nil, 4, nil, 5],
+        b: [nil, 2, 3, nil, 4, nil, 5],
+        c: [1,   2, 3, 43 , 4, nil, 5]
+      })
+    }
+
+    let(:df_without_missing) {
+      Daru::DataFrame.new({
+        a: [2,3,4,5],
+        c: [2,3,4,5]
+      })
+    }
+    it 'does the most reasonable thing' do
+      expect(df_with_missing.clone_only_valid).to eq(df_with_missing.dup_only_valid)
+      expect(df_without_missing.clone_only_valid).to eq(df_without_missing.clone)
+    end
+  end
+
   context "#clone_structure" do
     it "clones only the index and vector structures of the data frame" do
       cs = @data_frame.clone_structure
@@ -941,6 +1052,19 @@ describe Daru::DataFrame do
       expect(cs.vectors).to eq(@data_frame.vectors)
       expect(cs.index).to eq(@data_frame.index)
       expect(cs[:a]).to eq(Daru::Vector.new([nil] * cs[:a].size, index: @data_frame.index))
+    end
+  end
+
+  context "#each_index" do
+    it "iterates over index" do
+      idxs = []
+      ret = @data_frame.each_index do |index|
+        idxs << index
+      end
+
+      expect(idxs).to eq([:one, :two, :three, :four, :five])
+
+      expect(ret).to eq(@data_frame)
     end
   end
 
@@ -995,6 +1119,10 @@ describe Daru::DataFrame do
     it "returns Enumerable if no block specified" do
       ret = @data_frame.each
       expect(ret.is_a?(Enumerator)).to eq(true)
+    end
+
+    it "raises on unknown axis" do
+      expect { @data_frame.each(:kitten) }.to raise_error(ArgumentError, /axis/)
     end
   end
 
@@ -1140,8 +1268,23 @@ describe Daru::DataFrame do
     end
   end
 
+  # FIXME: collect_VECTORS_with_index, but map_VECTOR_with_index -- ??? -- zverok
+  # (Not saying about unfortunate difference between them...)
+  context "#collect_vector_with_index" do
+    it "iterates over vectors with index and returns an Array" do
+      idx = []
+      ret = @data_frame.collect_vector_with_index do |vector, index|
+        idx << index
+        vector.sum
+      end
+
+      expect(ret).to eq(Daru::Vector.new([15, 65, 165], index: [:a, :b, :c]))
+      expect(idx).to eq([:a, :b, :c])
+    end
+  end
+
   context "#map_rows_with_index" do
-    it "iterates over rows with index and returns a modified DataFrame" do
+    it "iterates over rows with index and returns an Array" do
       idx = []
       ret = @data_frame.map_rows_with_index do |row, index|
         idx << index
@@ -1150,6 +1293,21 @@ describe Daru::DataFrame do
       end
 
       expect(ret).to eq([11, 44, 99, 176, 275])
+      expect(idx).to eq([:one, :two, :three, :four, :five])
+    end
+  end
+
+  context '#collect_row_with_index' do
+    it "iterates over rows with index and returns a Vector" do
+      idx = []
+      ret = @data_frame.collect_row_with_index do |row, index|
+        idx << index
+        expect(row.class).to eq(Daru::Vector)
+        row[:a] * row[:c]
+      end
+
+      expected = Daru::Vector.new([11, 44, 99, 176, 275], index: @data_frame.index)
+      expect(ret).to eq(expected)
       expect(idx).to eq([:one, :two, :three, :four, :five])
     end
   end
@@ -1254,6 +1412,19 @@ describe Daru::DataFrame do
 
         expect(a).to eq(Daru::DataFrame.new({a: [1,2,3]}))
       end
+    end
+  end
+
+  context "#filter" do
+    let(:df) { Daru::DataFrame.new({a: [1,2,3], b: [2,3,4]}) }
+    it "dispatches" do
+      expect(df.filter(:row){|r| r[:a] % 2 == 0 }).to \
+        eq df.filter_rows{|r| r[:a] % 2 == 0 }
+
+      expect(df.filter(:vector){|v| v[0] == 1}).to \
+        eq df.filter_vectors{|v| v[0] == 1}
+
+      expect { df.filter(:kitten){} }.to raise_error ArgumentError, /axis/
     end
   end
 
@@ -1787,6 +1958,25 @@ describe Daru::DataFrame do
           ], order: agg_vectors, index: agg_index
         )
       )
+
+      agg_vectors = Daru::MultiIndex.from_tuples(
+        [
+          [:d, 'one'],
+          [:d, 'two'],
+          [:e, 'one'],
+          [:e, 'two']
+        ]
+      )
+      expect(@df.pivot_table(index: [:a], vectors: [:b], values: [:d, :e])).to eq(
+        Daru::DataFrame.new(
+          [
+            [4.5,  5.0/3],
+            [6.5,    3.0],
+            [9.0, 10.0/3],
+            [13.0,   6.0]
+          ], order: agg_vectors, index: agg_index
+        )
+      )
     end
 
     it "overrides default aggregate function to aggregate over sum" do
@@ -2108,9 +2298,13 @@ describe Daru::DataFrame do
 
       dataf = @df.verify(t3, t1, t2)
       expect(dataf).to eq(exp1)
+    end
 
-      dataf = @df.verify(:id, t1, t2, t3)
-      expect(dataf).to eq(exp2)
+    it "uses additional fields to extend error messages" do
+      t = create_test("v4='b'", :v2, :v3) { |r| r[:v4] == 'b' }
+
+      dataf = @df.verify(:id, t)
+      expect(dataf).to eq(["1 [r1]: v4='b' (v2=4, v3=10)", "3 [r3]: v4='b' (v2=2, v3=30)"])
     end
   end
 
@@ -2201,6 +2395,10 @@ describe Daru::DataFrame do
     it "returns false if none of the rows satisfy the condition" do
       expect(@df.any?(:row) { |r| r.mean > 100 }).to eq(false)
     end
+
+    it 'fails on unknown axis' do
+      expect { @df.any?(:kitten) { |r| r.mean > 100 } }.to raise_error ArgumentError, /axis/
+    end
   end
 
   context "#all?" do
@@ -2225,6 +2423,10 @@ describe Daru::DataFrame do
 
     it "returns false if any one of the rows does not satisfy condition" do
       expect(@df.all?(:row) { |r| r.mean == 30 }).to eq(false)
+    end
+
+    it 'fails on unknown axis' do
+      expect { @df.all?(:kitten) { |r| r.mean > 100 } }.to raise_error ArgumentError, /axis/
     end
   end
 
@@ -2403,5 +2605,198 @@ describe Daru::DataFrame do
       expect(df_concat[:c].to_a).to eq [nil] * @df1.size + df2_c
     end
 
+  end
+
+  context '#inspect' do
+    subject { df.inspect }
+
+    context 'empty' do
+      let(:df) { Daru::DataFrame.new({}, order: %w[a b c])}
+      it { is_expected.to eq %Q{
+        |#<Daru::DataFrame:#{df.object_id} @name = #{df.name} @size = 0>
+        |      a   b   c
+      }.unindent}
+    end
+
+    context 'simple' do
+      let(:df) { Daru::DataFrame.new({a: [1,2,3], b: [3,4,5], c: [6,7,8]}, name: 'test')}
+      it { should == %Q{
+        |#<Daru::DataFrame:#{df.object_id} @name = test @size = 3>
+        |      a   b   c
+        |  0   1   3   6
+        |  1   2   4   7
+        |  2   3   5   8
+       }.unindent}
+    end
+
+    context 'with nils' do
+      let(:df) { Daru::DataFrame.new({a: [1,nil,3], b: [3,4,5], c: [6,7,nil]}, name: 'test')}
+      it { is_expected.to eq %Q{
+        |#<Daru::DataFrame:#{df.object_id} @name = test @size = 3>
+        |      a   b   c
+        |  0   1   3   6
+        |  1 nil   4   7
+        |  2   3   5 nil
+       }.unindent}
+    end
+
+    context 'very long' do
+      let(:df) { Daru::DataFrame.new({a: [1,1,1]*20, b: [1,1,1]*20, c: [1,1,1]*20}, name: 'test')}
+      it { should == %Q{
+        |#<Daru::DataFrame:#{df.object_id} @name = test @size = 60>
+        |      a   b   c
+        |  0   1   1   1
+        |  1   1   1   1
+        |  2   1   1   1
+        |  3   1   1   1
+        |  4   1   1   1
+        |  5   1   1   1
+        |  6   1   1   1
+        |  7   1   1   1
+        |  8   1   1   1
+        |  9   1   1   1
+        | 10   1   1   1
+        | 11   1   1   1
+        | 12   1   1   1
+        | 13   1   1   1
+        | 14   1   1   1
+        |... ... ... ...
+       }.unindent}
+    end
+
+    context 'long data lines' do
+      let(:df) { Daru::DataFrame.new({a: [1,2,3], b: [4,5,6], c: ['this is ridiculously long',nil,nil]}, name: 'test')}
+      it { should == %Q{
+        |#<Daru::DataFrame:#{df.object_id} @name = test @size = 3>
+        |                    a          b          c
+        |         0          1          4 this is ri
+        |         1          2          5        nil
+        |         2          3          6        nil
+       }.unindent}
+    end
+
+    context 'multi-index' do
+    end
+
+    context 'spacing and threshold settings' do
+    end
+  end
+
+  context '#to_html' do
+    let(:doc) { Nokogiri::HTML(df.to_html) }
+    subject(:table) { doc.at('table') }
+
+    context 'simple' do
+      let(:df) { Daru::DataFrame.new({a: [1,2,3], b: [3,4,5], c: [6,7,8]}, name: 'test')}
+
+      describe 'header' do
+        subject(:header) { table.at('tr:first-child > th:first-child') }
+        it { is_expected.not_to be_nil }
+        its(['colspan']) { is_expected.to eq (df.ncols + 1).to_s }
+        its(:text) { is_expected.to eq "Daru::DataFrame:#{df.object_id} rows: 3 cols: 3" }
+      end
+
+      describe 'column headers' do
+        subject(:name) { table.search('tr:nth-child(2) th').map(&:text) }
+        its(:size) { is_expected.to eq df.ncols + 1 }
+        it { is_expected.to eq ['', 'a', 'b', 'c'] }
+      end
+
+      describe 'index' do
+        subject(:indexes) { table.search('tr > td:first-child').map(&:text) }
+        its(:count) { is_expected.to eq df.nrows }
+        it { is_expected.to eq df.index.to_a.map(&:to_s) }
+      end
+
+      describe 'values' do
+        subject(:values) {
+          table.search('tr')[2..-1]
+               .map { |tr| tr.search('td')[1..-1].map(&:text) }
+        }
+        its(:count) { is_expected.to eq df.nrows }
+        it { is_expected.to eq df.map_rows{|r| r.map(&:to_s)} }
+      end
+    end
+
+    context 'large dataframe' do
+      let(:df) { Daru::DataFrame.new({a: [1,2,3]*100, b: [3,4,5]*100, c: [6,7,8]*100}, name: 'test') }
+
+      it 'has only 30 rows (+ 2 header rows, + 2 finishing rows)' do
+        expect(table.search('tr').size).to eq 34
+      end
+
+      describe '"skipped" row' do
+        subject(:row) { table.search('tr:nth-child(33) td').map(&:text) }
+        its(:count) { is_expected.to eq df.ncols + 1 }
+        it { is_expected.to all eq '...' }
+      end
+
+      describe 'last row' do
+        subject(:row) { table.search('tr:nth-child(34) td').map(&:text) }
+        its(:count) { is_expected.to eq df.ncols + 1 }
+        it { is_expected.to eq ['299', *df.row[-1].map(&:to_s)] }
+      end
+    end
+  end
+
+  context '#to_s' do
+    it 'produces something, despite of how reasonable you think it is' do
+      expect(@data_frame.to_s).to eq @data_frame.to_html
+    end
+  end
+
+  context '#to_json' do
+    let(:df) { Daru::DataFrame.new({a: [1,2,3], b: [3,4,5], c: [6,7,8]}, index: [:one, :two, :three], name: 'test')}
+    subject { JSON.parse(json) }
+
+    context 'with index' do
+      let(:json) { df.to_json(false) }
+      # FIXME: is it most reasonable we can do?.. -- zverok
+      # For me, more resonable thing would be something like
+      #
+      # [
+      #   {"index" => "one"  , "a"=>1, "b"=>3, "c"=>6},
+      #   {"index" => "two"  , "a"=>2, "b"=>4, "c"=>7},
+      #   {"index" => "three", "a"=>3, "b"=>5, "c"=>8}
+      # ]
+      #
+      # Or maybe
+      #
+      # [
+      #   ["one"  , {"a"=>1, "b"=>3, "c"=>6}],
+      #   ["two"  , {"a"=>2, "b"=>4, "c"=>7}],
+      #   ["three", {"a"=>3, "b"=>5, "c"=>8}]
+      # ]
+      #
+      # Or even
+      #
+      # {
+      #   "one"   => {"a"=>1, "b"=>3, "c"=>6},
+      #   "two"   => {"a"=>2, "b"=>4, "c"=>7},
+      #   "three" => {"a"=>3, "b"=>5, "c"=>8}
+      # }
+      #
+      it { is_expected.to eq(
+        [
+          [
+            {"a"=>1, "b"=>3, "c"=>6},
+            {"a"=>2, "b"=>4, "c"=>7},
+            {"a"=>3, "b"=>5, "c"=>8}
+          ],
+          ["one", "two", "three"]
+        ]
+      )}
+    end
+
+    context 'without index' do
+      let(:json) { df.to_json(true) }
+      it { is_expected.to eq(
+        [
+          {"a"=>1, "b"=>3, "c"=>6},
+          {"a"=>2, "b"=>4, "c"=>7},
+          {"a"=>3, "b"=>5, "c"=>8}
+        ]
+      )}
+    end
   end
 end if mri?
