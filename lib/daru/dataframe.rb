@@ -1776,9 +1776,11 @@ module Daru
     end
 
     # Return a Nyaplot::DataFrame from the data of this DataFrame.
+    # :nocov:
     def to_nyaplotdf
       Nyaplot::DataFrame.new(to_a[0])
     end
+    # :nocov:
 
     # Convert all vectors of type *:numeric* and not containing nils into an NMatrix.
     def to_nmatrix
@@ -2024,7 +2026,7 @@ module Daru
 
     def method_missing(name, *args, &block)
       if name =~ /(.+)\=/
-        insert_or_modify_vector name[/(.+)\=/].delete('=').to_sym, args[0]
+        insert_or_modify_vector [name[/(.+)\=/].delete('=').to_sym], args[0]
       elsif has_vector? name
         self[name]
       else
