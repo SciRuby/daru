@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Daru::Core::Query::BoolArray do
   before do
-    @klass = Daru::Core::Query::BoolArray 
+    @klass = Daru::Core::Query::BoolArray
     @left = @klass.new([true, true, true, false, false, true])
     @right = @klass.new([false, false, false, false, true, false])
   end
@@ -26,6 +26,12 @@ describe Daru::Core::Query::BoolArray do
       expect(!@left).to eq(
         @klass.new([false, false, false, true, true, false])
         )
+    end
+  end
+
+  context '#inspect' do
+    it 'is reasonable' do
+      expect(@left.inspect).to eq "#<Daru::Core::Query::BoolArray:#{@left.object_id} bool_arry=[true, true, true, false, false, true]>"
     end
   end
 end
