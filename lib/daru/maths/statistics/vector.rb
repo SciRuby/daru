@@ -124,8 +124,7 @@ module Daru
           if block_given?
             @data.select { |val| yield(val) }.count
           elsif value
-            val = frequencies[value]
-            val.nil? ? 0 : val
+            count { |val| val == value }
           else
             size - @missing_positions.size
           end
@@ -278,7 +277,7 @@ module Daru
               sorted[k - 1] + d * (sorted[k] - sorted[k - 1])
             end
           else
-            raise NotImplementedError, "Unknown strategy #{strategy}"
+            raise ArgumentError, "Unknown strategy #{strategy}"
           end
         end
 
@@ -318,6 +317,7 @@ module Daru
           vector_standardized_compute m, sd
         end
 
+        # :nocov:
         def box_cox_transformation lambda # :nodoc:
           raise 'Should be a numeric' unless @type == :numeric
 
@@ -333,6 +333,7 @@ module Daru
             end
           end
         end
+        # :nocov:
 
         # Replace each non-nil value in the vector with its percentile.
         def vector_percentile
