@@ -1,16 +1,14 @@
 module Daru
   module Core
-    # FIXME: Its fast and (seemingly) correct, yet pretty naive:
-    # * doesn't check preconditions (no specs for that!);
-    # * will not work with multi-column join (no specs for that!).
-    #
     class MergeFrame
       def initialize left_df, right_df, opts={}
         @on = opts[:on]
         @keep_left, @keep_right = extract_left_right(opts[:how])
 
-        @left  = df_to_a(left_df).sort_by { |h| h[on.first] }
-        @right = df_to_a(right_df).sort_by { |h| h[on.first] }
+        validate_on!(left_df, right_df)
+
+        @left  = df_to_a(left_df).sort_by { |h| h.values_at(*on) }
+        @right = df_to_a(right_df).sort_by { |h| h.values_at(*on) }
 
         @left_keys, @right_keys = merge_keys(left_df, right_df, on)
       end
@@ -77,7 +75,10 @@ module Daru
       def row(lkey, rkey)
         case
         when !lkey && !rkey
+          # :nocov:
+          # It's just an impossibility handler, can't be covered :)
           raise 'Unexpected condition met during merge'
+          # :nocov:
         when lkey == rkey
           merge_rows(left.shift, right.shift)
         when !rkey || lt(lkey, rkey)
@@ -115,7 +116,14 @@ module Daru
       end
 
       def first_key(arr)
-        arr.empty? ? nil : arr.first[on.first]
+        arr.empty? ? nil : arr.first.values_at(*on)
+      end
+
+      def validate_on!(left_df, right_df)
+        @on.each do |on|
+          left_df.has_vector?(on) && right_df.has_vector?(on) or
+            raise ArgumentError, "Both dataframes expected to have #{on.inspect} field"
+        end
       end
     end
 

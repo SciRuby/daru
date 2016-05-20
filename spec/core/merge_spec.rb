@@ -77,5 +77,26 @@ describe Daru::DataFrame do
       expect(@left.join(@right, how: :right, on: [:name])).to eq(answer)
     end
 
+    it "raises if :on field are absent in one of dataframes" do
+      @right.vectors = [:id, :other_name]
+      expect { @left.join(@right, how: :right, on: [:name]) }.to \
+        raise_error(ArgumentError, /Both dataframes expected .* :name/)
+
+      expect { @left.join(@right, how: :right, on: [:other_name]) }.to \
+        raise_error(ArgumentError, /Both dataframes expected .* :other_name/)
+    end
+
+    it "is able to join by several :on fields" do
+      @left.gender = ['m', 'f', 'm', nil]
+      @right.gender = ['m', 'm', nil, 'f']
+
+      answer = Daru::DataFrame.new({
+        id_1: [1],
+        name: ['Pirate'],
+        gender: ['m'],
+        id_2: [2]
+      }, order: [:id_1, :name, :gender, :id_2])
+      expect(@left.join(@right, how: :inner, on: [:name, :gender])).to eq(answer)
+    end
   end
 end
