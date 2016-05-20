@@ -54,6 +54,22 @@ describe Daru::Index do
     end
   end
 
+  context '#keys' do
+    subject(:idx) { Daru::Index.new ['speaker', 'mic', 'guitar', 'amp'] }
+
+    it 'returns key by position' do
+      expect(idx.key(2)).to eq 'guitar'
+    end
+
+    it 'returns nil on too large pos' do
+      expect(idx.key(20)).to be_nil
+    end
+
+    it 'returns nil on wrong arg type' do
+      expect(idx.key(nil)).to be_nil
+    end
+  end
+
   context "#size" do
     it "correctly returns the size of the index" do
       idx = Daru::Index.new ['speaker', 'mic', 'guitar', 'amp']
@@ -63,7 +79,17 @@ describe Daru::Index do
   end
 
   context "#&" do
-    it "returns an intersection of 2 index objects" do
+    before :each do
+      @left = Daru::Index.new [:miles, :geddy, :eric]
+      @right = Daru::Index.new [:geddy, :richie, :miles]
+    end
+
+    it "intersects 2 indexes and returns an Index" do
+      expect(@left & @right).to eq([:miles, :geddy].to_index)
+    end
+
+    it "intersects an Index and an Array to return an Index" do
+      expect(@left & [:bob, :geddy, :richie]).to eq([:geddy].to_index)
     end
   end
 
@@ -303,6 +329,12 @@ describe Daru::MultiIndex do
     end
   end
 
+  context "inspect" do
+    it "provides reasonable inspect" do
+      expect(@multi_mi.inspect).to eq '#<Daru::MultiIndex(:a,:b,:c > :one,:two > :bar,:baz,:foo)>'
+    end
+  end
+
   context "#==" do
     it "returns false for unequal MultiIndex comparisons" do
       mi1 = Daru::MultiIndex.from_tuples([
@@ -364,7 +396,23 @@ describe Daru::MultiIndex do
   end
 
   context "#&" do
+    before do
+      @mi1 = Daru::MultiIndex.from_tuples([
+        [:a, :one],
+        [:a, :two],
+        [:b, :two]
+        ])
+      @mi2 = Daru::MultiIndex.from_tuples([
+        [:a, :two],
+        [:b, :one],
+        [:b, :three]
+        ])
+    end
+
     it "returns the intersection of two MI objects" do
+      expect(@mi1 & @mi2).to eq(Daru::MultiIndex.from_tuples([
+        [:a, :two],
+      ]))
     end
   end
 

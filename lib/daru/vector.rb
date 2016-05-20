@@ -235,11 +235,15 @@ module Daru
       if pos.is_a?(Numeric)
         @data[pos] = value
       else
-        begin
-          pos.each { |tuple| self[tuple] = value }
-        rescue NoMethodError
-          raise IndexError, "Specified index #{pos.inspect} does not exist."
-        end
+        pos.each { |tuple| self[tuple] = value }
+
+        # FIXME: Can't guess how to activate this rescue branch -- zverok
+        #
+        # begin
+        #   pos.each { |tuple| self[tuple] = value }
+        # rescue NoMethodError
+        #   raise IndexError, "Specified index #{pos.inspect} does not exist."
+        # end
       end
 
       update_internal_state
@@ -406,7 +410,8 @@ module Daru
     end
 
     def tail q=10
-      self[(@size - q)..(@size-1)]
+      start = [@size - q, 0].max
+      self[start..(@size-1)]
     end
 
     def empty?
@@ -562,14 +567,19 @@ module Daru
 
     # Just sort the data and get an Array in return using Enumerable#sort.
     # Non-destructive.
+    # :nocov:
     def sorted_data &block
       @data.to_a.sort(&block)
     end
+    # :nocov:
 
     # Returns *true* if the value passed is actually exists or is not marked as
     # a *missing value*.
     def exists? value
-      !@missing_values.key?(self[index_of(value)])
+      # FIXME: I'm not sure how this method should really work,
+      # or whether it is needed at all. - zverok
+      idx = index_of(value)
+      !!idx && !@missing_values.key?(self[idx])
     end
 
     # Like map, but returns a Daru::Vector with the returned values.
@@ -806,6 +816,7 @@ module Daru
       ReportBuilder.new(no_title: true).add(self).send(method)
     end
 
+    # :nocov:
     def report_building b # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
       b.section(name: name) do |s|
         s.text "n :#{size}"
@@ -834,6 +845,7 @@ module Daru
         end
       end
     end
+    # :nocov:
 
     # Over rides original inspect for pretty printing in irb
     def inspect spacing=20, threshold=15
@@ -842,11 +854,10 @@ module Daru
       formatter = make_format_string spacing
 
       [
-        "\n#<#{self.class}:#{object_id} @name = #{name} @metadata = #{metadata} @size = #{size} >",
+        "#<#{self.class}:#{object_id} @name = #{name} @metadata = #{metadata} @size = #{size} >",
         formatter % ['', name],
         @index.first(threshold).map { |idx| formatter % [idx, self[*idx] || 'nil'] },
-        size > threshold ? formatter % ['...', '...'] : '',
-        "\n"
+        size > threshold ? formatter % ['...', '...'] : ''
       ].flatten.join
     end
 
@@ -1062,15 +1073,19 @@ module Daru
       )
     end
 
+    # :nocov:
     def daru_vector(*)
       self
     end
+    # :nocov:
 
     alias :dv :daru_vector
 
     def method_missing(name, *args, &block)
+      # FIXME: it is shamefully fragile. Should be either made stronger
+      # (string/symbol dychotomy, informative errors) or removed totally. - zverok
       if name =~ /(.+)\=/
-        self[name] = args[0]
+        self[$1.to_sym] = args[0]
       elsif has_index?(name)
         self[name]
       else
@@ -1143,13 +1158,6 @@ module Daru
       [h_est, h_est.keys, bss]
     end
 
-    def keep? a, b, order
-      eval = yield(a, b)
-      return false if eval.abs != 1 # only +1 and -1 are meaningful
-
-      order == :ascending ? eval < 0 : eval > 0
-    end
-
     # Note: To maintain sanity, this _MUST_ be the _ONLY_ place in daru where the
     # @dtype variable is set and the underlying data type of vector changed.
     def cast_vector_to dtype, source=nil, nm_dtype=nil
@@ -1165,19 +1173,11 @@ module Daru
           Daru::Accessors::GSLWrapper.new(source, self)
         when :mdarray
           raise NotImplementedError, 'MDArray not yet supported.'
-        else raise "Unknown dtype #{dtype}"
+        else raise ArgumentError, "Unknown dtype #{dtype}"
         end
 
       @dtype = dtype || :array
       new_vector
-    end
-
-    def index_for index
-      if @index.include?(index)
-        @index[index]
-      elsif index.is_a?(Numeric)
-        index
-      end
     end
 
     def set_size
@@ -1201,11 +1201,6 @@ module Daru
       each_with_index do |val, i|
         @missing_positions << i if @missing_values.key?(val)
       end
-    end
-
-    def element_from_numeric_index location
-      pos = index_for location
-      pos ? @data[pos] : nil
     end
 
     # Setup missing_values. The missing_values instance variable is set

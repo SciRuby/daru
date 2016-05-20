@@ -68,6 +68,11 @@ describe DateTimeIndex do
       expect(index.frequency).to eq('D')
     end
 
+    it 'fails on wrong string format' do
+      expect{DateTimeIndex.date_range(start: '2014/5/3', end: '2014/5/10')}
+        .to raise_error(ArgumentError, /Unacceptable date string/)
+    end
+
     it "creates DateTimeIndex of per minute frequency between start and end" do
       index = DateTimeIndex.date_range(start: '2015-7-1',freq: 'M', periods: 10)
 
@@ -173,6 +178,17 @@ describe DateTimeIndex do
           :end => DateTime.new(2013,3,4,12,5,4,"+7:30"), freq: 'M')
       }.to raise_error(ArgumentError)
     end
+  end
+
+  context '#inspect' do
+    it 'works, you know' do
+      index = DateTimeIndex.new([
+        DateTime.new(2014,7,1),DateTime.new(2014,7,2),DateTime.new(2014,7,3),
+        DateTime.new(2014,7,4)], freq: :infer)
+      expect(index.inspect).to eq("#<DateTimeIndex:#{index.object_id} offset=D periods=4 data=[2014-07-01T00:00:00+00:00...2014-07-04T00:00:00+00:00]>")
+    end
+
+    # FIXME: Personally I'd prefer more compact inspects, like #<DateTimeIndex[D](2014-07-01 - 2014-07-04)>, or something like it - zverok
   end
 
   context "#frequency" do
@@ -365,6 +381,16 @@ describe DateTimeIndex do
       index = DateTimeIndex.date_range(:start => '2012', :periods => 40, :freq => 'MONTH')
       expect(index.slice(DateTime.new(2012), '2013')).to eq(
         DateTimeIndex.date_range(:start => '2012', :periods => 24, :freq => 'MONTH'))
+    end
+
+    it "supports two strings" do
+      index = DateTimeIndex.date_range(:start => '2012', :periods => 40, :freq => 'MONTH')
+      expect(index.slice('2012', '2013')).to eq(
+        DateTimeIndex.date_range(:start => '2012', :periods => 24, :freq => 'MONTH'))
+
+      # FIXME: It works this way now, yet I'm faithfully not sure that is most
+      # reasonable behavior. At least MY expectation is "slice(2012, 2013)" returns
+      # "from start of 2012 to start of 2013"... Or am I missing something?.. - zverok
     end
   end
 

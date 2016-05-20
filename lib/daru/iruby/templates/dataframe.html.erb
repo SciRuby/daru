@@ -18,17 +18,19 @@
     </tr>
   <% end %>
 
-  <tr>
-    <%= '<td>...</td>' * (@vectors.size + 1) %>
-  </tr>
+  <% if nrows > threshold %>
+    <tr>
+      <%= '<td>...</td>' * (@vectors.size + 1) %>
+    </tr>
 
-  <% last_index = @index.to_a.last
-     last_row = row[last_index] %>
+    <% last_index = @index.to_a.last
+       last_row = row[last_index] %>
 
-  <tr>
-    <td><%= last_index %></td>
-      <% last_row.each do |element| %>
-        <td><%= element.to_s %></td>
-      <% end %>
-  </tr>
+    <tr>
+      <td><%= last_index %></td>
+        <% last_row.each do |element| %>
+          <td><%= element.to_s %></td>
+        <% end %>
+    </tr>
+  <% end %>
 </table>

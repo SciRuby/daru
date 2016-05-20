@@ -5,3 +5,4 @@ doc/
 .bundle
 vendor/
 profile/out/
+coverage/
