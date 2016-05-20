@@ -341,6 +341,13 @@ describe Daru::DataFrame do
             index: [:one, :two, :three])
         }.to raise_error
       end
+
+      it "provides default name if necessarry" do
+        df = Daru::DataFrame.new({})
+        expect(df.name).to match(/^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$/)
+        df = Daru::DataFrame.new({}, name: 'test')
+        expect(df.name).to eq 'test'
+      end
     end
 
     context Daru::MultiIndex do
@@ -634,6 +641,52 @@ describe Daru::DataFrame do
         df_empty[:c, :one, :bar] = 1..12
 
         expect(df_empty[:c, :one, :bar].name).to eq "conebar"
+      end
+    end
+  end
+
+  context '#method_missing' do
+    subject(:data_frame) {
+      Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
+        c: [11,22,33,44,55]}, order: [:a, :b, :c],
+        index: [:one, :two, :three, :four, :five])
+    }
+
+    context 'getting the vector' do
+      subject{
+        data_frame.a
+      }
+      it { is_expected.to eq [1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five]) }
+    end
+
+    context 'setting existing vector' do
+      before{
+        data_frame.a = [100,200,300,400,500]
+      }
+      it { is_expected.to eq(Daru::DataFrame.new({
+            b: [11,12,13,14,15],
+            a: [100,200,300,400,500],
+            c: [11,22,33,44,55]}, order: [:a, :b, :c],
+            index: [:one, :two, :three, :four, :five]))
+      }
+    end
+
+    context 'setting new vector' do
+      before{
+        data_frame.d = [100,200,300,400,500]
+      }
+      it { is_expected.to eq(Daru::DataFrame.new({
+            b: [11,12,13,14,15],
+            a: [1,2,3,4,5],
+            d: [100,200,300,400,500],
+            c: [11,22,33,44,55]}, order: [:a, :b, :c, :d],
+            index: [:one, :two, :three, :four, :five]))
+      }
+    end
+
+    context 'no vector found' do
+      it 'should raise' do
+        expect { data_frame.e }.to raise_error(NoMethodError)
       end
     end
   end
@@ -2189,7 +2242,6 @@ describe Daru::DataFrame do
     end
   end
 
-
   context "has_missing_data?" do
     before do
       a1 = Daru::Vector.new [1, nil, 3, 4, 5, nil]
@@ -2798,5 +2850,21 @@ describe Daru::DataFrame do
         ]
       )}
     end
+  end
+
+  context '#create_sql' do
+    let(:df) { Daru::DataFrame.new({
+        a: [1,2,3],
+        b: ['test', 'me', 'please'],
+        c: ['2015-06-01', '2015-06-02', '2015-06-03']
+      },
+      name: 'test'
+    )}
+    subject { df.create_sql('foo') }
+    it { is_expected.to eq %Q{
+      |CREATE TABLE foo (a INTEGER,
+      | b VARCHAR (255),
+      | c DATE) CHARACTER SET=UTF8;
+    }.unindent}
   end
 end if mri?
