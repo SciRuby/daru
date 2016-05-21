@@ -3,12 +3,13 @@ require 'bundler/gem_tasks'
 
 lib_folder = File.expand_path("../lib", __FILE__)
 
-RUBIES = ['ruby-2.0', 'ruby-2.1', 'ruby-2.2', 'ruby-2.3.0']
+RUBIES = ['ruby-2.0.0-p643', 'ruby-2.1.5', 'ruby-2.2.1', 'ruby-2.3.0']
 
 task :all do |task|
   RUBIES.each do |ruby_v|
-    puts "\n\n\nUsing #{ruby_v}\n\n\n"
-    puts `bash -lc "rvm use #{ruby_v}; rspec spec"`
+    puts "\n\n\n  Using Ruby #{ruby_v}\n\n\n"
+    rake_path = "$rvm_path/wrappers/#{ruby_v}/rake"
+    run(rake_path, 'spec') rescue nil
   end
 end
 
