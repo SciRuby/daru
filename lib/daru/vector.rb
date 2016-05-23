@@ -1236,15 +1236,10 @@ module Daru
 
     def set_missing_positions
       @missing_positions = []
-<<<<<<< HEAD
       unless @index.empty?
         @index.each do |e|
-          @missing_positions << e if (@missing_values.has_key?(self[e]))
+          @missing_positions << e if @missing_values.key?(self[e])
         end
-=======
-      @index.each do |e|
-        @missing_positions << e if @missing_values.key?(self[e])
->>>>>>> 3f0db6e5d11c8153e15600f672ef20ad2f65356e
       end
     end
 
