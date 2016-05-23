@@ -252,6 +252,37 @@ describe Daru::Vector do
             expect { @vector[:x, :one] }.to raise_error(IndexError)
           end
         end
+
+        context Daru::CategoricalIndex do
+          before do
+            @idx1 = Daru::CategoricalIndex [:a, :b, :a, :a, :c]
+            @idx2 = Daru::CategoricalIndex [0, 1, 0, 0, 2]
+            @dv1 = Daru::Vector.new 'a'..'e', index: @idx1
+            @dv2 = Daru::Vector.new 'a'..'e', index: @idx2
+          end
+
+          it "returns vector of elements belonging to given category" do
+            expect(@dv1[:a]).to eq(Daru::Vector.new(
+              ['a', 'c', 'd'], index: Daru::CategoricalIndex(
+                [:a, :a, :a])))
+          end
+
+          it "returns vector of elements belonging to given categories" do
+            expect(@dv2[:a, :c]).to eq(Daru::Vector.new(
+              ['a', 'c', 'd', 'e'], index: Daru::Index.new(
+                [:a, :a, :a, :e])))
+          end
+
+          it "returns vector of elements given positional index" do
+            expect(@dv1[0, 1, 2]).to eq(Daru::Vector.new(
+              ['a', 'b', 'c'], index: Daru::CategoricalIndex.new(
+                [:a, :b, :a])))
+          end
+
+          it "returns element given positional index" do
+            expect(@dv1[1]).to eq('b')
+          end
+        end
       end
 
       context "#[]=" do
