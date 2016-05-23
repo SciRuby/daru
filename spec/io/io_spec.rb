@@ -22,7 +22,7 @@ describe Daru::IO do
       end
 
       it "accepts scientific notation as float" do
-        ds = Daru::DataFrame.from_csv('spec/fixtures/scientific_notation.csv')
+        ds = Daru::DataFrame.from_csv('spec/fixtures/scientific_notation.csv', order: ['x', 'y'])
         expect(ds.vectors.to_a).to eq(['x', 'y'])
         y = [9.629587310436753e+127, 1.9341543147883677e+129, 3.88485279048245e+130]
         y.zip(ds['y']).each do |y_expected, y_ds|

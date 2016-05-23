@@ -3,8 +3,8 @@ require 'spec_helper.rb'
 describe "Monkeys" do
   context Array do
     it "#recode_repeated" do
-      expect([1,1,'a','a','b',:c,2].recode_repeated).to eq(
-        ['1_1', '1_2','a_1','a_2','b',:c,2])
+      expect([1,'a',1,'a','b',:c,2].recode_repeated).to eq(
+        ['1_1','a_1', '1_2','a_2','b',:c,2])
     end
   end
 

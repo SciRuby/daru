@@ -11,7 +11,7 @@ module Daru
     'THU' => 4,
     'FRI' => 5,
     'SAT' => 6
-  }
+  }.freeze
 
   MONTH_DAYS = {
     1 => 31,
@@ -26,19 +26,20 @@ module Daru
     10 => 31,
     11 => 30,
     12 => 31
-  }
+  }.freeze
 
-  SPLIT_TOKEN = ','
+  @lazy_update = false
+
+  SPLIT_TOKEN = ','.freeze
+
   class << self
-    @@lazy_update = false
-
     # A variable which will set whether Vector metadata is updated immediately or lazily.
     # Call the #update method every time a values are set or removed in order to update
     # metadata like positions of missing values.
     attr_accessor :lazy_update
 
     def create_has_library(library)
-      lib_underscore = library.to_s.gsub(/-/, '_')
+      lib_underscore = library.to_s.tr('-', '_')
       define_singleton_method("has_#{lib_underscore}?") do
         cv = "@@#{lib_underscore}"
         unless class_variable_defined? cv
@@ -79,3 +80,5 @@ require 'daru/core/merge.rb'
 
 require 'daru/date_time/offsets.rb'
 require 'daru/date_time/index.rb'
+
+require 'backports'

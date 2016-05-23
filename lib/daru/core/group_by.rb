@@ -1,12 +1,11 @@
 module Daru
   module Core
     class GroupBy
-
       attr_reader :groups
 
       # Iterate over each group created by group_by. A DataFrame is yielded in
       # block.
-      def each_group &block
+      def each_group
         groups.keys.each do |k|
           yield get_group(k)
         end
@@ -18,7 +17,14 @@ module Daru
         @context = context
         vectors = names.map { |vec| context[vec].to_a }
         tuples  = vectors[0].zip(*vectors[1..-1])
-        keys    = tuples.uniq.sort { |a,b| a && b ? a.compact <=> b.compact : a ? 1 : -1 }
+        keys    =
+          tuples.uniq.sort do |a,b|
+            if a && b
+              a.compact <=> b.compact
+            else
+              a ? 1 : -1
+            end
+          end
 
         keys.each do |key|
           @groups[key] = all_indices_for(tuples, key)
@@ -29,13 +35,13 @@ module Daru
       # Get a Daru::Vector of the size of each group.
       def size
         index =
-        if multi_indexed_grouping?
-          Daru::MultiIndex.from_tuples @groups.keys
-        else
-          Daru::Index.new @groups.keys.flatten
-        end
+          if multi_indexed_grouping?
+            Daru::MultiIndex.from_tuples @groups.keys
+          else
+            Daru::Index.new @groups.keys.flatten
+          end
 
-        values = @groups.values.map { |e| e.size }
+        values = @groups.values.map(&:size)
         Daru::Vector.new(values, index: index, name: :size)
       end
 
@@ -202,9 +208,9 @@ module Daru
             indexes
           end
         Daru::DataFrame.rows(
-          rows, index: new_index, order: @context.vectors)
+          rows, index: new_index, order: @context.vectors
+        )
       end
-
 
       # Iteratively applies a function to the values in a group and accumulates the result.
       # @param init (nil) The initial value of the accumulator.
@@ -222,31 +228,29 @@ module Daru
       #   #     nil
       #   #   a ACE
       #   #   b BDF
-      def reduce(init=nil, &block)
-        result_hash = @groups.reduce({}) do |h, (group, indices)|
+      def reduce(init=nil)
+        result_hash = @groups.each_with_object({}) do |(group, indices), h|
           group_indices = indices.map { |v| @context.index.to_a[v] }
 
           grouped_result = init
           group_indices.each do |idx|
-            grouped_result = block.call(grouped_result, @context.row[idx])
+            grouped_result = yield(grouped_result, @context.row[idx])
           end
 
           h[group] = grouped_result
-          h
         end
 
         index =
-        if multi_indexed_grouping?
-          Daru::MultiIndex.from_tuples result_hash.keys
-        else
-          Daru::Index.new result_hash.keys.flatten
-        end
+          if multi_indexed_grouping?
+            Daru::MultiIndex.from_tuples result_hash.keys
+          else
+            Daru::Index.new result_hash.keys.flatten
+          end
 
         Daru::Vector.new(result_hash.values, index: index)
       end
 
-
-     private
+      private
 
       def select_groups_from method, quantity
         selection     = @context
@@ -267,11 +271,11 @@ module Daru
         multi_index = multi_indexed_grouping?
         rows, order = [], []
 
-        @groups.each do |group, indexes|
+        @groups.each do |_group, indexes|
           single_row = []
           @non_group_vectors.each do |ngvector|
             vec = @context[ngvector]
-            if method_type == :numeric and vec.type == :numeric
+            if method_type == :numeric && vec.type == :numeric
               slice = vec[*indexes]
               single_row << (slice.is_a?(Daru::Vector) ? slice.send(method) : slice)
             end
@@ -282,7 +286,7 @@ module Daru
 
         @non_group_vectors.each do |ngvec|
           order << ngvec if
-            (method_type == :numeric and @context[ngvec].type == :numeric)
+            method_type == :numeric && @context[ngvec].type == :numeric
         end
 
         index = @groups.keys

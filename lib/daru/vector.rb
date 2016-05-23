@@ -1,11 +1,9 @@
-$:.unshift File.dirname(__FILE__)
-
-require 'maths/arithmetic/vector.rb'
-require 'maths/statistics/vector.rb'
-require 'plotting/vector.rb'
-require 'accessors/array_wrapper.rb'
-require 'accessors/nmatrix_wrapper.rb'
-require 'accessors/gsl_wrapper.rb'
+require 'daru/maths/arithmetic/vector.rb'
+require 'daru/maths/statistics/vector.rb'
+require 'daru/plotting/vector.rb'
+require 'daru/accessors/array_wrapper.rb'
+require 'daru/accessors/nmatrix_wrapper.rb'
+require 'daru/accessors/gsl_wrapper.rb'
 
 module Daru
   class Vector
@@ -28,10 +26,10 @@ module Daru
       self
     end
 
-    def each_with_index(&block)
+    def each_with_index
       return to_enum(:each_with_index) unless block_given?
 
-      @index.each { |i|  yield(self[i], i) }
+      @index.each { |i| yield(self[i], i) }
       self
     end
 
@@ -101,9 +99,9 @@ module Daru
         source = source.values
       else
         index  = opts[:index]
-        source = source || []
+        source ||= []
       end
-      name   = opts[:name]
+      name = opts[:name]
       set_name name
 
       @metadata = opts[:metadata] || {}
@@ -143,11 +141,10 @@ module Daru
       value = opts[:value]
       opts.delete :value
       if block
-        vector = Daru::Vector.new n.times.map { |i| block.call(i) }, opts
+        Daru::Vector.new Array.new(n) { |i| block.call(i) }, opts
       else
-        vector = Daru::Vector.new n.times.map { value }, opts
+        Daru::Vector.new Array.new(n) { value }, opts
       end
-      vector
     end
 
     # Create a vector using (almost) any object
@@ -186,7 +183,7 @@ module Daru
         when Daru::Vector
           values.concat a.to_a
         when Range
-          values.concat  a.to_a
+          values.concat a.to_a
         else
           values << a
         end
@@ -210,14 +207,13 @@ module Daru
       indexes = @index[*input_indexes]
 
       # If one object is asked return it
-      if indexes.is_a? Numeric
-        return @data[indexes]
-      end
+      return @data[indexes] if indexes.is_a? Numeric
 
       # Form a new Vector using indexes and return it
       Daru::Vector.new(
         indexes.map { |loc| @data[@index[loc]] },
-        name: @name, metadata: @metadata.dup, index: indexes.conform(input_indexes), dtype: @dtype)
+        name: @name, metadata: @metadata.dup, index: indexes.conform(input_indexes), dtype: @dtype
+      )
     end
 
     # Just like in Hashes, you can specify the index label of the Daru::Vector
@@ -234,14 +230,14 @@ module Daru
     #   #  b   2
     #   #  c   3
     def []=(*location, value)
-      cast(dtype: :array) if value.nil? and dtype != :array
+      cast(dtype: :array) if value.nil? && dtype != :array
 
-      @possibly_changed_type = true if @type == :object  and (value.nil? or
+      @possibly_changed_type = true if @type == :object  && (value.nil? ||
         value.is_a?(Numeric))
-      @possibly_changed_type = true if @type == :numeric and (!value.is_a?(Numeric) and
+      @possibly_changed_type = true if @type == :numeric && (!value.is_a?(Numeric) &&
         !value.nil?)
 
-      pos      = @index[*location]
+      pos = @index[*location]
 
       if pos.is_a?(Numeric)
         @data[pos] = value
@@ -283,9 +279,7 @@ module Daru
     # assignment/deletion of elements is done. Updating data this way is called
     # lazy loading. To set or unset lazy loading, see the .lazy_update= method.
     def update
-      if Daru.lazy_update
-        set_missing_positions
-      end
+      Daru.lazy_update and set_missing_positions
     end
 
     # Two vectors are equal if the have the exact same index values corresponding
@@ -293,10 +287,8 @@ module Daru
     def == other
       case other
       when Daru::Vector
-        @index == other.index and @size == other.size and
-        @index.all? do |index|
-          self[index] == other[index]
-        end
+        @index == other.index && @size == other.size &&
+          @index.all? { |index| self[index] == other[index] }
       else
         super
       end
@@ -337,12 +329,12 @@ module Daru
     # written above for functionality of each method. Use these methods with the
     # `where` method to obtain the corresponding Vector/DataFrame.
     {
-      :eq     => :==,
-      :not_eq => :!=,
-      :lt     => :<,
-      :lteq   => :<=,
-      :mt     => :>,
-      :mteq   => :>=,
+      eq: :==,
+      not_eq: :!=,
+      lt: :<,
+      lteq: :<=,
+      mt: :>,
+      mteq: :>=
     }.each do |method, operator|
       define_method(method) do |other|
         mod = Daru::Core::Query
@@ -371,9 +363,8 @@ module Daru
     def in other
       other = Hash[other.zip(Array.new(other.size, 0))]
       Daru::Core::Query::BoolArray.new(
-        @data.inject([]) do |memo, d|
-          memo << (other.has_key?(d) ? true : false)
-          memo
+        @data.each_with_object([]) do |d, memo|
+          memo << (other.key?(d) ? true : false)
         end
       )
     end
@@ -415,7 +406,7 @@ module Daru
     #   # 13   5
     #   # 15   1
     def where bool_arry
-      Daru::Core::Query.vector_where @data.to_a, @index.to_a, bool_arry, self.dtype
+      Daru::Core::Query.vector_where @data.to_a, @index.to_a, bool_arry, dtype
     end
 
     def head q=10
@@ -426,18 +417,21 @@ module Daru
       self[(@size - q)..(@size-1)]
     end
 
+    def empty?
+      @index.empty?
+    end
+
     # Reports whether missing data is present in the Vector.
     def has_missing_data?
       !missing_positions.empty?
     end
     alias :flawed? :has_missing_data?
 
-
     # Append an element to the vector by specifying the element and index
     def concat element, index
-      raise IndexError, "Expected new unique index" if @index.include? index
+      raise IndexError, 'Expected new unique index' if @index.include? index
 
-      @index = @index | [index]
+      @index |= [index]
       @data[@index[index]] = element
 
       set_size
@@ -454,14 +448,14 @@ module Daru
     def cast opts={}
       dt = opts[:dtype]
       raise ArgumentError, "Unsupported dtype #{opts[:dtype]}" unless
-        dt == :array or dt == :nmatrix or dt == :gsl
+        dt == :array || dt == :nmatrix || dt == :gsl
 
       @data = cast_vector_to dt unless @dtype == dt
     end
 
     # Delete an element by value
     def delete element
-      self.delete_at index_of(element)
+      delete_at index_of(element)
     end
 
     # Delete element by index
@@ -482,15 +476,12 @@ module Daru
     def type
       return @data.nm_dtype if dtype == :nmatrix
 
-      if @type.nil? or @possibly_changed_type
+      if @type.nil? || @possibly_changed_type
         @type = :numeric
-        self.each do |e|
-          unless e.nil?
-            unless e.is_a?(Numeric)
-              @type = :object
-              break
-            end
-          end
+        each do |e|
+          next if e.nil? || e.is_a?(Numeric)
+          @type = :object
+          break
         end
         @possibly_changed_type = false
       end
@@ -501,7 +492,7 @@ module Daru
     # Get index of element
     def index_of element
       case dtype
-      when :array   then @index.key @data.index{|x| x.eql? element}
+      when :array then @index.key @data.index { |x| x.eql? element }
       else @index.key @data.index(element)
       end
     end
@@ -509,9 +500,8 @@ module Daru
     # Keep only unique elements of the vector alongwith their indexes.
     def uniq
       uniq_vector = @data.uniq
-      new_index   = uniq_vector.inject([]) do |acc, element|
+      new_index   = uniq_vector.each_with_object([]) do |element, acc|
         acc << index_of(element)
-        acc
       end
 
       Daru::Vector.new uniq_vector, name: @name, metadata: @metadata.dup, index: new_index, dtype: @dtype
@@ -541,31 +531,28 @@ module Daru
     #   v = Daru::Vector.new ["My first guitar", "jazz", "guitar"]
     #   # Say you want to sort these strings by length.
     #   v.sort(ascending: false) { |a,b| a.length <=> b.length }
-    def sort opts={}, &block
+    def sort opts={}
       opts = {
-        ascending: true,
+        ascending: true
       }.merge(opts)
 
-      block = lambda { |a,b|
-        av, ai = a
-        bv, bi = b
-        return av <=> bv if !(av.nil? || bv.nil?)
-
-        if av.nil? && bv.nil?
-          ai <=> bi
-        elsif av.nil?
-          opts[:ascending]? -1:1
-        else
-          opts[:ascending]? 1:-1
-        end
-      } unless block
-
       vector_index = @data.each_with_index
-      if block_given?
-        vector_index = vector_index.sort { |a,b| block.call(a[0], b[0]) }
-      else
-        vector_index = vector_index.sort { |a,b| block.call(a, b)}
-      end
+      vector_index =
+        if block_given?
+          vector_index.sort { |a,b| yield(a[0], b[0]) }
+        else
+          vector_index.sort { |(av, ai), (bv, bi)|
+            if !av.nil? && !bv.nil?
+              av <=> bv
+            elsif av.nil? && bv.nil?
+              ai <=> bi
+            elsif av.nil?
+              opts[:ascending] ? -1 : 1
+            else
+              opts[:ascending] ? 1 : -1
+            end
+          }
+        end
       vector_index.reverse! unless opts[:ascending]
       vector, index = vector_index.transpose
       old_index = @index.to_a
@@ -583,7 +570,7 @@ module Daru
     # Returns *true* if the value passed is actually exists or is not marked as
     # a *missing value*.
     def exists? value
-      !@missing_values.has_key?(self[index_of(value)])
+      !@missing_values.key?(self[index_of(value)])
     end
 
     # Like map, but returns a Daru::Vector with the returned values.
@@ -603,7 +590,7 @@ module Daru
     end
 
     # Delete an element if block returns true. Destructive.
-    def delete_if &block
+    def delete_if
       return to_enum(:delete_if) unless block_given?
 
       keep_e = []
@@ -624,7 +611,7 @@ module Daru
     end
 
     # Keep an element if block returns true. Destructive.
-    def keep_if &block
+    def keep_if
       return to_enum(:keep_if) unless block_given?
 
       keep_e = []
@@ -646,12 +633,10 @@ module Daru
 
     # Reports all values that doesn't comply with a condition.
     # Returns a hash with the index of data and the invalid data.
-    def verify &block
+    def verify
       h = {}
       (0...size).each do |i|
-        if !(yield @data[i])
-          h[i] = @data[i]
-        end
+        h[i] = @data[i] unless yield(@data[i])
       end
 
       h
@@ -662,7 +647,7 @@ module Daru
     #   a.splitted
     #     =>
     #   [["a","b"],["c","d"],["a","b"],["d"]]
-    def splitted sep=","
+    def splitted sep=','
       @data.map do |s|
         if s.nil?
           nil
@@ -687,14 +672,11 @@ module Daru
     #      "c"=>#<Daru::Vector:0x7f2dbcc09b08
     #        @data=[0, 1, 1]>}
     #
-    def split_by_separator sep=","
+    def split_by_separator sep=','
       split_data = splitted sep
       factors = split_data.flatten.uniq.compact
 
-      out = factors.inject({}) do |h,x|
-        h[x] = []
-        h
-      end
+      out = factors.map { |x| [x, []] }.to_h
 
       split_data.each do |r|
         if r.nil?
@@ -703,22 +685,18 @@ module Daru
           end
         else
           factors.each do |f|
-            out[f].push(r.include?(f) ? 1:0)
+            out[f].push(r.include?(f) ? 1 : 0)
           end
         end
       end
 
-      out.inject({}) do |s,v|
-        s[v[0]] = Daru::Vector.new v[1]
-        s
-      end
+      out.map { |k, v| [k, Daru::Vector.new(v)] }.to_h
     end
 
-    def split_by_separator_freq(sep=",")
-      split_by_separator(sep).inject({}) do |a,v|
-        a[v[0]] = v[1].inject { |s,x| s+x.to_i }
-        a
-      end
+    def split_by_separator_freq(sep=',')
+      split_by_separator(sep).map do |k, v|
+        [k, v.inject { |s,x| s+x.to_i }]
+      end.to_h
     end
 
     def reset_index!
@@ -787,7 +765,7 @@ module Daru
     #   ts.lag   # => [nil, 0.69, 0.23, 0.44, ...]
     #   ts.lag(2) # => [nil, nil, 0.69, 0.23, ...]
     def lag k=1
-      return self.dup if k == 0
+      return dup if k == 0
 
       dat = @data.to_a.dup
       (dat.size - 1).downto(k) { |i| dat[i] = dat[i - k] }
@@ -797,15 +775,15 @@ module Daru
     end
 
     def detach_index
-      Daru::DataFrame.new({
+      Daru::DataFrame.new(
         index: @index.to_a,
         values: @data.to_a
-      })
+      )
     end
 
     # Non-destructive version of #replace_nils!
     def replace_nils replacement
-      self.dup.replace_nils!(replacement)
+      dup.replace_nils!(replacement)
     end
 
     # number of non-missing elements
@@ -836,23 +814,13 @@ module Daru
     # If dtype != gsl, will convert data to GSL::Vector with to_a. Otherwise returns
     # the stored GSL::Vector object.
     def to_gsl
-      if Daru.has_gsl?
-        if dtype == :gsl
-          return @data.data
-        else
-          GSL::Vector.alloc only_valid(:array).to_a
-        end
-      else
-        raise NoMethodError, "Install gsl-nmatrix for access to this functionality."
-      end
+      raise NoMethodError, 'Install gsl-nmatrix for access to this functionality.' unless Daru.has_gsl?
+      dtype == :gsl ? @data.data : GSL::Vector.alloc(only_valid(:array).to_a)
     end
 
     # Convert to hash (explicit). Hash keys are indexes and values are the correspoding elements
     def to_h
-      @index.inject({}) do |hsh, index|
-        hsh[index] = self[index]
-        hsh
-      end
+      @index.map { |index| [index, self[index]] }.to_h
     end
 
     # Return an array
@@ -861,34 +829,33 @@ module Daru
     end
 
     # Convert the hash from to_h to json
-    def to_json *args
-      self.to_h.to_json
+    def to_json(*)
+      to_h.to_json
     end
 
     # Convert to html for iruby
     def to_html threshold=30
       name = @name || 'nil'
-      html = "<table>" +
-        "<tr>" +
-          "<th colspan=\"2\">" +
-            "Daru::Vector:#{self.object_id} " + " size: #{size}" +
-          "</th>" +
-        "</tr>"
+      html = '<table>' \
+        '<tr>' \
+          '<th colspan="2">' \
+            "Daru::Vector:#{object_id} " + " size: #{size}" \
+          '</th>' \
+        '</tr>'
       html += '<tr><th> </th><th>' + name.to_s + '</th></tr>'
       unless @index.empty?
         @index.each_with_index do |index, num|
           html += '<tr><td>' + index.to_s + '</td>' + '<td>' + self[index].to_s + '</td></tr>'
 
-          if num > threshold
-            html += '<tr><td>...</td><td>...</td></tr>'
+          next if num <= threshold
+          html += '<tr><td>...</td><td>...</td></tr>'
 
-            last_index = @index.to_a.last
-            html += '<tr>' +
-                      '<td>' + last_index.to_s       + '</td>' +
-                      '<td>' + self[last_index].to_s + '</td>' +
-                    '</tr>'
-            break
-          end
+          last_index = @index.to_a.last
+          html += '<tr>' \
+                    '<td>' + last_index.to_s       + '</td>' \
+                    '<td>' + self[last_index].to_s + '</td>' \
+                  '</tr>'
+          break
         end
       end
       html += '</table>'
@@ -901,34 +868,34 @@ module Daru
     end
 
     # Create a summary of the Vector using Report Builder.
-    def summary(method = :to_text)
+    def summary(method=:to_text)
       ReportBuilder.new(no_title: true).add(self).send(method)
     end
 
     def report_building b
-      b.section(:name => name) do |s|
+      b.section(name: name) do |s|
         s.text "n :#{size}"
         s.text "n valid:#{n_valid}"
         if @type == :object
           s.text  "factors: #{factors.to_a.join(',')}"
           s.text  "mode: #{mode}"
 
-          s.table(:name => "Distribution") do |t|
-            frequencies.sort_by { |a| a.to_s }.each do |k,v|
+          s.table(name: 'Distribution') do |t|
+            frequencies.sort_by(&:to_s).each do |k,v|
               key = @index.include?(k) ? @index[k] : k
-              t.row [key, v , ("%0.2f%%" % (v.quo(n_valid)*100))]
+              t.row [key, v, ('%0.2f%%' % (v.quo(n_valid)*100))]
             end
           end
         end
 
-        s.text "median: #{median.to_s}" if (@type==:numeric or @type==:numeric)
+        s.text "median: #{median}" if @type==:numeric || @type==:numeric
         if @type==:numeric
-          s.text "mean: %0.4f" % mean
+          s.text 'mean: %0.4f' % mean
           if sd
-            s.text "std.dev.: %0.4f" % sd
-            s.text "std.err.: %0.4f" % se
-            s.text "skew: %0.4f" % skew
-            s.text "kurtosis: %0.4f" % kurtosis
+            s.text 'std.dev.: %0.4f' % sd
+            s.text 'std.err.: %0.4f' % se
+            s.text 'skew: %0.4f' % skew
+            s.text 'kurtosis: %0.4f' % kurtosis
           end
         end
       end
@@ -936,23 +903,26 @@ module Daru
 
     # Over rides original inspect for pretty printing in irb
     def inspect spacing=20, threshold=15
-      longest = [@name.to_s.size,
-                 (@index.to_a.map(&:to_s).map(&:size).max || 0),
-                 (@data    .map(&:to_s).map(&:size).max || 0),
-                 'nil'.size].max
+      longest =
+        [
+          @name.to_s.size,
+          (@index.to_a.map(&:to_s).map(&:size).max || 0),
+          (@data.map(&:to_s).map(&:size).max || 0),
+          3 # 'nil'.size
+        ].max
 
-      content   = ""
+      content   = ''
       longest   = spacing if longest > spacing
       name      = @name || 'nil'
       metadata  = @metadata || 'nil'
       formatter = "\n%#{longest}.#{longest}s %#{longest}.#{longest}s"
-      content  += "\n#<" + self.class.to_s + ":" + self.object_id.to_s + " @name = " + name.to_s + " @metadata = " + @metadata.to_s + " @size = " + size.to_s + " >"
+      content  += "\n#<#{self.class}:#{object_id} @name = #{name} @metadata = #{metadata} @size = #{size} >"
 
-      content += sprintf formatter, "", name
+      content += formatter % ['', name]
       @index.each_with_index do |index, num|
-        content += sprintf formatter, index.to_s, (self[*index] || 'nil').to_s
+        content += formatter % [index.to_s, (self[*index] || 'nil').to_s]
         if num > threshold
-          content += sprintf formatter, '...', '...'
+          content += formatter % ['...', '...']
           break
         end
       end
@@ -967,11 +937,7 @@ module Daru
       vector = Daru::Vector.new([], index: new_index, name: @name, metadata: @metadata.dup)
 
       new_index.each do |idx|
-        if @index.include?(idx)
-          vector[idx] = self[idx]
-        else
-          vector[idx] = nil
-        end
+        vector[idx] = @index.include?(idx) ? self[idx] : nil
       end
 
       vector
@@ -980,9 +946,9 @@ module Daru
     def index= idx
       raise ArgumentError,
         "Size of supplied index #{index.size} does not match size of DataFrame" if
-        idx.size != self.size
-      raise ArgumentError, "Can only assign type Index and its subclasses." unless
-        idx.kind_of?(Daru::Index)
+        idx.size != size
+      raise ArgumentError, 'Can only assign type Index and its subclasses.' unless
+        idx.is_a?(Daru::Index)
 
       @index = idx
       self
@@ -1024,7 +990,7 @@ module Daru
       s ||= size
       h_est, es, bss = prepare_bootstrap(estimators)
 
-      nr.times do |i|
+      nr.times do
         bs = sample_with_replacement(s)
         es.each do |estimator|
           bss[estimator].push(h_est[estimator].call(bs))
@@ -1061,10 +1027,7 @@ module Daru
       nb = (size / k).to_i
       h_est, es, ps = prepare_bootstrap(estimators)
 
-      est_n = es.inject({}) do |h,v|
-        h[v] = h_est[v].call(self)
-        h
-      end
+      est_n = es.map { |v| [v, h_est[v].call(self)] }.to_h
 
       nb.times do |i|
         other = @data.dup
@@ -1074,7 +1037,8 @@ module Daru
         es.each do |estimator|
           # Add pseudovalue
           ps[estimator].push(
-            nb * est_n[estimator] - (nb-1) * h_est[estimator].call(other))
+            nb * est_n[estimator] - (nb-1) * h_est[estimator].call(other)
+          )
         end
       end
 
@@ -1096,9 +1060,9 @@ module Daru
     # Otherwise, a duplicate will be returned irrespective of
     # presence of missing data.
     def only_valid as_a=:vector, duplicate=true
-      return self.dup if !has_missing_data? and as_a == :vector and duplicate
-      return self if !has_missing_data? and as_a == :vector and !duplicate
-      return self.to_a if !has_missing_data? and as_a != :vector
+      return dup if !has_missing_data? && as_a == :vector && duplicate
+      return self if !has_missing_data? && as_a == :vector && !duplicate
+      return to_a if !has_missing_data? && as_a != :vector
 
       new_index = @index.to_a - missing_positions
       new_vector = new_index.map do |idx|
@@ -1125,23 +1089,25 @@ module Daru
       numeric_indexes = []
 
       each_with_index do |v, i|
-        numeric_indexes << i if(v.kind_of?(Numeric) or @missing_values.has_key?(v))
+        numeric_indexes << i if v.is_a?(Numeric) || @missing_values.key?(v)
       end
 
       self[*numeric_indexes]
     end
 
     # Returns the database type for the vector, according to its content
-    def db_type(dbs=:mysql)
+    def db_type
       # first, detect any character not number
-      if @data.find {|v| v.to_s=~/\d{2,2}-\d{2,2}-\d{4,4}/} or @data.find {|v| v.to_s=~/\d{4,4}-\d{2,2}-\d{2,2}/}
-        return "DATE"
-      elsif @data.find {|v|  v.to_s=~/[^0-9e.-]/ }
-        return "VARCHAR (255)"
-      elsif @data.find {|v| v.to_s=~/\./}
-        return "DOUBLE"
+      if @data.find { |v| v.to_s=~/\d{2,2}-\d{2,2}-\d{4,4}/ } ||
+         @data.find { |v| v.to_s=~/\d{4,4}-\d{2,2}-\d{2,2}/ }
+
+        return 'DATE'
+      elsif @data.find { |v| v.to_s=~/[^0-9e.-]/ }
+        return 'VARCHAR (255)'
+      elsif @data.find { |v| v.to_s=~/\./ }
+        return 'DOUBLE'
       else
-        return "INTEGER"
+        return 'INTEGER'
       end
     end
 
@@ -1160,30 +1126,33 @@ module Daru
       Daru::IO.save self, filename
     end
 
-    def _dump(depth) # :nodoc:
-      Marshal.dump({
+    def _dump(*) # :nodoc:
+      Marshal.dump(
         data:           @data.to_a,
         dtype:          @dtype,
         name:           @name,
         metadata:       @metadata,
         index:          @index,
-        missing_values: @missing_values})
+        missing_values: @missing_values
+      )
     end
 
     def self._load(data) # :nodoc:
       h = Marshal.load(data)
-      Daru::Vector.new(h[:data], index: h[:index],
-        name: h[:name], metadata: h[:metadata], dtype: h[:dtype], missing_values: h[:missing_values])
+      Daru::Vector.new(h[:data],
+        index: h[:index],
+        name: h[:name], metadata: h[:metadata],
+        dtype: h[:dtype], missing_values: h[:missing_values])
     end
 
-    def daru_vector *name
+    def daru_vector(*)
       self
     end
 
     alias :dv :daru_vector
 
     def method_missing(name, *args, &block)
-      if name.match(/(.+)\=/)
+      if name =~ /(.+)\=/
         self[name] = args[0]
       elsif has_index?(name)
         self[name]
@@ -1192,7 +1161,7 @@ module Daru
       end
     end
 
-   private
+    private
 
     # For an array or hash of estimators methods, returns
     # an array with three elements
@@ -1201,21 +1170,20 @@ module Daru
     # 3.- A Hash with estimators names as keys and empty arrays as values
     def prepare_bootstrap(estimators)
       h_est = estimators
-      h_est = [h_est] unless h_est.is_a?(Array) or h_est.is_a?(Hash)
+      h_est = [h_est] unless h_est.is_a?(Array) || h_est.is_a?(Hash)
 
       if h_est.is_a? Array
-        h_est = h_est.inject({}) do |h, est|
-          h[est] = lambda { |v| Daru::Vector.new(v).send(est) }
-          h
-        end
+        h_est = h_est.map do |est|
+          [est, ->(v) { Daru::Vector.new(v).send(est) }]
+        end.to_h
       end
-      bss = h_est.keys.inject({}) { |h,v| h[v] = []; h }
+      bss = h_est.keys.map { |v| [v, []] }.to_h
 
       [h_est, h_est.keys, bss]
     end
 
-    def keep? a, b, order, &block
-      eval = block.call(a,b)
+    def keep? a, b, order
+      eval = yield(a, b)
       if order == :ascending
         return true  if eval == -1
         return false if eval == 1
@@ -1223,7 +1191,7 @@ module Daru
         return false if eval == -1
         return true  if eval == 1
       end
-      return false
+      false
     end
 
     # Note: To maintain sanity, this _MUST_ be the _ONLY_ place in daru where the
@@ -1232,13 +1200,13 @@ module Daru
       source = @data.to_a if source.nil?
 
       new_vector =
-      case dtype
-      when :array   then Daru::Accessors::ArrayWrapper.new(source, self)
-      when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source, self, nm_dtype)
-      when :gsl then Daru::Accessors::GSLWrapper.new(source, self)
-      when :mdarray then raise NotImplementedError, "MDArray not yet supported."
-      else raise "Unknown dtype #{dtype}"
-      end
+        case dtype
+        when :array   then Daru::Accessors::ArrayWrapper.new(source, self)
+        when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source, self, nm_dtype)
+        when :gsl then Daru::Accessors::GSLWrapper.new(source, self)
+        when :mdarray then raise NotImplementedError, 'MDArray not yet supported.'
+        else raise "Unknown dtype #{dtype}"
+        end
 
       @dtype = dtype || :array
       new_vector
@@ -1256,27 +1224,32 @@ module Daru
       @size = @data.size
     end
 
-    def set_name name
+    def set_name name # rubocop:disable Style/AccessorMethodName
       @name =
-      if name.is_a?(Numeric)  then name
-      elsif name.is_a?(Array) then name.join # in case of MultiIndex tuple
-      elsif name              then name # anything but Numeric or nil
-      else
-        nil
-      end
+        if name.is_a?(Numeric)  then name
+        elsif name.is_a?(Array) then name.join # in case of MultiIndex tuple
+        elsif name              then name # anything but Numeric or nil
+        else
+          nil
+        end
     end
 
     def set_missing_positions
       @missing_positions = []
+<<<<<<< HEAD
       unless @index.empty?
         @index.each do |e|
           @missing_positions << e if (@missing_values.has_key?(self[e]))
         end
+=======
+      @index.each do |e|
+        @missing_positions << e if @missing_values.key?(self[e])
+>>>>>>> 3f0db6e5d11c8153e15600f672ef20ad2f65356e
       end
     end
 
     def try_create_index potential_index
-      if potential_index.is_a?(Daru::MultiIndex) or potential_index.is_a?(Daru::Index)
+      if potential_index.is_a?(Daru::MultiIndex) || potential_index.is_a?(Daru::Index)
         potential_index
       else
         Daru::Index.new(potential_index)
@@ -1290,12 +1263,12 @@ module Daru
 
     # Setup missing_values. The missing_values instance variable is set
     # as a Hash for faster lookup times.
-    def set_missing_values values_arry
+    def set_missing_values values_arry # rubocop:disable Style/AccessorMethodName
       @missing_values = {}
       @missing_values[nil] = 0
       if values_arry
         values_arry.each do |e|
-        # If dtype is :gsl then missing values have to be converted to float
+          # If dtype is :gsl then missing values have to be converted to float
           e = e.to_f if dtype == :gsl && e.is_a?(Numeric)
           @missing_values[e] = 0
         end

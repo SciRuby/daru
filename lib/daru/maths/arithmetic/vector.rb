@@ -35,17 +35,17 @@ module Daru
         end
 
         def abs
-          self.recode { |e| e.abs unless e.nil? }
+          recode { |e| e.abs unless e.nil? }
         end
 
         def round precision=0
-          self.recode { |e| e.round(precision) unless e.nil? }
+          recode { |e| e.round(precision) unless e.nil? }
         end
 
-       private
+        private
 
         def math_unary_op operation
-          self.recode { |e| Math.send(operation, e) unless e.nil? }
+          recode { |e| Math.send(operation, e) unless e.nil? }
         end
 
         def binary_op operation, other
@@ -58,8 +58,8 @@ module Daru
         end
 
         def v2o_binary operation, other
-          Daru::Vector.new self.map { |e| e.nil? ? nil : e.send(operation, other) },
-           name: @name, index: @index
+          Daru::Vector.new map { |e| e.nil? ? nil : e.send(operation, other) },
+            name: @name, index: @index
         end
 
         def v2v_binary operation, other
@@ -71,13 +71,8 @@ module Daru
             this = self.index.include?(idx) ? self[idx] : nil
             that = other.index.include?(idx) ? other[idx] : nil
 
-            if this and that
-              elements << this.send(operation ,that)
-              common_idxs << idx
-            else
-              elements << nil
-              common_idxs << idx
-            end
+            elements << (this && that ? this.send(operation, that) : nil)
+            common_idxs << idx
           end
 
           Daru::Vector.new(elements, name: @name, index: common_idxs)

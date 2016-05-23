@@ -1,7 +1,7 @@
 module Daru
   module Maths
     # Encapsulates statistics methods for vectors. Most basic stuff like mean, etc.
-    # is done inside the wrapper, so that native methods can be used for most of 
+    # is done inside the wrapper, so that native methods can be used for most of
     # the computationally intensive tasks.
     module Statistics
       module Vector
@@ -30,35 +30,36 @@ module Daru
         end
 
         def mode
-          frequencies.max{|a,b| a[1]<=>b[1]}.first
+          frequencies.max { |a,b| a[1]<=>b[1] }.first
         end
-        
-        # Create a summary of count, mean, standard deviation, min and max of 
+
+        # Create a summary of count, mean, standard deviation, min and max of
         # the vector in one shot.
-        # 
+        #
         # == Arguments
-        # 
-        # +methods+ - An array with aggregation methods specified as symbols to 
-        # be applied to vectors. Default is [:count, :mean, :std, :max, 
+        #
+        # +methods+ - An array with aggregation methods specified as symbols to
+        # be applied to vectors. Default is [:count, :mean, :std, :max,
         # :min]. Methods will be applied in the specified order.
         def describe methods=nil
           methods ||= [:count, :mean, :std, :min, :max]
-          description = methods.map { |m| self.send(m) }
+          description = methods.map { |m| send(m) }
           Daru::Vector.new(description, index: methods, name: :statistics)
-	end
+        end
 
         def median_absolute_deviation
           m = median
-          recode {|val| (val - m).abs }.median
+          recode { |val| (val - m).abs }.median
         end
+
         alias :mad :median_absolute_deviation
 
         def standard_error
-          standard_deviation_sample/(Math::sqrt((n_valid)))
+          standard_deviation_sample/Math.sqrt(n_valid)
         end
 
         def sum_of_squared_deviation
-          (@data.inject(0) { |a,x| x.square + a } - (sum.square.quo(n_valid)).to_f).to_f
+          (@data.inject(0) { |a,x| x.square + a } - sum.square.quo(n_valid).to_f).to_f
         end
 
         # Retrieve unique values of non-nil data
@@ -67,7 +68,7 @@ module Daru
         end
 
         # Maximum element of the vector.
-        # 
+        #
         # @param return_type [Symbol] Data type of the returned value. Defaults
         #   to returning only the maximum number but passing *:vector* will return
         #   a Daru::Vector with the index of the corresponding maximum value.
@@ -87,12 +88,8 @@ module Daru
         end
 
         def frequencies
-          @data.inject({}) do |hash, element|
-            unless element.nil?
-              hash[element] ||= 0
-              hash[element] += 1
-            end
-            hash
+          @data.each_with_object(Hash.new(0)) do |element, hash|
+            hash[element] += 1 unless element.nil?
           end
         end
 
@@ -102,15 +99,14 @@ module Daru
 
         def proportions
           len = n_valid
-          frequencies.inject({}) { |hash, arr| hash[arr[0]] = arr[1] / len; hash }
+          frequencies.each_with_object({}) { |arr, hash| hash[arr[0]] = arr[1] / len }
         end
 
         def ranked
           sum = 0
-          r = frequencies.sort.inject( {} ) do |memo, val|
+          r = frequencies.sort.each_with_object({}) do |val, memo|
             memo[val[0]] = ((sum + 1) + (sum + val[1])).quo(2)
             sum += val[1]
-            memo
           end
 
           recode { |e| r[e] }
@@ -120,13 +116,13 @@ module Daru
           standard_deviation_sample / mean
         end
 
-        # Retrieves number of cases which comply condition. If block given, 
-        # retrieves number of instances where block returns true. If other 
+        # Retrieves number of cases which comply condition. If block given,
+        # retrieves number of instances where block returns true. If other
         # values given, retrieves the frequency for this value. If no value
         # given, counts the number of non-nil elements in the Vector.
         def count value=false
           if block_given?
-            @data.inject(0){ |memo, val| memo += 1 if yield val; memo}
+            @data.select { |val| yield(val) }.count
           elsif value
             val = frequencies[value]
             val.nil? ? 0 : val
@@ -151,11 +147,11 @@ module Daru
 
         # Sample variance with denominator (N-1)
         def variance_sample m=nil
-          m ||= self.mean
+          m ||= mean
           if @data.respond_to? :variance_sample
             @data.variance_sample m
           else
-            sum_of_squares(m).quo((n_valid) - 1)
+            sum_of_squares(m).quo(n_valid - 1)
           end
         end
 
@@ -165,38 +161,38 @@ module Daru
           if @data.respond_to? :variance_population
             @data.variance_population m
           else
-            sum_of_squares(m).quo((n_valid)).to_f            
+            sum_of_squares(m).quo(n_valid).to_f
           end
         end
 
         # Sample covariance with denominator (N-1)
         def covariance_sample other
-          @size == other.size or raise ArgumentError, "size of both the vectors must be equal"
-          mean_x = self.mean 
+          @size == other.size or raise ArgumentError, 'size of both the vectors must be equal'
+          mean_x = mean
           mean_y = other.mean
           sum = 0
-          (0...size).each do |i| 
-            sum = sum + ((@missing_values.has_key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
-          end 
+          (0...size).each do |i|
+            sum += ((@missing_values.key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
+          end
           sum / (n_valid - 1)
         end
- 
+
         # Population covariance with denominator (N)
         def covariance_population other
-          @size == other.size or raise ArgumentError, "size of both the vectors must be equal"
-          mean_x = self.mean 
+          @size == other.size or raise ArgumentError, 'size of both the vectors must be equal'
+          mean_x = mean
           mean_y = other.mean
           sum = 0
-          (0...size).each do |i| 
-            sum = sum + ((@missing_values.has_key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
-          end 
+          (0...size).each do |i|
+            sum += ((@missing_values.key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
+          end
           sum / n_valid
         end
 
         def sum_of_squares(m=nil)
           m ||= mean
-          @data.inject(0) { |memo, val| 
-            @missing_values.has_key?(val) ? memo : (memo + (val - m)**2) 
+          @data.inject(0) { |memo, val|
+            @missing_values.key?(val) ? memo : (memo + (val - m)**2)
           }
         end
 
@@ -205,7 +201,7 @@ module Daru
           if @data.respond_to? :standard_deviation_population
             @data.standard_deviation_population(m)
           else
-            Math::sqrt(variance_population(m))
+            Math.sqrt(variance_population(m))
           end
         end
 
@@ -214,7 +210,7 @@ module Daru
           if @data.respond_to? :standard_deviation_sample
             @data.standard_deviation_sample m
           else
-            Math::sqrt(variance_sample(m))
+            Math.sqrt(variance_sample(m))
           end
         end
 
@@ -225,7 +221,7 @@ module Daru
           else
             m ||= mean
             th  = @data.inject(0) { |memo, val| memo + ((val - m)**3) }
-            th.quo ((@size - @missing_positions.size) * (standard_deviation_sample(m)**3))
+            th.quo((@size - @missing_positions.size) * (standard_deviation_sample(m)**3))
           end
         end
 
@@ -234,17 +230,17 @@ module Daru
             @data.kurtosis
           else
             m ||= mean
-            fo  = @data.inject(0){ |a, x| a + ((x - m) ** 4) }
+            fo  = @data.inject(0) { |a, x| a + ((x - m) ** 4) }
             fo.quo((@size - @missing_positions.size) * standard_deviation_sample(m) ** 4) - 3
           end
         end
 
         def average_deviation_population m=nil
-          type == :numeric or raise TypeError, "Vector must be numeric"
+          type == :numeric or raise TypeError, 'Vector must be numeric'
           m ||= mean
-          (@data.inject( 0 ) { |memo, val| 
-            @missing_values.has_key?(val) ? memo : ( val - m ).abs + memo
-          }).quo( n_valid )
+          (@data.inject(0) { |memo, val|
+            @missing_values.key?(val) ? memo : (val - m).abs + memo
+          }).quo(n_valid)
         end
 
         # Returns the value of the percentile q
@@ -255,15 +251,15 @@ module Daru
         # * :midpoint (Default): (a + b) / 2
         # * :linear : a + (b - a) * d where d is the decimal part of the index between a and b.
         # == References
-        # 
+        #
         # This is the NIST recommended method (http://en.wikipedia.org/wiki/Percentile#NIST_method)
-        def percentile(q, strategy = :midpoint)
+        def percentile(q, strategy=:midpoint)
           sorted = only_valid(:array).sort
 
           case strategy
           when :midpoint
             v = (n_valid * q).quo(100)
-            if(v.to_i!=v)
+            if v.to_i!=v
               sorted[v.to_i]
             else
               (sorted[(v-0.5).to_i].to_f + sorted[(v+0.5).to_i]).quo(2)
@@ -282,18 +278,18 @@ module Daru
               sorted[k - 1] + d * (sorted[k] - sorted[k - 1])
             end
           else
-            raise NotImplementedError.new "Unknown strategy #{strategy.to_s}"
+            raise NotImplementedError, "Unknown strategy #{strategy}"
           end
         end
 
         # Dichotomize the vector with 0 and 1, based on lowest value.
-        # If parameter is defined, this value and lower will be 0 
+        # If parameter is defined, this value and lower will be 0
         # and higher, 1.
-        def dichotomize(low = nil)
+        def dichotomize(low=nil)
           low ||= factors.min
 
-          self.recode do |x|
-            if x.nil? 
+          recode do |x|
+            if x.nil?
               nil
             elsif x > low
               1
@@ -309,25 +305,25 @@ module Daru
         end
 
         # Standardize data.
-        # 
+        #
         # == Arguments
-        # 
+        #
         # * use_population - Pass as *true* if you want to use population
         # standard deviation instead of sample standard deviation.
         def standardize use_population=false
           m ||= mean
           sd = use_population ? sdp : sds
-          return Daru::Vector.new([nil]*@size) if m.nil? or sd == 0.0
+          return Daru::Vector.new([nil]*@size) if m.nil? || sd == 0.0
 
           vector_standardized_compute m, sd
         end
 
         def box_cox_transformation lambda # :nodoc:
-          raise "Should be a numeric" unless @type == :numeric
+          raise 'Should be a numeric' unless @type == :numeric
 
-          self.recode do |x|
+          recode do |x|
             if !x.nil?
-              if(lambda == 0)
+              if lambda == 0
                 Math.log(x)
               else
                 (x ** lambda - 1).quo(lambda)
@@ -352,7 +348,7 @@ module Daru
               index: index, name: name, dtype: dtype
           end
         end
-        
+
         def vector_centered_compute(m)
           if @data.respond_to? :vector_centered_compute
             @data.vector_centered_compute(m)
@@ -371,12 +367,12 @@ module Daru
           if @data.respond_to? :sample_with_replacement
             @data.sample_with_replacement sample
           else
-            valid = missing_positions.empty? ? self : self.only_valid
+            valid = missing_positions.empty? ? self : only_valid
             vds = valid.size
-            (0...sample).collect{ valid[rand(vds)] }
+            (0...sample).collect { valid[rand(vds)] }
           end
         end
-        
+
         # Returns an random sample of size n, without replacement,
         # only with valid data.
         #
@@ -387,17 +383,17 @@ module Daru
           if @data.respond_to? :sample_without_replacement
             @data.sample_without_replacement sample
           else
-            valid = missing_positions.empty? ? self : self.only_valid 
-            raise ArgumentError, "Sample size couldn't be greater than n" if 
+            valid = missing_positions.empty? ? self : only_valid
+            raise ArgumentError, "Sample size couldn't be greater than n" if
               sample > valid.size
             out  = []
             size = valid.size
             while out.size < sample
               value = rand(size)
-              out.push(value) if !out.include?(value)
+              out.push(value) unless out.include?(value)
             end
 
-            out.collect{|i| valid[i]}
+            out.collect { |i| valid[i] }
           end
         end
 
@@ -407,30 +403,30 @@ module Daru
         # @param [Integer] periods (1) number of nils to insert at the beginning.
         #
         # @example
-        # 
+        #
         #   vector = Daru::Vector.new([4,6,6,8,10],index: ['a','f','t','i','k'])
         #   vector.percent_change
         #   #=>
         #   #   <Daru::Vector:28713060 @name = nil @size: 5 >
         #   #              nil
-        #   #   a	
+        #   #   a
         #   #   f	   0.5
         #   #   t	   0.0
         #   #   i	   0.3333333333333333
         #   #   k          0.25
-        def percent_change periods = 1
-          type == :numeric or raise TypeError, "Vector must be numeric"
-          value = self.only_valid
+        def percent_change periods=1
+          type == :numeric or raise TypeError, 'Vector must be numeric'
+          value = only_valid
           arr = []
-          i = 1 
-          ind = @data.find_index{|x|!x.nil?}
+          i = 1
+          ind = @data.find_index { |x| !x.nil? }
           (periods...size).each do |j|
-            if j==ind || @missing_values.has_key?(@data[j])
+            if j==ind || @missing_values.key?(@data[j])
               arr[j] = nil
             else
               arr[j] = (value.data[i] - value.data[i - 1]) / value.data[i - 1].to_f
               i+=1
-            end 
+            end
           end
           Daru::Vector.new(arr, index: @index, name: @name)
         end
@@ -443,7 +439,7 @@ module Daru
         #
         # == Arguments
         #
-        #* *max_lags*: integer, (default: 1), number of differences reqd.
+        # * *max_lags*: integer, (default: 1), number of differences reqd.
         #
         # @example Using #diff
         #
@@ -453,7 +449,7 @@ module Daru
         #   ts.diff   # => [nil, -0.46, 0.21, 0.27, ...]
         #
         # @return [Daru::Vector]
-        def diff(max_lags = 1)
+        def diff(max_lags=1)
           ts = self
           difference = []
           max_lags.times do
@@ -465,8 +461,8 @@ module Daru
 
         # Calculate the rolling function for a loopback value.
         #
-        # @param [Symbol] function The rolling function to be applied. Can be 
-        #   any function applicatble to Daru::Vector (:mean, :median, :count, 
+        # @param [Symbol] function The rolling function to be applied. Can be
+        #   any function applicatble to Daru::Vector (:mean, :median, :count,
         #   :min, :max, etc.)
         # @param [Integer] n (10) A non-negative value which serves as the loopback length.
         # @return [Daru::Vector] Vector containin rolling calculations.
@@ -477,17 +473,17 @@ module Daru
         #   ts.rolling(:mean)    # => [ ... nil, 0.484... , 0.445... , 0.513 ... , ... ]
         def rolling function, n=10
           Daru::Vector.new(
-            [nil] * (n - 1) + 
+            [nil] * (n - 1) +
             (0..(size - n)).map do |i|
               Daru::Vector.new(@data[i...(i + n)]).send(function)
             end, index: @index
           )
         end
 
-        # @!method rolling_mean 
+        # @!method rolling_mean
         #   Calculate rolling average
         #   @param [Integer] n (10) Loopback length
-        # @!method rolling_median 
+        # @!method rolling_median
         #   Calculate rolling median
         #   @param [Integer] n (10) Loopback length
         # @!method rolling_count
@@ -496,7 +492,7 @@ module Daru
         # @!method rolling_max
         #   Calculate rolling max value
         #   @param [Integer] n (10) Loopback length
-        # @!method rolling_min 
+        # @!method rolling_min
         #   Calculate rolling min value
         #   @param [Integer] n (10) Loopback length
         # @!method rolling_sum
@@ -525,7 +521,7 @@ module Daru
         # if the size of the series is >= 3.45 * (n + 1)
         #
         # @param [Integer] n (10) Loopback length.
-        # @param [TrueClass, FalseClass] wilder (false) If true, 1/n value is 
+        # @param [TrueClass, FalseClass] wilder (false) If true, 1/n value is
         #   used for smoothing; if false, uses 2/(n+1) value
         #
         # @example Using ema
@@ -537,10 +533,10 @@ module Daru
         #   ts.ema   # => [ ... nil, 0.455... , 0.395..., 0.323..., ... ]
         #
         # @return [Daru::Vector] Contains EMA
-        def ema(n = 10, wilder = false)
+        def ema(n=10, wilder=false)
           smoother = wilder ? 1.0 / n : 2.0 / (n + 1)
           # need to start everything from the first non-nil observation
-          start = @data.index { |i| i != nil }
+          start = @data.index { |i| !i.nil? }
           # first n - 1 observations are nil
           base = [nil] * (start + n - 1)
           # nth observation is just a moving average
@@ -559,7 +555,7 @@ module Daru
         # Welles Wilder smoother of 1 / n.
         #
         # @param [Integer] n (10) Loopback length.
-        # @param [TrueClass, FalseClass] wilder (false) If true, 1/n value is 
+        # @param [TrueClass, FalseClass] wilder (false) If true, 1/n value is
         #   used for smoothing; if false, uses 2/(n+1) value
         #
         # @example Using emv
@@ -571,22 +567,22 @@ module Daru
         #   ts.emv   # => [ ... nil, 0.073... , 0.082..., 0.080..., ...]
         #
         # @return [Daru::Vector] contains EMV
-        def emv(n = 10, wilder = false)
+        def emv(n=10, wilder=false)
           smoother = wilder ? 1.0 / n : 2.0 / (n + 1)
           # need to start everything from the first non-nil observation
-          start = @data.index { |i| i != nil }
+          start = @data.index { |i| !i.nil? }
           # first n - 1 observations are nil
           var_base = [nil] * (start + n - 1)
           mean_base = [nil] * (start + n - 1)
           mean_base << @data[start...(start + n)].inject(0.0) { |s, a| a.nil? ? s : s + a } / n
           # nth observation is just a moving variance_population
-          var_base << @data[start...(start + n)].inject(0.0) {|s,x| x.nil? ? s : s + (x - mean_base.last)**2} / n
+          var_base << @data[start...(start + n)].inject(0.0) { |s,x| x.nil? ? s : s + (x - mean_base.last)**2 } / n
           (start + n).upto size - 1 do |i|
             last = mean_base.last
             mean_base << self[i] * smoother + (1 - smoother) * last
             var_base << (1 - smoother) * var_base.last + smoother * (self[i] - last) * (self[i] - mean_base.last)
           end
-          Daru::Vector.new(var_base, index: @index, name: @name)	
+          Daru::Vector.new(var_base, index: @index, name: @name)
         end
 
         # Exponential Moving Standard Deviation.
@@ -596,7 +592,7 @@ module Daru
         # Welles Wilder smoother of 1 / n.
         #
         # @param [Integer] n (10) Loopback length.
-        # @param [TrueClass, FalseClass] wilder (false) If true, 1/n value is 
+        # @param [TrueClass, FalseClass] wilder (false) If true, 1/n value is
         #   used for smoothing; if false, uses 2/(n+1) value
         #
         # @example Using emsd
@@ -608,11 +604,11 @@ module Daru
         #   ts.emsd   # => [ ... nil, 0.285... , 0.258..., 0.243..., ...]
         #
         # @return [Daru::Vector] contains EMSD
-        def emsd(n = 10, wilder = false)
+        def emsd(n=10, wilder=false)
           result = []
           emv_return = emv(n, wilder)
           emv_return.each do |d|
-            result << (d.nil? ? nil : Math::sqrt(d))
+            result << (d.nil? ? nil : Math.sqrt(d))
           end
           Daru::Vector.new(result, index: @index, name: @name)
         end
@@ -622,9 +618,9 @@ module Daru
         # series - this is a comparison of a fast EMA with a slow EMA.
         #
         # == Arguments
-        #* *fast*: integer, (default = 12) - fast component of MACD
-        #* *slow*: integer, (default = 26) - slow component of MACD
-        #* *signal*: integer, (default = 9) - signal component of MACD
+        # * *fast*: integer, (default = 12) - fast component of MACD
+        # * *slow*: integer, (default = 26) - slow component of MACD
+        # * *signal*: integer, (default = 9) - signal component of MACD
         #
         # == Usage
         #
@@ -634,9 +630,9 @@ module Daru
         #
         # == Returns
         #
-        # Array of two Daru::Vectors - comparison of fast EMA with slow and EMA with 
+        # Array of two Daru::Vectors - comparison of fast EMA with slow and EMA with
         # signal value
-        def macd(fast = 12, slow = 26, signal = 9)
+        def macd(fast=12, slow=26, signal=9)
           series = ema(fast) - ema(slow)
           [series, series.ema(signal)]
         end
@@ -651,17 +647,17 @@ module Daru
         #
         #   ts.acf   # => array with first 21 autocorrelations
         #   ts.acf 3 # => array with first 3 autocorrelations
-        def acf(max_lags = nil)
+        def acf(max_lags=nil)
           max_lags ||= (10 * Math.log10(size)).to_i
 
           (0..max_lags).map do |i|
             if i == 0
               1.0
             else
-              m = self.mean
+              m = mean
               # can't use Pearson coefficient since the mean for the lagged series should
               # be the same as the regular series
-              ((self - m) * (self.lag(i) - m)).sum / self.variance_sample / (self.size - 1)
+              ((self - m) * (lag(i) - m)).sum / variance_sample / (size - 1)
             end
           end
         end
@@ -669,14 +665,14 @@ module Daru
         # Provides autocovariance.
         #
         # == Options
-        # 
-        #* *:demean* = true; optional. Supply false if series is not to be demeaned
-        #* *:unbiased* = true; optional. true/false for unbiased/biased form of autocovariance
+        #
+        # * *:demean* = true; optional. Supply false if series is not to be demeaned
+        # * *:unbiased* = true; optional. true/false for unbiased/biased form of autocovariance
         #
         # == Returns
         #
         # Autocovariance value
-        def acvf(demean = true, unbiased = true)
+        def acvf(demean=true, unbiased=true)
           opts = {
             demean: true,
             unbaised: true
@@ -684,22 +680,18 @@ module Daru
 
           demean   = opts[:demean]
           unbiased = opts[:unbiased]
-          if demean
-            demeaned_series = self - self.mean
-          else
-            demeaned_series = self
-          end
+          demeaned_series = demean ? self - mean : self
 
           n = (10 * Math.log10(size)).to_i + 1
-          m = self.mean
-          if unbiased
-            d = Array.new(self.size, self.size)
-          else
-            d = ((1..self.size).to_a.reverse)[0..n]
-          end
+          m = mean
+          d = if unbiased
+                Array.new(size, size)
+              else
+                (1..size).to_a.reverse[0..n]
+              end
 
           0.upto(n - 1).map do |i|
-            (demeaned_series * (self.lag(i) - m)).sum / d[i]
+            (demeaned_series * (lag(i) - m)).sum / d[i]
           end
         end
 
@@ -708,7 +700,7 @@ module Daru
           result = []
           acc = 0
           @data.each do |d|
-            if @missing_values.has_key?(d)
+            if @missing_values.key?(d)
               result << nil
             else
               acc += d
@@ -724,8 +716,8 @@ module Daru
         alias :std :sds
         alias :adp :average_deviation_population
         alias :cov :coefficient_of_variation
-        alias :variance :variance_sample   
-        alias :covariance :covariance_sample  
+        alias :variance :variance_sample
+        alias :covariance :covariance_sample
         alias :sd :standard_deviation_sample
         alias :ss :sum_of_squares
         alias :percentil :percentile

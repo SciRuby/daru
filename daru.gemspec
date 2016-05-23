@@ -51,6 +51,7 @@ EOF
 
   spec.add_runtime_dependency 'reportbuilder', '~> 1.4'
   spec.add_runtime_dependency 'spreadsheet', '~> 1.1.1'
+  spec.add_runtime_dependency 'backports'
 
   spec.add_development_dependency 'bundler', '~> 1.10'
   spec.add_development_dependency 'rake', '~>10.5'
@@ -67,4 +68,5 @@ EOF
   spec.add_development_dependency 'dbi'
   spec.add_development_dependency 'activerecord', '~> 4.0'
   spec.add_development_dependency 'sqlite3'
+  spec.add_development_dependency 'rubocop', '>= 0.40.0'
 end

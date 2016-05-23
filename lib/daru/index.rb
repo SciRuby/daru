@@ -3,14 +3,14 @@ module Daru
     include Enumerable
     # It so happens that over riding the .new method in a super class also
     # tampers with the default .new method for class that inherit from the
-    # super class (Index in this case). Thus we first alias the original 
-    # new method (from Object) to __new__ when the Index class is evaluated, 
+    # super class (Index in this case). Thus we first alias the original
+    # new method (from Object) to __new__ when the Index class is evaluated,
     # and then we use an inherited hook such that the old new method (from
     # Object) is once again the default .new for the subclass.
     # Refer http://blog.sidu.in/2007/12/rubys-new-as-factory.html
     class << self
       alias :__new__ :new
-      
+
       def inherited subclass
         class << subclass
           alias :new :__new__
@@ -23,19 +23,14 @@ module Daru
     def self.new *args, &block
       source = args[0]
 
-      idx =
       if source.respond_to?(:first) && source.first.is_a?(Array)
         Daru::MultiIndex.from_tuples source
-      elsif source and source.is_a?(Array) and !source.empty? and 
-        source.all? { |e| e.is_a?(DateTime) }
+      elsif source && source.is_a?(Array) && !source.empty? &&
+            source.all? { |e| e.is_a?(DateTime) }
         Daru::DateTimeIndex.new(source, freq: :infer)
       else
-        i = self.allocate
-        i.send :initialize, *args, &block
-        i
+        allocate.tap { |i| i.send :initialize, *args, &block }
       end
-
-      idx
     end
 
     def each(&block)
@@ -50,7 +45,8 @@ module Daru
     attr_reader :relation_hash, :size
 
     def initialize index
-      index = case index
+      index =
+        case index
         when nil
           []
         when Integer
@@ -60,26 +56,24 @@ module Daru
         else
           raise ArgumentError,
             "Cannot create index from #{index.class} #{index.inspect}"
-      end
+        end
 
       @relation_hash = index.each_with_index.to_h.freeze
-
-      @relation_hash.freeze
       @keys = @relation_hash.keys
       @size = @relation_hash.size
     end
 
     def ==(other)
-      return false if self.class != other.class or other.size != @size
+      return false if self.class != other.class || other.size != @size
 
-      @relation_hash.keys   == other.to_a and 
-      @relation_hash.values == other.relation_hash.values
+      @relation_hash.keys == other.to_a &&
+        @relation_hash.values == other.relation_hash.values
     end
 
     def [](*key)
       loc = key[0]
 
-      case 
+      case
       when loc.is_a?(Range)
         first = loc.first
         last = loc.last
@@ -95,8 +89,8 @@ module Daru
         end
       else
         v = @relation_hash[loc]
-        if !v
-          return loc if loc.is_a? Numeric and loc < size
+        unless v
+          return loc if loc.is_a?(Numeric) && loc < size
           raise IndexError, "Specified index #{loc.inspect} does not exist"
         end
         v
@@ -106,9 +100,8 @@ module Daru
     def slice *args
       start   = args[0]
       en      = args[1]
-      indexes = []
 
-      if start.is_a?(Integer) and en.is_a?(Integer)
+      if start.is_a?(Integer) && en.is_a?(Integer)
         Index.new @keys[start..en]
       else
         start_idx = @relation_hash[start]
@@ -137,7 +130,7 @@ module Daru
     end
 
     def include? index
-      @relation_hash.has_key? index
+      @relation_hash.key? index
     end
 
     def empty?
@@ -148,8 +141,8 @@ module Daru
       Daru::Index.new @relation_hash.keys
     end
 
-    def _dump depth
-      Marshal.dump({relation_hash: @relation_hash})
+    def _dump(*)
+      Marshal.dump(relation_hash: @relation_hash)
     end
 
     def self._load data
@@ -162,7 +155,7 @@ module Daru
     #
     # @param input_indexes [Array] the input by user to index the vector
     # @return [Object] the Index object for sub vector produced
-    def conform input_indexes
+    def conform(*)
       self
     end
   end # class Index
@@ -171,7 +164,7 @@ module Daru
     include Enumerable
 
     def each(&block)
-      to_a.each(&block)  
+      to_a.each(&block)
     end
 
     def map(&block)
@@ -181,26 +174,26 @@ module Daru
     attr_reader :labels
 
     def levels
-      @levels.map { |e| e.keys }
+      @levels.map(&:keys)
     end
 
     def initialize opts={}
       labels = opts[:labels]
       levels = opts[:levels]
 
-      raise ArgumentError, 
-        "Must specify both labels and levels" unless labels and levels
       raise ArgumentError,
-        "Labels and levels should be same size" if labels.size != levels.size
+        'Must specify both labels and levels' unless labels && levels
       raise ArgumentError,
-        "Incorrect labels and levels" if incorrect_fields?(labels, levels)
+        'Labels and levels should be same size' if labels.size != levels.size
+      raise ArgumentError,
+        'Incorrect labels and levels' if incorrect_fields?(labels, levels)
 
       @labels = labels
-      @levels = levels.map { |e| Hash[e.map.with_index.to_a]}
+      @levels = levels.map { |e| Hash[e.map.with_index.to_a] }
     end
 
-    def incorrect_fields? labels, levels
-      max_level = levels[0].size
+    def incorrect_fields?(_labels, levels)
+      levels[0].size # FIXME: without this call everything fails
 
       correct = levels.all? { |e| e.uniq.size == e.size }
 
@@ -210,7 +203,7 @@ module Daru
     private :incorrect_fields?
 
     def self.from_arrays arrays
-      levels = arrays.map { |e| e.uniq.sort_by { |a| a.to_s  } }
+      levels = arrays.map { |e| e.uniq.sort_by(&:to_s) }
       labels = []
 
       arrays.each_with_index do |arry, level_index|
@@ -245,7 +238,7 @@ module Daru
     end
 
     def try_retrieve_from_integer int
-      return retrieve_from_tuples([int]) if @levels[0].has_key?(int)
+      return retrieve_from_tuples([int]) if @levels[0].key?(int)
       int
     end
 
@@ -263,8 +256,8 @@ module Daru
         chosen = find_all_indexes label, level_index, chosen
       end
 
-      return chosen[0] if chosen.size == 1 and key.size == @levels.size
-      return multi_index_from_multiple_selections(chosen)              
+      return chosen[0] if chosen.size == 1 && key.size == @levels.size
+      multi_index_from_multiple_selections(chosen)
     end
 
     def multi_index_from_multiple_selections chosen
@@ -273,14 +266,11 @@ module Daru
 
     def find_all_indexes label, level_index, chosen
       if chosen.empty?
-        label.each_with_index do |lbl, i|
-          if lbl == level_index then chosen << i end
-        end
+        label.each_with_index
+             .select { |lbl, _| lbl == level_index }.map(&:last)
       else
         chosen.keep_if { |c| label[c] == level_index }
       end
-
-      chosen
     end
 
     private :find_all_indexes, :multi_index_from_multiple_selections,
@@ -290,11 +280,10 @@ module Daru
       raise ArgumentError,
         "Key #{index} is too large" if index >= @labels[0].size
 
-      level_indexes = 
-      @labels.inject([]) do |memo, label|
-        memo << label[index]
-        memo
-      end
+      level_indexes =
+        @labels.each_with_object([]) do |label, memo|
+          memo << label[index]
+        end
 
       tuple = []
       level_indexes.each_with_index do |level_index, i|
@@ -321,7 +310,7 @@ module Daru
     end
 
     def empty?
-      @labels.flatten.empty? and @levels.all? { |l| l.empty? }
+      @labels.flatten.empty? and @levels.all?(&:empty?)
     end
 
     def include? tuple
@@ -341,9 +330,9 @@ module Daru
     end
 
     def == other
-      self.class == other.class  and 
-      labels     == other.labels and 
-      levels     == other.levels 
+      self.class == other.class  &&
+        labels   == other.labels &&
+        levels   == other.levels
     end
 
     def to_a
@@ -355,7 +344,7 @@ module Daru
     end
 
     def inspect
-      "Daru::MultiIndex:#{self.object_id} (levels: #{levels}\nlabels: #{labels})"
+      "Daru::MultiIndex:#{object_id} (levels: #{levels}\nlabels: #{labels})"
     end
 
     # Provide a MultiIndex for sub vector produced
