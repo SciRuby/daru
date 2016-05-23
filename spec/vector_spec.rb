@@ -268,9 +268,9 @@ describe Daru::Vector do
           end
 
           it "returns vector of elements belonging to given categories" do
-            expect(@dv2[:a, :c]).to eq(Daru::Vector.new(
-              ['a', 'c', 'd', 'e'], index: Daru::Index.new(
-                [:a, :a, :a, :e])))
+            expect(@dv1[:a, :c]).to eq(Daru::Vector.new(
+              ['a', 'c', 'd', 'e'], index: Daru::CategoricalIndex.new(
+                [:a, :a, :a, :c])))
           end
 
           it "returns vector of elements given positional index" do

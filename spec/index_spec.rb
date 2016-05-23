@@ -519,7 +519,7 @@ describe Daru::MultiIndex do
 
   describe Daru::CategoricalIndex do
     before do
-      @idx = Daru::CategoricalIndex.new(
+      @idx1 = Daru::CategoricalIndex.new(
         [:a, :b, :a, :a, :c])
       @idx2 = Daru::CategoricalIndex.new(
         [0, 1, 0, 0, 2])
@@ -542,7 +542,7 @@ describe Daru::MultiIndex do
         end
 
         it "raises exception given wrong positional index" do
-          expect { @indx1[5] }.to raise_error
+          expect { @idx1[5] }.to raise_error
         end
 
         it "returns the positions give positional index" do
@@ -551,7 +551,7 @@ describe Daru::MultiIndex do
         end
 
         it "raises exception given wrong positional indexes" do
-          expect { @indx1[0, 1, 5] }.to raise_error
+          expect { @idx1[0, 1, 5] }.to raise_error
         end
       end
 
