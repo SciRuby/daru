@@ -311,7 +311,7 @@ describe Daru::MultiIndex do
 
   context "inspect" do
     it "provides reasonable inspect" do
-      expect(@multi_mi.inspect).to eq '#<Daru::MultiIndex(:a,:b,:c > :one,:two > :bar,:baz,:foo)>'
+      expect(@multi_mi.inspect).to eq "#<Daru::MultiIndex:#{@multi_mi.object_id} (levels: [[:a, :b, :c], [:one, :two], [:bar, :baz, :foo]]\nlabels: [[0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2], [0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1], [0, 1, 0, 1, 0, 0, 1, 2, 0, 1, 2, 0]])>"
     end
   end
 
