@@ -6,14 +6,16 @@ describe Daru::CategoricalIndex do
 
   context "#[]" do
     context "when the category is non-numeric" do
-      it "retrives all elements belonging to that category" do
-        expect(@idx1[:a]).to eq(Daru::Index.new(
-          [0, 2, 3]))
+      context "retrive single category" do
+        subject { idx1[:a] }
+        
+        it { is_expected.to eq Daru::Index.new [0, 2, 3] }
       end
-
-      it "retrives all elements belonging to given array of categories" do
-        expect(@idx1[:a, :c]).to eq(Daru::Index.new(
-          [0, 2, 3, 4]))
+      
+      context "retrive multiple categories" do
+        subject {idx1[:a, :c] }
+        
+        it { is_expected.to eq Daru::Index.new [0, 2, 3, 4] }
       end
 
       it "returns the position given positional index" do
@@ -32,14 +34,10 @@ describe Daru::CategoricalIndex do
       it "raises exception given wrong positional indexes" do
         expect { @idx1[0, 1, 5] }.to raise_error
       end
-
     end
 
     context "when the category is numeric" do
-      it "retrives all elements belonging to that category" do
-        # The idea is to use #cat when retrieving numeric categories
-        expect(@idx2.cat[0]).to eq([0, 2, 3])
-      end
+      # TO DO
     end
   end
 end
