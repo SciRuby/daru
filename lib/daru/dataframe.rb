@@ -341,11 +341,6 @@ module Daru
       update
     end
 
-    def vector(*)
-      $stderr.puts '#vector has been deprecated in favour of #[]. Please use that.'
-      self[*names]
-    end
-
     # Access row or vector. Specify name of row/vector followed by axis(:row, :vector).
     # Defaults to *:vector*. Use of this method is not recommended for accessing
     # rows. Use df.row[:a] for accessing row with index ':a'.
@@ -388,11 +383,6 @@ module Daru
       else
         raise IndexError, "Expected axis to be row or vector, not #{axis}."
       end
-    end
-
-    # Access a vector by name.
-    def column name
-      vector[name]
     end
 
     def add_row row, index=nil
