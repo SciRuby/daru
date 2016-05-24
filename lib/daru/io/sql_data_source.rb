@@ -9,16 +9,10 @@ module Daru
           @query = query
         end
 
-        def each_column_name
-          result.column_names.each do |column_name|
-            yield(column_name.to_sym)
-          end
-        end
-
-        def each_row
-          result.fetch do |row|
-            yield(row.to_a)
-          end
+        def result_hash
+          columns = result.column_names.map(&:to_sym)
+          data = result.to_a.map(&:to_a).transpose
+          columns.zip(data).to_h
         end
 
         private
@@ -36,16 +30,11 @@ module Daru
           @query = query
         end
 
-        def each_column_name
-          result.columns.each do |column_name|
-            yield(column_name.to_sym)
-          end
-        end
+        def result_hash
+          columns = result.columns.map(&:to_sym)
+          data = result.cast_values.transpose
 
-        def each_row
-          result.each do |row|
-            yield(row.values)
-          end
+          columns.zip(data).to_h
         end
 
         private
@@ -67,18 +56,7 @@ module Daru
       end
 
       def make_dataframe
-        vectors = {}
-        fields = []
-        @adapter.each_column_name do |column_name|
-          vectors[column_name] = Daru::Vector.new([])
-          vectors[column_name].rename column_name
-          fields.push column_name
-        end
-
-        df = Daru::DataFrame.new(vectors, order: fields)
-        @adapter.each_row do |row|
-          df.add_row(row)
-        end
+        df = Daru::DataFrame.new(@adapter.result_hash)
 
         df.update
 
