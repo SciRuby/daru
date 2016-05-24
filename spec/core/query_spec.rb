@@ -1,8 +1,6 @@
-require 'spec_helper'
-
 describe Daru::Core::Query::BoolArray do
   before do
-    @klass = Daru::Core::Query::BoolArray 
+    @klass = Daru::Core::Query::BoolArray
     @left = @klass.new([true, true, true, false, false, true])
     @right = @klass.new([false, false, false, false, true, false])
   end

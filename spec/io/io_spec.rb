@@ -1,5 +1,3 @@
-require 'spec_helper.rb'
-
 describe Daru::IO do
   describe Daru::DataFrame do
     context ".from_csv" do
@@ -29,7 +27,7 @@ describe Daru::IO do
           expect(y_ds).to be_within(0.001).of(y_expected)
         end
       end
-      
+
       it "follows the order of columns given in CSV" do
         df = Daru::DataFrame.from_csv 'spec/fixtures/sales-funnel.csv'
         expect(df.vectors.to_a).to eq(%W[Account Name Rep Manager Product Quantity Price Status])

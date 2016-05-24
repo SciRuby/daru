@@ -1,5 +1,3 @@
-require 'spec_helper.rb'
-
 describe "Daru.lazy_update" do
   context "A variable which will set whether Vector metadata is updated immediately or lazily." do
     describe Daru::Vector do
@@ -28,7 +26,7 @@ describe "Daru.lazy_update" do
     end
 
     describe Daru::DataFrame do
-      before do 
+      before do
         v = Daru::Vector.new [1,2,3,4,nil,nil,3,nil]
         @df = Daru::DataFrame.new({a: v, b: v, c: v})
       end
@@ -52,7 +50,7 @@ describe "Daru.lazy_update" do
         expect(@df[:a].missing_positions.include?(1)).to eq(true)
 
         Daru.lazy_update = false
-      end      
+      end
     end
   end
 end

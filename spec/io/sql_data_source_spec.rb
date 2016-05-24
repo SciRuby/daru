@@ -1,4 +1,3 @@
-require 'spec_helper'
 require 'daru/io/sql_data_source'
 require 'sqlite3'
 require 'dbi'

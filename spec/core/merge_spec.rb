@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Daru::DataFrame do
   context "#join" do
     before do

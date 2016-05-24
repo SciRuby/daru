@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Daru::Vector do
   context "#initialize" do
     it "accepts DateTimeIndex in index option" do
@@ -70,7 +68,7 @@ describe Daru::Vector do
     end
 
     it "assigns multiple elements when index incomplete" do
-      index          = Daru::DateTimeIndex.date_range(:start => '2012', :periods => 100, 
+      index          = Daru::DateTimeIndex.date_range(:start => '2012', :periods => 100,
         :freq => 'MB')
       vector         = Daru::Vector.new([1,2,3,4,5,6,7,8,9,10]*10, index: index)
       vector['2012'] = 666
@@ -88,7 +86,7 @@ describe Daru::DataFrame do
     @a     = [1,2,3,4,5]*20
     @b     = @a.map { |e| e*3 }
     @c     = @a.map(&:to_s)
-    @df    = Daru::DataFrame.new([@a, @b, @c], index: @index, order: @order)    
+    @df    = Daru::DataFrame.new([@a, @b, @c], index: @index, order: @order)
   end
 
   context "#initialize" do
@@ -111,7 +109,7 @@ describe Daru::DataFrame do
 
     it "returns DataFrame when incomplete index" do
       answer = Daru::DataFrame.new(
-        [@a, @c], index: @index, order: Daru::DateTimeIndex.new([ 
+        [@a, @c], index: @index, order: Daru::DateTimeIndex.new([
           DateTime.new(2012,1,3),DateTime.new(2012,3,3)]))
       expect(@df['2012']).to eq(answer)
     end

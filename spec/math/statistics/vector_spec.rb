@@ -1,5 +1,3 @@
-require 'spec_helper.rb'
-
 describe Daru::Vector do
   [:array, :gsl].each do |dtype| #nmatrix still unstable
     describe dtype do
@@ -81,42 +79,42 @@ describe Daru::Vector do
         it "returns the max value" do
           expect(@dv.max).to eq(666)
         end
-        
+
         it "returns the max value without considering values set as missing" do
           expect(@dv_with_missing.max).to eq(2)
         end
-        
+
         it "returns nil when all values are set missing" do
           expect(@dv_with_all_missing.max).to eq(nil)
-        end          
+        end
       end
 
       context "#min" do
         it "returns the min value" do
           expect(@dv.min).to eq(1)
         end
-        
+
         it "returns the min value without considering values set as missing" do
           expect(@dv_with_missing.min).to eq(1)
         end
-        
+
         it "returns nil when all values are set missing" do
           expect(@dv_with_all_missing.min).to eq(nil)
-        end          
-      end 
+        end
+      end
 
       context "#sum" do
         it "returns the sum" do
           expect(@dv.sum).to eq(2822)
         end
-        
+
         it "returns the sum without considering values set as missing" do
           expect(@dv_with_missing.sum).to eq(3)
         end
-        
+
         it "returns nil when all values are set missing" do
           expect(@dv_with_all_missing.sum).to eq(nil)
-        end        
+        end
       end
 
       context "#product" do
@@ -128,7 +126,7 @@ describe Daru::Vector do
         it "returns the product without considering values set as missing" do
           expect(@dv_with_missing.product).to eq(2)
         end
-        
+
         it "returns nil when all values are set missing" do
           expect(@dv_with_all_missing.product).to eq(nil)
         end
@@ -146,11 +144,11 @@ describe Daru::Vector do
           expect(mode_test_example.mode).to eq(4)
         end
       end
-      
+
       context "#describe" do
         it "generates count, mean, std, min and max of vectors in one shot" do
           expect(@dv.describe.round(2)).to eq(Daru::Vector.new([10.00, 282.20, 274.08, 1.00, 666.00],
-            index: [:count, :mean, :std, :min, :max], 
+            index: [:count, :mean, :std, :min, :max],
             name:  :statistics
           ))
         end
@@ -175,7 +173,7 @@ describe Daru::Vector do
       context "#value_counts" do
         it "counts number of unique values in the Vector" do
           vector = Daru::Vector.new(
-            ["America","America","America","America","America", 
+            ["America","America","America","America","America",
               "India","India", "China", "India", "China"])
           expect(vector.value_counts).to eq(
             Daru::Vector.new([5,3,2], index: ["America", "India", "China"]))
@@ -235,7 +233,7 @@ describe Daru::Vector do
     end
   end # ALL DTYPE tests
 
-  # Only Array tests 
+  # Only Array tests
   context "#percentile" do
     it "tests linear percentile strategy" do
       values = Daru::Vector.new [102, 104, 105, 107, 108, 109, 110, 112, 115, 116].shuffle
@@ -257,8 +255,8 @@ describe Daru::Vector do
   context "#frequencies" do
     it "calculates frequencies" do
       vector = Daru::Vector.new([5,5,5,5,5,6,6,7,8,9,10,1,2,3,4,nil,-99,-99])
-      expect(vector.frequencies).to eq({ 
-        1=>1, 2=>1, 3=>1, 4=>1, 5=>5, 
+      expect(vector.frequencies).to eq({
+        1=>1, 2=>1, 3=>1, 4=>1, 5=>5,
         6=>2, 7=>1, 8=>1, 9=>1,10=>1, -99=>2
       })
     end
@@ -350,11 +348,11 @@ describe Daru::Vector do
       )
     end
   end
-  
+
   context "#sample_with_replacement" do
     it "calculates sample_with_replacement" do
       vec =  Daru::Vector.new(
-        [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99], 
+        [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99],
         name: :common_all_dtypes)
       srand(1)
       expect(vec.sample_with_replacement(100).size).to eq(100)
@@ -367,7 +365,7 @@ describe Daru::Vector do
   context "#sample_without_replacement" do
     it "calculates sample_without_replacement" do
       vec =  Daru::Vector.new(
-        [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99], 
+        [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, nil, -99, -99],
         name: :common_all_dtypes)
 
       srand(1)
@@ -408,7 +406,7 @@ describe Daru::Vector do
     it "jack knife correctly with k > 1" do
       rng = Distribution::Normal.rng(0,1)
       a   = Daru::Vector.new_with_size(6) { rng.call}
-      
+
       ds = a.jackknife(:mean, 2)
       mean = a.mean
       exp = Daru::Vector.new [3 * mean - 2 * (a[2] + a[3] + a[4] + a[5]) / 4, 3 * mean - 2 * (a[0] + a[1] + a[4] + a[5]) / 4, 3 * mean - 2 * (a[0] + a[1] + a[2] + a[3]) / 4]
@@ -434,7 +432,7 @@ describe Daru::Vector do
       expect(acf[3]).to be_within(0.001) .of(0.486)
     end
   end
-  
+
   context "#percent_change" do
     it "calculates percent change" do
       vector = Daru::Vector.new([4,6,6,8,10],index: ['a','f','t','i','k'])
@@ -473,7 +471,7 @@ describe Daru::Vector do
 
       expect(ma5[-1]).to be_within(0.001).of(16.642)
       expect(ma5[-10]).to be_within(0.001).of(17.434)
-      expect(ma5[-15]).to be_within(0.001).of(17.74)      
+      expect(ma5[-15]).to be_within(0.001).of(17.74)
     end
 
     it "calculates rolling median" do
@@ -631,4 +629,4 @@ describe Daru::Vector do
         Daru::Vector.new([1,3,6,10,15,21,28,36,45,55]))
     end
   end
-end 
+end

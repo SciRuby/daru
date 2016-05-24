@@ -1,5 +1,3 @@
-require 'spec_helper.rb'
-
 describe Daru::Index do
   context ".new" do
     it "creates an Index object if Index-like data is supplied" do

@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 include Daru
 
 describe DateTimeIndex do

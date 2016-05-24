@@ -1,25 +1,23 @@
-require 'spec_helper.rb'
-
 describe Daru::DataFrame do
   before(:each) do
-    @df = Daru::DataFrame.new({a: [1,2,3,4,5], b: ['a','e','i','o','u'], 
+    @df = Daru::DataFrame.new({a: [1,2,3,4,5], b: ['a','e','i','o','u'],
       c: [10,20,30,40,50]})
     @left = Daru::DataFrame.new({a: [1,nil,nil,4], b: [10,nil,nil,40], c: [5,6,7,8]},
       index: [0,4,5,3])
-    @right = Daru::DataFrame.new({a: [1,2,3,4,5], b: [10,20,30,40,50]}, 
+    @right = Daru::DataFrame.new({a: [1,2,3,4,5], b: [10,20,30,40,50]},
       index: [0,1,2,3,6])
   end
 
   context "#+" do
     it "adds a number to all numeric vectors" do
-      expect(@df + 2).to eq(Daru::DataFrame.new({a: [3,4,5,6,7], b: ['a','e','i','o','u'], 
+      expect(@df + 2).to eq(Daru::DataFrame.new({a: [3,4,5,6,7], b: ['a','e','i','o','u'],
       c: [12,22,32,42,52] }))
     end
 
     it "adds two dataframes to produce a third" do
       expect(@left + @right).to eq(Daru::DataFrame.new({
         a: [2,nil,nil,8,nil,nil],
-        b: [20,nil,nil,80,nil,nil], 
+        b: [20,nil,nil,80,nil,nil],
         c: [nil,nil,nil,nil,nil,nil]
         }, index: [0,1,2,3,4,5,6]))
     end
@@ -28,8 +26,8 @@ describe Daru::DataFrame do
   context "#-" do
     it "subtracts a number from all numeric vectors" do
       expect(@df - 2).to eq(Daru::DataFrame.new({
-        a: [-1,0,1,2,3], 
-        b: ['a','e','i','o','u'], 
+        a: [-1,0,1,2,3],
+        b: ['a','e','i','o','u'],
         c: [8,18,28,38,48]}))
     end
 
@@ -57,7 +55,7 @@ describe Daru::DataFrame do
 
   context "#sqrt" do
     it "calculates sqrt" do
-      expect_correct_df_in_delta(@df.sqrt, 
+      expect_correct_df_in_delta(@df.sqrt,
         Daru::DataFrame.new({
           a: [1.0,1.41421356,1.73205080,2.0,2.23606797],
           c: [3.16227766, 4.47213595 ,5.47722557 ,6.32455532, 7.07106781]
