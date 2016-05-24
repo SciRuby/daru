@@ -392,4 +392,7 @@ module Daru
       }
     end
   end
+
+  class CategoricalIndex < Index
+  end
 end

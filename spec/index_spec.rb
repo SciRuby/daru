@@ -518,12 +518,8 @@ describe Daru::MultiIndex do
   end
 
   describe Daru::CategoricalIndex do
-    before do
-      @idx1 = Daru::CategoricalIndex.new(
-        [:a, :b, :a, :a, :c])
-      @idx2 = Daru::CategoricalIndex.new(
-        [0, 1, 0, 0, 2])
-    end
+    let(:idx1) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
+    let(:idx2) { Daru::CategoricalIndex.new [0, 1, 0, 0, 2] }
 
     context "#[]" do
       context "when the category is non-numeric" do

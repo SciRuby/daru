@@ -254,10 +254,8 @@ describe Daru::Vector do
         end
 
         context Daru::CategoricalIndex do
-          before do
-            @idx1 = Daru::CategoricalIndex.new [:a, :b, :a, :a, :c]
-            @dv1 = Daru::Vector.new 'a'..'e', index: @idx1
-          end
+          let(:idx1) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
+          let (:dv1) { Daru::Vector.new 'a'..'e', index: @idx1 }
 
           it "returns vector of elements belonging to given category" do
             expect(@dv1[:a]).to eq(Daru::Vector.new(
