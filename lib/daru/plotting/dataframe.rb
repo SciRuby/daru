@@ -94,9 +94,10 @@ module Daru
           o = options[opt]
           o.is_a?(Array) ? o : [o]
         else
-          arr = options.keys
-          arr.keep_if { |a| a =~ Regexp.new("\\A#{opt}") }.sort
-          arr.map { |a| options[a] }
+          options.keys
+            .select { |a| a =~ Regexp.new("\\A#{opt}") }
+            .sort
+            .map { |a| options[a] }
         end
       end
     end

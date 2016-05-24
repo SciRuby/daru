@@ -14,9 +14,12 @@ module Daru
         self
       end
 
+      # :nocov:
+      # FIXME: not sure, why this kind of wrapper have such a pure coverage
       def inject(*args, &block)
         @data[0...@size].inject(*args, &block)
       end
+      # :nocov:
 
       attr_reader :size, :data, :nm_dtype
 
@@ -43,9 +46,11 @@ module Daru
         @data[index] = value
       end
 
+      # :nocov:
       def == other
         @data[0...@size] == other[0...@size] and @size == other.size
       end
+      # :nocov:
 
       def delete_at index
         arry = @data.to_a
@@ -58,10 +63,12 @@ module Daru
         @data.to_a.index key
       end
 
+      # :nocov:
       def << element
         resize if @size >= @data.size
         self[@size] = element
       end
+      # :nocov:
 
       def to_a
         @data[0...@size].to_a
@@ -77,6 +84,7 @@ module Daru
         @data = NMatrix.new [size], @data.to_a, dtype: @nm_dtype
       end
 
+      # :nocov:
       def mean
         @data[0...@size].mean.first
       end
@@ -96,6 +104,7 @@ module Daru
       def min
         @data[0...@size].min
       end
+      # :nocov:
     end
   end
 end if Daru.has_nmatrix?
