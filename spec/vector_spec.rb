@@ -291,7 +291,7 @@ describe Daru::Vector do
               subject { dv[0, 1, 2] }
 
               it { is_expected.to be_a Daru::Vector }
-              its(:size) { is_expected.to eq 4 }
+              its(:size) { is_expected.to eq 3 }
               its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
               its(:index) { is_expected.to eq(
                 Daru::CategoricalIndex.new([:a, :b, :a])) }
@@ -314,7 +314,51 @@ describe Daru::Vector do
           end
 
           context "numerical index" do
-            # TO DO
+            let (:idx) { Daru::CategoricalIndex.new [1, 1, 2, 2, 3] }
+            let (:dv)  { Daru::Vector.new 'a'..'e', index: idx1 }
+
+            context "single category" do
+              context "multiple instances" do
+                subject { dv[1] }
+
+                it { is_expected.to be_a Daru::Vector }
+                its(:size) { is_expected.to eq 2 }
+                its(:to_a) { is_expected.to eq  ['a', 'b'] }
+                its(:index) { is_expected.to eq(
+                  Daru::CategoricalIndex.new([1, 1])) }
+              end
+
+              context "single instance" do
+                subject { dv[3] }
+
+                it { is_not_expected.to be_a Daru::Vector }
+                it { is_expected.to eq 'e' }
+              end
+            end
+          end
+        end
+      end
+
+      context "#at" do
+        context Daru::CategoricalIndex do
+          let (:idx) { Daru::CategoricalIndex.new [:a, 1, 1, :a, :c] }
+          let (:dv)  { Daru::Vector.new 'a'..'e', index: idx1 }
+
+          context "multiple positional indexes" do
+            subject { dv[0, 1, 2] }
+
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 3 }
+            its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
+            its(:index) { is_expected.to eq(
+              Daru::CategoricalIndex.new([:a, 1, 1])) }
+          end
+
+          context "single positional index" do
+            subject { dv[1] }
+
+            it { is_not_expected.to be_a Daru::Vector }
+            it { is_expected.to eq 'b' }
           end
         end
       end
