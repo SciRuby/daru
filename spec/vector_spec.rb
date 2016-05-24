@@ -255,10 +255,8 @@ describe Daru::Vector do
 
         context Daru::CategoricalIndex do
           before do
-            @idx1 = Daru::CategoricalIndex [:a, :b, :a, :a, :c]
-            @idx2 = Daru::CategoricalIndex [0, 1, 0, 0, 2]
+            @idx1 = Daru::CategoricalIndex.new [:a, :b, :a, :a, :c]
             @dv1 = Daru::Vector.new 'a'..'e', index: @idx1
-            @dv2 = Daru::Vector.new 'a'..'e', index: @idx2
           end
 
           it "returns vector of elements belonging to given category" do
