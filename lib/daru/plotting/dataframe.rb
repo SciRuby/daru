@@ -46,7 +46,7 @@ module Daru
       private
 
       def single_diagram? options
-        options[:x] and options[:x].is_a?(Symbol)
+        options[:x] && options[:x].is_a?(Symbol)
       end
 
       def add_single_diagram plot, options

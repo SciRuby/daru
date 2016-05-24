@@ -321,7 +321,7 @@ module Daru
     end
 
     def empty?
-      @labels.flatten.empty? and @levels.all?(&:empty?)
+      @labels.flatten.empty? && @levels.all?(&:empty?)
     end
 
     def include? tuple

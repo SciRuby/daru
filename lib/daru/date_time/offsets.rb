@@ -343,7 +343,7 @@ module Daru
       end
 
       def on_offset? date_time
-        date_time.month == 1 and date_time.day == 1
+        date_time.month == 1 && date_time.day == 1
       end
     end
 
@@ -372,7 +372,7 @@ module Daru
       end
 
       def on_offset? date_time
-        date_time.month == 12 and date_time.day == 31
+        date_time.month == 12 && date_time.day == 31
       end
     end
 
