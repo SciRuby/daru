@@ -259,13 +259,22 @@ describe Daru::Vector do
             let (:dv)  { Daru::Vector.new 'a'..'e', index: idx1 }
 
             context "single category" do
-              subject { dv[:a] }
+              context "multiple instances" do
+                subject { dv[:a] }
 
-              it { is_expected.to be_a Daru::Vector }
-              its(:size) { is_expected.to eq 3 }
-              its(:to_a) { is_expected.to eq  ['a', 'c', 'd'] }
-              its(:index) { is_expected.to eq(
-                Daru::CategoricalIndex.new([:a, :a, :a])) }
+                it { is_expected.to be_a Daru::Vector }
+                its(:size) { is_expected.to eq 3 }
+                its(:to_a) { is_expected.to eq  ['a', 'c', 'd'] }
+                its(:index) { is_expected.to eq(
+                  Daru::CategoricalIndex.new([:a, :a, :a])) }
+              end
+
+              context "single instance" do
+                subject { dv[:c] }
+
+                it { is_not_expected.to be_a Daru::Vector }
+                it { is_expected.to eq 'e' }
+              end
             end
 
             context "multiple categories" do
@@ -295,11 +304,12 @@ describe Daru::Vector do
               it { is_expected.to eq 'b' }
             end
 
-            context "single instance of a category" do
-              subject { dv[:c] }
+            context "invalid category" do
+              expect { dv[:x] }.to raise_error IndexError
+            end
 
-              it { is_not_expected.to be_a Daru::Vector }
-              it { is_expected.to eq 'e' }
+            context "invalid positional index" do
+              expect { dv[30] }.to raise_error IndexError
             end
           end
 
