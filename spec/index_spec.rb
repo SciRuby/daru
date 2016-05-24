@@ -549,6 +549,7 @@ describe Daru::MultiIndex do
         it "raises exception given wrong positional indexes" do
           expect { @idx1[0, 1, 5] }.to raise_error
         end
+
       end
 
       context "when the category is numeric" do
