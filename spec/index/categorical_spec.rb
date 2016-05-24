@@ -1,11 +1,10 @@
 require 'spec_helper.rb'
 
 describe Daru::CategoricalIndex do
-  let(:idx1) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
-  let(:idx2) { Daru::CategoricalIndex.new [0, 1, 0, 0, 2] }
-
   context "#[]" do
     context "when the category is non-numeric" do
+      let(:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
+
       context "retrive single category" do
         subject { idx1[:a] }
         
@@ -37,7 +36,7 @@ describe Daru::CategoricalIndex do
     end
 
     context "when the category is numeric" do
-      # TO DO
+      let(:idx2) { Daru::CategoricalIndex.new [0, 1, 0, 0, 2] }
     end
   end
 end
