@@ -254,29 +254,57 @@ describe Daru::Vector do
         end
 
         context Daru::CategoricalIndex do
-          let(:idx1) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
-          let (:dv1) { Daru::Vector.new 'a'..'e', index: @idx1 }
+          context "non-numerical index" do
+            let (:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
+            let (:dv)  { Daru::Vector.new 'a'..'e', index: idx1 }
 
-          it "returns vector of elements belonging to given category" do
-            expect(@dv1[:a]).to eq(Daru::Vector.new(
-              ['a', 'c', 'd'], index: Daru::CategoricalIndex(
-                [:a, :a, :a])))
+            context "single category" do
+              subject { dv[:a] }
+
+              it { is_expected.to be_a Daru::Vector }
+              its(:size) { is_expected.to eq 3 }
+              its(:to_a) { is_expected.to eq  ['a', 'c', 'd'] }
+              its(:index) { is_expected.to eq(
+                Daru::CategoricalIndex.new([:a, :a, :a])) }
+            end
+
+            context "multiple categories" do
+              subject { dv[:a, :c] }
+
+              it { is_expected.to be_a Daru::Vector }
+              its(:size) { is_expected.to eq 4 }
+              its(:to_a) { is_expected.to eq  ['a', 'c', 'd', 'e'] }
+              its(:index) { is_expected.to eq(
+                Daru::CategoricalIndex.new([:a, :a, :a, :c])) }
+            end
+
+            context "multiple positional indexes" do
+              subject { dv[0, 1, 2] }
+
+              it { is_expected.to be_a Daru::Vector }
+              its(:size) { is_expected.to eq 4 }
+              its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
+              its(:index) { is_expected.to eq(
+                Daru::CategoricalIndex.new([:a, :b, :a])) }
+            end
+
+            context "single positional index" do
+              subject { dv[1] }
+
+              it { is_not_expected.to be_a Daru::Vector }
+              it { is_expected.to eq 'b' }
+            end
+
+            context "single instance of a category" do
+              subject { dv[:c] }
+
+              it { is_not_expected.to be_a Daru::Vector }
+              it { is_expected.to eq 'e' }
+            end
           end
 
-          it "returns vector of elements belonging to given categories" do
-            expect(@dv1[:a, :c]).to eq(Daru::Vector.new(
-              ['a', 'c', 'd', 'e'], index: Daru::CategoricalIndex.new(
-                [:a, :a, :a, :c])))
-          end
-
-          it "returns vector of elements given positional index" do
-            expect(@dv1[0, 1, 2]).to eq(Daru::Vector.new(
-              ['a', 'b', 'c'], index: Daru::CategoricalIndex.new(
-                [:a, :b, :a])))
-          end
-
-          it "returns element given positional index" do
-            expect(@dv1[1]).to eq('b')
+          context "numerical index" do
+            # TO DO
           end
         end
       end
