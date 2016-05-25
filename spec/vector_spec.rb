@@ -305,11 +305,11 @@ describe Daru::Vector do
             end
 
             context "invalid category" do
-              expect { dv[:x] }.to raise_error IndexError
+              it { expect { dv[:x] }.to raise_error IndexError }
             end
 
             context "invalid positional index" do
-              expect { dv[30] }.to raise_error IndexError
+              it { expect { dv[30] }.to raise_error IndexError }
             end
           end
 
