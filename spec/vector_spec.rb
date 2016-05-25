@@ -345,7 +345,7 @@ describe Daru::Vector do
           let (:dv)  { Daru::Vector.new 'a'..'e', index: idx1 }
 
           context "multiple positional indexes" do
-            subject { dv[0, 1, 2] }
+            subject { dv.at 0, 1, 2 }
 
             it { is_expected.to be_a Daru::Vector }
             its(:size) { is_expected.to eq 3 }
@@ -355,7 +355,7 @@ describe Daru::Vector do
           end
 
           context "single positional index" do
-            subject { dv[1] }
+            subject { dv.at 1 }
 
             it { is_not_expected.to be_a Daru::Vector }
             it { is_expected.to eq 'b' }
