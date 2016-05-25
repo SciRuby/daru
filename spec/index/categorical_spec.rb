@@ -1,42 +1,61 @@
 require 'spec_helper.rb'
 
 describe Daru::CategoricalIndex do
-  context "#[]" do
+  context "#pos" do
     context "when the category is non-numeric" do
       let(:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
 
-      context "retrive single category" do
-        subject { idx1[:a] }
+      context "single category" do
+        subject { idx.pos :a }
         
-        it { is_expected.to eq Daru::Index.new [0, 2, 3] }
+        it { is_expected.to eq [0, 2, 3] }
       end
       
-      context "retrive multiple categories" do
-        subject {idx1[:a, :c] }
+      context "multiple categories" do
+        subject { idx.pos :a, :c }
         
         it { is_expected.to eq Daru::Index.new [0, 2, 3, 4] }
       end
 
-      it "returns the position given positional index" do
-        expect(@idx1[0]).to eq(0)
+      context "invalid category" do
+        subject { idx.pos :e }
+
+        it { is_expected.to raise IndexError }
       end
 
-      it "raises exception given wrong positional index" do
-        expect { @idx1[5] }.to raise_error
+      it "positional index" do
+        it { expect( idx.pos 0).to eq 0 }
       end
 
-      it "returns the positions give positional index" do
-        expect(@idx1[0, 1, 2]).to eq(Daru::Index.new(
-          [0, 1, 2]))
+      it "invalid positional index" do
+        it { expect { idx.pos 5 }.to raise_error IndexError }
       end
 
-      it "raises exception given wrong positional indexes" do
-        expect { @idx1[0, 1, 5] }.to raise_error
+      it "multiple positional indexes" do
+        subject { idx.pos 0, 1, 2 }
+
+        it { is_expected.to be_a Array }
+        its(:size) { is_expected.to eq 3 }
+        it { is_expected.to eq [0, 1, 2] }
       end
     end
 
     context "when the category is numeric" do
-      let(:idx2) { Daru::CategoricalIndex.new [0, 1, 0, 0, 2] }
+      let(:idx) { Daru::CategoricalIndex.new [0, 1, 0, 0, 2] }
+
+      context "first preference to category" do
+        subject { idx.pos 0 }
+
+        it { is_expected.to be_a Array }
+        its(:size) { is_expected.to eq 3 }
+        it { is_expected.to eq [0, 2, 3] }
+      end
+
+      context "second preference to positional index" do
+        subject { idx.pos 3 }
+
+        it { is_expected.to eq 3 }
+      end
     end
   end
 end
