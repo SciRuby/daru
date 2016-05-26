@@ -636,6 +636,7 @@ describe Daru::DataFrame do
     end
   end
 
+
   context "#row[]" do
     context Daru::CategoricalIndex do
       let(:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
@@ -822,7 +823,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#row" do
+  context "#row[]" do
     context Daru::Index do
       before :each do
         @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
@@ -919,6 +920,47 @@ describe Daru::DataFrame do
           [11,12],
           [1,2]
         ], index: sub_index, order: @order_mi))
+      end
+    end
+
+    context Daru::CategoricalIndex do
+      let(:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
+      let(:df) do
+        Daru::DataFrame.new({
+          a: 'a'..'e',
+          b: 1..5
+        }, index: idx)
+      end
+
+      context "single category" do
+        context "multiple instances" do
+          subject { df[:a] }
+
+          it { is_expected.to be_a Daru::DataFrame }
+          its(:index) { is_expected.to eq Daru::CategoricalIndex.new [:a, :a, :a] }
+          its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
+          its(:a) { Daru::Vector.new ['a', 'c', 'd'] }
+          its(:b) { Daru::Vector.new [1, 3, 4] }
+        end
+
+        context "single instance" do
+          subject { df[:c] }
+
+          it { is_expected.to be_a Daru::Vector }
+          its(:index) { is_expected.to eq Daru::Index.new [:a, :b] }
+          its(:to_a) { is_expected.to eq ['e', 5] }
+        end
+      end
+
+      context "multiple categories" do
+        subject { df[:a, :b] }
+
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:index) { is_expected.to eq Daru::CategoricalIndex.new(
+          [:a, :b, :a, :a ]) }
+        its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
+        its(:a) { Daru::Vector.new ['a', 'b', 'c', 'd'] }
+        its(:b) { Daru::Vector.new [1, 2, 3, 4] }
       end
     end
   end
