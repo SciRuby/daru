@@ -821,7 +821,7 @@ describe Daru::DataFrame do
     context Daru::MultiIndex do
       pending
     end
-    
+
     context Daru::CategoricalIndex do
       let(:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
       let(:df) do
@@ -831,7 +831,7 @@ describe Daru::DataFrame do
         }, index: idx)
       end
 
-      context "modify" do
+      context "modify exiting row" do
         context "single category" do
           subject { df }
           before { df[:a] = Daru::Vector.new ['x', 'y'] }
@@ -853,9 +853,20 @@ describe Daru::DataFrame do
           its(:a) { Daru::Vector.new ['x', 'b', 'x', 'x', 'x'] }
           its(:b) { Daru::Vector.new ['y', 2, 'y', 'y', 'y'] }
         end
+
+        context "positional index" do
+          subject { df }
+          before { df[0] = Daru::Vector.new ['x', 'y'] }
+
+          it { is_expected.to be_a Daru::DataFrame }
+          its(:index) { is_expected.to eq idx }
+          its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
+          its(:a) { Daru::Vector.new ['x', 'b', 'c', 'd', 'e'] }
+          its(:b) { Daru::Vector.new ['y', 2, 3, 4, 5] }
+        end
       end
-      
-      context "add" do
+
+      context "add new row" do
         # TODO
       end
     end    
@@ -999,6 +1010,14 @@ describe Daru::DataFrame do
         its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
         its(:a) { Daru::Vector.new ['a', 'b', 'c', 'd'] }
         its(:b) { Daru::Vector.new [1, 2, 3, 4] }
+      end
+
+      context "positional index" do
+        subject { df[0] }
+
+        it { is_expected.to be_a Daru::Vector }
+        its(:index) { is_expected.to eq Daru::Index.new [:a, :b] }
+        its(:to_a) { is_expected.to eq ['a', 1] }
       end
     end
   end
