@@ -821,6 +821,44 @@ describe Daru::DataFrame do
     context Daru::MultiIndex do
       pending
     end
+    
+    context Daru::CategoricalIndex do
+      let(:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
+      let(:df) do
+        Daru::DataFrame.new({
+          a: 'a'..'e',
+          b: 1..5
+        }, index: idx)
+      end
+
+      context "modify" do
+        context "single category" do
+          subject { df }
+          before { df[:a] = Daru::Vector.new ['x', 'y'] }
+
+          it { is_expected.to be_a Daru::DataFrame }
+          its(:index) { is_expected.to eq idx }
+          its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
+          its(:a) { Daru::Vector.new ['x', 'b', 'x', 'x', 'e'] }
+          its(:b) { Daru::Vector.new ['y', 2, 'y', 'y', 5] }
+        end
+  
+        context "multiple categories" do
+          subject { df }
+          before { df[:a, :b] = Daru::Vector.new ['x', 'y'] }
+  
+          it { is_expected.to be_a Daru::DataFrame }
+          its(:index) { is_expected.to eq idx }
+          its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
+          its(:a) { Daru::Vector.new ['x', 'b', 'x', 'x', 'x'] }
+          its(:b) { Daru::Vector.new ['y', 2, 'y', 'y', 'y'] }
+        end
+      end
+      
+      context "add" do
+        # TODO
+      end
+    end    
   end
 
   context "#row[]" do
