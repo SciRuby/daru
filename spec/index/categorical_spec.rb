@@ -3,7 +3,7 @@ require 'spec_helper.rb'
 describe Daru::CategoricalIndex do
   context "#pos" do
     context "when the category is non-numeric" do
-      let(:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
+      let(:idx) { described_class.new [:a, :b, :a, :a, :c] }
 
       context "single category" do
         subject { idx.pos :a }
@@ -41,7 +41,7 @@ describe Daru::CategoricalIndex do
     end
 
     context "when the category is numeric" do
-      let(:idx) { Daru::CategoricalIndex.new [0, 1, 0, 0, 2] }
+      let(:idx) { described_class.new [0, 1, 0, 0, 2] }
 
       context "first preference to category" do
         subject { idx.pos 0 }
