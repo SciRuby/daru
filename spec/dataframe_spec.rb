@@ -823,7 +823,8 @@ describe Daru::DataFrame do
     end
 
     context Daru::CategoricalIndex do
-      let(:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
+      let(:idx) { Daru::CategoricalIndex.new [:a, 1, :a, 1, :c] }
+      let(:dv) { Daru::Vector.new ['x', 'y'] }
       let(:df) do
         Daru::DataFrame.new({
           a: 'a'..'e',
@@ -834,7 +835,7 @@ describe Daru::DataFrame do
       context "modify exiting row" do
         context "single category" do
           subject { df }
-          before { df.row[:a] = Daru::Vector.new ['x', 'y'] }
+          before { df.row[:a] = dv }
 
           it { is_expected.to be_a Daru::DataFrame }
           its(:index) { is_expected.to eq idx }
@@ -845,24 +846,32 @@ describe Daru::DataFrame do
   
         context "multiple categories" do
           subject { df }
-          before { df.row[:a, :b] = Daru::Vector.new ['x', 'y'] }
+          before { df.row[:a, 1] = dv }
   
           it { is_expected.to be_a Daru::DataFrame }
           its(:index) { is_expected.to eq idx }
           its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
-          its(:a) { Daru::Vector.new ['x', 'b', 'x', 'x', 'x'] }
-          its(:b) { Daru::Vector.new ['y', 2, 'y', 'y', 'y'] }
+          its(:a) { Daru::Vector.new ['x', 'x', 'x', 'x', 'e'] }
+          its(:b) { Daru::Vector.new ['y', 'y', 'y', 'y', 5] }
         end
 
         context "positional index" do
           subject { df }
-          before { df.row[0, 1] = Daru::Vector.new ['x', 'y'] }
+          before { df.row[0, 2] = dv }
 
           it { is_expected.to be_a Daru::DataFrame }
           its(:index) { is_expected.to eq idx }
           its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
-          its(:a) { Daru::Vector.new ['x', 'x', 'c', 'd', 'e'] }
-          its(:b) { Daru::Vector.new ['y', 'y', 3, 4, 5] }
+          its(:a) { Daru::Vector.new ['x', 'b', 'x', 'd', 'e'] }
+          its(:b) { Daru::Vector.new ['y', 2, 'y', 4, 5] }
+        end
+
+        context "invalid positional index" do
+          it { expect { df.row[5] = dv }.to raise_error IndexError }
+        end
+
+        context "invalid category" do
+          it { expect { df.row[:d] = dv }.to raise_error IndexError }
         end
       end
 
@@ -973,7 +982,7 @@ describe Daru::DataFrame do
     end
 
     context Daru::CategoricalIndex do
-      let(:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
+      let(:idx) { Daru::CategoricalIndex.new [:a, 1, :a, 1, :c] }
       let(:df) do
         Daru::DataFrame.new({
           a: 'a'..'e',
@@ -986,27 +995,27 @@ describe Daru::DataFrame do
           subject { df[:a] }
 
           it { is_expected.to be_a Daru::DataFrame }
-          its(:index) { is_expected.to eq Daru::CategoricalIndex.new [:a, :a, :a] }
+          its(:index) { is_expected.to eq Daru::CategoricalIndex.new [:a, :a] }
           its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
-          its(:a) { Daru::Vector.new ['a', 'c', 'd'] }
-          its(:b) { Daru::Vector.new [1, 3, 4] }
+          its(:a) { Daru::Vector.new ['a', 'c'] }
+          its(:b) { Daru::Vector.new [1, 3] }
         end
 
         context "single instance" do
           subject { df[:c] }
 
           it { is_expected.to be_a Daru::Vector }
-          its(:index) { is_expected.to eq Daru::Index.new [:a, :b] }
+          its(:index) { is_expected.to eq Daru::CategoricalIndex.new [:a, :b] }
           its(:to_a) { is_expected.to eq ['e', 5] }
         end
       end
 
       context "multiple categories" do
-        subject { df[:a, :b] }
+        subject { df[:a, 1] }
 
         it { is_expected.to be_a Daru::DataFrame }
         its(:index) { is_expected.to eq Daru::CategoricalIndex.new(
-          [:a, :b, :a, :a ]) }
+          [:a, 1, :a, 1 ]) }
         its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
         its(:a) { Daru::Vector.new ['a', 'b', 'c', 'd'] }
         its(:b) { Daru::Vector.new [1, 2, 3, 4] }
@@ -1018,6 +1027,14 @@ describe Daru::DataFrame do
         it { is_expected.to be_a Daru::Vector }
         its(:index) { is_expected.to eq Daru::Index.new [:a, :b] }
         its(:to_a) { is_expected.to eq ['a', 1] }
+      end
+
+      context "invalid positional index" do
+        it { expect { df[5] }.to raise_error IndexError }
+      end
+
+      context "invalid category" do
+        it { expect { df[:d] }.to raise_error IndexError }
       end
     end
   end
