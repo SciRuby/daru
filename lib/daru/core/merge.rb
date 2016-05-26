@@ -34,14 +34,6 @@ module Daru
           hsh
         end
 
-        def arrayify df
-          arr = df.to_a
-          col_names = arr[0][0].keys
-          values = arr[0].map(&:values)
-
-          [col_names, values]
-        end
-
         def arrayify_with_sort_keys(size, df_hash, on)
           # Converting to a hash and then to an array is more complex
           # than using df.to_a or df.map(:row).  However, it's
@@ -134,7 +126,10 @@ module Daru
             add_merge_row_to_hash([nil, df2_array[idx2]], joined_hash) if right
             idx2 += 1
           else
+            # :nocov:
+            # It's just an impossibility handler, can't be covered :)
             raise 'Unexpected condition met during merge'
+            # :nocov:
           end
         end
 

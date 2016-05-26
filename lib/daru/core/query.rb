@@ -33,7 +33,7 @@ module Daru
         end
 
         def inspect
-          "(#{self.class}:#{object_id} bool_arry=#{@barry})"
+          "#<#{self.class}:#{object_id} bool_arry=#{@barry}>"
         end
       end
 

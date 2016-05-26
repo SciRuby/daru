@@ -59,6 +59,7 @@ EOF
   spec.add_development_dependency 'pry-byebug'
   spec.add_development_dependency 'rserve-client', '~> 0.3'
   spec.add_development_dependency 'rspec', '~> 3.4'
+  spec.add_development_dependency 'rspec-its'
   spec.add_development_dependency 'awesome_print'
   spec.add_development_dependency 'nyaplot', '~> 0.1.5'
   spec.add_development_dependency 'nmatrix', '~> 0.2.1'
@@ -69,4 +70,6 @@ EOF
   spec.add_development_dependency 'activerecord', '~> 4.0'
   spec.add_development_dependency 'sqlite3'
   spec.add_development_dependency 'rubocop', '>= 0.40.0'
+  spec.add_development_dependency 'simplecov'
+  spec.add_development_dependency 'nokogiri'
 end

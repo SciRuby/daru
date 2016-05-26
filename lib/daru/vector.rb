@@ -242,11 +242,15 @@ module Daru
       if pos.is_a?(Numeric)
         @data[pos] = value
       else
-        begin
-          pos.each { |tuple| self[tuple] = value }
-        rescue NoMethodError
-          raise IndexError, "Specified index #{pos.inspect} does not exist."
-        end
+        pos.each { |tuple| self[tuple] = value }
+
+        # FIXME: Can't guess how to activate this rescue branch -- zverok
+        #
+        # begin
+        #   pos.each { |tuple| self[tuple] = value }
+        # rescue NoMethodError
+        #   raise IndexError, "Specified index #{pos.inspect} does not exist."
+        # end
       end
 
       set_size
@@ -414,7 +418,8 @@ module Daru
     end
 
     def tail q=10
-      self[(@size - q)..(@size-1)]
+      start = [@size - q, 0].max
+      self[start..(@size-1)]
     end
 
     def empty?
@@ -563,14 +568,19 @@ module Daru
 
     # Just sort the data and get an Array in return using Enumerable#sort.
     # Non-destructive.
+    # :nocov:
     def sorted_data &block
       @data.to_a.sort(&block)
     end
+    # :nocov:
 
     # Returns *true* if the value passed is actually exists or is not marked as
     # a *missing value*.
     def exists? value
-      !@missing_values.key?(self[index_of(value)])
+      # FIXME: I'm not sure how this method should really work,
+      # or whether it is needed at all. - zverok
+      idx = index_of(value)
+      !!idx && !@missing_values.key?(self[idx])
     end
 
     # Like map, but returns a Daru::Vector with the returned values.
@@ -839,14 +849,14 @@ module Daru
       html = '<table>' \
         '<tr>' \
           '<th colspan="2">' \
-            "Daru::Vector:#{object_id} " + " size: #{size}" \
+            "Daru::Vector:#{object_id} " + "size: #{size}" \
           '</th>' \
         '</tr>'
       html += '<tr><th> </th><th>' + name.to_s + '</th></tr>'
       @index.each_with_index do |index, num|
         html += '<tr><td>' + index.to_s + '</td>' + '<td>' + self[index].to_s + '</td></tr>'
 
-        next if num <= threshold
+        next if num <= threshold - 2
         html += '<tr><td>...</td><td>...</td></tr>'
 
         last_index = @index.to_a.last
@@ -870,6 +880,7 @@ module Daru
       ReportBuilder.new(no_title: true).add(self).send(method)
     end
 
+    # :nocov:
     def report_building b
       b.section(name: name) do |s|
         s.text "n :#{size}"
@@ -898,6 +909,7 @@ module Daru
         end
       end
     end
+    # :nocov:
 
     # Over rides original inspect for pretty printing in irb
     def inspect spacing=20, threshold=15
@@ -914,17 +926,18 @@ module Daru
       name      = @name || 'nil'
       metadata  = @metadata || 'nil'
       formatter = "\n%#{longest}.#{longest}s %#{longest}.#{longest}s"
-      content  += "\n#<#{self.class}:#{object_id} @name = #{name} @metadata = #{metadata} @size = #{size} >"
+      # content  += "\n#<#{self.class}:#{object_id} @name = #{name} @metadata = #{metadata} @size = #{size} >"
+      content  += "#<#{self.class}:#{object_id} @name = #{name} @metadata = #{metadata} @size = #{size} >"
 
       content += formatter % ['', name]
       @index.each_with_index do |index, num|
         content += formatter % [index.to_s, (self[*index] || 'nil').to_s]
-        if num > threshold
+        if num >= threshold - 1
           content += formatter % ['...', '...']
           break
         end
       end
-      content += "\n"
+      # content += "\n" -- FIXME: I'm removing \n before/after because it is unusual for Ruby's inspects. -- zverok, 2016-05-19
 
       content
     end
@@ -956,11 +969,6 @@ module Daru
     #
     # @param new_name [Symbol] The new name.
     def rename new_name
-      if new_name.is_a?(Numeric)
-        @name = new_name
-        return
-      end
-
       @name = new_name
     end
 
@@ -1143,15 +1151,19 @@ module Daru
         dtype: h[:dtype], missing_values: h[:missing_values])
     end
 
+    # :nocov:
     def daru_vector(*)
       self
     end
+    # :nocov:
 
     alias :dv :daru_vector
 
     def method_missing(name, *args, &block)
+      # FIXME: it is shamefully fragile. Should be either made stronger
+      # (string/symbol dychotomy, informative errors) or removed totally. - zverok
       if name =~ /(.+)\=/
-        self[name] = args[0]
+        self[$1.to_sym] = args[0]
       elsif has_index?(name)
         self[name]
       else
@@ -1180,18 +1192,6 @@ module Daru
       [h_est, h_est.keys, bss]
     end
 
-    def keep? a, b, order
-      eval = yield(a, b)
-      if order == :ascending
-        return true  if eval == -1
-        return false if eval == 1
-      elsif order == :descending
-        return false if eval == -1
-        return true  if eval == 1
-      end
-      false
-    end
-
     # Note: To maintain sanity, this _MUST_ be the _ONLY_ place in daru where the
     # @dtype variable is set and the underlying data type of vector changed.
     def cast_vector_to dtype, source=nil, nm_dtype=nil
@@ -1203,19 +1203,11 @@ module Daru
         when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source, self, nm_dtype)
         when :gsl then Daru::Accessors::GSLWrapper.new(source, self)
         when :mdarray then raise NotImplementedError, 'MDArray not yet supported.'
-        else raise "Unknown dtype #{dtype}"
+        else raise ArgumentError, "Unknown dtype #{dtype}"
         end
 
       @dtype = dtype || :array
       new_vector
-    end
-
-    def index_for index
-      if @index.include?(index)
-        @index[index]
-      elsif index.is_a?(Numeric)
-        index
-      end
     end
 
     def set_size
@@ -1245,11 +1237,6 @@ module Daru
       else
         Daru::Index.new(potential_index)
       end
-    end
-
-    def element_from_numeric_index location
-      pos = index_for location
-      pos ? @data[pos] : nil
     end
 
     # Setup missing_values. The missing_values instance variable is set

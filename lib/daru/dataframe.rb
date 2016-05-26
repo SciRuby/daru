@@ -121,7 +121,11 @@ module Daru
         opts[:order] ||=
           case first
           when Daru::Vector # assume that all are Vectors
+            # FIXME: Not sure, why index is set from vectors
+            # ONLY when order is not provided -- zverok
             index = source.map(&:name)
+                          .each_with_index.map { |n, i| n || i }
+                          .recode_repeated
             first.index.to_a
           when Array
             Array.new(first.size, &:to_s)
@@ -352,13 +356,7 @@ module Daru
         axis = :vector
       end
 
-      if axis == :vector
-        access_vector(*names)
-      elsif axis == :row
-        access_row(*names)
-      else
-        raise IndexError, "Expected axis to be row or vector not #{axis}"
-      end
+      dispatch_to_axis axis, :access, *names
     end
 
     # Insert a new row/vector of the specified name or modify a previous row.
@@ -376,13 +374,7 @@ module Daru
       name = args[0..-2]
       vector = args[-1]
 
-      if axis == :vector
-        insert_or_modify_vector name, vector
-      elsif axis == :row
-        insert_or_modify_row name, vector
-      else
-        raise IndexError, "Expected axis to be row or vector, not #{axis}."
-      end
+      dispatch_to_axis axis, :insert_or_modify, name, vector
     end
 
     def add_row row, index=nil
@@ -530,13 +522,7 @@ module Daru
     # * +axis+ - The axis to iterate over. Can be :vector (or :column)
     # or :row. Default to :vector.
     def each axis=:vector, &block
-      if axis == :vector || axis == :column
-        each_vector(&block)
-      elsif axis == :row
-        each_row(&block)
-      else
-        raise ArgumentError, "Unknown axis #{axis}"
-      end
+      dispatch_to_axis axis, :each, &block
     end
 
     # Iterate over a row or vector and return results in a Daru::Vector.
@@ -555,13 +541,7 @@ module Daru
     # * +axis+ - The axis to iterate over. Can be :vector (or :column)
     # or :row. Default to :vector.
     def collect axis=:vector, &block
-      if axis == :vector || axis == :column
-        collect_vectors(&block)
-      elsif axis == :row
-        collect_rows(&block)
-      else
-        raise ArgumentError, "Unknown axis #{axis}"
-      end
+      dispatch_to_axis_pl axis, :collect, &block
     end
 
     # Map over each vector or row of the data frame according to
@@ -581,13 +561,7 @@ module Daru
     # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
     # Default to :vector.
     def map axis=:vector, &block
-      if axis == :vector || axis == :column
-        map_vectors(&block)
-      elsif axis == :row
-        map_rows(&block)
-      else
-        raise ArgumentError, "Unknown axis #{axis}"
-      end
+      dispatch_to_axis_pl axis, :map, &block
     end
 
     # Destructive map. Modifies the DataFrame. Each run of the block
@@ -624,11 +598,7 @@ module Daru
     # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
     # Default to :vector.
     def recode axis=:vector, &block
-      if axis == :vector || axis == :column
-        recode_vectors(&block)
-      elsif axis == :row
-        recode_rows(&block)
-      end
+      dispatch_to_axis_pl axis, :recode, &block
     end
 
     # Retain vectors or rows if the block returns a truthy value.
@@ -660,11 +630,7 @@ module Daru
     #     row[:a] + row[:d] < 100
     #   end
     def filter axis=:vector, &block
-      if axis == :vector || axis == :column
-        filter_vectors(&block)
-      elsif axis == :row
-        filter_rows(&block)
-      end
+      dispatch_to_axis_pl axis, :filter, &block
     end
 
     def recode_vectors
@@ -817,6 +783,9 @@ module Daru
     # Generate a matrix, based on vector names of the DataFrame.
     #
     # @return {::Matrix}
+    # :nocov:
+    # FIXME: Even not trying to cover this: I can't get, how it is expected
+    # to work.... -- zverok
     def collect_matrix
       return to_enum(:collect_matrix) unless block_given?
 
@@ -829,6 +798,7 @@ module Daru
 
       Matrix.rows(rows)
     end
+    # :nocov:
 
     # Delete a vector
     def delete_vector vector
@@ -1144,7 +1114,8 @@ module Daru
     #
     # @param [Fixnum] quantity (10) The number of elements to display from the bottom.
     def tail quantity=10
-      self[(@size - quantity)..(@size-1), :row]
+      start = [@size - quantity, 0].max
+      self[start..(@size-1), :row]
     end
 
     alias :last :tail
@@ -1615,7 +1586,6 @@ module Daru
 
         super_hash.each do |row_index, sub_h|
           sub_h.each do |vector_index, val|
-            # pivoted_dataframe[symbolize(vector_index)][symbolize(row_index)] = val
             pivoted_dataframe[vector_index][row_index] = val
           end
         end
@@ -1806,9 +1776,11 @@ module Daru
     end
 
     # Return a Nyaplot::DataFrame from the data of this DataFrame.
+    # :nocov:
     def to_nyaplotdf
       Nyaplot::DataFrame.new(to_a[0])
     end
+    # :nocov:
 
     # Convert all vectors of type *:numeric* and not containing nils into an NMatrix.
     def to_nmatrix
@@ -1862,7 +1834,7 @@ module Daru
       html = '<table>' \
         '<tr>' \
           "<th colspan=\"#{@vectors.size+1}\">" \
-            "Daru::DataFrame:#{object_id} " + " rows: #{nrows} " + " cols: #{ncols}" \
+            "Daru::DataFrame:#{object_id} rows: #{nrows} cols: #{ncols}" \
           '</th>' \
         '</tr>'
       html +='<tr><th></th>'
@@ -1878,7 +1850,7 @@ module Daru
         end
 
         html += '</tr>'
-        next if num <= threshold
+        next if num < threshold - 1
 
         html += '<tr>'
         (@vectors.size + 1).times { html += '<td>...</td>' }
@@ -2003,10 +1975,12 @@ module Daru
 
     # Pretty print in a nice table format for the command line (irb/pry/iruby)
     def inspect spacing=10, threshold=15
-      longest = [@name.to_s.size,
-                 (@vectors.map(&:to_s).map(&:size).max || 0),
-                 (@index  .map(&:to_s).map(&:size).max || 0),
-                 (@data   .map { |v| v.map(&:to_s).map(&:size).max }.max || 0)].max
+      longest = [
+        (@vectors.map(&:to_s).map(&:size).max || 0),
+        (@index  .map(&:to_s).map(&:size).max || 0),
+        (@data   .map { |v| v.map(&:to_s).map(&:size).max }.max || 0),
+        3 # size of 'nil' and '...'
+      ].max
 
       name      = @name || 'nil'
       content   = ''
@@ -2014,7 +1988,9 @@ module Daru
       formatter = "\n"
 
       (@vectors.size + 1).times { formatter += "%#{longest}.#{longest}s " }
-      content += "\n#<" + self.class.to_s + ':' + object_id.to_s + ' @name = ' +
+      formatter.chomp!(' ')
+      # content += "\n#<" + self.class.to_s + ':' + object_id.to_s + ' @name = ' +
+      content += '#<' + self.class.to_s + ':' + object_id.to_s + ' @name = ' +
                  name.to_s + ' @size = ' + @size.to_s + '>'
       content += formatter % ['', *@vectors.map(&:to_s)]
       row_num  = 1
@@ -2030,7 +2006,7 @@ module Daru
         content += formatter % dots
         break
       end
-      content += "\n"
+      # content += "\n" FIXME: removing \n for the reason described in Vector#inspect -- zverok
 
       content
     end
@@ -2050,7 +2026,7 @@ module Daru
 
     def method_missing(name, *args, &block)
       if name =~ /(.+)\=/
-        insert_or_modify_vector name[/(.+)\=/].delete('=').to_sym, args[0]
+        insert_or_modify_vector [name[/(.+)\=/].delete('=').to_sym], args[0]
       elsif has_vector? name
         self[name]
       else
@@ -2060,11 +2036,23 @@ module Daru
 
     private
 
-    def possibly_multi_index? index
-      if @index.is_a?(MultiIndex)
-        Daru::MultiIndex.from_tuples(index)
+    def dispatch_to_axis(axis, method, *args, &block)
+      if axis == :vector || axis == :column
+        send("#{method}_vector", *args, &block)
+      elsif axis == :row
+        send("#{method}_row", *args, &block)
       else
-        Daru::Index.new(index)
+        raise ArgumentError, "Unknown axis #{axis}"
+      end
+    end
+
+    def dispatch_to_axis_pl(axis, method, *args, &block)
+      if axis == :vector || axis == :column
+        send("#{method}_vectors", *args, &block)
+      elsif axis == :row
+        send("#{method}_rows", *args, &block)
+      else
+        raise ArgumentError, "Unknown axis #{axis}"
       end
     end
 
@@ -2127,14 +2115,6 @@ module Daru
         return handle_nils
       else
         Array.new(vector_order.size, handle_nils)
-      end
-    end
-
-    def vectors_index_for location
-      if @vectors.include?(location)
-        @vectors[location]
-      elsif location[0].is_a?(Integer)
-        location[0]
       end
     end
 
@@ -2383,21 +2363,6 @@ module Daru
 
     def set_name potential_name # rubocop:disable Style/AccessorMethodName
       potential_name.is_a?(Array) ? potential_name.join : potential_name
-    end
-
-    def symbolize arry
-      symbolized_arry =
-        if arry.all? { |e| e.is_a?(Array) }
-          arry.map do |sub_arry|
-            sub_arry.map do |e|
-              e.is_a?(Numeric) ? e : e.to_sym
-            end
-          end
-        else
-          arry.map { |e| e.is_a?(Numeric) ? e : e.to_sym }
-        end
-
-      symbolized_arry
     end
   end
 end

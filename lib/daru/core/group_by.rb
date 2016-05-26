@@ -22,7 +22,10 @@ module Daru
             if a && b
               a.compact <=> b.compact
             else
+              # FIXME: tuple is ALWAYS an array, so branch is unreachable?..
+              # :nocov:
               a ? 1 : -1
+              # :nocov:
             end
           end
 
