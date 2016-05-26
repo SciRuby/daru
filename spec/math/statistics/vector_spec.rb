@@ -162,11 +162,15 @@ describe Daru::Vector do
 
       context "#count" do
         it "counts specified element" do
-          @dv.count(323)
+          expect(@dv.count(323)).to eq(1)
         end
 
         it "counts total number of elements" do
           expect(@dv.count).to eq(10)
+        end
+
+        it "counts by block provided" do
+          expect(@dv.count{|e| e.to_i.even? }).to eq(4)
         end
       end
 
@@ -189,6 +193,15 @@ describe Daru::Vector do
       context "#percentile" do
         it "calculates mid point percentile" do
           expect(@dv.percentile(50)).to eq(278.5)
+        end
+
+        it "calculates linear percentile" do
+          # FIXME: Not enough testing?..
+          expect(@dv.percentile(50, :linear)).to eq(278.5)
+        end
+
+        it "fails on unknown strategy" do
+          expect { @dv.percentile(50, :killemall) }.to raise_error(ArgumentError, /strategy/)
         end
       end
 
@@ -260,6 +273,15 @@ describe Daru::Vector do
         6=>2, 7=>1, 8=>1, 9=>1,10=>1, -99=>2
       })
     end
+  end
+
+  context "#freqs" do
+    let(:vector) { Daru::Vector.new([5,5,5,5,5,6,6,7,8,9,10,1,2,3,4,nil,-99,-99]) }
+    subject { vector.freqs }
+    it { is_expected.to eq Daru::Vector.new(
+      [5,2,1,1,1,1,1,1,1,1,2],
+      index: [5,6,7,8,9,10,1,2,3,4,-99]
+    )}
   end
 
   context "#ranked" do
@@ -627,6 +649,12 @@ describe Daru::Vector do
       vector = Daru::Vector.new([1,2,3,4,5,6,7,8,9,10])
       expect(vector.cumsum).to eq(
         Daru::Vector.new([1,3,6,10,15,21,28,36,45,55]))
+    end
+
+    it "works with missing values" do
+      vector = Daru::Vector.new([1,2,nil,3,nil,4,5])
+      expect(vector.cumsum).to eq(
+        Daru::Vector.new([1,3,nil,6,nil,10,15]))
     end
   end
 end

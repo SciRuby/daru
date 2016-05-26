@@ -4,6 +4,10 @@ module Daru
       def process_row(row,empty)
         row.to_a.map do |c|
           if empty.include?(c)
+            # FIXME: As far as I can guess, it will never work.
+            # It is called only inside `from_plaintext`, and there
+            # data is splitted by `\s+` -- there is no chance that
+            # "empty" (currently just '') will be between data?..
             nil
           elsif c.is_a?(String) && c.is_number?
             c =~ /^\d+$/ ? c.to_i : c.tr(',','.').to_f

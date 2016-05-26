@@ -352,7 +352,7 @@ module Daru
     end
 
     def inspect
-      "#<Daru::MultiIndex(#{levels.map { |l| l.map(&:inspect).join(',') }.join(' > ')})>"
+      "#<Daru::MultiIndex:#{object_id} (levels: #{levels}\nlabels: #{labels})>"
     end
 
     # Provide a MultiIndex for sub vector produced

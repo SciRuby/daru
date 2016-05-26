@@ -65,6 +65,7 @@ class Hash
   alias_method :dv, :daru_vector
 end
 
+# :nocov:
 class NMatrix
   def daru_vector(name=nil, index=nil, *)
     Daru::Vector.new self, name: name, index: index, dtype: :nmatrix
@@ -80,6 +81,7 @@ class MDArray
 
   alias_method :dv, :daru_vector
 end
+# :nocov:
 
 class Numeric
   def square

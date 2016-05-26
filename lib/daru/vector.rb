@@ -1165,14 +1165,10 @@ module Daru
 
       new_vector =
         case dtype
-        when :array
-          Daru::Accessors::ArrayWrapper.new(source, self)
-        when :nmatrix
-          Daru::Accessors::NMatrixWrapper.new(source, self, nm_dtype)
-        when :gsl
-          Daru::Accessors::GSLWrapper.new(source, self)
-        when :mdarray
-          raise NotImplementedError, 'MDArray not yet supported.'
+        when :array   then Daru::Accessors::ArrayWrapper.new(source, self)
+        when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source, self, nm_dtype)
+        when :gsl then Daru::Accessors::GSLWrapper.new(source, self)
+        when :mdarray then raise NotImplementedError, 'MDArray not yet supported.'
         else raise ArgumentError, "Unknown dtype #{dtype}"
         end
 

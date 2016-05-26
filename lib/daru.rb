@@ -1,6 +1,8 @@
+# :nocov:
 def jruby?
   RUBY_ENGINE == 'jruby'
 end
+# :nocov:
 
 module Daru
   DAYS_OF_WEEK = {
@@ -48,7 +50,9 @@ module Daru
             require library.to_s
             class_variable_set(cv, true)
           rescue LoadError
+            # :nocov:
             class_variable_set(cv, false)
+            # :nocov:
           end
         end
         class_variable_get(cv)

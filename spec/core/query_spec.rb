@@ -26,6 +26,12 @@ describe Daru::Core::Query::BoolArray do
         )
     end
   end
+
+  context '#inspect' do
+    it 'is reasonable' do
+      expect(@left.inspect).to eq "#<Daru::Core::Query::BoolArray:#{@left.object_id} bool_arry=[true, true, true, false, false, true]>"
+    end
+  end
 end
 
 describe "Arel-like syntax" do
