@@ -834,7 +834,7 @@ describe Daru::DataFrame do
       context "modify exiting row" do
         context "single category" do
           subject { df }
-          before { df[:a] = Daru::Vector.new ['x', 'y'] }
+          before { df.row[:a] = Daru::Vector.new ['x', 'y'] }
 
           it { is_expected.to be_a Daru::DataFrame }
           its(:index) { is_expected.to eq idx }
@@ -845,7 +845,7 @@ describe Daru::DataFrame do
   
         context "multiple categories" do
           subject { df }
-          before { df[:a, :b] = Daru::Vector.new ['x', 'y'] }
+          before { df.row[:a, :b] = Daru::Vector.new ['x', 'y'] }
   
           it { is_expected.to be_a Daru::DataFrame }
           its(:index) { is_expected.to eq idx }
@@ -856,7 +856,7 @@ describe Daru::DataFrame do
 
         context "positional index" do
           subject { df }
-          before { df[0] = Daru::Vector.new ['x', 'y'] }
+          before { df.row[0] = Daru::Vector.new ['x', 'y'] }
 
           it { is_expected.to be_a Daru::DataFrame }
           its(:index) { is_expected.to eq idx }
