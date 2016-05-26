@@ -856,13 +856,13 @@ describe Daru::DataFrame do
 
         context "positional index" do
           subject { df }
-          before { df.row[0] = Daru::Vector.new ['x', 'y'] }
+          before { df.row[0, 1] = Daru::Vector.new ['x', 'y'] }
 
           it { is_expected.to be_a Daru::DataFrame }
           its(:index) { is_expected.to eq idx }
           its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
-          its(:a) { Daru::Vector.new ['x', 'b', 'c', 'd', 'e'] }
-          its(:b) { Daru::Vector.new ['y', 2, 3, 4, 5] }
+          its(:a) { Daru::Vector.new ['x', 'x', 'c', 'd', 'e'] }
+          its(:b) { Daru::Vector.new ['y', 'y', 3, 4, 5] }
         end
       end
 
