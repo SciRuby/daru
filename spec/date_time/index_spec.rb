@@ -375,6 +375,72 @@ describe DateTimeIndex do
       }.to raise_error(ArgumentError)
     end
   end
+  
+  context "#pos" do
+    let(:idx) do
+      described_class.new([
+        DateTime.new(2014,3,3),
+        DateTime.new(2014,3,4),
+        DateTime.new(2014,3,5),
+        DateTime.new(2014,3,6)
+        ], freq: :infer
+      )
+    end
+    
+    context "single index" do
+      it { expect (idx.pos '2014-3-4').to eq 1 }
+    end
+    
+    context "multiple indexes" do
+      subject { idx.pos '2014' }
+      
+      it { is_expected.to be_a Array }
+      its(:size) { is_expected.to eq 4 }
+      it { is_expected.to eq idx.to_a }
+    end
+    
+    context "single positional index" do
+      it { expect (idx.pos 1).to eq 1 }
+    end
+    
+    context "multiple positional indexes" do
+      subject { idx.pos 0, 2 }
+      
+      it { is_expected.to be_a Array }
+      its(:size) { is_expected.to eq 2 }
+      it { is_expected.to eq [DateTime.new(2014, 3, 3),
+        DateTime.new(2014, 3, 5)] }
+    end
+  end
+  
+  context "#subset" do
+    let(:idx) do
+      described_class.new([
+        DateTime.new(2014,3,3),
+        DateTime.new(2014,3,4),
+        DateTime.new(2014,3,5),
+        DateTime.new(2014,3,6)
+        ], freq: :infer
+      )
+    end
+    
+    context "multiple indexes" do
+      subject { idx.pos '2014' }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 4 }
+      it { is_expected.to eq idx }
+    end
+    
+    context "multiple positional indexes" do
+      subject { idx.pos 0, 2 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 2 }
+      its(:to_a) { is_expected.to eq [DateTime.new(2014, 3, 3),
+        DateTime.new(2014, 3, 5)] }
+    end
+  end
 
   context "#slice" do
     it "supports both DateTime objects" do

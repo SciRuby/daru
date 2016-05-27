@@ -58,4 +58,34 @@ describe Daru::CategoricalIndex do
       end
     end
   end
+  
+  context "#subset" do
+    let(:idx) { described_class.new [:a, 1, :a, 1, :c] }
+    
+    context "single index" do
+      context "multiple instances" do
+        subject { idx[:a] }
+        
+        it { is_expected.to be_a described_class }
+        its(:size) { is_expected.to eq 2 }
+        its(:to_a) { is_expected.to eq [:a, :a] }
+      end
+    end
+    
+    context "multiple indexes" do
+      subject { idx[:a, 1] }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 4 }
+      its(:to_a) { is_expected.to eq [:a, 1, :a, 1] }
+    end
+
+    context "multiple positional indexes" do
+      subject { idx[0, 2] }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 2 }
+      its(:to_a) { is_expected.to eq [:a, :a] }
+    end
+  end
 end
