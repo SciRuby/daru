@@ -118,6 +118,72 @@ describe Daru::MultiIndex do
       expect(mi[2000,'M']).to eq(0)
     end
   end
+  
+  context "#pos" do
+    let(:idx) do
+      described_class.from_tuples([
+        [:b,:one,:bar],
+        [:b,:two,:bar],
+        [:b,:two,:baz],
+        [:b,:one,:foo]
+      ])
+    end
+    
+    context "single index" do
+      it { expect (idx.pos :b, :one, :bar).to eq 0 }
+    end
+    
+    context "multiple indexes" do
+      subject { idx.pos :b, :one }
+      
+      it { is_expected.to be_a Array }
+      its(:size) { is_expected.to eq 2 }
+      it { is_expected.to eq [0, 3] }
+    end
+    
+    context "single positional index" do
+      it { expect (idx.pos 0).to eq 0 }
+    end
+    
+    context "multiple positional indexes" do
+      subject { idx.pos 0, 1 }
+      
+      it { is_expected.to be_a Array }
+      its(:size) { is_expected.to eq 2 }
+      it { is_expected.to eq [0, 1] }
+    end
+    
+    # TODO: Add specs for IndexError
+  end
+  
+  context "#subset" do
+    let(:idx) do
+      described_class.from_tuples([
+        [:b, :one, :bar],
+        [:b, :two, :bar],
+        [:b, :two, :baz],
+        [:b, :one, :foo]
+      ])
+    end
+    
+    context "multiple indexes" do
+      subject { idx.pos :b, :one }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 2 }
+      its(:to_a) { is_expected.to eq [[:b, :one, :bar], [:b, :one, :foo]] }
+    end
+    
+    context "multiple positional indexes" do
+      subject { idx.pos 0, 1 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 2 }
+      its(:to_a) { is_expected.to eq [[:b, :one, :bar], [:b, :two, :bar]] }
+    end
+    
+    # TODO: Checks for invalid indexes
+  end
 
   context "#include?" do
     it "checks if a completely specified tuple exists" do

@@ -152,8 +152,52 @@ describe Daru::Index do
       expect(@mixed_id['c']).to eq(2)
     end
   end
+  
+  context "#pos" do
+    let(:idx) { described_class.new [:a, :b, 1, 2] }
+    
+    context "single index" do
+      it { expect (idx.pos :a).to eq 0 }
+    end
+    
+    context "multiple indexes" do
+      subject { idx.pos :a, 1 }
+      
+      it { is_expected.to be_a Array }
+      its(:size) { is_expected.to eq 2 }
+      it { is_expected.to eq [0, 2] }
+    end
 
-
-
-
+    context "single positional index" do
+      it { expect (idx.pos 0).eq 0 }
+    end
+    
+    context "multiple positional index" do
+      subject { idx.pos 0, 3 }
+      
+      it { is_expected.to be_a Array }
+      its(:size) { is_expected.to eq 2 }
+      it { is_expected.to eq [0, 3] }
+    end
+  end
+  
+  context "#subset" do
+    let(:idx) { described_class.new [:a, :b, 1, 2] }
+    
+    context "multiple indexes" do
+      subject { idx.subset :a, 1 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 2 }
+      its(:to_a) { is_expected.to eq [:a, 1] }
+    end
+    
+    context "multiple positional indexes" do
+      subject { idx.subset 0, 3 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 2 }
+      its(:to_a) { is_expected.to eq [:a, 2] }
+    end
+  end
 end
