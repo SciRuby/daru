@@ -199,16 +199,17 @@ module Daru
     #   # For vectors employing hierarchial multi index
     #
     def [](*input_indexes)
-      # Get a proper index object
-      indexes = @index[*input_indexes]
+      # Get array of positions indexes
+      positions = @index.pos(*input_indexes)
 
       # If one object is asked return it
-      return @data[indexes] if indexes.is_a? Numeric
+      return @data[positions] if positions.is_a? Numeric
 
-      # Form a new Vector using indexes and return it
+      # Form a new Vector using positional indexes
       Daru::Vector.new(
-        indexes.map { |loc| @data[@index[loc]] },
-        name: @name, metadata: @metadata.dup, index: indexes.conform(input_indexes), dtype: @dtype
+        positions.map { |loc| @data[loc] },
+        name: @name, metadata: @metadata.dup,
+        index: @index.subset(*input_indexes), dtype: @dtype
       )
     end
 

@@ -254,6 +254,7 @@ describe Daru::Vector do
         end
 
         context Daru::CategoricalIndex do
+          before { skip }
           context "non-numerical index" do
             let (:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
             let (:dv)  { Daru::Vector.new 'a'..'e', index: idx1 }
@@ -341,6 +342,7 @@ describe Daru::Vector do
 
       context "#at" do
         context Daru::CategoricalIndex do
+          before { skip }
           let (:idx) { Daru::CategoricalIndex.new [:a, 1, 1, :a, :c] }
           let (:dv)  { Daru::Vector.new 'a'..'e', index: idx1 }
 
@@ -492,6 +494,7 @@ describe Daru::Vector do
         end
         
         context Daru::CategoricalIndex do
+          before { skip }
           context "non-numerical index" do
             let (:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
             let (:dv)  { Daru::Vector.new 'a'..'e', index: idx1 }
