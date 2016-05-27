@@ -83,6 +83,21 @@ module Daru
         by_single_key key
       end
     end
+    
+    def pos *args
+      return self[args[0]] if args.size == 1
+      args.map { |index| self[index] }
+    end
+    
+    def subset *args
+      if include? args[0]
+        Daru::Index.new args
+      else
+        # Assume the user is specifing values for index not keys
+        # Return index object having keys corresponding to values provided
+        Daru::Index.new args.map { |k| key k }
+      end
+    end
 
     def inspect threshold=20
       if size <= threshold
@@ -262,6 +277,24 @@ module Daru
         rescue NoMethodError
           raise IndexError, "Specified index #{key.inspect} do not exist"
         end
+      end
+    end
+    
+    def pos *args
+      if args.first.is_a? Integer
+        return args.first if args.size == 1
+        return args
+      end
+      res = self[args]
+      return res if res.is_a? Integer
+      res.map { |i| self[i] }
+    end
+    
+    def subset *args
+      if args.first.is_a? Integer
+        MultiIndex.from_tuples(args.map { |index| key(index) })
+      else
+        self[args].conform args
       end
     end
 

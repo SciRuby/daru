@@ -152,12 +152,12 @@ describe Daru::Index do
       expect(@mixed_id['c']).to eq(2)
     end
   end
-  
+
   context "#pos" do
     let(:idx) { described_class.new [:a, :b, 1, 2] }
     
     context "single index" do
-      it { expect (idx.pos :a).to eq 0 }
+      it { expect(idx.pos :a).to eq 0 }
     end
     
     context "multiple indexes" do
@@ -169,7 +169,7 @@ describe Daru::Index do
     end
 
     context "single positional index" do
-      it { expect (idx.pos 0).eq 0 }
+      it { expect(idx.pos 0).to eq 0 }
     end
     
     context "multiple positional index" do

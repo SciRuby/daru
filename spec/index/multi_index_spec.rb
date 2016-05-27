@@ -1,3 +1,5 @@
+require 'spec_helper.rb'
+
 describe Daru::MultiIndex do
   before(:each) do
     @index_tuples = [
@@ -130,7 +132,7 @@ describe Daru::MultiIndex do
     end
     
     context "single index" do
-      it { expect (idx.pos :b, :one, :bar).to eq 0 }
+      it { expect(idx.pos :b, :one, :bar).to eq 0 }
     end
     
     context "multiple indexes" do
@@ -142,7 +144,7 @@ describe Daru::MultiIndex do
     end
     
     context "single positional index" do
-      it { expect (idx.pos 0).to eq 0 }
+      it { expect(idx.pos 0).to eq 0 }
     end
     
     context "multiple positional indexes" do
@@ -167,15 +169,15 @@ describe Daru::MultiIndex do
     end
     
     context "multiple indexes" do
-      subject { idx.pos :b, :one }
+      subject { idx.subset :b, :one }
       
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
-      its(:to_a) { is_expected.to eq [[:b, :one, :bar], [:b, :one, :foo]] }
+      its(:to_a) { is_expected.to eq [[:bar], [:foo]] }
     end
     
     context "multiple positional indexes" do
-      subject { idx.pos 0, 1 }
+      subject { idx.subset 0, 1 }
       
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
