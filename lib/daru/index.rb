@@ -85,12 +85,18 @@ module Daru
     end
     
     def pos *args
-      return self[args[0]] if args.size == 1
+      # Causes Segmentation fault in array_wrapper
+      if args.first.is_a? Range
+        return args.first.to_a
+      end
+      return self[args.first] if args.size == 1
       args.map { |index| self[index] }
     end
     
     def subset *args
-      if include? args[0]
+      if args.first.is_a? Range
+        Daru::Index.new args.first.map { |k| key k }
+      elsif include? args[0]
         Daru::Index.new args
       else
         # Assume the user is specifing values for index not keys

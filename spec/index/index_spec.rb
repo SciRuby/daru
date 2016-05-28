@@ -179,6 +179,14 @@ describe Daru::Index do
       its(:size) { is_expected.to eq 2 }
       it { is_expected.to eq [0, 3] }
     end
+
+    context "range" do
+      subject { idx.pos 1..3 }
+
+      it { is_expected.to be_a Array }
+      its(:size) { is_expected.to eq 3 }
+      it { is_expected.to eq [1, 2, 3] }
+    end
   end
   
   context "#subset" do
@@ -198,6 +206,14 @@ describe Daru::Index do
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
       its(:to_a) { is_expected.to eq [:a, 2] }
+    end
+    
+    context "range" do
+      subject { idx.subset 1..3 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 3 }
+      its(:to_a) { is_expected.to eq [:b, 1, 2] }
     end
   end
 end

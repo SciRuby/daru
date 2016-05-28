@@ -799,8 +799,8 @@ describe Daru::DataFrame do
           it { is_expected.to be_a Daru::DataFrame }
           its(:index) { is_expected.to eq idx }
           its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
-          its(:a) { Daru::Vector.new ['x', 'b', 'x', 'x', 'e'] }
-          its(:b) { Daru::Vector.new ['y', 2, 'y', 'y', 5] }
+          its(:a) { Daru::Vector.new ['x', 'b', 'c', 'x', 'e'] }
+          its(:b) { Daru::Vector.new ['y', 2, 'y', 4, 5] }
         end
   
         context "multiple categories" do
