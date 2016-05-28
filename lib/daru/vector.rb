@@ -183,7 +183,7 @@ module Daru
       @possibly_changed_type = true
 
       set_missing_values opts[:missing_values]
-      set_missing_positions(true)
+      set_missing_positions unless @index.class == Daru::CategoricalIndex
       set_size
     end
 
