@@ -86,9 +86,9 @@ module Daru
     
     def pos *args
       # Causes Segmentation fault
-      if args.first.is_a? Range
-        return args.first.to_a
-      end
+      # if args.first.is_a? Range
+      #   return args.first.to_a
+      # end
       return self[args.first] if args.size == 1
       args.map { |index| self[index] }
     end
@@ -433,5 +433,77 @@ module Daru
   end
 
   class CategoricalIndex < Index
+    
+    attr_reader :cat_hash, :array, :map_cat_int, :map_int_cat
+    
+    def initialize indexes
+      # Create a hash to map each category to positional indexes
+      @cat_hash = Hash.new []
+      # Create an array to map each positional index to its category
+      @array = []
+      # Map each category to a unique integer for effective storage in @array
+      map_cat_int = {}
+      # Inverse mapping of @map
+      @map_int_cat = {}
+      
+      cat_count = 0
+      indexes.each_with_index do |index, pos|
+        unless map_cat_int.include? index
+          map_cat_int[index] = cat_count
+          @map_int_cat[cat_count] = index
+          cat_count += 1
+        end
+        @cat_hash[index] += [pos]
+        @array << map_cat_int[index]
+      end
+    end
+    
+    def include? index
+      @cat_hash.include? index
+    end
+    
+    def pos *args
+      positions = args.map do |index|
+        if include? index
+          @cat_hash[index]
+        elsif index.is_a?(Numeric) && index < @array.size
+          index
+        else
+          raise IndexError, "#{index.inspect} is neither a valid category"\
+            " nor a valid position"
+        end
+      end
+      
+      positions.flatten!
+      
+      return positions.first if positions.size == 1
+      return positions
+    end
+    
+    def index_from_pos pos
+      @map_int_cat[@array[pos]]
+    end
+    
+    def to_a
+      @array.map { |pos| @map_int_cat[pos] }
+    end
+    
+    def size
+      @array.size
+    end
+    
+    def subset *args
+      new_index = args.map do |index|
+        if include? index
+          [index] * @cat_hash[index].size
+        elsif index < @array.size
+          index_from_pos index
+        end
+      end
+      
+      new_index.flatten!
+      
+      Daru::CategoricalIndex.new new_index
+    end
   end
 end

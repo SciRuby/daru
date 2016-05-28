@@ -782,6 +782,7 @@ describe Daru::DataFrame do
     end
 
     context Daru::CategoricalIndex do
+      before { skip }
       let(:idx) { Daru::CategoricalIndex.new [:a, 1, :a, 1, :c] }
       let(:dv) { Daru::Vector.new ['x', 'y'] }
       let(:df) do
@@ -941,6 +942,7 @@ describe Daru::DataFrame do
     end
 
     context Daru::CategoricalIndex do
+      before { skip }
       let(:idx) { Daru::CategoricalIndex.new [:a, 1, :a, 1, :c] }
       let(:df) do
         Daru::DataFrame.new({

@@ -365,6 +365,11 @@ module Daru
         slice(*Helper.find_date_string_bounds(key))
       end
     end
+    
+    def pos *args
+      # to filled
+      super(*args)
+    end
 
     # Retrive a slice of the index by specifying first and last members of the slice.
     #

@@ -14,24 +14,22 @@ describe Daru::CategoricalIndex do
       context "multiple categories" do
         subject { idx.pos :a, :c }
         
-        it { is_expected.to eq Daru::Index.new [0, 2, 3, 4] }
+        it { is_expected.to eq [0, 2, 3, 4] }
       end
 
       context "invalid category" do
-        subject { idx.pos :e }
-
-        it { is_expected.to raise IndexError }
+        it { expect { idx.pos :e }.to raise_error IndexError }
       end
 
-      it "positional index" do
-        it { expect( idx.pos 0).to eq 0 }
+      context "positional index" do
+        it { expect(idx.pos 0).to eq 0 }
       end
 
-      it "invalid positional index" do
+      context "invalid positional index" do
         it { expect { idx.pos 5 }.to raise_error IndexError }
       end
 
-      it "multiple positional indexes" do
+      context "multiple positional indexes" do
         subject { idx.pos 0, 1, 2 }
 
         it { is_expected.to be_a Array }
@@ -64,7 +62,7 @@ describe Daru::CategoricalIndex do
     
     context "single index" do
       context "multiple instances" do
-        subject { idx[:a] }
+        subject { idx.subset :a }
         
         it { is_expected.to be_a described_class }
         its(:size) { is_expected.to eq 2 }
@@ -73,15 +71,15 @@ describe Daru::CategoricalIndex do
     end
     
     context "multiple indexes" do
-      subject { idx[:a, 1] }
+      subject { idx.subset :a, 1 }
       
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 4 }
-      its(:to_a) { is_expected.to eq [:a, 1, :a, 1] }
+      its(:to_a) { is_expected.to eq [:a, :a, 1, 1] }
     end
 
     context "multiple positional indexes" do
-      subject { idx[0, 2] }
+      subject { idx.subset 0, 2 }
       
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
