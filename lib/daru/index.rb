@@ -488,9 +488,9 @@ module Daru
     
     def each
       return @array.each
-      # Solve this error
-      return enum_for(:each) unless block_given?      
-      @array.map { |pos| yield @map_int_cat[pos] }
+      # Its causing error do not know why
+      # return enum_for(:each) unless block_given?      
+      # @array.map { |pos| yield @map_int_cat[pos] }
     end
 
     def to_a
