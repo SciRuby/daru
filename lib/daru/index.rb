@@ -86,9 +86,9 @@ module Daru
     
     def pos *args
       # Causes Segmentation fault
-      # if args.first.is_a? Range
-      #   return args.first.to_a
-      # end
+      if args.first.is_a? Range
+        return args.first.to_a
+      end
       return self[args.first] if args.size == 1
       args.map { |index| self[index] }
     end
@@ -434,6 +434,8 @@ module Daru
 
   class CategoricalIndex < Index
     
+    include Enumerable
+    
     attr_reader :cat_hash, :array, :map_cat_int, :map_int_cat
     
     def initialize indexes
@@ -484,8 +486,15 @@ module Daru
       @map_int_cat[@array[pos]]
     end
     
+    def each
+      return @array.each
+      # Solve this error
+      return enum_for(:each) unless block_given?      
+      @array.map { |pos| yield @map_int_cat[pos] }
+    end
+
     def to_a
-      @array.map { |pos| @map_int_cat[pos] }
+      each.to_a
     end
     
     def size

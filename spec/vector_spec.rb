@@ -1,5 +1,5 @@
 describe Daru::Vector do
-  ALL_DTYPES.each do |dtype|
+  ([:array]).each do |dtype|
     describe dtype.to_s do
       before do
         @common_all_dtypes =  Daru::Vector.new(
@@ -254,10 +254,10 @@ describe Daru::Vector do
         end
 
         context Daru::CategoricalIndex do
-          before { skip }
+          # before { skip }
           context "non-numerical index" do
             let (:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
-            let (:dv)  { Daru::Vector.new 'a'..'e', index: idx1 }
+            let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
 
             context "single category" do
               context "multiple instances" do
@@ -273,7 +273,6 @@ describe Daru::Vector do
               context "single instance" do
                 subject { dv[:c] }
 
-                it { is_not_expected.to be_a Daru::Vector }
                 it { is_expected.to eq 'e' }
               end
             end
@@ -301,7 +300,6 @@ describe Daru::Vector do
             context "single positional index" do
               subject { dv[1] }
 
-              it { is_not_expected.to be_a Daru::Vector }
               it { is_expected.to eq 'b' }
             end
 
@@ -316,7 +314,7 @@ describe Daru::Vector do
 
           context "numerical index" do
             let (:idx) { Daru::CategoricalIndex.new [1, 1, 2, 2, 3] }
-            let (:dv)  { Daru::Vector.new 'a'..'e', index: idx1 }
+            let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
 
             context "single category" do
               context "multiple instances" do
@@ -332,7 +330,6 @@ describe Daru::Vector do
               context "single instance" do
                 subject { dv[3] }
 
-                it { is_not_expected.to be_a Daru::Vector }
                 it { is_expected.to eq 'e' }
               end
             end
@@ -340,30 +337,29 @@ describe Daru::Vector do
         end
       end
 
-      context "#at" do
-        context Daru::CategoricalIndex do
-          before { skip }
-          let (:idx) { Daru::CategoricalIndex.new [:a, 1, 1, :a, :c] }
-          let (:dv)  { Daru::Vector.new 'a'..'e', index: idx1 }
+      # context "#at" do
+      #   before { skip }
+      #   context Daru::CategoricalIndex do
+      #     let (:idx) { Daru::CategoricalIndex.new [:a, 1, 1, :a, :c] }
+      #     let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
 
-          context "multiple positional indexes" do
-            subject { dv.at 0, 1, 2 }
+      #     context "multiple positional indexes" do
+      #       subject { dv.at 0, 1, 2 }
 
-            it { is_expected.to be_a Daru::Vector }
-            its(:size) { is_expected.to eq 3 }
-            its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
-            its(:index) { is_expected.to eq(
-              Daru::CategoricalIndex.new([:a, 1, 1])) }
-          end
+      #       it { is_expected.to be_a Daru::Vector }
+      #       its(:size) { is_expected.to eq 3 }
+      #       its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
+      #       its(:index) { is_expected.to eq(
+      #         Daru::CategoricalIndex.new([:a, 1, 1])) }
+      #     end
 
-          context "single positional index" do
-            subject { dv.at 1 }
+      #     context "single positional index" do
+      #       subject { dv.at 1 }
 
-            it { is_not_expected.to be_a Daru::Vector }
-            it { is_expected.to eq 'b' }
-          end
-        end
-      end
+      #       it { is_expected.to eq 'b' }
+      #     end
+      #   end
+      # end
 
       context "#[]=" do
         context Daru::Index do
@@ -455,6 +451,92 @@ describe Daru::Vector do
             expect { @vector[:b, :two, :test] = 69 }.to raise_error(IndexError)
           end
         end
+        
+        # context Daru::CategoricalIndex do
+        #   before { skip }
+        #   context "non-numerical index" do
+        #     let (:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
+        #     let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
+
+        #     context "single category" do
+        #       context "multiple instances" do
+        #         subject { dv }
+        #         before { dv[:a] = 'x' }
+
+        #         its(:size) { is_expected.to eq 5 }
+        #         its(:to_a) { is_expected.to eq  ['x', 'b', 'x', 'x', 'e'] }
+        #         its(:index) { is_expected.to eq idx }
+        #       end
+
+        #       context "single instance" do
+        #         subject { dv }
+        #         before { dv[:b] = 'x' }
+
+        #         its(:size) { is_expected.to eq 5 }
+        #         its(:to_a) { is_expected.to eq  ['a', 'y', 'c', 'd', 'e'] }
+        #         its(:index) { is_expected.to eq idx }
+        #       end
+        #     end
+
+        #     context "multiple categories" do
+        #       subject { dv }
+        #       before { dv[:a, :c] = 'x' }
+
+        #       its(:size) { is_expected.to eq 5 }
+        #       its(:to_a) { is_expected.to eq  ['x', 'x', 'x', 'x', 'e'] }
+        #       its(:index) { is_expected.to eq idx }
+        #     end
+
+        #     context "multiple positional indexes" do
+        #       subject { dv }
+        #       before { dv[0, 1, 2] = 'x' }
+
+        #       its(:size) { is_expected.to eq 5 }
+        #       its(:to_a) { is_expected.to eq ['x', 'x', 'x', 'd', 'e'] }
+        #       its(:index) { is_expected.to eq idx }
+        #     end
+
+        #     context "single positional index" do
+        #       subject { dv }
+        #       before { dv[1] = 'x' }
+
+        #       its(:size) { is_expected.to eq 5 }
+        #       its(:to_a) { is_expected.to eq ['a', 'x', 'c', 'd', 'e'] }
+        #       its(:index) { is_expected.to eq idx }
+        #     end
+
+        #     context "invalid category" do
+        #       it { expect { dv[:x] = 'x' }.to raise_error IndexError }
+        #     end
+
+        #     context "invalid positional index" do
+        #       it { expect { dv[30] = 'x'}.to raise_error IndexError }
+        #     end
+        #   end
+
+        #   context "numerical index" do
+        #     let (:idx) { Daru::CategoricalIndex.new [1, 1, 2, 2, 3] }
+        #     let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
+
+        #     context "single category" do
+        #       subject { dv }
+        #       before { dv[1] = 'x' }
+
+        #       its(:size) { is_expected.to eq 5 }
+        #       its(:to_a) { is_expected.to eq ['x', 'x', 'c', 'd', 'e'] }
+        #       its(:index) { is_expected.to eq idx }
+        #     end
+            
+        #     context "multiple categories" do
+        #       subject { dv }
+        #       before { dv[1, 2] = 'x' }
+
+        #       its(:size) { is_expected.to eq 5 }
+        #       its(:to_a) { is_expected.to eq ['x', 'x', 'x', 'x', 'e'] }
+        #       its(:index) { is_expected.to eq idx }              
+        #     end
+        #   end
+        # end
       end
 
 
@@ -492,92 +574,6 @@ describe Daru::Vector do
         it 'does not fail on too large num' do
           expect(vector.tail(3000)).to eq vector
         end
-        
-        context Daru::CategoricalIndex do
-          before { skip }
-          context "non-numerical index" do
-            let (:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
-            let (:dv)  { Daru::Vector.new 'a'..'e', index: idx1 }
-
-            context "single category" do
-              context "multiple instances" do
-                subject { dv }
-                before { dv[:a] = 'x' }
-
-                its(:size) { is_expected.to eq 5 }
-                its(:to_a) { is_expected.to eq  ['x', 'b', 'x', 'x', 'e'] }
-                its(:index) { is_expected.to eq idx }
-              end
-
-              context "single instance" do
-                subject { dv }
-                before { dv[:b] = 'x' }
-
-                its(:size) { is_expected.to eq 5 }
-                its(:to_a) { is_expected.to eq  ['a', 'y', 'c', 'd', 'e'] }
-                its(:index) { is_expected.to eq idx }
-              end
-            end
-
-            context "multiple categories" do
-              subject { dv }
-              before { dv[:a, :c] = 'x' }
-
-              its(:size) { is_expected.to eq 5 }
-              its(:to_a) { is_expected.to eq  ['x', 'x', 'x', 'x', 'e'] }
-              its(:index) { is_expected.to eq idx }
-            end
-
-            context "multiple positional indexes" do
-              subject { dv }
-              before { dv[0, 1, 2] = 'x' }
-
-              its(:size) { is_expected.to eq 5 }
-              its(:to_a) { is_expected.to eq ['x', 'x', 'x', 'd', 'e'] }
-              its(:index) { is_expected.to eq idx }
-            end
-
-            context "single positional index" do
-              subject { dv }
-              before { dv[1] = 'x' }
-
-              its(:size) { is_expected.to eq 5 }
-              its(:to_a) { is_expected.to eq ['a', 'x', 'c', 'd', 'e'] }
-              its(:index) { is_expected.to eq idx }
-            end
-
-            context "invalid category" do
-              it { expect { dv[:x] = 'x' }.to raise_error IndexError }
-            end
-
-            context "invalid positional index" do
-              it { expect { dv[30] = 'x'}.to raise_error IndexError }
-            end
-          end
-
-          context "numerical index" do
-            let (:idx) { Daru::CategoricalIndex.new [1, 1, 2, 2, 3] }
-            let (:dv)  { Daru::Vector.new 'a'..'e', index: idx1 }
-
-            context "single category" do
-              subject { dv }
-              before { dv[1] = 'x' }
-
-              its(:size) { is_expected.to eq 5 }
-              its(:to_a) { is_expected.to eq ['x', 'x', 'c', 'd', 'e'] }
-              its(:index) { is_expected.to eq idx }
-            end
-            
-            context "multiple categories" do
-              subject { dv }
-              before { dv[1, 2] = 'x' }
-
-              its(:size) { is_expected.to eq 5 }
-              its(:to_a) { is_expected.to eq ['x', 'x', 'x', 'x', 'e'] }
-              its(:index) { is_expected.to eq idx }              
-            end
-          end
-        end        
       end
 
       context "#concat" do
