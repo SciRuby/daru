@@ -85,7 +85,7 @@ module Daru
     end
     
     def pos *args
-      # Causes Segmentation fault in array_wrapper
+      # Causes Segmentation fault
       if args.first.is_a? Range
         return args.first.to_a
       end
