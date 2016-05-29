@@ -840,6 +840,81 @@ describe Daru::DataFrame do
       end
     end    
   end
+  
+  context "#at" do
+    context Daru::Index do
+      let(:idx) { Daru::Index.new [1, 0, :c] }
+      let(:df) do
+        Daru::DataFrame.new({
+          a: 1..5,
+          b: 'a'..'e'
+        }, index: idx)
+      end
+      
+      context "single position" do
+        it { expect(df.at 1).to eq Daru::Vector.new [2, 'b'], index: [:a, :b] }
+      end
+      
+      context "multiple positions" do
+        subject { df.at 0, 2 }
+        
+        it { is_expected.to be_a described_class }
+        its(:size) { is_expected.to eq 2 }
+        its(:'index.to_a') { is_expected.to eq [1, :c] }
+        its(:a) { is_expected.to eq Daru::Vector.new ['a', 'c'] }
+        its(:b) { is_expected.to eq Daru::Vector.new [1, 3] }
+      end
+      
+      # TODO: Add specs for invalid positions
+    end
+    
+    # context Daru::MultiIndex do
+    #   let (:idx) do
+    #     Daru::MultiIndex.from_tuples [
+    #       [:a,:one,:bar],
+    #       [:a,:one,:baz],
+    #       [:b,:two,:bar],
+    #       [:a,:two,:baz],
+    #     ]
+    #   end
+    #   let (:dv) { Daru::Vector.new 1..4, index: idx }
+      
+    #   context "single position" do
+    #     it { expect(dv.at 1).to eq 2 }
+    #   end
+      
+    #   context "multiple positions" do
+    #     subject { dv.at 2, 3 }
+        
+    #     it { is_expected.to be_a Daru::Vector }
+    #     its(:size) { is_expected.to eq 2 }
+    #     its(:to_a) { is_expected.to eq [3, 4] }
+    #     its(:'index.to_a') { is_expected.to eq [[:b, :two, :bar], 
+    #       [:a, :two, :baz]] }
+    #   end
+    # end
+
+    # context Daru::CategoricalIndex do
+    #   let (:idx) { Daru::CategoricalIndex.new [:a, 1, 1, :a, :c] }
+    #   let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
+
+    #   context "multiple positional indexes" do
+    #     subject { dv.at 0, 1, 2 }
+
+    #     it { is_expected.to be_a Daru::Vector }
+    #     its(:size) { is_expected.to eq 3 }
+    #     its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
+    #     its(:index) { is_expected.to eq(
+    #       Daru::CategoricalIndex.new([:a, 1, 1])) }
+    #   end
+
+    #   context "single positional index" do
+    #     subject { dv.at 1 }
+
+    #     it { is_expected.to eq 'b' }
+    #   end
+    # end
+  end
 
   context "#row[]" do
     context Daru::Index do

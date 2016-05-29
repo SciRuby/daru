@@ -1734,6 +1734,7 @@ module Daru
       if positions.is_a? Numeric
         return Daru::Vector.new populate_row_for(positions), index: @vectors
       else
+        # Can be improved
         new_rows = @data.map { |vec| vec[*args] }
         return Daru::DataFrame.new new_rows, index: @index.subset(*args),
           order: @vectors
