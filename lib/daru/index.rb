@@ -104,6 +104,11 @@ module Daru
         Daru::Index.new args.map { |k| key k }
       end
     end
+    
+    def at *args
+      return key(args.first) if args.size == 1
+      Daru::Index.new args.map { |p| key p }
+    end
 
     def inspect threshold=20
       if size <= threshold
@@ -303,6 +308,11 @@ module Daru
         self[args].conform args
       end
     end
+    
+    def at *args
+      return key(args.first) if args.size == 1
+      Daru::MultiIndex.from_tuples args.map { |p| key p }
+    end
 
     def try_retrieve_from_integer int
       @levels[0].key?(int) ? retrieve_from_tuples([int]) : int
@@ -490,9 +500,19 @@ module Daru
       return enum_for(:each) unless block_given?      
       @array.map { |pos| yield @map_int_cat[pos] }
     end
+    
+    def == other
+      self.class == other.class &&
+        self.size == other.size &&
+        self.to_h == other.to_h
+    end
 
     def to_a
       each.to_a
+    end
+    
+    def to_h
+      @cat_hash
     end
     
     def size
@@ -511,6 +531,11 @@ module Daru
       new_index.flatten!
       
       Daru::CategoricalIndex.new new_index
+    end
+
+    def at *args
+      return index_from_pos(args.first) if args.size == 1
+      Daru::CategoricalIndex.new args.map { |p| index_from_pos p }
     end
   end
 end

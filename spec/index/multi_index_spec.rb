@@ -186,6 +186,30 @@ describe Daru::MultiIndex do
     
     # TODO: Checks for invalid indexes
   end
+  
+  context "at" do
+    let(:idx) do
+      described_class.from_tuples([
+        [:b, :one, :bar],
+        [:b, :two, :bar],
+        [:b, :two, :baz],
+        [:b, :one, :foo]
+      ])
+    end
+    
+    context "single position" do
+      it { expect(idx.at 2).to eq [:b, :two, :baz] }
+    end
+    
+    context "multiple positions" do
+      subject { idx.at 1, 2 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 2 }
+      its(:to_a) { is_expected.to eq [[:b, :two, :bar],
+        [:b, :two, :baz]] }
+    end
+  end
 
   context "#include?" do
     it "checks if a completely specified tuple exists" do

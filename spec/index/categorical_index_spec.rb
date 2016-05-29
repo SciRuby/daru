@@ -86,4 +86,20 @@ describe Daru::CategoricalIndex do
       its(:to_a) { is_expected.to eq [:a, :a] }
     end
   end
+  
+  context "#at" do
+    let(:idx) { described_class.new [:a, :a, :a, 1, :c] }
+    
+    context "single position" do
+      it { expect(idx.at 1).to eq :a }
+    end
+    
+    context "multiple positions" do
+      subject { idx.at 0, 2, 3 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 3 }
+      its(:to_a) { is_expected.to eq [:a, :a, 1] }
+    end
+  end  
 end

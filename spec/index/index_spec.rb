@@ -216,4 +216,20 @@ describe Daru::Index do
       its(:to_a) { is_expected.to eq [:b, 1, 2] }
     end
   end
+  
+  context "at" do
+    let(:idx) { described_class.new [:a, :b, 1 ] }
+    
+    context "single position" do
+      it { expect(idx.at 1).to eq :b }
+    end
+    
+    context "multiple positions" do
+      subject { idx.at 1, 2 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 2 }
+      its(:to_a) { is_expected.to eq [:b, 1] }
+    end
+  end
 end

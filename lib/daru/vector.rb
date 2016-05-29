@@ -212,6 +212,12 @@ module Daru
         index: @index.subset(*input_indexes), dtype: @dtype
       )
     end
+    
+    def at *args
+      return @data[args.first] if args.size == 1
+      
+      Daru::Vector.new args.map { |p| @data[p] }, index: @index.at(*args)
+    end
 
     # Just like in Hashes, you can specify the index label of the Daru::Vector
     # and assign an element an that place in the Daru::Vector.
