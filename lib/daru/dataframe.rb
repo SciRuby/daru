@@ -1727,33 +1727,47 @@ module Daru
       end
     end
 
-    def access_row_multi_index *names
-      location = names.first
+    def access_row *args
+      # location = names[0]
 
-      pos = @index[names]
-      if pos.is_a?(Integer)
-        return Daru::Vector.new(populate_row_for(pos), index: @vectors, name: pos)
-      end
+      # if @index.is_a?(MultiIndex)
+      #   pos = @index[names]
+      #   if pos.is_a?(Integer)
+      #     return Daru::Vector.new(populate_row_for(pos), index: @vectors, name: pos)
+      #   end
 
-      new_rows = pos.map { |tuple| populate_row_for(tuple) }
+      #   new_rows = pos.map { |tuple| populate_row_for(tuple) }
 
-      if !location.is_a?(Range) && names.size < @index.width
-        pos = pos.drop_left_level names.size
-      end
+      #   if !location.is_a?(Range) && names.size < @index.width
+      #     pos = pos.drop_left_level names.size
+      #   end
 
-      Daru::DataFrame.rows(new_rows, order: @vectors, name: @name, index: pos)
-    end
+      #   Daru::DataFrame.rows(new_rows, order: @vectors, name: @name, index: pos)
+      # else
+      #   if names[1].nil?
+      #     names = @index[location]
+      #     if names.is_a?(Numeric)
+      #       row = []
+      #       @data.each do |vector|
+      #         row << vector[location]
+      #       end
 
-    def access_row_single_index *names
-      location = names.first
+      #       return Daru::Vector.new(row, index: @vectors, name: set_name(location))
+      #     end
+      #   end
+      #   # Access multiple rows
+      #   rows = []
+      #   names.each do |name|
+      #     rows << self.row[name].to_a
+      #   end
 
-      if names.count < 2
-        names = @index[location]
-        if names.is_a?(Numeric)
-          row = @data.map { |vector| vector[location] }
+      #   Daru::DataFrame.rows rows, index: names,name: @name, order: @vectors
+      # end
+      
+      positions = @index.pos(*args)
 
-          return Daru::Vector.new(row, index: @vectors, name: coerce_name(location))
-        end
+      if positions.is_a? Numeric
+        return Daru::Vector.new populate_row_for(positions), index: @vectors
       end
       # Access multiple rows
       rows = names.map { |name| self.row[name].to_a }
