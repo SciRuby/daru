@@ -1764,10 +1764,16 @@ module Daru
       #   Daru::DataFrame.rows rows, index: names,name: @name, order: @vectors
       # end
       
+      return nil if args.first.is_a? Range
       positions = @index.pos(*args)
 
       if positions.is_a? Numeric
         return Daru::Vector.new populate_row_for(positions), index: @vectors
+      else
+        new_rows = @data.map { |vec| vec[*args] }
+        p new_rows
+        return Daru::DataFrame.new new_rows, index: @index.subset(*args),
+          order: @vectors
       end
       # Access multiple rows
       rows = names.map { |name| self.row[name].to_a }
