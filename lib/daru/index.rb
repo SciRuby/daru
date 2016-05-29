@@ -470,6 +470,10 @@ module Daru
       end
     end
     
+    def dup
+      Daru::CategoricalIndex.new to_a
+    end
+    
     def include? index
       @cat_hash.include? index
     end

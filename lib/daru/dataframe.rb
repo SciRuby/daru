@@ -1728,42 +1728,6 @@ module Daru
     end
 
     def access_row *args
-      # location = names[0]
-
-      # if @index.is_a?(MultiIndex)
-      #   pos = @index[names]
-      #   if pos.is_a?(Integer)
-      #     return Daru::Vector.new(populate_row_for(pos), index: @vectors, name: pos)
-      #   end
-
-      #   new_rows = pos.map { |tuple| populate_row_for(tuple) }
-
-      #   if !location.is_a?(Range) && names.size < @index.width
-      #     pos = pos.drop_left_level names.size
-      #   end
-
-      #   Daru::DataFrame.rows(new_rows, order: @vectors, name: @name, index: pos)
-      # else
-      #   if names[1].nil?
-      #     names = @index[location]
-      #     if names.is_a?(Numeric)
-      #       row = []
-      #       @data.each do |vector|
-      #         row << vector[location]
-      #       end
-
-      #       return Daru::Vector.new(row, index: @vectors, name: set_name(location))
-      #     end
-      #   end
-      #   # Access multiple rows
-      #   rows = []
-      #   names.each do |name|
-      #     rows << self.row[name].to_a
-      #   end
-
-      #   Daru::DataFrame.rows rows, index: names,name: @name, order: @vectors
-      # end
-      
       return nil if args.first.is_a? Range
       positions = @index.pos(*args)
 
@@ -1771,7 +1735,6 @@ module Daru
         return Daru::Vector.new populate_row_for(positions), index: @vectors
       else
         new_rows = @data.map { |vec| vec[*args] }
-        p new_rows
         return Daru::DataFrame.new new_rows, index: @index.subset(*args),
           order: @vectors
       end
