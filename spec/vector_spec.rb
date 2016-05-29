@@ -340,7 +340,7 @@ describe Daru::Vector do
       context "#at" do
         context Daru::Index do
           let (:idx) { Daru::Index.new [1, 0, :c] }
-          let (:dv) { Daru::Vector.new ['a', 'b', 'c'] }
+          let (:dv) { Daru::Vector.new ['a', 'b', 'c'], index: idx }
           
           context "single position" do
             it { expect(dv.at 1).to eq 'b' }
