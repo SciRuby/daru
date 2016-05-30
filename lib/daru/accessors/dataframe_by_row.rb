@@ -9,8 +9,8 @@ module Daru
         @data_frame[*names, :row]
       end
 
-      def []=(name, vector)
-        @data_frame[name, :row] = vector
+      def []=(*names, vector)
+        @data_frame[*names, :row] = vector
       end
     end
   end

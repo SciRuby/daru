@@ -1834,22 +1834,32 @@ module Daru
       end
     end
 
-    def insert_or_modify_row name, vector
-      raise NotImplementedError, "Still can't insert rows in multi index dataframes" \
-        if index.is_a?(MultiIndex)
+    def insert_or_modify_row names, vector
+      # raise NotImplementedError, "Still can't insert rows in multi index dataframes" \
+      #   if index.is_a?(MultiIndex)
 
-      name = name[0]
-      vec = Vector.coerce(vector, name: coerce_name(name), index: @vectors)
+      # name = name[0]
+      # vec = Vector.coerce(vector, name: coerce_name(name), index: @vectors)
 
-      if @index.include? name
-        each_vector_with_index do |v,i|
-          v[name] = vec.index.include?(i) ? vec[i] : nil
-        end
-      else
-        @index |= [name]
-        each_vector_with_index do |v,i|
-          v.concat((vec.index.include?(i) ? vec[i] : nil), name)
-        end
+      # if @index.include? name
+      #   each_vector_with_index do |v,i|
+      #     v[name] = vec.index.include?(i) ? vec[i] : nil
+      #   end
+      # else
+      #   @index |= [name]
+      #   each_vector_with_index do |v,i|
+      #     v.concat((vec.index.include?(i) ? vec[i] : nil), name)
+      #   end
+      # end
+      
+      vector = Daru::Vector.new(vector) unless vector.is_a? Daru::Vector
+      
+      positions = @index.pos(*names)
+      
+      positions = [positions] if positions.is_a? Numeric
+      
+      @data.each_with_index do |vec, pos|
+        vec.at_set(positions, vector.at(pos))
       end
 
       set_size

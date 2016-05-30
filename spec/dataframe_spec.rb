@@ -779,10 +779,10 @@ describe Daru::DataFrame do
 
     context Daru::MultiIndex do
       pending
+      # TO DO
     end
 
     context Daru::CategoricalIndex do
-      before { skip }
       let(:idx) { Daru::CategoricalIndex.new [:a, 1, :a, 1, :c] }
       let(:dv) { Daru::Vector.new ['x', 'y'] }
       let(:df) do
@@ -800,8 +800,8 @@ describe Daru::DataFrame do
           it { is_expected.to be_a Daru::DataFrame }
           its(:index) { is_expected.to eq idx }
           its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
-          its(:a) { Daru::Vector.new ['x', 'b', 'c', 'x', 'e'] }
-          its(:b) { Daru::Vector.new ['y', 2, 'y', 4, 5] }
+          its(:'a.to_a') { is_expected.to eq ['x', 'b', 'x', 'd', 'e'] }
+          its(:'b.to_a') { is_expected.to eq ['y', 2, 'y', 4, 5] }
         end
   
         context "multiple categories" do
@@ -811,8 +811,8 @@ describe Daru::DataFrame do
           it { is_expected.to be_a Daru::DataFrame }
           its(:index) { is_expected.to eq idx }
           its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
-          its(:a) { Daru::Vector.new ['x', 'x', 'x', 'x', 'e'] }
-          its(:b) { Daru::Vector.new ['y', 'y', 'y', 'y', 5] }
+          its(:'a.to_a') { is_expected.to eq ['x', 'x', 'x', 'x', 'e'] }
+          its(:'b.to_a') { is_expected.to eq ['y', 'y', 'y', 'y', 5] }
         end
 
         context "positional index" do
@@ -822,8 +822,8 @@ describe Daru::DataFrame do
           it { is_expected.to be_a Daru::DataFrame }
           its(:index) { is_expected.to eq idx }
           its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
-          its(:a) { Daru::Vector.new ['x', 'b', 'x', 'd', 'e'] }
-          its(:b) { Daru::Vector.new ['y', 2, 'y', 4, 5] }
+          its(:'a.to_a') { is_expected.to eq ['x', 'b', 'x', 'd', 'e'] }
+          its(:'b.to_a') { is_expected.to eq ['y', 2, 'y', 4, 5] }
         end
 
         context "invalid positional index" do
