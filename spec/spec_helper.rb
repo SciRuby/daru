@@ -58,8 +58,9 @@ class String
   # "test
   # me"
   def unindent
-    gsub(/\n\s+?\|/, "\n").  # for all lines looking like "<spaces>|" -- remove this.
-    gsub(/^\n|\n\s+$/, '')   # remove empty strings before and after
+    gsub(/\n\s+?\|/, "\n")    # for all lines looking like "<spaces>|" -- remove this.
+    .gsub(/\|\n/, "\n")       # allow to write trailing space not removed by editor
+    .gsub(/^\n|\n\s+$/, '')   # remove empty strings before and after
   end
 end
 
