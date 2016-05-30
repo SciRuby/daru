@@ -451,7 +451,8 @@ module Daru
     def initialize indexes
       # Create a hash to map each category to positional indexes
       @cat_hash = Hash.new []
-      # Create an array to map each positional index to its category
+      # To link every instance to its category,
+      # it stores integer for every instance representing its category
       @array = []
       # Map each category to a unique integer for effective storage in @array
       map_cat_int = {}
