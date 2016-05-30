@@ -851,7 +851,7 @@ module Daru
     def inspect spacing=20, threshold=15
       row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
 
-      "#<#{self.class}(#{size})>\n" +
+      "#<#{self.class}(#{size})#{metadata && !metadata.empty? ? metadata.inspect : ''}>\n" +
         Formatters::Table.format(
           @data.lazy.map { |v| [v] },
           headers: [@name || 'nil'],

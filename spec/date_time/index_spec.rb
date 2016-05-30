@@ -179,14 +179,29 @@ describe DateTimeIndex do
   end
 
   context '#inspect' do
-    it 'works, you know' do
-      index = DateTimeIndex.new([
-        DateTime.new(2014,7,1),DateTime.new(2014,7,2),DateTime.new(2014,7,3),
-        DateTime.new(2014,7,4)], freq: :infer)
-      expect(index.inspect).to eq("#<DateTimeIndex:#{index.object_id} offset=D periods=4 data=[2014-07-01T00:00:00+00:00...2014-07-04T00:00:00+00:00]>")
+    subject { index.inspect }
+
+    context 'with known frequency' do
+      let(:index){
+        DateTimeIndex.new([
+          DateTime.new(2014,7,1),DateTime.new(2014,7,2),DateTime.new(2014,7,3),
+          DateTime.new(2014,7,4)], freq: :infer)
+      }
+      it { is_expected.to eq \
+        "#<Daru::DateTimeIndex(4, frequency=D) 2014-07-01T00:00:00+00:00...2014-07-04T00:00:00+00:00>"
+      }
     end
 
-    # FIXME: Personally I'd prefer more compact inspects, like #<DateTimeIndex[D](2014-07-01 - 2014-07-04)>, or something like it - zverok
+    context 'with unknown frequency' do
+      let(:index){
+        DateTimeIndex.new([
+          DateTime.new(2014,7,1),DateTime.new(2014,7,2),DateTime.new(2014,7,3),
+          DateTime.new(2014,7,4)])
+      }
+      it { is_expected.to eq \
+        "#<Daru::DateTimeIndex(4) 2014-07-01T00:00:00+00:00...2014-07-04T00:00:00+00:00>"
+      }
+    end
   end
 
   context "#frequency" do

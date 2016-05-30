@@ -1335,6 +1335,17 @@ describe Daru::Vector do
       }.unindent }
     end
 
+    context 'with metadata' do
+      subject(:vector) { Daru::Vector.new [1,2,3], index: [:a, :b, :c], name: 'test', metadata: {hey: 'JUDE!'} }
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::Vector(3){:hey=>"JUDE!"}>
+        |      test
+        |    a    1
+        |    b    2
+        |    c    3
+      }.unindent }
+    end
+
     context 'very large amount of data' do
       subject(:vector) { Daru::Vector.new [1,2,3] * 100, name: 'test' }
       its(:inspect) { is_expected.to eq %Q{
