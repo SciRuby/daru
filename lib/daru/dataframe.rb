@@ -262,6 +262,16 @@ module Daru
       axis = extract_axis(names, :vector)
       dispatch_to_axis axis, :access, *names
     end
+    
+    def at *positions
+      if positions.size == 1
+        return Daru::Vector.new @data.map { |vec| vec.at(*positions) }, index: @vectors
+      else
+        new_rows = @data.map { |vec| vec.at(*positions) }
+        return Daru::DataFrame.new new_rows, index: @index.at(*positions),
+          order: @vectors
+      end
+    end    
 
     # Insert a new row/vector of the specified name or modify a previous row.
     # Instead of using this method directly, use df.row[:a] = [1,2,3] to set/create
@@ -1728,6 +1738,7 @@ module Daru
     end
 
     def access_row *args
+      # Problem with ranges
       return nil if args.first.is_a? Range
       positions = @index.pos(*args)
 

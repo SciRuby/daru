@@ -502,7 +502,8 @@ module Daru
     
     def each
       return enum_for(:each) unless block_given?      
-      @array.map { |pos| yield @map_int_cat[pos] }
+      @array.each { |pos| yield @map_int_cat[pos] }
+      self
     end
     
     def == other
