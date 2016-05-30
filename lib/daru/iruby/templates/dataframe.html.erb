@@ -1,0 +1,36 @@
+<table>
+  <tr>
+    <th colspan='<%= @vectors.size+1 %>'>Daru::DataFrame:<%=object_id%> rows: <%=nrows%> cols: <%=ncols%></th>
+  </tr>
+  <tr>
+    <th></th>
+    <% @vectors.each do |vector| %>
+      <th><%=vector%></th>
+    <% end %>
+  </tr>
+
+  <% @index.first(threshold).each do |index| %>
+    <tr>
+      <td><%= index %></td>
+      <% row[index].each do |element| %>
+        <td><%= element.to_s %></td>
+      <% end %>
+    </tr>
+  <% end %>
+
+  <% if nrows > threshold %>
+    <tr>
+      <%= '<td>...</td>' * (@vectors.size + 1) %>
+    </tr>
+
+    <% last_index = @index.to_a.last
+       last_row = row[last_index] %>
+
+    <tr>
+      <td><%= last_index %></td>
+        <% last_row.each do |element| %>
+          <td><%= element.to_s %></td>
+        <% end %>
+    </tr>
+  <% end %>
+</table>

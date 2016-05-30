@@ -1,5 +1,3 @@
-require 'spec_helper.rb'
-
 describe Daru::Vector do
   before :each do
     @dv1 = Daru::Vector.new [1,2,3,4], name: :boozy, index: [:bud, :kf, :henie, :corona]
@@ -30,7 +28,7 @@ describe Daru::Vector do
       v1 = Daru::Vector.new([1,2,3])
       v2 = Daru::Vector.new([1,2,3], index: [:a,:b,:c])
 
-      expect(v1 + v2).to eq(Daru::Vector.new([nil]*6, index: [0,1,2,:a,:b,:c]))      
+      expect(v1 + v2).to eq(Daru::Vector.new([nil]*6, index: [0,1,2,:a,:b,:c]))
     end
   end
 
@@ -50,7 +48,7 @@ describe Daru::Vector do
     end
 
     it "multiplies number to each element of the entire vector" do
-      
+
     end
   end
 
@@ -60,7 +58,7 @@ describe Daru::Vector do
     end
 
     it "divides number from each element of the entire vector" do
-      
+
     end
   end
 
@@ -69,13 +67,13 @@ describe Daru::Vector do
   end
 
   context "#**" do
-    
+
   end
 
   context "#exp" do
     it "calculates exp of all numbers" do
-      expect(@with_md1.exp.round(3)).to eq(Daru::Vector.new([2.718281828459045, 
-        7.38905609893065, 20.085536923187668, nil, 148.4131591025766, nil], index: 
+      expect(@with_md1.exp.round(3)).to eq(Daru::Vector.new([2.718281828459045,
+        7.38905609893065, 20.085536923187668, nil, 148.4131591025766, nil], index:
         [:a, :b, :c, :obi, :wan, :corona], name: :missing).round(3))
     end
   end
@@ -95,6 +93,6 @@ describe Daru::Vector do
   context "#round" do
     it "rounds to given precision" do
       @with_md1.round(2)
-    end 
+    end
   end
 end

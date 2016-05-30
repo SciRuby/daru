@@ -4,4 +4,5 @@ doc/
 .yardoc/
 .bundle
 vendor/
+profile/out/
 coverage/

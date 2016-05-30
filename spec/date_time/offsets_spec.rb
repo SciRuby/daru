@@ -1,4 +1,3 @@
-require 'spec_helper'
 include Daru
 
 describe DateOffset do
@@ -63,7 +62,7 @@ describe Offsets do
     end
 
     context "#initialize" do
-      it "creates a seconds offset" do    
+      it "creates a seconds offset" do
         expect(@offset + DateTime.new(2012,3,4,23,4,00)).to eq(
           DateTime.new(2012,3,4,23,4,05))
       end
@@ -200,7 +199,7 @@ describe Offsets do
     end
 
     context "#+" do
-      it "offsets to beginning of next month" do 
+      it "offsets to beginning of next month" do
         expect(@offset + DateTime.new(2012,3,25)).to eq(
           DateTime.new(2012,4,1))
 
@@ -296,7 +295,7 @@ describe Offsets do
     end
 
     context "#+" do
-      it "offsets date to future" do 
+      it "offsets date to future" do
         expect(@n_offset + DateTime.new(2012,3,25)).to eq(
           DateTime.new(2014,1,1))
       end

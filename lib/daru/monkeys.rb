@@ -8,11 +8,14 @@ class Array
   def recode_repeated
     return self if size == uniq.size
 
-    duplicated = group_by { |n| n }
-                 .select { |_, g| g.size > 1 }.map(&:first)
+    # create hash of { <name> => 0}
+    # for all names which are more than one time in array
+    counter = group_by(&:itself)
+              .select { |_, g| g.size > 1 }
+              .map(&:first)
+              .collect { |n| [n, 0] }.to_h
 
-    counter = duplicated.collect { |n| [n, 0] }.to_h
-
+    # ...and use this hash for actual recode
     collect do |n|
       if counter.key?(n)
         counter[n] += 1
@@ -31,6 +34,14 @@ class Array
 
   def to_index
     Daru::Index.new self
+  end
+
+  def all_are?(match)
+    !empty? && grep(match).size == size
+  end
+
+  def single_class?
+    map(&:class).uniq.size == 1
   end
 end
 
@@ -87,11 +98,17 @@ class Matrix
 end
 
 class String
+  NUMBER_PATTERN = /^-?\d+[,.]?\d*(e-?\d+)?$/
+
   def is_number?
-    if self =~ /^-?\d+[,.]?\d*(e-?\d+)?$/
-      true
-    else
-      false
+    !!self =~ NUMBER_PATTERN
+  end
+end
+
+class Object
+  if RUBY_VERSION < '2.2'
+    def itself
+      self
     end
   end
 end

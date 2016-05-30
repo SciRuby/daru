@@ -1,5 +1,3 @@
-require 'spec_helper.rb'
-
 describe "Monkeys" do
   context Array do
     it "#recode_repeated" do

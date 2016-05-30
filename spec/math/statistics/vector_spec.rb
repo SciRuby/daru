@@ -1,5 +1,3 @@
-require 'spec_helper.rb'
-
 describe Daru::Vector do
   [:array, :gsl].each do |dtype| #nmatrix still unstable
     describe dtype do

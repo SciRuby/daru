@@ -1,5 +1,3 @@
-require 'spec_helper.rb'
-
 describe Daru::Core::GroupBy do
   before do
     @df = Daru::DataFrame.new({

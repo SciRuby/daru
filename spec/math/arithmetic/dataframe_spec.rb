@@ -1,5 +1,3 @@
-require 'spec_helper.rb'
-
 describe Daru::DataFrame do
   before(:each) do
     @df = Daru::DataFrame.new({a: [1,2,3,4,5], b: ['a','e','i','o','u'],

@@ -1,9 +1,7 @@
-require 'spec_helper.rb'
-
 describe Daru::DataFrame do
   before do
     @df = Daru::DataFrame.new({
-      a: ['foo'  ,  'foo',  'foo',  'foo',  'foo',  'bar',  'bar',  'bar',  'bar'], 
+      a: ['foo'  ,  'foo',  'foo',  'foo',  'foo',  'bar',  'bar',  'bar',  'bar'],
       b: ['one'  ,  'one',  'one',  'two',  'two',  'one',  'one',  'two',  'two'],
       c: ['small','large','large','small','small','large','small','large','small'],
       d: [1,2,2,3,3,4,5,6,7],
@@ -14,7 +12,7 @@ describe Daru::DataFrame do
 
   context "#mean" do
     it "calculates mean of single level numeric only vectors and returns values in a Vector" do
-      expect(@df.mean.round(2)).to eq(Daru::Vector.new([3.67, 7.33, 36.67], 
+      expect(@df.mean.round(2)).to eq(Daru::Vector.new([3.67, 7.33, 36.67],
         index: [:d, :e, :f]
       ))
     end
@@ -130,7 +128,7 @@ describe Daru::DataFrame do
         b: [-0.0071019, 0.0020747, 0.0056071],
         c: [-0.0153640, 0.0056071, 0.0230777]
       })
-      
+
       test.cov.each_vector_with_index do |v, i|
         expect_correct_vector_in_delta v, ans[i], 0.01
       end

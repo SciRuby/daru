@@ -1,5 +1,3 @@
-require 'spec_helper.rb'
-
 describe Daru::Index do
   context ".new" do
     it "creates an Index object if Index-like data is supplied" do
@@ -203,6 +201,26 @@ describe Daru::MultiIndex do
         [0,0,1,1,0,1,1,0,0,0,1,1],
         [0,1,0,1,0,0,1,2,0,1,2,0]
       ])
+    end
+  end
+
+  context '.try_from_tuples' do
+    it 'creates MultiIndex, if there are tuples' do
+      tuples = [
+        [:a, :one],
+        [:a, :two],
+        [:b, :one],
+        [:b, :two],
+        [:c, :one],
+        [:c, :two]
+      ]
+      mi = Daru::MultiIndex.try_from_tuples(tuples)
+      expect(mi).to be_a Daru::MultiIndex
+    end
+
+    it 'returns nil, if MultiIndex can not be created' do
+      mi = Daru::MultiIndex.try_from_tuples([:a, :b, :c])
+      expect(mi).to be_nil
     end
   end
 

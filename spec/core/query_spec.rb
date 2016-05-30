@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Daru::Core::Query::BoolArray do
   before do
     @klass = Daru::Core::Query::BoolArray

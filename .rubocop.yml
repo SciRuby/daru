@@ -1,14 +1,15 @@
-inherit_from: .rubocop_todo.yml
-
 AllCops:
   Include:
     - 'lib/**/*'
   Exclude:
+    - '**/*.erb'
     - 'spec/*'
     - 'spec/**/*'
     - 'vendor/**/*'
     - 'benchmarks/*'
+    - 'profile/*'
   DisplayCopNames: true
+  TargetRubyVersion: 2.0
 
 # Preferred codebase style ---------------------------------------------
 Style/ExtraSpacing:
@@ -35,6 +36,15 @@ Style/AlignParameters:
 Style/EmptyElse:
   EnforcedStyle: empty
 
+Metrics/LineLength:
+  Max: 120
+
+Metrics/ModuleLength:
+  Max: 200
+
+Metrics/ClassLength:
+  Max: 200
+
 Style/ParallelAssignment:
   Enabled: false
 
@@ -59,6 +69,17 @@ Style/EmptyCaseCondition:
 # Neither of prefered styles are good enough :(
 Style/BlockDelimiters:
   Enabled: false
+
+# Current preferred metrics --------------------------------------------
+# Better values are encouraged, but not required.
+Metrics/AbcSize:
+  Max: 20
+
+Metrics/MethodLength:
+  Max: 15
+
+Metrics/CyclomaticComplexity:
+  Max: 7
 
 # TODO -----------------------------------------------------------------
 

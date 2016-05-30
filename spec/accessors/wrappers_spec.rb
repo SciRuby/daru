@@ -1,5 +1,3 @@
-require 'spec_helper.rb'
-
 describe Daru::Accessors::NMatrixWrapper do
   before :each do
     stub_context = Object.new
@@ -32,7 +30,7 @@ describe Daru::Accessors::NMatrixWrapper do
 end
 
 describe Daru::Accessors::ArrayWrapper do
-  
+
 end
 
 describe Daru::Accessors::GSLWrapper do

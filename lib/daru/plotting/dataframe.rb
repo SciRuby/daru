@@ -20,9 +20,7 @@ module Daru
       #   df = Daru::DataFrame.new({a:['A', 'B', 'C', 'D', 'E'], b:[10,20,30,40,50]})
       #   df.plot type: :bar, x: :a, y: :b
       def plot opts={}
-        options = {
-          type:  :scatter
-        }.merge(opts)
+        options = {type:  :scatter}.merge(opts)
 
         plot = Nyaplot::Plot.new
         types = extract_option :type, options
@@ -30,18 +28,11 @@ module Daru
         diagram =
           case
           when !([:scatter, :bar, :line, :histogram] & types).empty?
-            if single_diagram? options
-              add_single_diagram plot, options
-            else
-              add_multiple_diagrams plot, options
-            end
+            plot_regular_diagrams plot, opts
           when types.include?(:box)
-            numeric = only_numerics(clone: false).dup_only_valid
-
-            plot.add_with_df(
-              numeric.to_nyaplotdf,
-              :box, *numeric.vectors.to_a
-            )
+            plot_box_diagram plot
+          else
+            raise ArgumentError, "Unidentified plot types: #{types}"
           end
 
         yield(plot, diagram) if block_given?
@@ -52,7 +43,20 @@ module Daru
       private
 
       def single_diagram? options
-        options[:x] and options[:x].is_a?(Symbol)
+        options[:x] && options[:x].is_a?(Symbol)
+      end
+
+      def plot_regular_diagrams plot, opts
+        if single_diagram? opts
+          add_single_diagram plot, opts
+        else
+          add_multiple_diagrams plot, opts
+        end
+      end
+
+      def plot_box_diagram plot
+        numeric = only_numerics(clone: false).dup_only_valid
+        plot.add_with_df(numeric.to_nyaplotdf, :box, *numeric.vectors.to_a)
       end
 
       def add_single_diagram plot, options
@@ -72,21 +76,13 @@ module Daru
         x_vecs = extract_option :x, options
         y_vecs = extract_option :y, options
 
-        diagrams   = []
         nyaplot_df = to_nyaplotdf
         total      = x_vecs.size
-        types = types.size < total ? types*total : types
+        types      = types.size < total ? types*total : types
 
-        (0...total).each do |i|
-          diagrams << plot.add_with_df(
-            nyaplot_df,
-            types[i],
-            x_vecs[i],
-            y_vecs[i]
-          )
+        types.zip(x_vecs, y_vecs).map do |t, xv, yv|
+          plot.add_with_df(nyaplot_df, t, xv, yv)
         end
-
-        diagrams
       end
 
       def extract_option opt, options

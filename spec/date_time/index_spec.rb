@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 include Daru
 
 describe DateTimeIndex do
@@ -29,6 +27,20 @@ describe DateTimeIndex do
     it "lets setting of string time format" do
       pending
       Daru::DateTimeIndex.format = 'some-date-time-format'
+    end
+  end
+
+  context '.try_create' do
+    it 'creates index from array of dates' do
+      index = DateTimeIndex.try_create([
+        DateTime.new(2014,7,1),DateTime.new(2014,7,2),
+        DateTime.new(2014,7,3),DateTime.new(2014,7,4)])
+      expect(index.class).to eq(DateTimeIndex)
+    end
+
+    it 'does not creates index from anything else' do
+      index = DateTimeIndex.try_create([:a, :b, :c])
+      expect(index).to be_nil
     end
   end
 

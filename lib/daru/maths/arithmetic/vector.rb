@@ -63,19 +63,17 @@ module Daru
         end
 
         def v2v_binary operation, other
-          common_idxs = []
-          elements    = []
+          # FIXME: why the sorting?.. - zverok, 2016-05-18
           index = (@index.to_a | other.index.to_a).sort
 
-          index.each do |idx|
+          elements = index.map do |idx|
             this = self.index.include?(idx) ? self[idx] : nil
             that = other.index.include?(idx) ? other[idx] : nil
 
-            elements << (this && that ? this.send(operation, that) : nil)
-            common_idxs << idx
+            this && that ? this.send(operation, that) : nil
           end
 
-          Daru::Vector.new(elements, name: @name, index: common_idxs)
+          Daru::Vector.new(elements, name: @name, index: index)
         end
       end
     end
