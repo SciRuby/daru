@@ -1324,6 +1324,16 @@ describe Daru::Vector do
       }.unindent }
     end
 
+    context 'no name' do
+      subject(:vector) { Daru::Vector.new [1,2,3], index: [:a, :b, :c] }
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::Vector(3)>
+        |   a   1
+        |   b   2
+        |   c   3
+      }.unindent }
+    end
+
     context 'with nils' do
       subject(:vector) { Daru::Vector.new [1,nil,3], index: [:a, :b, :c], name: 'test' }
       its(:inspect) { is_expected.to eq %Q{

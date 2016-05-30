@@ -854,7 +854,7 @@ module Daru
       "#<#{self.class}(#{size})#{metadata && !metadata.empty? ? metadata.inspect : ''}>\n" +
         Formatters::Table.format(
           @data.lazy.map { |v| [v] },
-          headers: [@name || 'nil'],
+          headers: @name && [@name],
           row_headers: row_headers,
           threshold: threshold,
           spacing: spacing

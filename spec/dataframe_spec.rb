@@ -2656,7 +2656,7 @@ describe Daru::DataFrame do
     context 'empty' do
       let(:df) { Daru::DataFrame.new({}, order: %w[a b c])}
       it { is_expected.to eq %Q{
-        |#<Daru::DataFrame: #{df.name} (3x0)>
+        |#<Daru::DataFrame(3x0)>
         |   a   b   c
       }.unindent}
     end
@@ -2665,6 +2665,17 @@ describe Daru::DataFrame do
       let(:df) { Daru::DataFrame.new({a: [1,2,3], b: [3,4,5], c: [6,7,8]}, name: 'test')}
       it { should == %Q{
         |#<Daru::DataFrame: test (3x3)>
+        |       a   b   c
+        |   0   1   3   6
+        |   1   2   4   7
+        |   2   3   5   8
+       }.unindent}
+    end
+
+    context 'no name' do
+      let(:df) { Daru::DataFrame.new({a: [1,2,3], b: [3,4,5], c: [6,7,8]})}
+      it { should == %Q{
+        |#<Daru::DataFrame(3x3)>
         |       a   b   c
         |   0   1   3   6
         |   1   2   4   7

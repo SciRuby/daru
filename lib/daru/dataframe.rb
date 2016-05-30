@@ -1606,8 +1606,9 @@ module Daru
     # Pretty print in a nice table format for the command line (irb/pry/iruby)
     def inspect spacing=10, threshold=15
       row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
+      name_part = @name ? ": #{@name} " : ''
 
-      "#<#{self.class}: #{@name || 'nil'} (#{ncols}x#{nrows})>\n" +
+      "#<#{self.class}#{name_part}(#{ncols}x#{nrows})>\n" +
         Formatters::Table.format(
           each_row.lazy,
           row_headers: row_headers,
