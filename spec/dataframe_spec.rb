@@ -339,13 +339,6 @@ describe Daru::DataFrame do
             index: [:one, :two, :three])
         }.to raise_error
       end
-
-      it "provides default name if necessarry" do
-        df = Daru::DataFrame.new({})
-        expect(df.name).to match(/^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$/)
-        df = Daru::DataFrame.new({}, name: 'test')
-        expect(df.name).to eq 'test'
-      end
     end
 
     context Daru::MultiIndex do
@@ -2663,7 +2656,7 @@ describe Daru::DataFrame do
     context 'empty' do
       let(:df) { Daru::DataFrame.new({}, order: %w[a b c])}
       it { is_expected.to eq %Q{
-        |#<Daru::DataFrame:#{df.object_id} @name = #{df.name} @size = 0>
+        |#<Daru::DataFrame:#{df.object_id} @name = nil @size = 0>
         |      a   b   c
       }.unindent}
     end
