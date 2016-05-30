@@ -497,91 +497,90 @@ describe Daru::Vector do
           end
         end
         
-        # context Daru::CategoricalIndex do
-        #   before { skip }
-        #   context "non-numerical index" do
-        #     let (:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
-        #     let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
+        context Daru::CategoricalIndex do
+          context "non-numerical index" do
+            let (:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
+            let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
 
-        #     context "single category" do
-        #       context "multiple instances" do
-        #         subject { dv }
-        #         before { dv[:a] = 'x' }
+            context "single category" do
+              context "multiple instances" do
+                subject { dv }
+                before { dv[:a] = 'x' }
 
-        #         its(:size) { is_expected.to eq 5 }
-        #         its(:to_a) { is_expected.to eq  ['x', 'b', 'x', 'x', 'e'] }
-        #         its(:index) { is_expected.to eq idx }
-        #       end
+                its(:size) { is_expected.to eq 5 }
+                its(:to_a) { is_expected.to eq  ['x', 'b', 'x', 'x', 'e'] }
+                its(:index) { is_expected.to eq idx }
+              end
 
-        #       context "single instance" do
-        #         subject { dv }
-        #         before { dv[:b] = 'x' }
+              context "single instance" do
+                subject { dv }
+                before { dv[:b] = 'x' }
 
-        #         its(:size) { is_expected.to eq 5 }
-        #         its(:to_a) { is_expected.to eq  ['a', 'y', 'c', 'd', 'e'] }
-        #         its(:index) { is_expected.to eq idx }
-        #       end
-        #     end
+                its(:size) { is_expected.to eq 5 }
+                its(:to_a) { is_expected.to eq  ['a', 'x', 'c', 'd', 'e'] }
+                its(:index) { is_expected.to eq idx }
+              end
+            end
 
-        #     context "multiple categories" do
-        #       subject { dv }
-        #       before { dv[:a, :c] = 'x' }
+            context "multiple categories" do
+              subject { dv }
+              before { dv[:a, :c] = 'x' }
 
-        #       its(:size) { is_expected.to eq 5 }
-        #       its(:to_a) { is_expected.to eq  ['x', 'x', 'x', 'x', 'e'] }
-        #       its(:index) { is_expected.to eq idx }
-        #     end
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq  ['x', 'b', 'x', 'x', 'x'] }
+              its(:index) { is_expected.to eq idx }
+            end
 
-        #     context "multiple positional indexes" do
-        #       subject { dv }
-        #       before { dv[0, 1, 2] = 'x' }
+            context "multiple positional indexes" do
+              subject { dv }
+              before { dv[0, 1, 2] = 'x' }
 
-        #       its(:size) { is_expected.to eq 5 }
-        #       its(:to_a) { is_expected.to eq ['x', 'x', 'x', 'd', 'e'] }
-        #       its(:index) { is_expected.to eq idx }
-        #     end
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq ['x', 'x', 'x', 'd', 'e'] }
+              its(:index) { is_expected.to eq idx }
+            end
 
-        #     context "single positional index" do
-        #       subject { dv }
-        #       before { dv[1] = 'x' }
+            context "single positional index" do
+              subject { dv }
+              before { dv[1] = 'x' }
 
-        #       its(:size) { is_expected.to eq 5 }
-        #       its(:to_a) { is_expected.to eq ['a', 'x', 'c', 'd', 'e'] }
-        #       its(:index) { is_expected.to eq idx }
-        #     end
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq ['a', 'x', 'c', 'd', 'e'] }
+              its(:index) { is_expected.to eq idx }
+            end
 
-        #     context "invalid category" do
-        #       it { expect { dv[:x] = 'x' }.to raise_error IndexError }
-        #     end
+            context "invalid category" do
+              it { expect { dv[:x] = 'x' }.to raise_error IndexError }
+            end
 
-        #     context "invalid positional index" do
-        #       it { expect { dv[30] = 'x'}.to raise_error IndexError }
-        #     end
-        #   end
+            context "invalid positional index" do
+              it { expect { dv[30] = 'x'}.to raise_error IndexError }
+            end
+          end
 
-        #   context "numerical index" do
-        #     let (:idx) { Daru::CategoricalIndex.new [1, 1, 2, 2, 3] }
-        #     let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
+          context "numerical index" do
+            let (:idx) { Daru::CategoricalIndex.new [1, 1, 2, 2, 3] }
+            let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
 
-        #     context "single category" do
-        #       subject { dv }
-        #       before { dv[1] = 'x' }
+            context "single category" do
+              subject { dv }
+              before { dv[1] = 'x' }
 
-        #       its(:size) { is_expected.to eq 5 }
-        #       its(:to_a) { is_expected.to eq ['x', 'x', 'c', 'd', 'e'] }
-        #       its(:index) { is_expected.to eq idx }
-        #     end
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq ['x', 'x', 'c', 'd', 'e'] }
+              its(:index) { is_expected.to eq idx }
+            end
             
-        #     context "multiple categories" do
-        #       subject { dv }
-        #       before { dv[1, 2] = 'x' }
+            context "multiple categories" do
+              subject { dv }
+              before { dv[1, 2] = 'x' }
 
-        #       its(:size) { is_expected.to eq 5 }
-        #       its(:to_a) { is_expected.to eq ['x', 'x', 'x', 'x', 'e'] }
-        #       its(:index) { is_expected.to eq idx }              
-        #     end
-        #   end
-        # end
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq ['x', 'x', 'x', 'x', 'e'] }
+              its(:index) { is_expected.to eq idx }              
+            end
+          end
+        end
       end
 
 

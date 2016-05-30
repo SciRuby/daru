@@ -232,25 +232,17 @@ module Daru
     #   #  a 999
     #   #  b   2
     #   #  c   3
-    def []=(*location, value)
+    def []=(*indexes, value)
       cast(dtype: :array) if value.nil? && dtype != :array
 
       guard_type_check(value)
 
-      pos = @index[*location]
-
-      if pos.is_a?(Numeric)
-        @data[pos] = value
+      positions = @index.pos(*indexes)
+      
+      if positions.is_a? Numeric
+        @data[positions] = value
       else
-        pos.each { |tuple| self[tuple] = value }
-
-        # FIXME: Can't guess how to activate this rescue branch -- zverok
-        #
-        # begin
-        #   pos.each { |tuple| self[tuple] = value }
-        # rescue NoMethodError
-        #   raise IndexError, "Specified index #{pos.inspect} does not exist."
-        # end
+        positions.each { |pos| @data[pos] = value }
       end
 
       update_internal_state

@@ -265,7 +265,8 @@ module Daru
     
     def at *positions
       if positions.size == 1
-        return Daru::Vector.new @data.map { |vec| vec.at(*positions) }, index: @vectors
+        return Daru::Vector.new @data.map { |vec| vec.at(*positions) },
+          index: @vectors
       else
         new_rows = @data.map { |vec| vec.at(*positions) }
         return Daru::DataFrame.new new_rows, index: @index.at(*positions),
