@@ -77,6 +77,7 @@ require 'daru/index.rb'
 require 'daru/vector.rb'
 require 'daru/dataframe.rb'
 require 'daru/monkeys.rb'
+require 'daru/formatters/table'
 
 require 'daru/core/group_by.rb'
 require 'daru/core/query.rb'

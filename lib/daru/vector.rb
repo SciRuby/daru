@@ -849,16 +849,16 @@ module Daru
 
     # Over rides original inspect for pretty printing in irb
     def inspect spacing=20, threshold=15
-      name      = @name || 'nil'
-      metadata  = @metadata || 'nil'
-      formatter = make_format_string spacing
+      row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
 
-      [
-        "#<#{self.class}:#{object_id} @name = #{name} @metadata = #{metadata} @size = #{size} >",
-        formatter % ['', name],
-        @index.first(threshold).map { |idx| formatter % [idx, self[*idx] || 'nil'] },
-        size > threshold ? formatter % ['...', '...'] : ''
-      ].flatten.join
+      "#<#{self.class}(#{size})#{metadata && !metadata.empty? ? metadata.inspect : ''}>\n" +
+        Formatters::Table.format(
+          @data.lazy.map { |v| [v] },
+          headers: @name && [@name],
+          row_headers: row_headers,
+          threshold: threshold,
+          spacing: spacing
+        )
     end
 
     # Sets new index for vector. Preserves index->value correspondence.
@@ -1094,19 +1094,6 @@ module Daru
     end
 
     private
-
-    def make_format_string spacing
-      longest =
-        [
-          @name.to_s.size,
-          (@index.to_a.map(&:to_s).map(&:size).max || 0),
-          (@data.map(&:to_s).map(&:size).max || 0),
-          3 # 'nil'.size
-        ].max
-
-      longest = [longest, spacing].min
-      "\n%#{longest}.#{longest}s %#{longest}.#{longest}s"
-    end
 
     def parse_source source, opts
       if source.is_a?(Hash)

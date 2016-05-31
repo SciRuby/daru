@@ -2656,69 +2656,112 @@ describe Daru::DataFrame do
     context 'empty' do
       let(:df) { Daru::DataFrame.new({}, order: %w[a b c])}
       it { is_expected.to eq %Q{
-        |#<Daru::DataFrame:#{df.object_id} @name = nil @size = 0>
-        |      a   b   c
+        |#<Daru::DataFrame(3x0)>
+        |   a   b   c
       }.unindent}
     end
 
     context 'simple' do
       let(:df) { Daru::DataFrame.new({a: [1,2,3], b: [3,4,5], c: [6,7,8]}, name: 'test')}
       it { should == %Q{
-        |#<Daru::DataFrame:#{df.object_id} @name = test @size = 3>
-        |      a   b   c
-        |  0   1   3   6
-        |  1   2   4   7
-        |  2   3   5   8
+        |#<Daru::DataFrame: test (3x3)>
+        |       a   b   c
+        |   0   1   3   6
+        |   1   2   4   7
+        |   2   3   5   8
+       }.unindent}
+    end
+
+    context 'no name' do
+      let(:df) { Daru::DataFrame.new({a: [1,2,3], b: [3,4,5], c: [6,7,8]})}
+      it { should == %Q{
+        |#<Daru::DataFrame(3x3)>
+        |       a   b   c
+        |   0   1   3   6
+        |   1   2   4   7
+        |   2   3   5   8
        }.unindent}
     end
 
     context 'with nils' do
       let(:df) { Daru::DataFrame.new({a: [1,nil,3], b: [3,4,5], c: [6,7,nil]}, name: 'test')}
       it { is_expected.to eq %Q{
-        |#<Daru::DataFrame:#{df.object_id} @name = test @size = 3>
-        |      a   b   c
-        |  0   1   3   6
-        |  1 nil   4   7
-        |  2   3   5 nil
+        |#<Daru::DataFrame: test (3x3)>
+        |       a   b   c
+        |   0   1   3   6
+        |   1 nil   4   7
+        |   2   3   5 nil
        }.unindent}
     end
 
     context 'very long' do
       let(:df) { Daru::DataFrame.new({a: [1,1,1]*20, b: [1,1,1]*20, c: [1,1,1]*20}, name: 'test')}
-      it { should == %Q{
-        |#<Daru::DataFrame:#{df.object_id} @name = test @size = 60>
-        |      a   b   c
-        |  0   1   1   1
-        |  1   1   1   1
-        |  2   1   1   1
-        |  3   1   1   1
-        |  4   1   1   1
-        |  5   1   1   1
-        |  6   1   1   1
-        |  7   1   1   1
-        |  8   1   1   1
-        |  9   1   1   1
-        | 10   1   1   1
-        | 11   1   1   1
-        | 12   1   1   1
-        | 13   1   1   1
-        | 14   1   1   1
-        |... ... ... ...
+      it { is_expected.to eq %Q{
+        |#<Daru::DataFrame: test (3x60)>
+        |       a   b   c
+        |   0   1   1   1
+        |   1   1   1   1
+        |   2   1   1   1
+        |   3   1   1   1
+        |   4   1   1   1
+        |   5   1   1   1
+        |   6   1   1   1
+        |   7   1   1   1
+        |   8   1   1   1
+        |   9   1   1   1
+        |  10   1   1   1
+        |  11   1   1   1
+        |  12   1   1   1
+        |  13   1   1   1
+        |  14   1   1   1
+        | ... ... ... ...
        }.unindent}
     end
 
     context 'long data lines' do
       let(:df) { Daru::DataFrame.new({a: [1,2,3], b: [4,5,6], c: ['this is ridiculously long',nil,nil]}, name: 'test')}
-      it { should == %Q{
-        |#<Daru::DataFrame:#{df.object_id} @name = test @size = 3>
-        |                    a          b          c
-        |         0          1          4 this is ri
-        |         1          2          5        nil
-        |         2          3          6        nil
+      it { is_expected.to eq %Q{
+        |#<Daru::DataFrame: test (3x3)>
+        |                     a          b          c
+        |          0          1          4 this is ri
+        |          1          2          5        nil
+        |          2          3          6        nil
        }.unindent}
     end
 
-    context 'multi-index' do
+    context 'index is a MultiIndex' do
+      let(:df) {
+        Daru::DataFrame.new(
+          {
+            a:   [1,2,3,4,5,6,7],
+            b: %w[a b c d e f g]
+          }, index: Daru::MultiIndex.from_tuples([
+                %w[foo one],
+                %w[foo two],
+                %w[foo three],
+                %w[bar one],
+                %w[bar two],
+                %w[bar three],
+                %w[baz one],
+             ]),
+             name: 'test'
+        )
+      }
+
+      it { is_expected.to eq %Q{
+        |#<Daru::DataFrame: test (2x7)>
+        |                 a     b
+        |   foo   one     1     a
+        |         two     2     b
+        |       three     3     c
+        |   bar   one     4     d
+        |         two     5     e
+        |       three     6     f
+        |   baz   one     7     g
+      }.unindent}
+    end
+
+    context 'vectors is a MultiIndex' do
     end
 
     context 'spacing and threshold settings' do

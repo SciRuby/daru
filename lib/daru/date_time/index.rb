@@ -401,9 +401,9 @@ module Daru
     end
 
     def inspect
-      "#<DateTimeIndex:#{object_id} offset=#{@frequency || 'nil'}" \
-         " periods=#{@periods}" \
-         " data=[#{@data.first[0]}...#{@data.last[0]}]>"
+      meta = [@periods, @frequency ? "frequency=#{@frequency}" : nil].compact.join(', ')
+      "#<#{self.class}(#{meta}) " \
+         "#{@data.first[0]}...#{@data.last[0]}>"
     end
 
     # Shift all dates in the index by a positive number in the future. The dates

@@ -84,6 +84,14 @@ module Daru
       end
     end
 
+    def inspect threshold=20
+      if size <= threshold
+        "#<#{self.class}(#{size}): {#{to_a.join(', ')}}>"
+      else
+        "#<#{self.class}(#{size}): {#{to_a.first(threshold).join(', ')} ... #{to_a.last}}>"
+      end
+    end
+
     def slice *args
       start   = args[0]
       en      = args[1]
@@ -351,8 +359,9 @@ module Daru
       Array.new(size) { |i| i }
     end
 
-    def inspect
-      "#<Daru::MultiIndex:#{object_id} (levels: #{levels}\nlabels: #{labels})>"
+    def inspect threshold=20
+      "#<Daru::MultiIndex(#{width}x#{size})>\n" +
+        Formatters::Table.format([], row_headers: sparse_tuples, threshold: threshold)
     end
 
     # Provide a MultiIndex for sub vector produced
@@ -362,6 +371,20 @@ module Daru
     def conform input_indexes
       return self if input_indexes[0].is_a? Range
       drop_left_level input_indexes.size
+    end
+
+    # Return tuples with nils in place of repeating values, like this:
+    #
+    # [:a , :bar, :one]
+    # [nil, nil , :two]
+    # [nil, :foo, :one]
+    #
+    def sparse_tuples
+      tuples = to_a
+      [tuples.first] + each_cons(2).map { |prev, cur|
+        left = cur.zip(prev).drop_while { |c, p| c == p }
+        [nil] * (cur.size - left.size) + left.map(&:first)
+      }
     end
   end
 end

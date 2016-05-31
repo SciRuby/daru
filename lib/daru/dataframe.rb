@@ -1605,26 +1605,17 @@ module Daru
 
     # Pretty print in a nice table format for the command line (irb/pry/iruby)
     def inspect spacing=10, threshold=15
-      name      = @name || 'nil'
-      formatter = make_formatter spacing
+      row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
+      name_part = @name ? ": #{@name} " : ''
 
-      rows = [
-        # column titles
-        ['', *@vectors],
-
-        # column values
-        *each_row_with_index.first(threshold).map { |row, index|
-          [index, *row.to_h.values.map { |e| e || 'nil' }]
-        },
-
-        # "more" dots
-        size > threshold ? ['...'] * (@vectors.size + 1) : nil
-      ].compact
-
-      [
-        "#<#{self.class}:#{object_id} @name = #{name} @size = #{@size}>",
-        *rows.map { |r| formatter % r }
-      ].join
+      "#<#{self.class}#{name_part}(#{ncols}x#{nrows})>\n" +
+        Formatters::Table.format(
+          each_row.lazy,
+          row_headers: row_headers,
+          headers: vectors,
+          threshold: threshold,
+          spacing: spacing
+        )
     end
 
     # Query a DataFrame by passing a Daru::Core::Query::BoolArray object.
@@ -1685,19 +1676,6 @@ module Daru
       else
         default
       end
-    end
-
-    def make_formatter spacing
-      # FIXME: for very large dataframes, this @data.map may be pretty costly?
-      longest = [
-        (@vectors.map(&:to_s).map(&:size).max || 0),
-        (@index  .map(&:to_s).map(&:size).max || 0),
-        (@data   .map { |v| v.map(&:to_s).map(&:size).max }.max || 0),
-        3, # size of 'nil' and '...'
-      ].max
-
-      longest = [longest, spacing].min
-      "\n" + (["%#{longest}.#{longest}s"] * (@vectors.size + 1)).join(' ')
     end
 
     def access_vector *names

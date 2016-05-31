@@ -66,6 +66,9 @@ Style/SpaceAroundOperators:
 Style/EmptyCaseCondition:
   Enabled: false
 
+Style/MultilineBlockChain:
+  Enabled: false
+
 # Neither of prefered styles are good enough :(
 Style/BlockDelimiters:
   Enabled: false

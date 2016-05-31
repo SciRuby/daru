@@ -76,6 +76,18 @@ describe Daru::Index do
     end
   end
 
+  context '#inspect' do
+    context 'small index' do
+      subject { Daru::Index.new ['one', 'two', 'three']  }
+      its(:inspect) { is_expected.to eq "#<Daru::Index(3): {one, two, three}>" }
+    end
+
+    context 'large index' do
+      subject { Daru::Index.new ('a'..'z').to_a  }
+      its(:inspect) { is_expected.to eq "#<Daru::Index(26): {a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t ... z}>" }
+    end
+  end
+
   context "#&" do
     before :each do
       @left = Daru::Index.new [:miles, :geddy, :eric]
@@ -328,8 +340,74 @@ describe Daru::MultiIndex do
   end
 
   context "inspect" do
-    it "provides reasonable inspect" do
-      expect(@multi_mi.inspect).to eq "#<Daru::MultiIndex:#{@multi_mi.object_id} (levels: [[:a, :b, :c], [:one, :two], [:bar, :baz, :foo]]\nlabels: [[0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2], [0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1], [0, 1, 0, 1, 0, 0, 1, 2, 0, 1, 2, 0]])>"
+    context 'small index' do
+      subject {
+        Daru::MultiIndex.from_tuples [
+          [:a,:one,:bar],
+          [:a,:one,:baz],
+          [:a,:two,:bar],
+          [:a,:two,:baz],
+          [:b,:one,:bar],
+          [:b,:two,:bar],
+          [:b,:two,:baz],
+          [:b,:one,:foo],
+          [:c,:one,:bar],
+          [:c,:one,:baz],
+          [:c,:two,:foo],
+          [:c,:two,:bar]
+        ]
+      }
+
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::MultiIndex(3x12)>
+        |   a one bar
+        |         baz
+        |     two bar
+        |         baz
+        |   b one bar
+        |     two bar
+        |         baz
+        |     one foo
+        |   c one bar
+        |         baz
+        |     two foo
+        |         bar
+        }.unindent
+      }
+    end
+
+    context 'large index' do
+      subject {
+        Daru::MultiIndex.from_tuples(
+          (1..100).map { |i| %w[a b c].map { |c| [i, c] } }.flatten(1)
+        )
+      }
+
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::MultiIndex(2x300)>
+        |   1   a
+        |       b
+        |       c
+        |   2   a
+        |       b
+        |       c
+        |   3   a
+        |       b
+        |       c
+        |   4   a
+        |       b
+        |       c
+        |   5   a
+        |       b
+        |       c
+        |   6   a
+        |       b
+        |       c
+        |   7   a
+        |       b
+        | ... ...
+        }.unindent
+      }
     end
   end
 
