@@ -397,8 +397,8 @@ module Daru
     def each_row
       return to_enum(:each_row) unless block_given?
 
-      @index.each do |index|
-        yield access_row(index)
+      @index.size.times do |pos|
+        yield at(pos)
       end
 
       self
