@@ -1834,7 +1834,7 @@ module Daru
       end
     end
 
-    def insert_or_modify_row names, vector
+    def insert_or_modify_row indexes, vector
       # raise NotImplementedError, "Still can't insert rows in multi index dataframes" \
       #   if index.is_a?(MultiIndex)
 
@@ -1854,12 +1854,18 @@ module Daru
       
       vector = Daru::Vector.new(vector) unless vector.is_a? Daru::Vector
       
-      positions = @index.pos(*names)
+      if @index.respond?(*indexes)
+        positions = @index.pos(*indexes)
+        positions = [positions] if positions.is_a? Numeric
       
-      positions = [positions] if positions.is_a? Numeric
-      
-      @data.each_with_index do |vec, pos|
-        vec.at_set(positions, vector.at(pos))
+        @data.each_with_index do |vec, pos|
+          vec.at_set(positions, vector.at(pos))
+        end
+      else
+        @data.each_with_index do |vec, pos|
+          vec.set(indexes, vector.at(pos))
+        end
+        @index = @data[0].index
       end
 
       set_size
