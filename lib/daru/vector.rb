@@ -236,19 +236,43 @@ module Daru
     #   #  a 999
     #   #  b   2
     #   #  c   3
-    def []=(*indexes, value)
-      cast(dtype: :array) if value.nil? && dtype != :array
+    def []=(*indexes, val)
+      cast(dtype: :array) if val.nil? && dtype != :array
 
-      guard_type_check(value)
+      guard_type_check(val)
 
+      modify(indexes, val)
+
+      update_internal_state
+    end
+    
+    def modify(indexes, val)
       positions = @index.pos(*indexes)
       
       if positions.is_a? Numeric
-        @data[positions] = value
+        @data[positions] = val
       else
-        positions.each { |pos| @data[pos] = value }
+        positions.each { |pos| @data[pos] = val }
+      end      
+    end
+    
+    def insert(indexes, val)
+      new_index = @index.add(*indexes)
+      # May be create +=
+      (new_index.size - @index.size).times { @data << val }
+      @index = new_index
+    end
+    
+    def set indexes, val
+      cast(dtype: :array) if val.nil? && dtype != :array
+      guard_type_check(val)
+      
+      if @index.respond?(*indexes)
+        modify(indexes, val)
+      else
+        insert(indexes, val)
       end
-
+        
       update_internal_state
     end
 

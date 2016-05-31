@@ -210,6 +210,49 @@ describe Daru::MultiIndex do
         [:b, :two, :baz]] }
     end
   end
+  
+  context "#add" do
+    let(:idx) do
+      described_class.from_tuples [
+        [:a, :one, :bar],
+        [:a, :two, :bar],
+        [:b, :two, :baz],
+        [:b, :one, :foo]
+      ]
+    end
+    
+    context "single index" do
+      subject { idx.add :b, :two, :baz }
+
+      its(:to_a) { is_expected.to eq [
+        [:a, :one, :bar],
+        [:a, :two, :bar],
+        [:b, :two, :baz],
+        [:b, :one, :foo],
+        [:b, :two, :baz]] }
+    end
+  end
+  
+  context "#respond?" do
+    let(:idx) do
+      described_class.from_tuples [
+        [:a, :one, :bar],
+        [:a, :two, :bar],
+        [:b, :two, :baz],
+        [:b, :one, :foo]
+      ]
+    end
+    
+    context "single index" do
+      it { expect(idx.respond? :a, :one, :bar).to eq true }
+      it { expect(idx.respond? :b, :two, :three).to eq false }
+    end
+    
+    context "multiple indexes" do
+      it { expect(idx.respond? :a, :one).to eq true }
+      it { expect(idx.respond? :a, :three).to eq false }
+    end
+  end
 
   context "#include?" do
     it "checks if a completely specified tuple exists" do

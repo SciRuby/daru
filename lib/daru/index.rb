@@ -84,6 +84,10 @@ module Daru
       end
     end
     
+    def respond? *indexes
+      indexes.all? { |i| to_a.include?(i) || (i.is_a?(Numeric) && i < size) }
+    end
+    
     def pos *args
       # Causes Segmentation fault
       if args.first.is_a? Range
@@ -161,6 +165,10 @@ module Daru
 
     def dup
       Daru::Index.new @relation_hash.keys
+    end
+    
+    def add *indexes
+      Daru::Index.new(to_a + indexes)
     end
 
     def _dump(*)
@@ -291,6 +299,13 @@ module Daru
       end
     end
     
+    def respond? *indexes
+      pos(*indexes)
+      return true
+      rescue IndexError
+        return false
+    end
+    
     def pos *args
       if args.first.is_a? Integer
         return args.first if args.size == 1
@@ -313,6 +328,10 @@ module Daru
       return key(args.first) if args.size == 1
       Daru::MultiIndex.from_tuples args.map { |p| key p }
     end
+    
+    def add *indexes
+      Daru::MultiIndex.from_tuples to_a << indexes
+    end    
 
     def try_retrieve_from_integer int
       @levels[0].key?(int) ? retrieve_from_tuples([int]) : int
@@ -542,6 +561,10 @@ module Daru
     def at *args
       return index_from_pos(args.first) if args.size == 1
       Daru::CategoricalIndex.new args.map { |p| index_from_pos p }
+    end
+    
+    def add *indexes
+      Daru::CategoricalIndex.new(to_a + indexes)
     end
   end
 end

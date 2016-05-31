@@ -101,5 +101,36 @@ describe Daru::CategoricalIndex do
       its(:size) { is_expected.to eq 3 }
       its(:to_a) { is_expected.to eq [:a, :a, 1] }
     end
-  end  
+  end
+  
+  context "#add" do
+    let(:idx) { described_class.new [:a, 1, :a, 1] }
+    
+    context "single index" do
+      subject { idx.add :c }
+      
+      its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
+    end
+    
+    context "multiple indexes" do
+      subject { idx.add :c, :d }
+      
+      its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c, :d] }
+    end
+  end
+  
+  context "#respond?" do
+    let(:idx) { described_class.new [:a, 1, :a, 1] }
+
+    context "single index" do
+      it { expect(idx.respond? :a).to eq true }
+      it { expect(idx.respond? 2).to eq true }
+      it { expect(idx.respond? 4).to eq false }
+    end
+    
+    context "multiple indexes" do
+      it { expect(idx.respond? :a, 1).to eq true }
+      it { expect(idx.respond? :a, 1, 5).to eq false }
+    end
+  end
 end

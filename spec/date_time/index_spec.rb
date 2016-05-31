@@ -479,6 +479,24 @@ describe DateTimeIndex do
       expect(index.size).to eq(100)
     end
   end
+  
+  context "#add" do
+    let(:idx) { Daru::Index.new [:a, :b, :c] }
+
+    context "single index" do
+      subject { idx }
+      before { idx.add :d }
+      
+      its(:to_a) { is_expected.to eq [:a, :b, :c, :d] }
+    end
+    
+    context "mulitple indexes" do
+      subject { idx }
+      before { idx.add :d, :e }
+      
+      its(:to_a) { is_expected.to eq [:a, :b, :c, :d, :e] }
+    end
+  end
 
   context "#to_a" do
     it "returns an Array of ruby Time objects" do
