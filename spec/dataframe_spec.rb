@@ -824,14 +824,6 @@ describe Daru::DataFrame do
           its(:'a.to_a') { is_expected.to eq ['x', 'b', 'x', 'd', 'e'] }
           its(:'b.to_a') { is_expected.to eq ['y', 2, 'y', 4, 5] }
         end
-
-        context "invalid positional index" do
-          it { expect { df.row[5] = ['x', 'y'] }.to raise_error IndexError }
-        end
-
-        context "invalid category" do
-          it { expect { df.row[:d] = ['x', 'y'] }.to raise_error IndexError }
-        end
       end
 
       context "add new row" do

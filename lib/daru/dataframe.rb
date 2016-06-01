@@ -1833,6 +1833,9 @@ module Daru
         else
           vector.reindex @vectors
         end
+        
+      raise SizeError, "Vector length should match row length" if
+        vector.size != @vectors.size
 
       if @index.respond?(*indexes)
         positions = @index.pos(*indexes)

@@ -94,7 +94,7 @@ module Daru
         args = preprocess_range(args.first)
       end
       return self[args.first] if args.size == 1
-      args.map { |index| self[index] }
+      args.map { |index| by_single_key index }
     end
     
     def subset *args

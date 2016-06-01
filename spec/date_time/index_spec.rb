@@ -388,7 +388,7 @@ describe DateTimeIndex do
     end
     
     context "single index" do
-      it { expect (idx.pos '2014-3-4').to eq 1 }
+      it { expect(idx.pos '2014-3-4').to eq 1 }
     end
     
     context "multiple indexes" do
@@ -400,16 +400,16 @@ describe DateTimeIndex do
     end
     
     context "single positional index" do
-      it { expect (idx.pos 1).to eq 1 }
+      it { expect(idx.pos 1).to eq 1 }
     end
     
     context "multiple positional indexes" do
       subject { idx.pos 0, 2 }
       
       it { is_expected.to be_a Array }
-      its(:size) { is_expected.to eq 2 }
+      its(:size) { is_expected.to eq 3 }
       it { is_expected.to eq [DateTime.new(2014, 3, 3),
-        DateTime.new(2014, 3, 5)] }
+        DateTime.new(2014, 3, 4), DateTime.new(2014, 3, 5)] }
     end
   end
   
@@ -425,7 +425,7 @@ describe DateTimeIndex do
     end
     
     context "multiple indexes" do
-      subject { idx.pos '2014' }
+      subject { idx.subset '2014' }
       
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 4 }
@@ -433,12 +433,12 @@ describe DateTimeIndex do
     end
     
     context "multiple positional indexes" do
-      subject { idx.pos 0, 2 }
+      subject { idx.subset 0, 2 }
       
       it { is_expected.to be_a described_class }
-      its(:size) { is_expected.to eq 2 }
+      its(:size) { is_expected.to eq 3 }
       its(:to_a) { is_expected.to eq [DateTime.new(2014, 3, 3),
-        DateTime.new(2014, 3, 5)] }
+        DateTime.new(2014, 3, 4), DateTime.new(2014, 3, 5)] }
     end
   end
 
@@ -481,6 +481,7 @@ describe DateTimeIndex do
   end
   
   context "#add" do
+    before { skip }
     let(:idx) { Daru::Index.new [:a, :b, :c] }
 
     context "single index" do

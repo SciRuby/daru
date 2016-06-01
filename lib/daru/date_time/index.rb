@@ -368,7 +368,13 @@ module Daru
     
     def pos *args
       # to filled
-      super(*args)
+      out = self[*args]
+      out = out.to_a unless out.is_a? Numeric
+      out
+    end
+    
+    def subset *args
+      self[*args]
     end
 
     # Retrive a slice of the index by specifying first and last members of the slice.
