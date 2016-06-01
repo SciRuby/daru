@@ -1,5 +1,3 @@
-require 'spec_helper.rb'
-
 describe Daru::Index do
   context ".new" do
     it "creates an Index object if Index-like data is supplied" do
@@ -54,6 +52,22 @@ describe Daru::Index do
     end
   end
 
+  context '#keys' do
+    subject(:idx) { Daru::Index.new ['speaker', 'mic', 'guitar', 'amp'] }
+
+    it 'returns key by position' do
+      expect(idx.key(2)).to eq 'guitar'
+    end
+
+    it 'returns nil on too large pos' do
+      expect(idx.key(20)).to be_nil
+    end
+
+    it 'returns nil on wrong arg type' do
+      expect(idx.key(nil)).to be_nil
+    end
+  end
+
   context "#size" do
     it "correctly returns the size of the index" do
       idx = Daru::Index.new ['speaker', 'mic', 'guitar', 'amp']
@@ -62,8 +76,30 @@ describe Daru::Index do
     end
   end
 
+  context '#inspect' do
+    context 'small index' do
+      subject { Daru::Index.new ['one', 'two', 'three']  }
+      its(:inspect) { is_expected.to eq "#<Daru::Index(3): {one, two, three}>" }
+    end
+
+    context 'large index' do
+      subject { Daru::Index.new ('a'..'z').to_a  }
+      its(:inspect) { is_expected.to eq "#<Daru::Index(26): {a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t ... z}>" }
+    end
+  end
+
   context "#&" do
-    it "returns an intersection of 2 index objects" do
+    before :each do
+      @left = Daru::Index.new [:miles, :geddy, :eric]
+      @right = Daru::Index.new [:geddy, :richie, :miles]
+    end
+
+    it "intersects 2 indexes and returns an Index" do
+      expect(@left & @right).to eq([:miles, :geddy].to_index)
+    end
+
+    it "intersects an Index and an Array to return an Index" do
+      expect(@left & [:bob, :geddy, :richie]).to eq([:geddy].to_index)
     end
   end
 
@@ -78,7 +114,7 @@ describe Daru::Index do
     end
 
     it "unions an Index and an Array to return an Index" do
-      expect(@left | [:bob, :jimi, :richie]).to eq([:miles, :geddy, :eric, 
+      expect(@left | [:bob, :jimi, :richie]).to eq([:miles, :geddy, :eric,
         :bob, :jimi, :richie].to_index)
     end
   end
@@ -158,11 +194,11 @@ describe Daru::MultiIndex do
   context ".from_tuples" do
     it "creates 2 layer MultiIndex from tuples" do
       tuples = [
-        [:a, :one], 
-        [:a, :two], 
-        [:b, :one], 
-        [:b, :two], 
-        [:c, :one], 
+        [:a, :one],
+        [:a, :two],
+        [:b, :one],
+        [:b, :two],
+        [:c, :one],
         [:c, :two]
       ]
       mi = Daru::MultiIndex.from_tuples(tuples)
@@ -178,7 +214,27 @@ describe Daru::MultiIndex do
         [0,1,0,1,0,0,1,2,0,1,2,0]
       ])
     end
-  end 
+  end
+
+  context '.try_from_tuples' do
+    it 'creates MultiIndex, if there are tuples' do
+      tuples = [
+        [:a, :one],
+        [:a, :two],
+        [:b, :one],
+        [:b, :two],
+        [:c, :one],
+        [:c, :two]
+      ]
+      mi = Daru::MultiIndex.try_from_tuples(tuples)
+      expect(mi).to be_a Daru::MultiIndex
+    end
+
+    it 'returns nil, if MultiIndex can not be created' do
+      mi = Daru::MultiIndex.try_from_tuples([:a, :b, :c])
+      expect(mi).to be_nil
+    end
+  end
 
   context "#size" do
     it "returns size of MultiIndex" do
@@ -283,6 +339,78 @@ describe Daru::MultiIndex do
     end
   end
 
+  context "inspect" do
+    context 'small index' do
+      subject {
+        Daru::MultiIndex.from_tuples [
+          [:a,:one,:bar],
+          [:a,:one,:baz],
+          [:a,:two,:bar],
+          [:a,:two,:baz],
+          [:b,:one,:bar],
+          [:b,:two,:bar],
+          [:b,:two,:baz],
+          [:b,:one,:foo],
+          [:c,:one,:bar],
+          [:c,:one,:baz],
+          [:c,:two,:foo],
+          [:c,:two,:bar]
+        ]
+      }
+
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::MultiIndex(3x12)>
+        |   a one bar
+        |         baz
+        |     two bar
+        |         baz
+        |   b one bar
+        |     two bar
+        |         baz
+        |     one foo
+        |   c one bar
+        |         baz
+        |     two foo
+        |         bar
+        }.unindent
+      }
+    end
+
+    context 'large index' do
+      subject {
+        Daru::MultiIndex.from_tuples(
+          (1..100).map { |i| %w[a b c].map { |c| [i, c] } }.flatten(1)
+        )
+      }
+
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::MultiIndex(2x300)>
+        |   1   a
+        |       b
+        |       c
+        |   2   a
+        |       b
+        |       c
+        |   3   a
+        |       b
+        |       c
+        |   4   a
+        |       b
+        |       c
+        |   5   a
+        |       b
+        |       c
+        |   6   a
+        |       b
+        |       c
+        |   7   a
+        |       b
+        | ... ...
+        }.unindent
+      }
+    end
+  end
+
   context "#==" do
     it "returns false for unequal MultiIndex comparisons" do
       mi1 = Daru::MultiIndex.from_tuples([
@@ -335,8 +463,8 @@ describe Daru::MultiIndex do
       expect(@mi1 | @mi2).to eq(Daru::MultiIndex.new(
         levels: [[:a, :b], [:one, :two], [:bar, :baz, :foo]],
         labels: [
-          [0, 0, 1, 1, 0, 0, 1], 
-          [0, 1, 0, 1, 1, 0, 1], 
+          [0, 0, 1, 1, 0, 0, 1],
+          [0, 1, 0, 1, 1, 0, 1],
           [0, 1, 2, 0, 0, 1, 1]
         ])
       )
@@ -344,7 +472,23 @@ describe Daru::MultiIndex do
   end
 
   context "#&" do
+    before do
+      @mi1 = Daru::MultiIndex.from_tuples([
+        [:a, :one],
+        [:a, :two],
+        [:b, :two]
+        ])
+      @mi2 = Daru::MultiIndex.from_tuples([
+        [:a, :two],
+        [:b, :one],
+        [:b, :three]
+        ])
+    end
+
     it "returns the intersection of two MI objects" do
+      expect(@mi1 & @mi2).to eq(Daru::MultiIndex.from_tuples([
+        [:a, :two],
+      ]))
     end
   end
 

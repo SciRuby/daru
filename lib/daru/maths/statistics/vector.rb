@@ -4,7 +4,7 @@ module Daru
     # is done inside the wrapper, so that native methods can be used for most of
     # the computationally intensive tasks.
     module Statistics
-      module Vector
+      module Vector # rubocop:disable Metrics/ModuleLength
         def mean
           @data.mean
         end
@@ -99,14 +99,16 @@ module Daru
 
         def proportions
           len = n_valid
-          frequencies.each_with_object({}) { |arr, hash| hash[arr[0]] = arr[1] / len }
+          frequencies.each_with_object({}) do |(el, count), hash|
+            hash[el] = count / len
+          end
         end
 
         def ranked
           sum = 0
-          r = frequencies.sort.each_with_object({}) do |val, memo|
-            memo[val[0]] = ((sum + 1) + (sum + val[1])).quo(2)
-            sum += val[1]
+          r = frequencies.sort.each_with_object({}) do |(el, count), memo|
+            memo[el] = ((sum + 1) + (sum + count)).quo(2)
+            sum += count
           end
 
           recode { |e| r[e] }
@@ -120,12 +122,11 @@ module Daru
         # retrieves number of instances where block returns true. If other
         # values given, retrieves the frequency for this value. If no value
         # given, counts the number of non-nil elements in the Vector.
-        def count value=false
+        def count value=false, &block
           if block_given?
-            @data.select { |val| yield(val) }.count
+            @data.select(&block).count
           elsif value
-            val = frequencies[value]
-            val.nil? ? 0 : val
+            count { |val| val == value }
           else
             size - @missing_positions.size
           end
@@ -133,9 +134,8 @@ module Daru
 
         # Count number of occurrences of each value in the Vector
         def value_counts
-          values = {}
-          @data.each do |d|
-            values[d] ? values[d] += 1 : values[d] = 1
+          values = @data.each_with_object(Hash.new(0)) do |d, memo|
+            memo[d] += 1
           end
 
           Daru::Vector.new(values)
@@ -168,25 +168,13 @@ module Daru
         # Sample covariance with denominator (N-1)
         def covariance_sample other
           @size == other.size or raise ArgumentError, 'size of both the vectors must be equal'
-          mean_x = mean
-          mean_y = other.mean
-          sum = 0
-          (0...size).each do |i|
-            sum += ((@missing_values.key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
-          end
-          sum / (n_valid - 1)
+          covariance_sum(other) / (n_valid - 1)
         end
 
         # Population covariance with denominator (N)
         def covariance_population other
           @size == other.size or raise ArgumentError, 'size of both the vectors must be equal'
-          mean_x = mean
-          mean_y = other.mean
-          sum = 0
-          (0...size).each do |i|
-            sum += ((@missing_values.key?(@data[i]) || other.missing_values.include?(other[i])) ? 0 : (@data[i] - mean_x) * (other.data[i] - mean_y))
-          end
-          sum / n_valid
+          covariance_sum(other) / n_valid
         end
 
         def sum_of_squares(m=nil)
@@ -236,11 +224,11 @@ module Daru
         end
 
         def average_deviation_population m=nil
-          type == :numeric or raise TypeError, 'Vector must be numeric'
+          must_be_numeric!
           m ||= mean
-          (@data.inject(0) { |memo, val|
+          @data.inject(0) { |memo, val|
             @missing_values.key?(val) ? memo : (val - m).abs + memo
-          }).quo(n_valid)
+          }.quo(n_valid)
         end
 
         # Returns the value of the percentile q
@@ -254,31 +242,13 @@ module Daru
         #
         # This is the NIST recommended method (http://en.wikipedia.org/wiki/Percentile#NIST_method)
         def percentile(q, strategy=:midpoint)
-          sorted = only_valid(:array).sort
-
           case strategy
           when :midpoint
-            v = (n_valid * q).quo(100)
-            if v.to_i!=v
-              sorted[v.to_i]
-            else
-              (sorted[(v-0.5).to_i].to_f + sorted[(v+0.5).to_i]).quo(2)
-            end
+            midpoint_percentile(q)
           when :linear
-            index = (q / 100.0) * (n_valid + 1)
-
-            k = index.truncate
-            d = index % 1
-
-            if k == 0
-              sorted[0]
-            elsif k >= sorted.size
-              sorted[-1]
-            else
-              sorted[k - 1] + d * (sorted[k] - sorted[k - 1])
-            end
+            linear_percentile(q)
           else
-            raise NotImplementedError, "Unknown strategy #{strategy}"
+            raise ArgumentError, "Unknown strategy #{strategy}"
           end
         end
 
@@ -318,8 +288,9 @@ module Daru
           vector_standardized_compute m, sd
         end
 
+        # :nocov:
         def box_cox_transformation lambda # :nodoc:
-          raise 'Should be a numeric' unless @type == :numeric
+          must_be_numeric!
 
           recode do |x|
             if !x.nil?
@@ -333,6 +304,7 @@ module Daru
             end
           end
         end
+        # :nocov:
 
         # Replace each non-nil value in the vector with its percentile.
         def vector_percentile
@@ -383,17 +355,7 @@ module Daru
           if @data.respond_to? :sample_without_replacement
             @data.sample_without_replacement sample
           else
-            valid = missing_positions.empty? ? self : only_valid
-            raise ArgumentError, "Sample size couldn't be greater than n" if
-              sample > valid.size
-            out  = []
-            size = valid.size
-            while out.size < sample
-              value = rand(size)
-              out.push(value) unless out.include?(value)
-            end
-
-            out.collect { |i| valid[i] }
+            raw_sample_without_replacement(sample)
           end
         end
 
@@ -415,19 +377,17 @@ module Daru
         #   #   i	   0.3333333333333333
         #   #   k          0.25
         def percent_change periods=1
-          type == :numeric or raise TypeError, 'Vector must be numeric'
-          value = only_valid
-          arr = []
-          i = 1
-          ind = @data.find_index { |x| !x.nil? }
-          (periods...size).each do |j|
-            if j==ind || @missing_values.key?(@data[j])
-              arr[j] = nil
+          must_be_numeric!
+
+          prev = nil
+          arr = @data.each_with_index.map do |cur, i|
+            if i < periods || @missing_values.key?(cur) || @missing_values.key?(prev)
+              nil
             else
-              arr[j] = (value.data[i] - value.data[i - 1]) / value.data[i - 1].to_f
-              i+=1
-            end
+              (cur - prev) / prev.to_f
+            end.tap { prev = cur if cur }
           end
+
           Daru::Vector.new(arr, index: @index, name: @name)
         end
 
@@ -533,7 +493,7 @@ module Daru
         #   ts.ema   # => [ ... nil, 0.455... , 0.395..., 0.323..., ... ]
         #
         # @return [Daru::Vector] Contains EMA
-        def ema(n=10, wilder=false)
+        def ema(n=10, wilder=false) # rubocop:disable Metrics/AbcSize
           smoother = wilder ? 1.0 / n : 2.0 / (n + 1)
           # need to start everything from the first non-nil observation
           start = @data.index { |i| !i.nil? }
@@ -567,7 +527,7 @@ module Daru
         #   ts.emv   # => [ ... nil, 0.073... , 0.082..., 0.080..., ...]
         #
         # @return [Daru::Vector] contains EMV
-        def emv(n=10, wilder=false)
+        def emv(n=10, wilder=false) # rubocop:disable Metrics/AbcSize
           smoother = wilder ? 1.0 / n : 2.0 / (n + 1)
           # need to start everything from the first non-nil observation
           start = @data.index { |i| !i.nil? }
@@ -672,7 +632,7 @@ module Daru
         # == Returns
         #
         # Autocovariance value
-        def acvf(demean=true, unbiased=true)
+        def acvf(demean=true, unbiased=true) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
           opts = {
             demean: true,
             unbaised: true
@@ -722,6 +682,66 @@ module Daru
         alias :ss :sum_of_squares
         alias :percentil :percentile
         alias :se :standard_error
+
+        private
+
+        def must_be_numeric!
+          numeric? or raise TypeError, 'Vector must be numeric'
+        end
+
+        def covariance_sum other
+          self_mean = mean
+          other_mean = other.mean
+          @data
+            .zip(other.data).inject(0) do |res, (d, o)|
+              res + if !d || !o
+                      0
+                    else
+                      (d - self_mean) * (o - other_mean)
+                    end
+            end
+        end
+
+        def midpoint_percentile(q)
+          sorted = only_valid(:array).sort
+
+          v = (n_valid * q).quo(100)
+          if v.to_i!=v
+            sorted[v.to_i]
+          else
+            (sorted[(v-0.5).to_i].to_f + sorted[(v+0.5).to_i]).quo(2)
+          end
+        end
+
+        def linear_percentile(q) # rubocop:disable Metrics/AbcSize
+          sorted = only_valid(:array).sort
+          index = (q / 100.0) * (n_valid + 1)
+
+          k = index.truncate
+          d = index % 1
+
+          if k == 0
+            sorted[0]
+          elsif k >= sorted.size
+            sorted[-1]
+          else
+            sorted[k - 1] + d * (sorted[k] - sorted[k - 1])
+          end
+        end
+
+        def raw_sample_without_replacement sample
+          valid = missing_positions.empty? ? self : only_valid
+          raise ArgumentError, "Sample size couldn't be greater than n" if
+            sample > valid.size
+          out  = []
+          size = valid.size
+          while out.size < sample
+            value = rand(size)
+            out.push(value) unless out.include?(value)
+          end
+
+          out.collect { |i| valid[i] }
+        end
       end
     end
   end

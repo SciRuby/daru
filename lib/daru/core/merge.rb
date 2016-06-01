@@ -1,210 +1,136 @@
 module Daru
   module Core
-    module MergeHelper
-      class << self
-        def replace_keys_if_duplicates hash, matcher
-          matched = nil
-          hash.keys.each { |d|
-            if matcher.match(Regexp.new(d.to_s))
-              matched = d
-              break
-            end
-          }
-
-          return unless matched
-
-          hash[matcher] = hash[matched]
-          hash.delete matched
-        end
-
-        def resolve_duplicates df_hash1, df_hash2, on
-          hk = df_hash1.keys + df_hash2.keys - on
-          recoded = hk.recode_repeated.map(&:to_sym)
-          diff = (recoded - hk).sort
-
-          diff.each_slice(2) do |a|
-            replace_keys_if_duplicates df_hash1, a[0]
-            replace_keys_if_duplicates df_hash2, a[1]
-          end
-        end
-
-        def hashify df
-          hsh = df.to_h
-          hsh.each { |k,v| hsh[k] = v.to_a }
-          hsh
-        end
-
-        def arrayify df
-          arr = df.to_a
-          col_names = arr[0][0].keys
-          values = arr[0].map(&:values)
-
-          [col_names, values]
-        end
-
-        def arrayify_with_sort_keys(size, df_hash, on)
-          # Converting to a hash and then to an array is more complex
-          # than using df.to_a or df.map(:row).  However, it's
-          # substantially faster this way.
-
-          # idx_keys = on.map { |key| df_hash.keys.index(key) }
-
-          (0...size).reduce([]) do |r, idx|
-            key_values = on.map { |col| df_hash[col][idx] }
-            row_values = df_hash.map { |_col, val| val[idx] }
-            r << [key_values, row_values]
-          end
-
-          # Conceptually simpler and does the same thing, but slows down the
-          # total merge algorithm by 2x.  Would be nice to improve the performance
-          # of df.map(:row)
-          #
-          # df.map(:row) do |row|
-          #   key_values = on.map { |key| row[key] }
-          #   [key_values, row.to_a]
-          # end
-        end
-
-        def verify_dataframes df_hash1, df_hash2, on
-          raise ArgumentError,
-            'All fields in :on must be present in self' unless on.all? { |e| df_hash1[e] }
-          raise ArgumentError,
-            'All fields in :on must be present in other DF' unless on.all? { |e| df_hash2[e] }
-        end
-      end
-    end
-
     class MergeFrame
-      def initialize(df1, df2, on: nil)
-        @df1 = df1
-        @df2 = df2
-        @on = on
+      def initialize left_df, right_df, opts={}
+        @on = opts[:on]
+        @keep_left, @keep_right = extract_left_right(opts[:how])
+
+        validate_on!(left_df, right_df)
+
+        @left  = df_to_a(left_df).sort_by { |h| h.values_at(*on) }
+        @right = df_to_a(right_df).sort_by { |h| h.values_at(*on) }
+
+        @left_keys, @right_keys = merge_keys(left_df, right_df, on)
       end
 
-      def inner _opts
-        merge_join(left: false, right: false)
-      end
+      def join
+        res = []
 
-      def left _opts
-        merge_join(left: true, right: false)
-      end
+        until left.empty? && right.empty?
+          lkey = first_key(left)
+          rkey = first_key(right)
 
-      def right _opts
-        merge_join(left: false, right: true)
-      end
-
-      def outer _opts
-        merge_join(left: true, right: true)
-      end
-
-      def merge_join(left: true, right: true)
-        MergeHelper.verify_dataframes df1_hash, df2_hash, @on
-        MergeHelper.resolve_duplicates df1_hash, df2_hash, @on
-
-        # TODO: Use native dataframe sorting.
-        #  It would be ideal to reuse sorting functionality that is native
-        #  to dataframes.  Unfortunately, native dataframe sort introduces
-        #  an overhead that reduces join performance by a factor of 4!  Until
-        #  that aspect is improved, we resort to a simpler array sort.
-        df1_array.sort_by! { |row| [row[0].nil? ? 0 : 1, row[0]] }
-        df2_array.sort_by! { |row| [row[0].nil? ? 0 : 1, row[0]] }
-
-        idx1 = 0
-        idx2 = 0
-
-        while idx1 < @df1.size || idx2 < @df2.size
-
-          key1 = df1_array[idx1][0] if idx1 < @df1.size
-          key2 = df2_array[idx2][0] if idx2 < @df2.size
-
-          if key1 == key2 && idx1 < @df1.size && idx2 < @df2.size
-            idx2_start = idx2
-
-            while (idx2 < @df2.size) && (df1_array[idx1][0] == df2_array[idx2][0])
-              add_merge_row_to_hash([df1_array[idx1], df2_array[idx2]], joined_hash)
-              idx2 += 1
-            end
-
-            idx2 = idx2_start if idx1+1 < @df1.size && df1_array[idx1][0] == df1_array[idx1+1][0]
-            idx1 += 1
-          elsif ((key2.nil? || [key1,key2].sort == [key1,key2]) && idx1 < @df1.size) || idx2 == @df2.size
-            add_merge_row_to_hash([df1_array[idx1], nil], joined_hash) if left
-            idx1 += 1
-          elsif idx2 < @df2.size || idx1 == @df1.size
-            add_merge_row_to_hash([nil, df2_array[idx2]], joined_hash) if right
-            idx2 += 1
-          else
-            raise 'Unexpected condition met during merge'
-          end
+          row(lkey, rkey).tap { |r| res << r if r }
         end
 
-        Daru::DataFrame.new(joined_hash, order: joined_hash.keys)
+        Daru::DataFrame.new(res, order: left_keys.values + on + right_keys.values)
       end
 
       private
 
-      def joined_hash
-        return @joined_hash if @joined_hash
-        @joined_hash ||= {}
+      attr_reader :on,
+        :left, :keep_left, :left_keys,
+        :right, :keep_right, :right_keys
 
-        ((df1_keys - @on) | @on | (df2_keys - @on)).each do |k|
-          @joined_hash[k] = []
+      LEFT_RIGHT_COMBINATIONS = {
+        #       left   right
+        inner: [false, false],
+        left:  [true, false],
+        right: [false, true],
+        outer: [true, true]
+      }.freeze
+
+      def extract_left_right(how)
+        LEFT_RIGHT_COMBINATIONS[how] or
+          raise ArgumentError, "Unrecognized join option: #{how}"
+      end
+
+      def df_to_a df
+        # FIXME: much faster than "native" DataFrame#to_a. Should not be
+        h = df.to_h
+        keys = h.keys
+        h.values.map(&:to_a).transpose.map { |r| keys.zip(r).to_h }
+      end
+
+      def merge_keys(df1, df2, on)
+        duplicates =
+          (df1.vectors.to_a + df2.vectors.to_a - on)
+          .group_by(&:itself)
+          .select { |_, g| g.count == 2 }.map(&:first)
+
+        [
+          guard_keys(df1.vectors.to_a - on, duplicates, 1),
+          guard_keys(df2.vectors.to_a - on, duplicates, 2)
+        ]
+      end
+
+      def guard_keys keys, duplicates, num
+        keys.map { |v| [v, guard_duplicate(v, duplicates, num)] }.to_h
+      end
+
+      def guard_duplicate val, duplicates, num
+        duplicates.include?(val) ? :"#{val}_#{num}" : val
+      end
+
+      def row(lkey, rkey)
+        case
+        when !lkey && !rkey
+          # :nocov:
+          # It's just an impossibility handler, can't be covered :)
+          raise 'Unexpected condition met during merge'
+          # :nocov:
+        when lkey == rkey
+          merge_rows(left.shift, right.shift)
+        when !rkey || lt(lkey, rkey)
+          left_row
+        else # !lkey || lt(rkey, lkey)
+          right_row
         end
-
-        @joined_hash
       end
 
-      def df1_hash
-        @df1_hash ||= MergeHelper.hashify @df1
+      def left_row
+        val = left.shift
+        expand_row(val, left_keys) if keep_left
       end
 
-      def df2_hash
-        @df2_hash ||= MergeHelper.hashify @df2
+      def right_row
+        val = right.shift
+        expand_row(val, right_keys) if keep_right
       end
 
-      def df1_array
-        @df1_array ||= MergeHelper.arrayify_with_sort_keys @df1.size, df1_hash, @on
+      def lt(k1, k2)
+        (k1 <=> k2) == -1
       end
 
-      def df2_array
-        @df2_array ||= MergeHelper.arrayify_with_sort_keys @df2.size, df2_hash, @on
+      def merge_rows lrow, rrow
+        left_keys
+          .map { |from, to| [to, lrow[from]] }.to_h
+          .merge(on.map { |col| [col, lrow[col]] }.to_h)
+          .merge(right_keys.map { |from, to| [to, rrow[from]] }.to_h)
       end
 
-      def df1_keys
-        df1_hash.keys
+      def expand_row row, renamings
+        renamings
+          .map { |from, to| [to, row[from]] }.to_h
+          .merge(on.map { |col| [col, row[col]] }.to_h)
       end
 
-      def df2_keys
-        df2_hash.keys
+      def first_key(arr)
+        arr.empty? ? nil : arr.first.values_at(*on)
       end
 
-      # Private: The merge row contains two elements, the first is the row from the
-      # first dataframe, the second is the row from the second dataframe.
-      def add_merge_row_to_hash row, hash
-        @df1_key_to_index ||= df1_keys.each_with_index.map { |k,idx| [k, idx] }.to_h
-        @df2_key_to_index ||= df2_keys.each_with_index.map { |k,idx| [k, idx] }.to_h
-
-        hash.each do |k,v|
-          v ||= []
-
-          left  = df1_keys.include?(k) ? row[0] && row[0][1][@df1_key_to_index[k]] : nil
-          right = df2_keys.include?(k) ? row[1] && row[1][1][@df2_key_to_index[k]] : nil
-
-          v << (left || right)
+      def validate_on!(left_df, right_df)
+        @on.each do |on|
+          left_df.has_vector?(on) && right_df.has_vector?(on) or
+            raise ArgumentError, "Both dataframes expected to have #{on.inspect} field"
         end
       end
     end
 
-    # Private module containing methods for join, merge, concat operations on
-    # dataframes and vectors.
-    # @private
     module Merge
       class << self
         def join df1, df2, opts={}
-          on = opts[:on]
-
-          mf = MergeFrame.new df1, df2, on: on
-          mf.send opts[:how], {}
+          MergeFrame.new(df1, df2, opts).join
         end
       end
     end

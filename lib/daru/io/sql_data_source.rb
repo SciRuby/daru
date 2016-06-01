@@ -1,54 +1,51 @@
 module Daru
   module IO
     class SqlDataSource
-      # Private adapter class for DBI::DatabaseHandle
       # @private
-      class DbiAdapter
-        def initialize(dbh, query)
-          @dbh = dbh
-          @query = query
-        end
-
-        def each_column_name
-          result.column_names.each do |column_name|
-            yield(column_name.to_sym)
-          end
-        end
-
-        def each_row
-          result.fetch do |row|
-            yield(row.to_a)
-          end
-        end
-
-        private
-
-        def result
-          @result ||= @dbh.execute(@query)
-        end
-      end
-
-      # Private adapter class for connections of ActiveRecord
-      # @private
-      class ActiveRecordConnectionAdapter
+      class Adapter
         def initialize(conn, query)
           @conn = conn
           @query = query
         end
 
-        def each_column_name
-          result.columns.each do |column_name|
-            yield(column_name.to_sym)
-          end
+        def result_hash
+          column_names
+            .map(&:to_sym)
+            .zip(rows.transpose)
+            .to_h
         end
+      end
 
-        def each_row
-          result.each do |row|
-            yield(row.values)
-          end
-        end
-
+      # Private adapter class for DBI::DatabaseHandle
+      # @private
+      class DbiAdapter < Adapter
         private
+
+        def column_names
+          result.column_names
+        end
+
+        def rows
+          result.to_a.map(&:to_a)
+        end
+
+        def result
+          @result ||= @conn.execute(@query)
+        end
+      end
+
+      # Private adapter class for connections of ActiveRecord
+      # @private
+      class ActiveRecordConnectionAdapter < Adapter
+        private
+
+        def column_names
+          result.columns
+        end
+
+        def rows
+          result.cast_values
+        end
 
         def result
           @result ||= @conn.exec_query(@query)
@@ -67,49 +64,23 @@ module Daru
       end
 
       def make_dataframe
-        vectors = {}
-        fields = []
-        @adapter.each_column_name do |column_name|
-          vectors[column_name] = Daru::Vector.new([])
-          vectors[column_name].rename column_name
-          fields.push column_name
-        end
-
-        df = Daru::DataFrame.new(vectors, order: fields)
-        @adapter.each_row do |row|
-          df.add_row(row)
-        end
-
-        df.update
-
-        df
+        Daru::DataFrame.new(@adapter.result_hash).tap(&:update)
       end
 
       private
 
       def init_adapter(db, query)
-        begin
-          query = query.to_str
-        rescue
-          raise ArgumentError, 'query must be a string'
-        end
+        query = String.try_convert(query) or
+          raise ArgumentError, "Query must be a string, #{query.class} received"
 
-        case
-        when check_dbi(db)
+        case db
+        when DBI::DatabaseHandle
           DbiAdapter.new(db, query)
-        when check_active_record_connection(db)
+        when ActiveRecord::ConnectionAdapters::AbstractAdapter
           ActiveRecordConnectionAdapter.new(db, query)
         else
-          raise ArgumentError, 'unknown database type'
+          raise ArgumentError, "Unknown database adapter type #{db.class}"
         end
-      end
-
-      def check_dbi(obj)
-        obj.is_a?(DBI::DatabaseHandle)
-      end
-
-      def check_active_record_connection(obj)
-        obj.is_a?(ActiveRecord::ConnectionAdapters::AbstractAdapter)
       end
     end
   end

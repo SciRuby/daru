@@ -1,9 +1,11 @@
 require 'rspec'
+require 'rspec/its'
 require 'matrix'
 require 'awesome_print'
 require 'distribution'
 require 'tempfile'
 require 'pry-byebug'
+require 'nokogiri'
 
 def mri?
   RUBY_ENGINE == 'ruby'
@@ -21,6 +23,11 @@ end
 
 RSpec::Expectations.configuration.warn_about_potential_false_positives = false
 
+require 'simplecov'
+SimpleCov.start do
+ add_filter 'spec'
+ minimum_coverage_by_file 95
+end
 
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
@@ -39,6 +46,21 @@ end
 def expect_correct_df_in_delta df1, df2, delta
   df1.each_vector_with_index do |vector, i|
     expect_correct_vector_in_delta vector, df2[i], delta
+  end
+end
+
+class String
+  # allows to pretty test agains multiline strings:
+  #   %Q{
+  #     |test
+  #     |me
+  #   }.unindent # =>
+  # "test
+  # me"
+  def unindent
+    gsub(/\n\s+?\|/, "\n")    # for all lines looking like "<spaces>|" -- remove this.
+    .gsub(/\|\n/, "\n")       # allow to write trailing space not removed by editor
+    .gsub(/^\n|\n\s+$/, '')   # remove empty strings before and after
   end
 end
 

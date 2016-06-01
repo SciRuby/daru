@@ -1,5 +1,3 @@
-require 'spec_helper.rb'
-
 describe Daru::Vector do
   ALL_DTYPES.each do |dtype|
     describe dtype.to_s do
@@ -339,6 +337,49 @@ describe Daru::Vector do
             expect(@vector).to eq(Daru::Vector.new([0,1,2,3,4,5,6,69,8,9,10,11],
               index: @multi_index, name: :precise_assignment, dtype: dtype))
           end
+
+          it "fails predictably on unknown index" do
+            expect { @vector[:d] = 69 }.to raise_error(IndexError)
+            expect { @vector[:b, :three] = 69 }.to raise_error(IndexError)
+            expect { @vector[:b, :two, :test] = 69 }.to raise_error(IndexError)
+          end
+        end
+      end
+
+
+      context '#head' do
+        subject(:vector) do
+          Daru::Vector.new (1..20).to_a, dtype: dtype
+        end
+
+        it 'takes 10 by default' do
+          expect(vector.head).to eq Daru::Vector.new (1..10).to_a
+        end
+
+        it 'takes num if provided' do
+          expect(vector.head(3)).to eq Daru::Vector.new (1..3).to_a
+        end
+
+        it 'does not fail on too large num' do
+          expect(vector.head(3000)).to eq vector
+        end
+      end
+
+      context '#tail' do
+        subject(:vector) do
+          Daru::Vector.new (1..20).to_a, dtype: dtype
+        end
+
+        it 'takes 10 by default' do
+          expect(vector.tail).to eq Daru::Vector.new (11..20).to_a, index: (10..19).to_a
+        end
+
+        it 'takes num if provided' do
+          expect(vector.tail(3)).to eq Daru::Vector.new (18..20).to_a, index: (17..19).to_a
+        end
+
+        it 'does not fail on too large num' do
+          expect(vector.tail(3000)).to eq vector
         end
       end
 
@@ -477,6 +518,15 @@ describe Daru::Vector do
         end
       end
 
+      context "#to_json" do
+        subject(:vector) do
+          Daru::Vector.new [1,2,3,4,5], name: :a,
+              index: [:one, :two, :three, :four, :five], dtype: dtype
+        end
+
+        its(:to_json) { is_expected.to eq(vector.to_h.to_json) }
+      end
+
       context "#uniq" do
         before do
           @v = Daru::Vector.new [1, 2, 2, 2.0, 3, 3.0], index:[:a, :b, :c, :d, :e, :f], metadata: { cdc_type: 2 }
@@ -531,7 +581,7 @@ describe Daru::Vector do
             with_nils = Daru::Vector.new [22,4,nil,111,nil,2]
 
             expect(with_nils.sort(ascending: false)).to eq(
-              Daru::Vector.new [nil,nil,111,22,4,2], index: [4,2,3,0,1,5])
+              Daru::Vector.new [111,22,4,2,nil,nil], index: [3,0,1,5,4,2])
           end
 
           it "correctly sorts vector in ascending order with non-numeric data and nils" do
@@ -545,7 +595,7 @@ describe Daru::Vector do
             non_numeric = Daru::Vector.new ['a','b', nil, 'aa', '1234', nil]
 
             expect(non_numeric.sort(ascending: false)).to eq(
-              Daru::Vector.new [nil,nil,'b','aa','a','1234'], index: [5,2,1,3,0,4])
+              Daru::Vector.new ['b','aa','a','1234',nil,nil], index: [1,3,0,4,5,2])
           end
 
           it "retains the original vector metadata" do
@@ -621,6 +671,18 @@ describe Daru::Vector do
           expect {
             @vector.index = Daru::Index.new([4,2,6])
           }.to raise_error
+        end
+      end
+
+      context "#reindex!" do
+        before do
+          @vector = Daru::Vector.new([1,2,3,4,5], metadata: { cdc_type: 2 })
+          @index = Daru::Index.new([3,4,1,0,6])
+        end
+        it "intelligently reindexes" do
+          @vector.reindex!(@index)
+          expect(@vector).to eq(
+            Daru::Vector.new([4,5,2,1,nil], index: @index))
         end
       end
 
@@ -837,6 +899,18 @@ describe Daru::Vector do
     end
   end
 
+  context "#not_nil?" do
+    before(:each) do
+      @with_md    = Daru::Vector.new([1,2,nil,3,4,nil])
+      @without_md = Daru::Vector.new([1,2,3,4,5,6])
+    end
+
+    it "verifies missing data presence" do
+      expect(@with_md.not_nil?)   .to eq(Daru::Vector.new([true,true,false,true,true,false]))
+      expect(@without_md.not_nil?).to eq(Daru::Vector.new([true,true,true,true,true,true]))
+    end
+  end
+
   context "#clone_structure" do
     context Daru::Index do
       before do
@@ -892,6 +966,24 @@ describe Daru::Vector do
           ['F',2003]
         ])
       end
+    end
+  end
+
+  context '#exists?' do
+    it 'shows if value exists with default missing_values' do
+      vec = Daru::Vector.new([1,2,nil,3,4,nil])
+      expect(vec.exists?(2)).to eq true
+      expect(vec.exists?(6)).to eq false
+      expect(vec.exists?(nil)).to eq false
+    end
+
+    it 'shows if value exists with custom default missing_values' do
+      vec = Daru::Vector.new([1,2,nil,3,4,nil])
+      vec.missing_values = [3]
+      expect(vec.exists?(2)).to eq true
+      expect(vec.exists?(6)).to eq false
+      expect(vec.exists?(3)).to eq false
+      # expect(vec.exists?(nil)).to eq true - FIXME: right behavior here?.. - zverok
     end
   end
 
@@ -966,6 +1058,10 @@ describe Daru::Vector do
 
     it "converts Daru::Vector to a vertical Ruby Matrix" do
       expect(@vector.to_matrix(:vertical)).to eq(Matrix.columns([[1,2,3,4,5,6]]))
+    end
+
+    it 'raises on wrong axis' do
+      expect { @vector.to_matrix(:strange) }.to raise_error(ArgumentError)
     end
   end
 
@@ -1118,12 +1214,16 @@ describe Daru::Vector do
   end
 
   context "#only_missing" do
-    it "returns a vector (with proper index) of all the elements marked 'missing'" do
-      v = Daru::Vector.new([1,2,3,4,5,6,4,5,5,4,4,nil,nil,nil])
-      v.missing_values = [nil, 5]
+    let(:v) { Daru::Vector.new([1,2,3,4,5,6,4,5,5,4,4,nil,nil,nil]) }
+    before { v.missing_values = [nil, 5] }
 
+    it "returns a vector (with proper index) of all the elements marked 'missing'" do
       expect(v.only_missing).to eq(Daru::Vector.new([5,5,5,nil,nil,nil],
         index: [4,7,8,11,12,13]))
+    end
+
+    it "returns an array if asked to" do
+      expect(v.only_missing(:array)).to eq [5,5,5,nil,nil,nil]
     end
   end
 
@@ -1166,6 +1266,228 @@ describe Daru::Vector do
     it "defaults to an empty hash for metadata" do
       dv = Daru::Vector.new [1,2,3,4,5]
       expect(dv.metadata).to eq({})
+    end
+  end
+
+  context '#method_missing' do
+    context 'getting' do
+      subject(:vector) { Daru::Vector.new [1,2,3], index: [:a, :b, :c] }
+
+      it 'returns value for existing index' do
+        expect(vector.a).to eq 1
+      end
+
+      it 'raises on getting non-existent index' do
+        expect { vector.d }.to raise_error NoMethodError
+      end
+
+      it 'sets existing index' do
+        vector.a = 5
+        expect(vector[:a]).to eq 5
+      end
+
+      it 'raises on non-existent index setting' do
+        # FIXME: inconsistency between IndexError here and NoMethodError on getting - zverok
+        expect { vector.d = 5 }.to raise_error IndexError
+      end
+    end
+  end
+
+  context '#db_type' do
+    it 'is DATE for vector with any date in it' do
+      # FIXME: is it sane?.. - zverok
+      expect(Daru::Vector.new(['2016-03-01', 'foo', 4]).db_type).to eq 'DATE'
+    end
+
+    it 'is INTEGER for digits-only values' do
+      expect(Daru::Vector.new(['123', 456, 789]).db_type).to eq 'INTEGER'
+    end
+
+    it 'is DOUBLE for digits-and-point values' do
+      expect(Daru::Vector.new(['123.4', 456, 789e-10]).db_type).to eq 'DOUBLE'
+    end
+
+    it 'is VARCHAR for everyting else' do
+      expect(Daru::Vector.new(['123 and stuff', 456, 789e-10]).db_type).to eq 'VARCHAR (255)'
+    end
+  end
+
+  context '#inspect' do
+    context 'simple' do
+      subject(:vector) { Daru::Vector.new [1,2,3], index: [:a, :b, :c], name: 'test' }
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::Vector(3)>
+        |      test
+        |    a    1
+        |    b    2
+        |    c    3
+      }.unindent }
+    end
+
+    context 'no name' do
+      subject(:vector) { Daru::Vector.new [1,2,3], index: [:a, :b, :c] }
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::Vector(3)>
+        |   a   1
+        |   b   2
+        |   c   3
+      }.unindent }
+    end
+
+    context 'with nils' do
+      subject(:vector) { Daru::Vector.new [1,nil,3], index: [:a, :b, :c], name: 'test' }
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::Vector(3)>
+        |      test
+        |    a    1
+        |    b  nil
+        |    c    3
+      }.unindent }
+    end
+
+    context 'with metadata' do
+      subject(:vector) { Daru::Vector.new [1,2,3], index: [:a, :b, :c], name: 'test', metadata: {hey: 'JUDE!'} }
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::Vector(3){:hey=>"JUDE!"}>
+        |      test
+        |    a    1
+        |    b    2
+        |    c    3
+      }.unindent }
+    end
+
+    context 'very large amount of data' do
+      subject(:vector) { Daru::Vector.new [1,2,3] * 100, name: 'test' }
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::Vector(300)>
+        |      test
+        |    0    1
+        |    1    2
+        |    2    3
+        |    3    1
+        |    4    2
+        |    5    3
+        |    6    1
+        |    7    2
+        |    8    3
+        |    9    1
+        |   10    2
+        |   11    3
+        |   12    1
+        |   13    2
+        |   14    3
+        |  ...  ...
+      }.unindent }
+    end
+
+    context 'really long name or data' do
+      subject(:vector) { Daru::Vector.new [1,2,'this is ridiculously long'],
+        index: [:a, :b, :c], name: 'and this is not much better faithfully'
+      }
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::Vector(3)>
+        |                      and this is not much
+        |                    a                    1
+        |                    b                    2
+        |                    c this is ridiculously
+      }.unindent }
+    end
+
+    context 'with multiindex' do
+      subject(:vector) {
+        Daru::Vector.new(
+          [1,2,3,4,5,6,7],
+          name: 'test',
+          index: Daru::MultiIndex.from_tuples([
+              %w[foo one],
+              %w[foo two],
+              %w[foo three],
+              %w[bar one],
+              %w[bar two],
+              %w[bar three],
+              %w[baz one],
+           ]),
+        )
+      }
+
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::Vector(7)>
+        |              test
+        |   foo   one     1
+        |         two     2
+        |       three     3
+        |   bar   one     4
+        |         two     5
+        |       three     6
+        |   baz   one     7
+      }.unindent}
+    end
+
+    context 'threshold and spacing settings' do
+    end
+  end
+
+  context '#to_html' do
+    let(:doc) { Nokogiri::HTML(vector.to_html) }
+    subject(:table) { doc.at('table') }
+
+    context 'simple' do
+      let(:vector) { Daru::Vector.new [1,nil,3], index: [:a, :b, :c], name: 'test' }
+      it { is_expected.not_to be_nil }
+
+      describe 'header' do
+        subject(:header) { table.at('tr:first-child > th:first-child') }
+        it { is_expected.not_to be_nil }
+        its(['colspan']) { is_expected.to eq '2' }
+        its(:text) { is_expected.to eq "Daru::Vector:#{vector.object_id} size: 3" }
+      end
+
+      describe 'name' do
+        subject(:name) { table.at('tr:nth-child(2) > th:nth-child(2)') }
+        it { is_expected.not_to be_nil }
+        its(:text) { is_expected.to eq 'test' }
+      end
+
+      describe 'index' do
+        subject(:indexes) { table.search('tr > td:first-child').map(&:text) }
+        its(:count) { is_expected.to eq vector.size }
+        it { is_expected.to eq vector.index.to_a.map(&:to_s) }
+      end
+
+      describe 'values' do
+        subject(:indexes) { table.search('tr > td:last-child').map(&:text) }
+        its(:count) { is_expected.to eq vector.size }
+        it { is_expected.to eq vector.to_a.map(&:to_s) }
+      end
+    end
+
+    context 'large vector' do
+      subject(:vector) { Daru::Vector.new [1,2,3] * 100, name: 'test' }
+      it 'has only 30 rows (+ 2 header rows, + 2 finishing rows)' do
+        expect(table.search('tr').size).to eq 34
+      end
+
+      describe '"skipped" row' do
+        subject(:row) { table.search('tr:nth-child(33) td').map(&:text) }
+        its(:count) { is_expected.to eq 2 }
+        it { is_expected.to eq ['...', '...'] }
+      end
+
+      describe 'last row' do
+        subject(:row) { table.search('tr:nth-child(34) td').map(&:text) }
+        its(:count) { is_expected.to eq 2 }
+        it { is_expected.to eq ['299', '3'] }
+      end
+    end
+  end
+
+  context 'on wrong dtypes' do
+    it 'should not accept mdarray' do
+      expect { Daru::Vector.new([], dtype: :mdarray) }.to raise_error(NotImplementedError)
+    end
+
+    it 'should not accept anything else' do
+      expect { Daru::Vector.new([], dtype: :kittens) }.to raise_error(ArgumentError)
     end
   end
 

@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 include Daru
 
 describe DateTimeIndex do
@@ -32,6 +30,20 @@ describe DateTimeIndex do
     end
   end
 
+  context '.try_create' do
+    it 'creates index from array of dates' do
+      index = DateTimeIndex.try_create([
+        DateTime.new(2014,7,1),DateTime.new(2014,7,2),
+        DateTime.new(2014,7,3),DateTime.new(2014,7,4)])
+      expect(index.class).to eq(DateTimeIndex)
+    end
+
+    it 'does not creates index from anything else' do
+      index = DateTimeIndex.try_create([:a, :b, :c])
+      expect(index).to be_nil
+    end
+  end
+
   context ".date_range" do
     it "creates DateTimeIndex with default options" do
       index = DateTimeIndex.date_range(:start => DateTime.new(2014,5,3),
@@ -52,6 +64,11 @@ describe DateTimeIndex do
         DateTime.new(2014,5,6),DateTime.new(2014,5,7),DateTime.new(2014,5,8),
         DateTime.new(2014,5,9),DateTime.new(2014,5,10)]))
       expect(index.frequency).to eq('D')
+    end
+
+    it 'fails on wrong string format' do
+      expect{DateTimeIndex.date_range(start: '2014/5/3', end: '2014/5/10')}
+        .to raise_error(ArgumentError, /Unacceptable date string/)
     end
 
     it "creates DateTimeIndex of per minute frequency between start and end" do
@@ -88,7 +105,7 @@ describe DateTimeIndex do
     end
 
     it "creates a DateTimeIndex of (sunday) weekly frequency" do
-      index = DateTimeIndex.date_range(start: '2014-8-2', end: '2014-9-8', 
+      index = DateTimeIndex.date_range(start: '2014-8-2', end: '2014-9-8',
         freq: 'W')
 
       expect(index).to eq(DateTimeIndex.new([
@@ -98,7 +115,7 @@ describe DateTimeIndex do
     end
 
     it "creates a DateTimeIndex of (monday) weekly frequency" do
-      index = DateTimeIndex.date_range(:start => '2015-7-6', :periods => 5, 
+      index = DateTimeIndex.date_range(:start => '2015-7-6', :periods => 5,
         :freq => 'W-MON')
       expect(index).to eq(DateTimeIndex.new([
         DateTime.new(2015,7,6), DateTime.new(2015,7,13), DateTime.new(2015,7,20),
@@ -110,7 +127,7 @@ describe DateTimeIndex do
       index = DateTimeIndex.date_range(
         :start => '2017-4-14', :freq => 'MB', :periods => 5)
       expect(index).to eq(DateTimeIndex.new([
-        DateTime.new(2017,5,1), DateTime.new(2017,6,1), 
+        DateTime.new(2017,5,1), DateTime.new(2017,6,1),
         DateTime.new(2017,7,1), DateTime.new(2017,8,1),DateTime.new(2017,9,1)]))
     end
 
@@ -132,13 +149,13 @@ describe DateTimeIndex do
       index = DateTimeIndex.date_range(start: '2014-9',end: '2018-1',freq: 'YE')
 
       expect(index).to eq(DateTimeIndex.new([
-        DateTime.new(2014,12,31), DateTime.new(2015,12,31),DateTime.new(2016,12,31), 
+        DateTime.new(2014,12,31), DateTime.new(2015,12,31),DateTime.new(2016,12,31),
         DateTime.new(2017,12,31)]))
       expect(index.frequency).to eq('YE')
     end
 
     it "creates only specfied number of periods taking precendence over end" do
-      index = DateTimeIndex.date_range(start: '2014-5-5', end: '2015-3', 
+      index = DateTimeIndex.date_range(start: '2014-5-5', end: '2015-3',
         periods: 5, freq: 'YB')
       expect(index).to eq(DateTimeIndex.new([
         DateTime.new(2015,1,1),DateTime.new(2016,1,1),DateTime.new(2017,1,1),
@@ -148,16 +165,42 @@ describe DateTimeIndex do
     it "does not increment start date if it satisifies the anchor" do
       index = DateTimeIndex.date_range(:start => '2012-1-1', freq: 'MB', periods: 4)
       expect(index).to eq(DateTimeIndex.new(
-        [DateTime.new(2012,1,1), DateTime.new(2012,2,1), 
+        [DateTime.new(2012,1,1), DateTime.new(2012,2,1),
          DateTime.new(2012,3,1), DateTime.new(2012,4,1)]))
     end
 
     it "raises error for different start and end timezones" do
       expect {
         DateTimeIndex.date_range(
-          :start => DateTime.new(2012,3,4,12,5,4,"+5:30"), 
+          :start => DateTime.new(2012,3,4,12,5,4,"+5:30"),
           :end => DateTime.new(2013,3,4,12,5,4,"+7:30"), freq: 'M')
       }.to raise_error(ArgumentError)
+    end
+  end
+
+  context '#inspect' do
+    subject { index.inspect }
+
+    context 'with known frequency' do
+      let(:index){
+        DateTimeIndex.new([
+          DateTime.new(2014,7,1),DateTime.new(2014,7,2),DateTime.new(2014,7,3),
+          DateTime.new(2014,7,4)], freq: :infer)
+      }
+      it { is_expected.to eq \
+        "#<Daru::DateTimeIndex(4, frequency=D) 2014-07-01T00:00:00+00:00...2014-07-04T00:00:00+00:00>"
+      }
+    end
+
+    context 'with unknown frequency' do
+      let(:index){
+        DateTimeIndex.new([
+          DateTime.new(2014,7,1),DateTime.new(2014,7,2),DateTime.new(2014,7,3),
+          DateTime.new(2014,7,4)])
+      }
+      it { is_expected.to eq \
+        "#<Daru::DateTimeIndex(4) 2014-07-01T00:00:00+00:00...2014-07-04T00:00:00+00:00>"
+      }
     end
   end
 
@@ -180,7 +223,7 @@ describe DateTimeIndex do
   context "#[]" do
     it "accepts complete time as a string" do
       index = DateTimeIndex.new([
-        DateTime.new(2014,3,3),DateTime.new(2014,3,4),DateTime.new(2014,3,5),DateTime.new(2014,3,6)], 
+        DateTime.new(2014,3,3),DateTime.new(2014,3,4),DateTime.new(2014,3,5),DateTime.new(2014,3,6)],
         freq: :infer)
       expect(index.frequency).to eq('D')
       expect(index['2014-3-5']).to eq(2)
@@ -188,7 +231,7 @@ describe DateTimeIndex do
 
     it "accepts complete time as a DateTime object" do
       index = DateTimeIndex.new([
-        DateTime.new(2014,3,3),DateTime.new(2014,3,4),DateTime.new(2014,3,5),DateTime.new(2014,3,6)], 
+        DateTime.new(2014,3,3),DateTime.new(2014,3,4),DateTime.new(2014,3,5),DateTime.new(2014,3,6)],
         freq: :infer)
       expect(index[DateTime.new(2014,3,6)]).to eq(3)
     end
@@ -202,7 +245,7 @@ describe DateTimeIndex do
     end
 
     it "accepts only year for frequency data" do
-      index = DateTimeIndex.date_range(:start => DateTime.new(2012,3,2), 
+      index = DateTimeIndex.date_range(:start => DateTime.new(2012,3,2),
         periods: 1000, freq: '5D')
       expect(index['2012']).to eq(DateTimeIndex.date_range(
         :start => DateTime.new(2012,3,2), :end => DateTime.new(2012,12,27), freq: '5D'))
@@ -233,10 +276,10 @@ describe DateTimeIndex do
     end
 
     it "accepts year, month, date for frequency data" do
-      index = DateTimeIndex.date_range(:start => DateTime.new(2012,2,29), 
+      index = DateTimeIndex.date_range(:start => DateTime.new(2012,2,29),
         periods: 1000, freq: 'M')
       expect(index['2012-2-29']).to eq(DateTimeIndex.date_range(
-        :start => DateTime.new(2012,2,29), 
+        :start => DateTime.new(2012,2,29),
         :end   => DateTime.new(2012,2,29,16,39,00), freq: 'M'))
     end
 
@@ -291,7 +334,7 @@ describe DateTimeIndex do
     end
 
     it "returns slice upto last element if overshoot in range" do
-      index = DateTimeIndex.date_range(:start => '2012-2-2', :periods => 50, 
+      index = DateTimeIndex.date_range(:start => '2012-2-2', :periods => 50,
         freq: 'M')
       expect(index['2012'..'2013']).to eq(DateTimeIndex.date_range(
         :start => '2012-2-2',:periods => 50, freq: 'M'))
@@ -335,7 +378,7 @@ describe DateTimeIndex do
 
   context "#slice" do
     it "supports both DateTime objects" do
-      index = DateTimeIndex.date_range(:start => '2012', :periods => 50, 
+      index = DateTimeIndex.date_range(:start => '2012', :periods => 50,
         :freq => 'M')
       expect(index.slice(DateTime.new(2012,1,1), DateTime.new(2012,1,1,0,6))).to eq(
         DateTimeIndex.date_range(:start => '2012', :periods => 7, :freq => 'M'))
@@ -351,6 +394,16 @@ describe DateTimeIndex do
       index = DateTimeIndex.date_range(:start => '2012', :periods => 40, :freq => 'MONTH')
       expect(index.slice(DateTime.new(2012), '2013')).to eq(
         DateTimeIndex.date_range(:start => '2012', :periods => 24, :freq => 'MONTH'))
+    end
+
+    it "supports two strings" do
+      index = DateTimeIndex.date_range(:start => '2012', :periods => 40, :freq => 'MONTH')
+      expect(index.slice('2012', '2013')).to eq(
+        DateTimeIndex.date_range(:start => '2012', :periods => 24, :freq => 'MONTH'))
+
+      # FIXME: It works this way now, yet I'm faithfully not sure that is most
+      # reasonable behavior. At least MY expectation is "slice(2012, 2013)" returns
+      # "from start of 2012 to start of 2013"... Or am I missing something?.. - zverok
     end
   end
 

@@ -11,20 +11,21 @@ module Daru
         end
       end
 
+      TUPLE_SORTER = lambda do |a, b|
+        if a && b
+          a.compact <=> b.compact
+        else
+          a ? 1 : -1
+        end
+      end
+
       def initialize context, names
         @groups = {}
         @non_group_vectors = context.vectors.to_a - names
         @context = context
         vectors = names.map { |vec| context[vec].to_a }
         tuples  = vectors[0].zip(*vectors[1..-1])
-        keys    =
-          tuples.uniq.sort do |a,b|
-            if a && b
-              a.compact <=> b.compact
-            else
-              a ? 1 : -1
-            end
-          end
+        keys    = tuples.uniq.sort(&TUPLE_SORTER)
 
         keys.each do |key|
           @groups[key] = all_indices_for(tuples, key)
@@ -189,17 +190,9 @@ module Daru
       #   #         5        bar        two          6         66
       def get_group group
         indexes   = @groups[group]
-        elements  = []
-
-        @context.each_vector do |vector|
-          elements << vector.to_a
-        end
-        rows = []
+        elements  = @context.each_vector.map(&:to_a)
         transpose = elements.transpose
-
-        indexes.each do |idx|
-          rows << transpose[idx]
-        end
+        rows      = indexes.each.map { |idx| transpose[idx] }
 
         new_index =
           begin
@@ -207,6 +200,7 @@ module Daru
           rescue IndexError
             indexes
           end
+
         Daru::DataFrame.rows(
           rows, index: new_index, order: @context.vectors
         )
@@ -268,31 +262,28 @@ module Daru
       end
 
       def apply_method method_type, method
-        multi_index = multi_indexed_grouping?
-        rows, order = [], []
+        order = @non_group_vectors.select do |ngvec|
+          method_type == :numeric && @context[ngvec].type == :numeric
+        end
 
-        @groups.each do |_group, indexes|
-          single_row = []
-          @non_group_vectors.each do |ngvector|
-            vec = @context[ngvector]
-            if method_type == :numeric && vec.type == :numeric
-              slice = vec[*indexes]
-              single_row << (slice.is_a?(Daru::Vector) ? slice.send(method) : slice)
-            end
+        rows = @groups.map do |_group, indexes|
+          order.map do |ngvector|
+            slice = @context[ngvector][*indexes]
+            slice.is_a?(Daru::Vector) ? slice.send(method) : slice
           end
-
-          rows << single_row
         end
 
-        @non_group_vectors.each do |ngvec|
-          order << ngvec if
-            method_type == :numeric && @context[ngvec].type == :numeric
-        end
-
-        index = @groups.keys
-        index = multi_index ? Daru::MultiIndex.from_tuples(index) : Daru::Index.new(index.flatten)
+        index = apply_method_index
         order = Daru::Index.new(order)
         Daru::DataFrame.new(rows.transpose, index: index, order: order)
+      end
+
+      def apply_method_index
+        if multi_indexed_grouping?
+          Daru::MultiIndex.from_tuples(@groups.keys)
+        else
+          Daru::Index.new(@groups.keys.flatten)
+        end
       end
 
       def all_indices_for arry, element

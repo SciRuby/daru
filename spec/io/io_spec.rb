@@ -1,5 +1,3 @@
-require 'spec_helper.rb'
-
 describe Daru::IO do
   describe Daru::DataFrame do
     context ".from_csv" do
@@ -29,7 +27,7 @@ describe Daru::IO do
           expect(y_ds).to be_within(0.001).of(y_expected)
         end
       end
-      
+
       it "follows the order of columns given in CSV" do
         df = Daru::DataFrame.from_csv 'spec/fixtures/sales-funnel.csv'
         expect(df.vectors.to_a).to eq(%W[Account Name Rep Manager Product Quantity Price Status])
@@ -145,8 +143,23 @@ describe Daru::IO do
     end
 
     context "#write_sql" do
+      let(:df) { Daru::DataFrame.new({
+          'a' => [1,2,3,4,5],
+          'b' => [11,22,33,44,55],
+          'c' => ['a', 'g', 4, 5,'addadf'],
+          'd' => [nil, 23, 4,'a','ff']})
+      }
+
+      let(:dbh) { double }
+      let(:prepared_query) { double }
+
       it "writes the DataFrame to an SQL database" do
-        # TODO: write these tests
+        expect(dbh).to receive(:prepare)
+          .with('INSERT INTO tbl (a,b,c,d) VALUES (?,?,?,?)')
+          .and_return(prepared_query)
+        df.each_row { |r| expect(prepared_query).to receive(:execute).with(*r.to_a).ordered }
+
+        df.write_sql dbh, 'tbl'
       end
     end
 
@@ -200,6 +213,20 @@ describe Daru::IO do
         df = Daru::DataFrame.from_plaintext 'spec/fixtures/bank2.dat', [:v1,:v2,:v3,:v4,:v5,:v6]
 
         expect(df.vectors.to_a).to eq([:v1,:v2,:v3,:v4,:v5,:v6])
+      end
+
+      xit "understands empty fields" do
+        pending 'See FIXME note in io.rb'
+
+        df = Daru::DataFrame.from_plaintext 'spec/fixtures/empties.dat', [:v1,:v2,:v3]
+
+        expect(df.row[1].to_a).to eq [4, nil, 6]
+      end
+
+      it "understands non-numeric fields" do
+        df = Daru::DataFrame.from_plaintext 'spec/fixtures/strings.dat', [:v1,:v2,:v3]
+
+        expect(df[:v1].to_a).to eq ['test', 'foo']
       end
     end
 

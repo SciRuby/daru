@@ -1,5 +1,3 @@
-require 'spec_helper.rb'
-
 describe Daru::Core::GroupBy do
   before do
     @df = Daru::DataFrame.new({
@@ -140,6 +138,44 @@ describe Daru::Core::GroupBy do
     end
   end
 
+  context '#each_group' do
+    it 'enumerates groups' do
+      ret = []
+      @dl_group.each_group { |g| ret << g }
+      expect(ret.count).to eq 6
+      expect(ret).to all be_a(Daru::DataFrame)
+      expect(ret.first).to eq(Daru::DataFrame.new({
+        a: ['bar'],
+        b: ['one'],
+        c: [2],
+        d: [22]
+        }, index: [1]
+      ))
+    end
+  end
+
+  context '#first' do
+    it 'gets the first row from each group' do
+      expect(@dl_group.first).to eq(Daru::DataFrame.new({
+        a: %w{bar bar   bar foo foo   foo },
+        b: %w{one three two one three two },
+        c:   [2  ,1    ,6  ,1  ,8    ,3   ],
+        d:   [22 ,44   ,66 ,11 ,88   ,33  ]
+      }, index: [1,3,5,0,7,2]))
+    end
+  end
+
+  context '#last' do
+    it 'gets the last row from each group' do
+      expect(@dl_group.last).to eq(Daru::DataFrame.new({
+        a: %w{bar bar   bar foo foo   foo },
+        b: %w{one three two one three two },
+        c:   [2  ,1    ,6  ,3  ,8    ,3   ],
+        d:   [22 ,44   ,66 ,77 ,88   ,55  ]
+      }, index: [1,3,5,6,7,4]))
+    end
+  end
+
   context "#aggregate" do
     pending
   end
@@ -188,6 +224,14 @@ describe Daru::Core::GroupBy do
       expect(@tl_group.sum).to eq(Daru::DataFrame.new({
         d: [22,44,66,11,77,88,88]
         }, index: @tl_multi_index))
+    end
+  end
+
+  [:median, :std, :max, :min].each do |numeric_method|
+    it "works somehow" do
+      expect(@sl_group.send(numeric_method).index).to eq @sl_index
+      expect(@dl_group.send(numeric_method).index).to eq @dl_multi_index
+      expect(@tl_group.send(numeric_method).index).to eq @tl_multi_index
     end
   end
 
@@ -350,6 +394,12 @@ describe Daru::Core::GroupBy do
     it "returns a vector that concatenates strings in a group" do
       string_concat = lambda { |result, row| result += row[:b] }
       expect(@sl_group.reduce('', &string_concat)).to eq(Daru::Vector.new(['onethreetwo', 'onetwotwoonethree'], index: @sl_index))
+    end
+
+    it "works with multi-indexes" do
+      string_concat = lambda { |result, row| result += row[:b] }
+      expect(@dl_group.reduce('', &string_concat)).to eq \
+        Daru::Vector.new(['one', 'three', 'two', 'oneone', 'three', 'twotwo'], index: @dl_multi_index)
     end
   end
 end

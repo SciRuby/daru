@@ -62,30 +62,28 @@ module Daru
           all_vectors = (vectors.to_a | other.vectors.to_a).sort
           all_indexes = (index.to_a   | other.index.to_a).sort
 
-          hsh = {}
-          all_vectors.each do |vector_name|
-            this = has_vector?(vector_name) ? self[vector_name] : nil
-            that = other.has_vector?(vector_name) ? other[vector_name] : nil
+          hsh =
+            all_vectors.map do |vector_name|
+              vector = dataframe_binary_operation_on_vectors other, vector_name, operation, all_indexes
 
-            hsh[vector_name] =
-              if this && that
-                this.send(operation, that)
-              else
-                Daru::Vector.new([], index: all_indexes, name: vector_name)
-              end
-          end
+              [vector_name, vector]
+            end.to_h
 
           Daru::DataFrame.new(hsh, index: all_indexes, name: @name, dtype: @dtype)
         end
 
-        def scalar_binary_operation operation, other
-          clone = dup
-          clone.map_vectors! do |vector|
-            vector = vector.send(operation, other) if vector.type == :numeric
-            vector
+        def dataframe_binary_operation_on_vectors other, name, operation, indexes
+          if has_vector?(name) && other.has_vector?(name)
+            self[name].send(operation, other[name])
+          else
+            Daru::Vector.new([], index: indexes, name: name)
           end
+        end
 
-          clone
+        def scalar_binary_operation operation, other
+          dup.map_vectors! do |vector|
+            vector.numeric? ? vector.send(operation, other) : vector
+          end
         end
       end
     end
