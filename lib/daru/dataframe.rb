@@ -1608,7 +1608,7 @@ module Daru
       row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
       name_part = @name ? ": #{@name} " : ''
 
-      "#<#{self.class}#{name_part}(#{ncols}x#{nrows})>\n" +
+      "#<#{self.class}#{name_part}(#{nrows}x#{ncols})>\n" +
         Formatters::Table.format(
           each_row.lazy,
           row_headers: row_headers,

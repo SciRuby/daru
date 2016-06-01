@@ -359,7 +359,7 @@ describe Daru::MultiIndex do
       }
 
       its(:inspect) { is_expected.to eq %Q{
-        |#<Daru::MultiIndex(3x12)>
+        |#<Daru::MultiIndex(12x3)>
         |   a one bar
         |         baz
         |     two bar
@@ -384,7 +384,7 @@ describe Daru::MultiIndex do
       }
 
       its(:inspect) { is_expected.to eq %Q{
-        |#<Daru::MultiIndex(2x300)>
+        |#<Daru::MultiIndex(300x2)>
         |   1   a
         |       b
         |       c
