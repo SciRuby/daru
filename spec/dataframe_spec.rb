@@ -2656,7 +2656,7 @@ describe Daru::DataFrame do
     context 'empty' do
       let(:df) { Daru::DataFrame.new({}, order: %w[a b c])}
       it { is_expected.to eq %Q{
-        |#<Daru::DataFrame(3x0)>
+        |#<Daru::DataFrame(0x3)>
         |   a   b   c
       }.unindent}
     end
@@ -2697,7 +2697,7 @@ describe Daru::DataFrame do
     context 'very long' do
       let(:df) { Daru::DataFrame.new({a: [1,1,1]*20, b: [1,1,1]*20, c: [1,1,1]*20}, name: 'test')}
       it { is_expected.to eq %Q{
-        |#<Daru::DataFrame: test (3x60)>
+        |#<Daru::DataFrame: test (60x3)>
         |       a   b   c
         |   0   1   1   1
         |   1   1   1   1
@@ -2749,7 +2749,7 @@ describe Daru::DataFrame do
       }
 
       it { is_expected.to eq %Q{
-        |#<Daru::DataFrame: test (2x7)>
+        |#<Daru::DataFrame: test (7x2)>
         |                 a     b
         |   foo   one     1     a
         |         two     2     b

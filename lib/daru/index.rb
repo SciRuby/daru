@@ -360,7 +360,7 @@ module Daru
     end
 
     def inspect threshold=20
-      "#<Daru::MultiIndex(#{width}x#{size})>\n" +
+      "#<Daru::MultiIndex(#{size}x#{width})>\n" +
         Formatters::Table.format([], row_headers: sparse_tuples, threshold: threshold)
     end
 
