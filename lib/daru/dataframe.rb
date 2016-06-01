@@ -1732,7 +1732,6 @@ module Daru
 
     def access_row *args
       # Problem with ranges
-      return nil if args.first.is_a? Range
       positions = @index.pos(*args)
 
       if positions.is_a? Numeric
@@ -1828,23 +1827,6 @@ module Daru
     end
 
     def insert_or_modify_row indexes, vector
-      # raise NotImplementedError, "Still can't insert rows in multi index dataframes" \
-      #   if index.is_a?(MultiIndex)
-
-      # name = name[0]
-      # vec = Vector.coerce(vector, name: coerce_name(name), index: @vectors)
-
-      # if @index.include? name
-      #   each_vector_with_index do |v,i|
-      #     v[name] = vec.index.include?(i) ? vec[i] : nil
-      #   end
-      # else
-      #   @index |= [name]
-      #   each_vector_with_index do |v,i|
-      #     v.concat((vec.index.include?(i) ? vec[i] : nil), name)
-      #   end
-      # end
-      
       vector = 
         unless vector.is_a? Daru::Vector
           Daru::Vector.new vector

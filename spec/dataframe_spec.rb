@@ -1077,7 +1077,7 @@ describe Daru::DataFrame do
 
         it { is_expected.to be_a Daru::DataFrame }
         its(:index) { is_expected.to eq Daru::CategoricalIndex.new(
-          [:a, :a, 1, 1 ]) }
+          [:a, 1, :a, 1 ]) }
         its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
         its(:a) { Daru::Vector.new ['a', 'c', 'b', 'd'] }
         its(:b) { Daru::Vector.new [1, 3, 2, 4] }
