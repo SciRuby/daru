@@ -525,6 +525,7 @@ module Daru
       end
       
       positions.flatten!
+      positions.sort! # to preserve the order
       
       return positions.first if positions.size == 1
       return positions
@@ -559,16 +560,13 @@ module Daru
     end
     
     def subset *args
-      new_index = args.map do |index|
-        if include? index
-          [index] * @cat_hash[index].size
-        elsif index < @array.size
-          index_from_pos index
-        end
+      positions = pos(*args)
+      new_index = positions.map do |index|
+        index_from_pos index
       end
       
       new_index.flatten!
-      
+
       Daru::CategoricalIndex.new new_index
     end
 

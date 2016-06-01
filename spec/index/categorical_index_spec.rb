@@ -75,7 +75,7 @@ describe Daru::CategoricalIndex do
       
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 4 }
-      its(:to_a) { is_expected.to eq [:a, :a, 1, 1] }
+      its(:to_a) { is_expected.to eq [:a, 1, :a, 1] }
     end
 
     context "multiple positional indexes" do
