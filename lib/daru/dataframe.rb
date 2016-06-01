@@ -1730,21 +1730,14 @@ module Daru
                                        index: @index, name: @name)
     end
 
-    def access_row *names
-      if @index.is_a?(MultiIndex)
-        access_row_multi_index(*names)
-      else
-        access_row_single_index(*names)
-      end
-    end
-
     def access_row *args
       # Problem with ranges
       return nil if args.first.is_a? Range
       positions = @index.pos(*args)
 
       if positions.is_a? Numeric
-        return Daru::Vector.new populate_row_for(positions), index: @vectors
+        return Daru::Vector.new populate_row_for(positions), index: @vectors,
+          name: args.first
       else
         # Can be improved
         new_rows = @data.map { |vec| vec[*args] }

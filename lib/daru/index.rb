@@ -91,7 +91,7 @@ module Daru
     def pos *args
       # Causes Segmentation fault
       if args.first.is_a? Range
-        args = args.first.to_a
+        args = preprocess_range(args.first)
       end
       return self[args.first] if args.size == 1
       args.map { |index| self[index] }
@@ -99,7 +99,7 @@ module Daru
     
     def subset *args
       if args.first.is_a? Range
-        Daru::Index.new args.first.map { |k| key k }
+        slice args.first.begin, args.first.end
       elsif include? args[0]
         Daru::Index.new args
       else
@@ -195,6 +195,20 @@ module Daru
     end
 
     private
+    
+    def preprocess_range rng
+      start   = rng.begin
+      en      = rng.end
+
+      if start.is_a?(Integer) && en.is_a?(Integer)
+        @keys[start..en]
+      else
+        start_idx = @relation_hash[start]
+        en_idx    = @relation_hash[en]
+
+        @keys[start_idx..en_idx]
+      end
+    end
 
     def by_range rng
       slice rng.begin, rng.end
