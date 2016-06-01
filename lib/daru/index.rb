@@ -91,7 +91,7 @@ module Daru
     def pos *args
       # Causes Segmentation fault
       if args.first.is_a? Range
-        return args.first.to_a
+        args = args.first.to_a
       end
       return self[args.first] if args.size == 1
       args.map { |index| self[index] }

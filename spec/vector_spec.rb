@@ -1,5 +1,5 @@
 describe Daru::Vector do
-  ([:array]).each do |dtype|
+  ALL_DTYPES.each do |dtype|
     describe dtype.to_s do
       before do
         @common_all_dtypes =  Daru::Vector.new(
