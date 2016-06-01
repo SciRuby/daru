@@ -1496,7 +1496,11 @@ module Daru
 
     # Convert to html for IRuby.
     def to_html threshold=30
-      path = File.expand_path('../iruby/templates/dataframe.html.erb', __FILE__)
+      path = if index.is_a?(MultiIndex)
+               File.expand_path('../iruby/templates/dataframe_mi.html.erb', __FILE__)
+             else
+               File.expand_path('../iruby/templates/dataframe.html.erb', __FILE__)
+             end
       ERB.new(File.read(path).strip).result(binding)
     end
 
