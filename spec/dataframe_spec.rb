@@ -784,7 +784,6 @@ describe Daru::DataFrame do
 
     context Daru::CategoricalIndex do
       let(:idx) { Daru::CategoricalIndex.new [:a, 1, :a, 1, :c] }
-      let(:dv) { Daru::Vector.new ['x', 'y'] }
       let(:df) do
         Daru::DataFrame.new({
           a: 'a'..'e',
@@ -795,7 +794,7 @@ describe Daru::DataFrame do
       context "modify exiting row" do
         context "single category" do
           subject { df }
-          before { df.row[:a] = dv }
+          before { df.row[:a] = ['x', 'y'] }
 
           it { is_expected.to be_a Daru::DataFrame }
           its(:index) { is_expected.to eq idx }
@@ -806,7 +805,7 @@ describe Daru::DataFrame do
   
         context "multiple categories" do
           subject { df }
-          before { df.row[:a, 1] = dv }
+          before { df.row[:a, 1] = ['x', 'y'] }
   
           it { is_expected.to be_a Daru::DataFrame }
           its(:index) { is_expected.to eq idx }
@@ -817,7 +816,7 @@ describe Daru::DataFrame do
 
         context "positional index" do
           subject { df }
-          before { df.row[0, 2] = dv }
+          before { df.row[0, 2] = ['x', 'y'] }
 
           it { is_expected.to be_a Daru::DataFrame }
           its(:index) { is_expected.to eq idx }
@@ -827,11 +826,11 @@ describe Daru::DataFrame do
         end
 
         context "invalid positional index" do
-          it { expect { df.row[5] = dv }.to raise_error IndexError }
+          it { expect { df.row[5] = ['x', 'y'] }.to raise_error IndexError }
         end
 
         context "invalid category" do
-          it { expect { df.row[:d] = dv }.to raise_error IndexError }
+          it { expect { df.row[:d] = ['x', 'y'] }.to raise_error IndexError }
         end
       end
 
