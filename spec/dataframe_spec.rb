@@ -2771,19 +2771,28 @@ describe Daru::DataFrame do
   context '#to_html' do
     let(:doc) { Nokogiri::HTML(df.to_html) }
     subject(:table) { doc.at('table') }
+    let(:header) { table.at('tr:first-child > th:first-child') }
+    let(:name) { 'test' }
 
     context 'simple' do
-      let(:df) { Daru::DataFrame.new({a: [1,2,3], b: [3,4,5], c: [6,7,8]}, name: 'test')}
+      let(:df) { Daru::DataFrame.new({a: [1,2,3], b: [3,4,5], c: [6,7,8]}, name: name)}
 
       describe 'header' do
-        subject(:header) { table.at('tr:first-child > th:first-child') }
+        subject { header }
+
         it { is_expected.not_to be_nil }
         its(['colspan']) { is_expected.to eq (df.ncols + 1).to_s }
-        its(:text) { is_expected.to eq "Daru::DataFrame:#{df.object_id} rows: 3 cols: 3" }
+        its(:text) { is_expected.to eq "Daru::DataFrame: test (3x3)" }
+
+        context 'without name' do
+          let(:name) { nil }
+
+          its(:text) { is_expected.to eq "Daru::DataFrame(3x3)" }
+        end
       end
 
       describe 'column headers' do
-        subject(:name) { table.search('tr:nth-child(2) th').map(&:text) }
+        subject(:columns) { table.search('tr:nth-child(2) th').map(&:text) }
         its(:size) { is_expected.to eq df.ncols + 1 }
         it { is_expected.to eq ['', 'a', 'b', 'c'] }
       end
@@ -2806,6 +2815,12 @@ describe Daru::DataFrame do
 
     context 'large dataframe' do
       let(:df) { Daru::DataFrame.new({a: [1,2,3]*100, b: [3,4,5]*100, c: [6,7,8]*100}, name: 'test') }
+
+      describe 'header' do
+        subject { header }
+
+        its(:text) { is_expected.to eq "Daru::DataFrame: test (300x3)" }
+      end
 
       it 'has only 30 rows (+ 2 header rows, + 2 finishing rows)' do
         expect(table.search('tr').size).to eq 34

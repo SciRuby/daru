@@ -1,0 +1,45 @@
+<table>
+  <tr>
+    <th colspan='<%= @vectors.size+index.width %>'>Daru::DataFrame<%= name ? ": #{name} " : ''%>(<%=nrows%>x<%=ncols%>)</th>
+  </tr>
+  <tr>
+    <th colspan="<%= index.width %>"></th>
+    <% @vectors.each do |vector| %>
+      <th><%=vector%></th>
+    <% end %>
+  </tr>
+
+  <% @index.tuples_with_rowspans.first(threshold).zip(@index.to_a).each do |tuple, index| %>
+    <tr>
+      <% tuple.each do |idx, span| %>
+        <th rowspan="<%= span %>"><%= idx %></th>
+      <% end %>
+      <% row[index].each do |element| %>
+        <td><%= element.to_s %></td>
+      <% end %>
+    </tr>
+  <% end %>
+
+  <% if nrows > threshold %>
+    <tr>
+      <% index.width.times do %>
+        <th>...</th>
+      <% end %>
+      <% @vectors.size.times do %>
+        <td>...</td>
+      <% end %>
+    </tr>
+
+    <% last_index = @index.to_a.last
+       last_row = row[last_index] %>
+
+    <tr>
+      <% last_index.each do |idx| %>
+        <th><%= idx %></td>
+      <% end %>
+      <% last_row.each do |element| %>
+        <td><%= element.to_s %></td>
+      <% end %>
+    </tr>
+  <% end %>
+</table>

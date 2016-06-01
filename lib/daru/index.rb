@@ -364,6 +364,11 @@ module Daru
         Formatters::Table.format([], row_headers: sparse_tuples, threshold: threshold)
     end
 
+    def to_html
+      path = File.expand_path('../iruby/templates/multi_index.html.erb', __FILE__)
+      ERB.new(File.read(path).strip).result(binding)
+    end
+
     # Provide a MultiIndex for sub vector produced
     #
     # @param input_indexes [Array] the input by user to index the vector
@@ -384,6 +389,33 @@ module Daru
       [tuples.first] + each_cons(2).map { |prev, cur|
         left = cur.zip(prev).drop_while { |c, p| c == p }
         [nil] * (cur.size - left.size) + left.map(&:first)
+      }
+    end
+
+    def tuples_with_rowspans
+      sparse_tuples
+        .transpose
+        .map { |r| nils_counted(r) }
+        .transpose.map(&:compact)
+    end
+
+    private
+
+    # It is complicated, but the only algo I could think of.
+    # It does [:a, nil, nil, :b, nil, :c] # =>
+    #         [[:a,3], nil, nil, [:b,2], nil, :c]
+    # Needed by tuples_with_rowspans, which we need for pretty HTML
+    def nils_counted array
+      grouped = [[array.first]]
+      array[1..-1].each do |val|
+        if val
+          grouped << [val]
+        else
+          grouped.last << val
+        end
+      end
+      grouped.flat_map { |items|
+        [[items.first, items.count], *[nil] * (items.count - 1)]
       }
     end
   end

@@ -1,6 +1,6 @@
 <table>
   <tr>
-    <th colspan='<%= @vectors.size+1 %>'>Daru::DataFrame:<%=object_id%> rows: <%=nrows%> cols: <%=ncols%></th>
+    <th colspan='<%= @vectors.size+1 %>'>Daru::DataFrame<%= name ? ": #{name} " : ''%>(<%=nrows%>x<%=ncols%>)</th>
   </tr>
   <tr>
     <th></th>
@@ -20,7 +20,9 @@
 
   <% if nrows > threshold %>
     <tr>
-      <%= '<td>...</td>' * (@vectors.size + 1) %>
+      <% (@vectors.size + 1).times do %>
+        <td>...</td>
+      <% end %>
     </tr>
 
     <% last_index = @index.to_a.last
