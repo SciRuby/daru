@@ -1,11 +1,13 @@
 <table>
   <tr>
-    <th colspan="2">Daru::Vector:<%= object_id %> size: <%= size %></th>
+    <th colspan="2">Daru::Vector(<%= size %>)</th>
   </tr>
-  <tr>
-      <th> </th>
-      <th><%= name || 'nil' %></th>
-  </tr>
+  <% if name %>
+    <tr>
+        <th> </th>
+        <th><%= name %></th>
+    </tr>
+  <% end %>
 
   <% @index.first(threshold).each do |index| %>
     <tr>

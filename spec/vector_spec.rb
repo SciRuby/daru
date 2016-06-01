@@ -1439,13 +1439,19 @@ describe Daru::Vector do
         subject(:header) { table.at('tr:first-child > th:first-child') }
         it { is_expected.not_to be_nil }
         its(['colspan']) { is_expected.to eq '2' }
-        its(:text) { is_expected.to eq "Daru::Vector:#{vector.object_id} size: 3" }
+        its(:text) { is_expected.to eq "Daru::Vector(3)" }
       end
 
       describe 'name' do
         subject(:name) { table.at('tr:nth-child(2) > th:nth-child(2)') }
         it { is_expected.not_to be_nil }
         its(:text) { is_expected.to eq 'test' }
+
+        context 'withought name' do
+          let(:vector) { Daru::Vector.new [1,nil,3], index: [:a, :b, :c] }
+
+          it { is_expected.to be_nil }
+        end
       end
 
       describe 'index' do
