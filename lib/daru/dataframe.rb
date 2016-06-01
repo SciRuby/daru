@@ -1845,8 +1845,13 @@ module Daru
       #   end
       # end
       
-      vector = Daru::Vector.new(vector) unless vector.is_a? Daru::Vector
-      
+      vector = 
+        unless vector.is_a? Daru::Vector
+          Daru::Vector.new vector
+        else
+          vector.reindex @vectors
+        end
+
       if @index.respond?(*indexes)
         positions = @index.pos(*indexes)
         positions = [positions] if positions.is_a? Numeric
