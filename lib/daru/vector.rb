@@ -803,7 +803,11 @@ module Daru
 
     # Convert to html for iruby
     def to_html threshold=30
-      path = File.expand_path('../iruby/templates/vector.html.erb', __FILE__)
+      path = if index.is_a?(MultiIndex)
+               File.expand_path('../iruby/templates/vector_mi.html.erb', __FILE__)
+             else
+               File.expand_path('../iruby/templates/vector.html.erb', __FILE__)
+             end
       ERB.new(File.read(path).strip).result(binding)
     end
 
