@@ -369,8 +369,8 @@ module Daru
     def pos *args
       # to filled
       out = self[*args]
-      out = out.to_a unless out.is_a? Numeric
-      out
+      return out if out.is_a? Numeric
+      out.map { |date| self[date] }
     end
     
     def subset *args

@@ -396,7 +396,7 @@ describe DateTimeIndex do
       
       it { is_expected.to be_a Array }
       its(:size) { is_expected.to eq 4 }
-      it { is_expected.to eq idx.to_a }
+      it { is_expected.to eq [0, 1, 2, 3] }
     end
     
     context "single positional index" do
@@ -408,8 +408,7 @@ describe DateTimeIndex do
       
       it { is_expected.to be_a Array }
       its(:size) { is_expected.to eq 3 }
-      it { is_expected.to eq [DateTime.new(2014, 3, 3),
-        DateTime.new(2014, 3, 4), DateTime.new(2014, 3, 5)] }
+      it { is_expected.to eq [0, 1, 2] }
     end
   end
   
