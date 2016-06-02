@@ -1839,19 +1839,10 @@ module Daru
       raise SizeError, "Vector length should match row length" if
         vector.size != @vectors.size
 
-      if @index.respond?(*indexes)
-        positions = @index.pos(*indexes)
-        positions = [positions] if positions.is_a? Numeric
-      
-        @data.each_with_index do |vec, pos|
-          vec.at_set(positions, vector.at(pos))
-        end
-      else
-        @data.each_with_index do |vec, pos|
-          vec.set(indexes, vector.at(pos))
-        end
-        @index = @data[0].index
+      @data.each_with_index do |vec, pos|
+        vec.set(indexes, vector.at(pos))
       end
+      @index = @data[0].index
 
       set_size
     end

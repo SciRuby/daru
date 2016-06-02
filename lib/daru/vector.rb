@@ -253,7 +253,7 @@ module Daru
         @data[positions] = val
       else
         positions.each { |pos| @data[pos] = val }
-      end      
+      end
     end
     
     def insert(indexes, val)

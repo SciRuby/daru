@@ -376,6 +376,13 @@ module Daru
     def subset *args
       self[*args]
     end
+    
+    def respond? *args
+      self[*args]
+      true
+    rescue IndexError
+      false
+    end
 
     # Retrive a slice of the index by specifying first and last members of the slice.
     #
