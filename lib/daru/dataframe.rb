@@ -926,10 +926,13 @@ module Daru
     #
     # @param [Fixnum] quantity (10) The number of elements to display from the top.
     def head quantity=10
-      return Daru::DataFrame.rows [row[0]],
-        index: [@index.at(0)],
-        order: @vectors if quantity == 1
-      self[0..(quantity-1), :row]
+      if quantity == 1
+        Daru::DataFrame.rows [row[0]],
+          index: [@index.at(0)],
+          order: @vectors
+      else
+        self[0..(quantity-1), :row]
+      end
     end
 
     alias :first :head
@@ -1839,10 +1842,10 @@ module Daru
 
     def insert_or_modify_row indexes, vector
       vector =
-        if !vector.is_a? Daru::Vector
-          Daru::Vector.new vector
-        else
+        if vector.is_a? Daru::Vector
           vector.reindex @vectors
+        else
+          Daru::Vector.new vector
         end
 
       raise SizeError, 'Vector length should match row length' if

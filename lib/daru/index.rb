@@ -517,10 +517,7 @@ module Daru
       end
 
       positions.flatten!
-      positions.sort! # to preserve the order
-
-      return positions.first if positions.size == 1
-      positions
+      positions.size == 1 ? positions.first : positions.sort
     end
 
     def index_from_pos pos
