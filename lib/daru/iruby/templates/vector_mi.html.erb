@@ -9,7 +9,7 @@
     </tr>
   <% end %>
 
-  <% @index.tuples_with_rowspans.first(threshold).zip(@data).each do |tuple, value| %>
+  <% Daru::IRuby::Helpers.tuples_with_rowspans(@index).first(threshold).zip(@data).each do |tuple, value| %>
     <tr>
       <% tuple.each do |idx, span| %>
         <th rowspan="<%= span %>"><%= idx %></th>
