@@ -920,6 +920,8 @@ module Daru
     #
     # @param [Fixnum] quantity (10) The number of elements to display from the top.
     def head quantity=10
+      return Daru::DataFrame.new [self.row[0].to_a].transpose,
+        index: [@index.at(0)], order: @vectors if quantity == 1
       self[0..(quantity-1), :row]
     end
 
