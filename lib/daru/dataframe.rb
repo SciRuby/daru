@@ -290,7 +290,12 @@ module Daru
     end
 
     def add_row row, index=nil
+      row = hash_to_vector(row) if row.is_a? Hash
       self.row[index || @size] = row
+    end
+    
+    def hash_to_vector hash
+      Daru::Vector.new hash.values, index: hash.keys
     end
 
     def add_vector n, vector
