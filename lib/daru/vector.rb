@@ -212,13 +212,13 @@ module Daru
         index: @index.subset(*input_indexes), dtype: @dtype
       )
     end
-    
+
     def at *args
       return @data[args.first] if args.size == 1
-      
+
       Daru::Vector.new args.map { |i| @data[i] }, index: @index.at(*args)
     end
-    
+
     def at_set args, val
       args.map { |pos| @data[pos] = val }
     end
@@ -245,34 +245,34 @@ module Daru
 
       update_internal_state
     end
-    
+
     def modify(indexes, val)
       positions = @index.pos(*indexes)
-      
+
       if positions.is_a? Numeric
         @data[positions] = val
       else
         positions.each { |pos| @data[pos] = val }
       end
     end
-    
+
     def insert(indexes, val)
       new_index = @index.add(*indexes)
       # May be create +=
       (new_index.size - @index.size).times { @data << val }
       @index = new_index
     end
-    
+
     def set indexes, val
       cast(dtype: :array) if val.nil? && dtype != :array
       guard_type_check(val)
-      
+
       if @index.respond?(*indexes)
         modify(indexes, val)
       else
         insert(indexes, val)
       end
-        
+
       update_internal_state
     end
 

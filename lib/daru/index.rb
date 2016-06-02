@@ -83,20 +83,17 @@ module Daru
         by_single_key key
       end
     end
-    
+
     def respond? *indexes
       indexes.all? { |i| to_a.include?(i) || (i.is_a?(Numeric) && i < size) }
     end
-    
+
     def pos *args
-      # Causes Segmentation fault
-      if args.first.is_a? Range
-        args = preprocess_range(args.first)
-      end
+      args = preprocess_range(args.first) if args.first.is_a? Range
       return self[args.first] if args.size == 1
       args.map { |index| by_single_key index }
     end
-    
+
     def subset *args
       if args.first.is_a? Range
         slice args.first.begin, args.first.end
@@ -108,7 +105,7 @@ module Daru
         Daru::Index.new args.map { |k| key k }
       end
     end
-    
+
     def at *args
       return key(args.first) if args.size == 1
       Daru::Index.new args.map { |p| key p }
@@ -166,7 +163,7 @@ module Daru
     def dup
       Daru::Index.new @relation_hash.keys
     end
-    
+
     def add *indexes
       Daru::Index.new(to_a + indexes)
     end
@@ -195,7 +192,7 @@ module Daru
     end
 
     private
-    
+
     def preprocess_range rng
       start   = rng.begin
       en      = rng.end
@@ -236,8 +233,6 @@ module Daru
   end # class Index
 
   class MultiIndex < Index
-    include Enumerable
-
     def each(&block)
       to_a.each(&block)
     end
@@ -312,14 +307,14 @@ module Daru
         end
       end
     end
-    
+
     def respond? *indexes
       pos(*indexes)
       return true
-      rescue IndexError
-        return false
+    rescue IndexError
+      return false
     end
-    
+
     def pos *args
       if args.first.is_a? Integer
         return args.first if args.size == 1
@@ -329,7 +324,7 @@ module Daru
       return res if res.is_a? Integer
       res.map { |i| self[i] }
     end
-    
+
     def subset *args
       if args.first.is_a? Integer
         MultiIndex.from_tuples(args.map { |index| key(index) })
@@ -337,15 +332,15 @@ module Daru
         self[args].conform args
       end
     end
-    
+
     def at *args
       return key(args.first) if args.size == 1
       Daru::MultiIndex.from_tuples args.map { |p| key p }
     end
-    
+
     def add *indexes
       Daru::MultiIndex.from_tuples to_a << indexes
-    end    
+    end
 
     def try_retrieve_from_integer int
       @levels[0].key?(int) ? retrieve_from_tuples([int]) : int
@@ -476,11 +471,8 @@ module Daru
   end
 
   class CategoricalIndex < Index
-    
-    include Enumerable
-    
     attr_reader :cat_hash, :array, :map_cat_int, :map_int_cat
-    
+
     def initialize indexes
       # Create a hash to map each category to positional indexes
       @cat_hash = Hash.new []
@@ -491,7 +483,7 @@ module Daru
       map_cat_int = {}
       # Inverse mapping of @map
       @map_int_cat = {}
-      
+
       cat_count = 0
       indexes.each_with_index do |index, pos|
         unless map_cat_int.include? index
@@ -503,15 +495,15 @@ module Daru
         @array << map_cat_int[index]
       end
     end
-    
+
     def dup
       Daru::CategoricalIndex.new to_a
     end
-    
+
     def include? index
       @cat_hash.include? index
     end
-    
+
     def pos *args
       positions = args.map do |index|
         if include? index
@@ -520,51 +512,51 @@ module Daru
           index
         else
           raise IndexError, "#{index.inspect} is neither a valid category"\
-            " nor a valid position"
+            ' nor a valid position'
         end
       end
-      
+
       positions.flatten!
       positions.sort! # to preserve the order
-      
+
       return positions.first if positions.size == 1
-      return positions
+      positions
     end
-    
+
     def index_from_pos pos
       @map_int_cat[@array[pos]]
     end
-    
+
     def each
-      return enum_for(:each) unless block_given?      
+      return enum_for(:each) unless block_given?
       @array.each { |pos| yield @map_int_cat[pos] }
       self
     end
-    
+
     def == other
       self.class == other.class &&
-        self.size == other.size &&
-        self.to_h == other.to_h
+        size == other.size &&
+        to_h == other.to_h
     end
 
     def to_a
       each.to_a
     end
-    
+
     def to_h
       @cat_hash
     end
-    
+
     def size
       @array.size
     end
-    
+
     def subset *args
       positions = pos(*args)
       new_index = positions.map do |index|
         index_from_pos index
       end
-      
+
       new_index.flatten!
 
       Daru::CategoricalIndex.new new_index
@@ -574,7 +566,7 @@ module Daru
       return index_from_pos(args.first) if args.size == 1
       Daru::CategoricalIndex.new args.map { |p| index_from_pos p }
     end
-    
+
     def add *indexes
       Daru::CategoricalIndex.new(to_a + indexes)
     end

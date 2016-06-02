@@ -365,18 +365,18 @@ module Daru
         slice(*Helper.find_date_string_bounds(key))
       end
     end
-    
+
     def pos *args
       # to filled
       out = self[*args]
       return out if out.is_a? Numeric
       out.map { |date| self[date] }
     end
-    
+
     def subset *args
       self[*args]
     end
-    
+
     def respond? *args
       self[*args]
       true
