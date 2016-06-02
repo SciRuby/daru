@@ -262,17 +262,18 @@ module Daru
       axis = extract_axis(names, :vector)
       dispatch_to_axis axis, :access, *names
     end
-    
+
     def at *positions
       if positions.size == 1
         return Daru::Vector.new @data.map { |vec| vec.at(*positions) },
           index: @vectors
       else
         new_rows = @data.map { |vec| vec.at(*positions) }
-        return Daru::DataFrame.new new_rows, index: @index.at(*positions),
+        return Daru::DataFrame.new new_rows,
+          index: @index.at(*positions),
           order: @vectors
       end
-    end    
+    end
 
     # Insert a new row/vector of the specified name or modify a previous row.
     # Instead of using this method directly, use df.row[:a] = [1,2,3] to set/create
@@ -293,7 +294,7 @@ module Daru
       row = hash_to_vector(row) if row.is_a? Hash
       self.row[index || @size] = row
     end
-    
+
     def hash_to_vector hash
       Daru::Vector.new hash.values, index: hash.keys
     end
@@ -925,8 +926,9 @@ module Daru
     #
     # @param [Fixnum] quantity (10) The number of elements to display from the top.
     def head quantity=10
-      return Daru::DataFrame.new [self.row[0].to_a].transpose,
-        index: [@index.at(0)], order: @vectors if quantity == 1
+      return Daru::DataFrame.rows [row[0]],
+        index: [@index.at(0)],
+        order: @vectors if quantity == 1
       self[0..(quantity-1), :row]
     end
 
@@ -1742,16 +1744,18 @@ module Daru
       positions = @index.pos(*args)
 
       if positions.is_a? Numeric
-        return Daru::Vector.new populate_row_for(positions), index: @vectors,
+        return Daru::Vector.new populate_row_for(positions),
+          index: @vectors,
           name: args.first
       else
         # Can be improved
         new_rows = @data.map { |vec| vec[*args] }
-        return Daru::DataFrame.new new_rows, index: @index.subset(*args),
+        return Daru::DataFrame.new new_rows,
+          index: @index.subset(*args),
           order: @vectors
       end
       # Access multiple rows
-      rows = names.map { |name| self.row[name].to_a }
+      rows = names.map { |name| row[name].to_a }
 
       Daru::DataFrame.rows rows, index: names, name: @name, order: @vectors
     end
@@ -1834,14 +1838,14 @@ module Daru
     end
 
     def insert_or_modify_row indexes, vector
-      vector = 
-        unless vector.is_a? Daru::Vector
+      vector =
+        if !vector.is_a? Daru::Vector
           Daru::Vector.new vector
         else
           vector.reindex @vectors
         end
-        
-      raise SizeError, "Vector length should match row length" if
+
+      raise SizeError, 'Vector length should match row length' if
         vector.size != @vectors.size
 
       @data.each_with_index do |vec, pos|
