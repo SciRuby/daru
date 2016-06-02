@@ -392,6 +392,7 @@ module Daru
       }
     end
 
+    # @private
     def tuples_with_rowspans
       sparse_tuples
         .transpose
