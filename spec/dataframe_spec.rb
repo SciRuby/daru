@@ -2838,6 +2838,60 @@ describe Daru::DataFrame do
         it { is_expected.to eq ['299', *df.row[-1].map(&:to_s)] }
       end
     end
+
+    context 'with multi-index' do
+      let(:df) {
+        Daru::DataFrame.new(
+          {
+            a:   [1,2,3,4,5,6,7],
+            b: %w[a b c d e f g]
+          }, index: Daru::MultiIndex.from_tuples([
+                %w[foo one],
+                %w[foo two],
+                %w[foo three],
+                %w[bar one],
+                %w[bar two],
+                %w[bar three],
+                %w[baz one],
+             ]),
+             name: 'test'
+        )
+      }
+
+      describe 'header' do
+        subject { header }
+
+        it { is_expected.not_to be_nil }
+        its(['colspan']) { is_expected.to eq (df.ncols + df.index.width).to_s }
+        its(:text) { is_expected.to eq "Daru::DataFrame: test (7x2)" }
+      end
+
+      let(:splitted_row) { row.inner_html.scan(/<t[dh].+?<\/t[dh]>/) }
+
+
+      describe 'column headers' do
+        let(:row) { table.search('tr:nth-child(2)') }
+        subject { splitted_row }
+
+        it { is_expected.to eq [
+          '<th colspan="2"></th>',
+          '<th>a</th>',
+          '<th>b</th>'
+        ]}
+      end
+
+      describe 'first row' do
+        let(:row) { table.search('tr:nth-child(3)') }
+        subject { splitted_row }
+
+        it { is_expected.to eq [
+          '<th rowspan="3">foo</th>',
+          '<th rowspan="1">one</th>',
+          '<td>1</td>',
+          '<td>a</td>'
+        ]}
+      end
+    end
   end
 
   context '#to_s' do
