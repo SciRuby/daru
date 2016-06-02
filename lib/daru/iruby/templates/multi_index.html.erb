@@ -2,7 +2,7 @@
   <tr>
     <th colspan="<%= width %>">Daru::MultiIndex(<%= size %>x<%= width %>)</th>
   </tr>
-  <% tuples_with_rowspans.each do |row| %>
+  <% Daru::IRuby::Helpers.tuples_with_rowspans(self).each do |row| %>
     <tr>
       <% row.each do |val, span| %>
         <th rowspan="<%= span %>"><%= val %></th>

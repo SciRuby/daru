@@ -553,45 +553,5 @@ describe Daru::MultiIndex do
           [nil, nil,:bar]
       ]}
     end
-
-    context '#tuples_with_rowspans' do
-      subject { index.tuples_with_rowspans }
-
-      it { is_expected.to eq [
-          [[:a,4],[:one,2],[:bar,1]],
-          [                [:baz,1]],
-          [       [:two,2],[:bar,1]],
-          [                [:baz,1]],
-          [[:b,4],[:one,1],[:bar,1]],
-          [       [:two,2],[:bar,1]],
-          [                [:baz,1]],
-          [       [:one,1],[:foo,1]],
-          [[:c,4],[:one,2],[:bar,1]],
-          [                [:baz,1]],
-          [       [:two,2],[:foo,1]],
-          [                [:bar,1]]
-      ]}
-    end
-
-    context '#to_html' do
-      let(:table) { Nokogiri::HTML(index.to_html) }
-
-      describe 'first row' do
-        subject { table.at('tr:first-child > th') }
-        its(['colspan']) { is_expected.to eq '3' }
-        its(:text) { is_expected.to eq 'Daru::MultiIndex(12x3)' }
-      end
-
-      describe 'next row' do
-        let(:row) { table.at('tr:nth-child(2)') }
-        subject { row.inner_html.scan(/<th.+?<\/th>/) }
-
-        it { is_expected.to eq [
-            '<th rowspan="4">a</th>',
-            '<th rowspan="2">one</th>',
-            '<th rowspan="1">bar</th>'
-        ]}
-      end
-    end
   end
 end

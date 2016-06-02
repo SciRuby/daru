@@ -2,12 +2,26 @@
   <tr>
     <th colspan='<%= @vectors.size+1 %>'>Daru::DataFrame<%= name ? ": #{name} " : ''%>(<%=nrows%>x<%=ncols%>)</th>
   </tr>
-  <tr>
-    <th></th>
-    <% @vectors.each do |vector| %>
-      <th><%=vector%></th>
+
+  <% if @vectors.is_a? MultiIndex %>
+    <% Daru::IRuby::Helpers.tuples_with_colspans(@vectors).each_with_index do |tuple, idx| %>
+      <tr>
+        <% if idx.zero? %>
+          <th rowspan="<%= @vectors.width %>"></th>
+        <% end %>
+        <% tuple.each do |idx, span| %>
+          <th colspan="<%= span %>"><%= idx %></th>
+        <% end %>
+      </tr>
     <% end %>
-  </tr>
+  <% else %>
+    <tr>
+      <th></th>
+      <% @vectors.each do |vector| %>
+        <th><%=vector%></th>
+      <% end %>
+    </tr>
+  <% end %>
 
   <% @index.first(threshold).each do |index| %>
     <tr>
