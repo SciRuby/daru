@@ -84,6 +84,9 @@ module Daru
       end
     end
 
+    # Returns true if all arguments are either a valid category or position
+    # @param [Array<object>] *indexes categories or positions
+    # @return [true, false]
     def respond? *indexes
       indexes.all? { |i| to_a.include?(i) || (i.is_a?(Numeric) && i < size) }
     end
@@ -479,8 +482,12 @@ module Daru
   end
 
   class CategoricalIndex < Index
-    attr_reader :cat_hash, :array, :map_cat_int, :map_int_cat
-
+    # Create a categorical index object.
+    # @param indexes [Array<object>] array of indexes
+    # @return [object] categorical index
+    # @example
+    #   Daru::CategoricalIndex.new [:a, 1, :a, 1, :c]
+    #   # => #<Daru::CategoricalIndex(5): {a, 1, a, 1, c}>
     def initialize indexes
       # Create a hash to map each category to positional indexes
       categories = indexes.each_with_index.group_by(&:first)
@@ -497,14 +504,35 @@ module Daru
       @array = map_cat_int.values_at(*indexes)
     end
 
+    # @return [object] duplicate index object
     def dup
+      # Improve it by intializing index by hash
       Daru::CategoricalIndex.new to_a
     end
 
+    # @param index [object] the index value to look for
+    # @return [true, false] true if index is included, false otherwise
     def include? index
       @cat_hash.include? index
     end
 
+    # Returns array of categories
+    # @example
+    #   x = Daru::CategoricalIndex.new [:a, 1, :a, 1, :c]
+    #   x.cat
+    #   # => [:a, 1, :c]
+    def cat
+      @cat_hash.keys
+    end
+
+    # Returns positions given categories or positions
+    # @note If the argument does not a valid category it treats it as position
+    #   value and return it as it is.
+    # @param [Array<object>] *args categories or positions
+    # @example
+    #   x = Daru::CategoricalIndex.new [:a, 1, :a, 1, :c]
+    #   x.pos :a, 1
+    #   # => [0, 1, 2, 3]
     def pos *args
       positions = args.map do |index|
         if include? index
@@ -521,6 +549,9 @@ module Daru
       positions.size == 1 ? positions.first : positions.sort
     end
 
+    # Returns index value from position
+    # @param pos [Integer] the position to look for
+    # @return [object] category corresponding to position
     def index_from_pos pos
       @map_int_cat[@array[pos]]
     end
@@ -549,6 +580,10 @@ module Daru
       @array.size
     end
 
+    # Return subset given categories or positions
+    # @param [Array<object>] *args categories or positions
+    # @return [object] subset of the self containing the
+    #   mentioned categories or positions
     def subset *args
       positions = pos(*args)
       new_index = positions.map { |pos| index_from_pos pos }
@@ -556,6 +591,10 @@ module Daru
       Daru::CategoricalIndex.new new_index.flatten
     end
 
+    # Takes positional values and returns subset of the self
+    #   capturing the categories at mentioned positions
+    # @param [Array<Integer>] positional values
+    # @return [object] index object
     def at *args
       if args.size == 1
         index_from_pos(args.first)
@@ -564,6 +603,9 @@ module Daru
       end
     end
 
+    # Add specified index values to the index object
+    # @param [Array<object>] *indexes index values to add
+    # @return [object] index object with added values
     def add *indexes
       Daru::CategoricalIndex.new(to_a + indexes)
     end
