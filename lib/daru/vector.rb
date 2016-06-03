@@ -213,12 +213,18 @@ module Daru
       )
     end
 
+    # Returns vector of values given positional values
+    # @param [Array<object>] *args positional values
+    # @return [object] vector
     def at *args
       return @data[args.first] if args.size == 1
 
       Daru::Vector.new args.map { |i| @data[i] }, index: @index.at(*args)
     end
 
+    # Assign val by positions
+    # @param [Array<object>] *args positional values
+    # @param [object] val value to assign
     def at_set args, val
       args.map { |pos| @data[pos] = val }
     end
