@@ -90,25 +90,32 @@ module Daru
 
     def pos *args
       args = preprocess_range(args.first) if args.first.is_a? Range
-      return self[args.first] if args.size == 1
-      args.map { |index| by_single_key index }
+
+      if args.size == 1
+        self[args.first]
+      else
+        args.map { |index| by_single_key index }
+      end
     end
 
     def subset *args
       if args.first.is_a? Range
         slice args.first.begin, args.first.end
-      elsif include? args[0]
+      elsif include? args.first
+        # Assume args contain indexes not positions
         Daru::Index.new args
       else
-        # Assume the user is specifing values for index not keys
-        # Return index object having keys corresponding to values provided
+        # Assume args contain positions not indexes
         Daru::Index.new args.map { |k| key k }
       end
     end
 
     def at *args
-      return key(args.first) if args.size == 1
-      Daru::Index.new args.map { |p| key p }
+      if args.size == 1
+        key(args.first)
+      else
+        self.class.new(args.map { |pos| key pos })
+      end
     end
 
     def inspect threshold=20
@@ -309,6 +316,7 @@ module Daru
     end
 
     def respond? *indexes
+      # Improve it
       pos(*indexes)
       return true
     rescue IndexError
@@ -543,18 +551,17 @@ module Daru
 
     def subset *args
       positions = pos(*args)
-      new_index = positions.map do |index|
-        index_from_pos index
-      end
+      new_index = positions.map { |pos| index_from_pos pos }
 
-      new_index.flatten!
-
-      Daru::CategoricalIndex.new new_index
+      Daru::CategoricalIndex.new new_index.flatten
     end
 
     def at *args
-      return index_from_pos(args.first) if args.size == 1
-      Daru::CategoricalIndex.new args.map { |p| index_from_pos p }
+      if args.size == 1
+        index_from_pos(args.first)
+      else
+        Daru::CategoricalIndex.new(args.map { |pos| index_from_pos pos })
+      end
     end
 
     def add *indexes
