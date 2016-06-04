@@ -12,6 +12,10 @@ module Daru
       def []=(*names, vector)
         @data_frame[*names, :row] = vector
       end
+      
+      def at *positions
+        @data_frame.at(*positions)
+      end
     end
   end
 end

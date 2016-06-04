@@ -831,8 +831,8 @@ describe Daru::DataFrame do
       end
     end    
   end
-  
-  context "#at" do
+
+  context "#row.at" do
     context Daru::Index do
       let(:idx) { Daru::Index.new [1, 0, :c] }
       let(:df) do
@@ -843,7 +843,7 @@ describe Daru::DataFrame do
       end
       
       context "single position" do
-        subject { df.at 1 }
+        subject { df.row.at 1 }
         
         it { is_expected.to be_a Daru::Vector }
         its(:size) { is_expected.to eq 2 }
@@ -852,7 +852,7 @@ describe Daru::DataFrame do
       end
       
       context "multiple positions" do
-        subject { df.at 0, 2 }
+        subject { df.row.at 0, 2 }
         
         it { is_expected.to be_a Daru::DataFrame }
         its(:size) { is_expected.to eq 2 }
@@ -881,7 +881,7 @@ describe Daru::DataFrame do
       end
       
       context "single position" do
-        subject { df.at 1 }
+        subject { df.row.at 1 }
         
         it { is_expected.to be_a Daru::Vector }
         its(:size) { is_expected.to eq 2 }
@@ -890,7 +890,7 @@ describe Daru::DataFrame do
       end
       
       context "multiple positions" do
-        subject { df.at 0, 2 }
+        subject { df.row.at 0, 2 }
         
         it { is_expected.to be_a Daru::DataFrame }
         its(:size) { is_expected.to eq 2 }
@@ -903,36 +903,36 @@ describe Daru::DataFrame do
       end
     end
 
-    # context Daru::CategoricalIndex do
-    #   let (:idx) { Daru::CategoricalIndex.new [:a, 1, 1, :a, :c] }
-    #   let (:df)  do
-    #     Daru::DataFrame.new({
-    #       a: 1..5,
-    #       b: 'a'..'e'
-    #     }, index: idx )
-    #   end
+    context Daru::CategoricalIndex do
+      let (:idx) { Daru::CategoricalIndex.new [:a, 1, 1, :a, :c] }
+      let (:df)  do
+        Daru::DataFrame.new({
+          a: 1..5,
+          b: 'a'..'e'
+        }, index: idx )
+      end
 
-    #   context "single positional index" do
-    #     subject { df.at 1 }
+      context "single positional index" do
+        subject { df.row.at 1 }
         
-    #     it { is_expected.to be_a Daru::Vector }
-    #     its(:size) { is_expected.to eq 2 }
-    #     its(:to_a) { is_expected.to eq [2, 'b'] }
-    #     its(:'index.to_a') { is_expected.to eq [:a, :b] }
-    #   end
+        it { is_expected.to be_a Daru::Vector }
+        its(:size) { is_expected.to eq 2 }
+        its(:to_a) { is_expected.to eq [2, 'b'] }
+        its(:'index.to_a') { is_expected.to eq [:a, :b] }
+      end
 
-    #   context "multiple positional indexes" do
-    #     subject { df.at 0, 2 }
+      context "multiple positional indexes" do
+        subject { df.row.at 0, 2 }
         
-    #     it { is_expected.to be_a Daru::DataFrame }
-    #     its(:size) { is_expected.to eq 2 }
-    #     its(:'index.to_a') { is_expected.to eq [:a, 1] }
-    #     its(:'a.to_a') { is_expected.to eq [1, 3] }
-    #     its(:'a.index.to_a') { is_expected.to eq [:a, 1] }
-    #     its(:'b.to_a') { is_expected.to eq ['a', 'c'] }
-    #     its(:'b.index.to_a') { is_expected.to eq [:a, 1] }
-    #   end
-    # end
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 2 }
+        its(:'index.to_a') { is_expected.to eq [:a, 1] }
+        its(:'a.to_a') { is_expected.to eq [1, 3] }
+        its(:'a.index.to_a') { is_expected.to eq [:a, 1] }
+        its(:'b.to_a') { is_expected.to eq ['a', 'c'] }
+        its(:'b.index.to_a') { is_expected.to eq [:a, 1] }
+      end
+    end
   end
 
   context "#row[]" do
