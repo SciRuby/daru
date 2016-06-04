@@ -935,6 +935,33 @@ describe Daru::DataFrame do
     end
   end
   
+  context "#row.at_set" do
+    let(:df) do
+      Daru::DataFrame.new({
+        a: 1..3,
+        b: 'a'..'c'
+      })
+    end
+    
+    context "single position" do
+      subject { df }
+      before { df.row.at_set [1], ['x', 'y'] }
+      
+      its(:size) { is_expected.to eq 3 }
+      its(:'a.to_a') { is_expected.to eq [1, 'x', 3] }
+      its(:'b.to_a') { is_expected.to eq ['a', 'y', 'c'] }
+    end
+    
+    context "multiple position" do
+      subject { df }
+      before { df.row.at_set [0, 2], ['x', 'y'] }
+      
+      its(:size) { is_expected.to eq 3 }
+      its(:'a.to_a') { is_expected.to eq ['x', 2, 'x'] }
+      its(:'b.to_a') { is_expected.to eq ['y', 'b', 'y'] }
+    end
+  end
+  
   context "#vector.at" do
     context Daru::Index do
       let(:idx) { Daru::Index.new [:a, :b, :c] }

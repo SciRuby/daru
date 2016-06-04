@@ -275,6 +275,25 @@ module Daru
           order: @vectors
       end
     end
+    
+    def row_at_set positions, vector
+      vector =
+        if vector.is_a? Daru::Vector
+          vector.reindex @vectors
+        else
+          Daru::Vector.new vector
+        end
+
+      raise SizeError, 'Vector length should match row length' if
+        vector.size != @vectors.size
+
+      @data.each_with_index do |vec, pos|
+        vec.at_set(positions, vector.at(pos))
+      end
+      @index = @data[0].index
+
+      set_size
+    end
 
     def vector_at *positions
       if positions.size == 1
