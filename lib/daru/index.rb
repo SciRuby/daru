@@ -579,6 +579,10 @@ module Daru
     def size
       @array.size
     end
+    
+    def empty?
+      @array.empty?
+    end
 
     # Return subset given categories or positions
     # @param [Array<object>] *indexes categories or positions
