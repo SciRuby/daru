@@ -1,4 +1,5 @@
 require 'daru/accessors/dataframe_by_row.rb'
+require 'daru/accessors/dataframe_by_vector.rb'
 require 'daru/maths/arithmetic/dataframe.rb'
 require 'daru/maths/statistics/dataframe.rb'
 require 'daru/plotting/dataframe.rb'
@@ -274,6 +275,18 @@ module Daru
           order: @vectors
       end
     end
+    
+    def vector_at *positions
+      if positions.size == 1
+        @data[positions.first].dup
+      else
+        new_rows = positions.map { |pos| @data[pos].dup }
+        Daru::DataFrame.new new_rows,
+          index: @index,
+          order: @vectors.at(*positions),
+          name: @name
+      end      
+    end
 
     # Insert a new row/vector of the specified name or modify a previous row.
     # Instead of using this method directly, use df.row[:a] = [1,2,3] to set/create
@@ -310,6 +323,10 @@ module Daru
     #   df.row[:b] = [1,2,3] # set row ':b' to [1,2,3]
     def row
       Daru::Accessors::DataFrameByRow.new(self)
+    end
+    
+    def vector
+      Daru::Accessors::DataFrameByVector.new(self)
     end
 
     # Duplicate the DataFrame entirely.

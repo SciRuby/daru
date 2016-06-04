@@ -423,7 +423,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#[]" do
+  context "#vector[]" do
     context Daru::Index do
       before :each do
         @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
@@ -934,6 +934,106 @@ describe Daru::DataFrame do
       end
     end
   end
+  
+  context "#vector.at" do
+    context Daru::Index do
+      let(:idx) { Daru::Index.new [:a, :b, :c] }
+      let(:df) do
+        Daru::DataFrame.new({
+          1 => 1..3,
+          a: 'a'..'c',
+          b: 11..13
+        }, index: idx)
+      end
+      
+      context "single position" do
+        subject { df.vector.at 1 }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:size) { is_expected.to eq 3 }
+        its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
+        its(:index) { is_expected.to eq idx }
+      end
+      
+      context "multiple positions" do
+        subject { df.vector.at 0, 2 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df.vector[1].to_a).to eq [1, 2, 3] }
+        its(:'b.to_a') { is_expected.to eq [11, 12, 13] }
+      end
+      
+      # TODO: Add specs for invalid positions
+    end
+    
+    context Daru::MultiIndex do
+      let (:idx) do
+        Daru::MultiIndex.from_tuples [
+          [:a,:one,:bar],
+          [:a,:one,:baz],
+          [:b,:two,:bar],
+        ]
+      end
+      let(:df) do
+        Daru::DataFrame.new({
+          1 => 1..3,
+          a: 'a'..'c',
+          b: 11..13
+        }, index: idx)
+      end
+      
+      context "single position" do
+        subject { df.vector.at 1 }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:size) { is_expected.to eq 3 }
+        its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
+        its(:index) { is_expected.to eq idx }
+      end
+      
+      context "multiple positions" do
+        subject { df.vector.at 0, 2 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df.vector[1].to_a).to eq [1, 2, 3] }
+        its(:'b.to_a') { is_expected.to eq [11, 12, 13] }
+      end
+    end
+
+    context Daru::CategoricalIndex do
+      let (:idx) { Daru::CategoricalIndex.new [:a, 1, 1] }
+      let(:df) do
+        Daru::DataFrame.new({
+          1 => 1..3,
+          a: 'a'..'c',
+          b: 11..13
+        }, index: idx)
+      end
+      
+      context "single position" do
+        subject { df.vector.at 1 }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:size) { is_expected.to eq 3 }
+        its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
+        its(:index) { is_expected.to eq idx }
+      end
+      
+      context "multiple positions" do
+        subject { df.vector.at 0, 2 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df.vector[1].to_a).to eq [1, 2, 3] }
+        its(:'b.to_a') { is_expected.to eq [11, 12, 13] }
+      end
+    end
+  end  
 
   context "#row[]" do
     context Daru::Index do
