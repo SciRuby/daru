@@ -16,6 +16,10 @@ module Daru
       def at *positions
         @data_frame.vector_at(*positions)
       end
+
+      def at_set positions, vector
+        @data_frame.vector_at_set positions, vector
+      end
     end
   end
 end

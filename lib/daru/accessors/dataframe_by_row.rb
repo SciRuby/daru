@@ -17,8 +17,8 @@ module Daru
         @data_frame.at(*positions)
       end
 
-      def at_set *positions
-        @data_frame.row_at_set(*positions)
+      def at_set positions, vector
+        @data_frame.row_at_set(positions, vector)
       end
     end
   end

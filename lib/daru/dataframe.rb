@@ -188,7 +188,7 @@ module Daru
     end
 
     # The vectors (columns) index of the DataFrame
-    attr_reader :vectors
+    attr_reader :vectors, :data
 
     # The index of the rows of the DataFrame
     attr_reader :index
@@ -264,6 +264,9 @@ module Daru
       dispatch_to_axis axis, :access, *names
     end
 
+    # Retrive rows by positions
+    # @param [Array<Integer>] *positions positions of rows to retrive
+    # @return rows specified by positions
     def at *positions
       if positions.size == 1
         return Daru::Vector.new @data.map { |vec| vec.at(*positions) },
@@ -276,6 +279,9 @@ module Daru
       end
     end
 
+    # Set rows by positions
+    # @param [Array<Integer>] positions positions of rows to set
+    # @vector [Array, Daru::Vector] vector vector to be assigned
     def row_at_set positions, vector
       vector =
         if vector.is_a? Daru::Vector
@@ -295,6 +301,8 @@ module Daru
       set_size
     end
 
+    # Retrive vectors by positions
+    # @param [Array<Integer>] *positions positions of vectors to retrive
     def vector_at *positions
       if positions.size == 1
         @data[positions.first].dup
@@ -305,6 +313,23 @@ module Daru
           order: @vectors.at(*positions),
           name: @name
       end
+    end
+
+    # Set vectors by positions
+    # @param [Array<Integer>] positions positions of vectors to set
+    # @param [Array, Daru::Vector] vector vector to be assigned
+    def vector_at_set positions, vector
+      vector =
+        if vector.is_a? Daru::Vector
+          vector.reindex @index
+        else
+          Daru::Vector.new vector
+        end
+
+      raise SizeError, 'Vector length should match index length' if
+        vector.size != @index.size
+
+      positions.each { |pos| @data[pos] = vector }
     end
 
     # Insert a new row/vector of the specified name or modify a previous row.
