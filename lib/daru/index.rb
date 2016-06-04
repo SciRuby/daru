@@ -91,33 +91,33 @@ module Daru
       indexes.all? { |i| to_a.include?(i) || (i.is_a?(Numeric) && i < size) }
     end
 
-    def pos *args
-      args = preprocess_range(args.first) if args.first.is_a? Range
+    def pos *indexes
+      indexes = preprocess_range(indexes.first) if indexes.first.is_a? Range
 
-      if args.size == 1
-        self[args.first]
+      if indexes.size == 1
+        self[indexes.first]
       else
-        args.map { |index| by_single_key index }
+        indexes.map { |index| by_single_key index }
       end
     end
 
-    def subset *args
-      if args.first.is_a? Range
-        slice args.first.begin, args.first.end
-      elsif include? args.first
-        # Assume args contain indexes not positions
-        Daru::Index.new args
+    def subset *indexes
+      if indexes.first.is_a? Range
+        slice indexes.first.begin, indexes.first.end
+      elsif include? indexes.first
+        # Assume 'indexes' contain indexes not positions
+        Daru::Index.new indexes
       else
-        # Assume args contain positions not indexes
-        Daru::Index.new args.map { |k| key k }
+        # Assume 'indexes' contain positions not indexes
+        Daru::Index.new indexes.map { |k| key k }
       end
     end
 
-    def at *args
-      if args.size == 1
-        key(args.first)
+    def at *positions
+      if positions.size == 1
+        key(positions.first)
       else
-        self.class.new(args.map { |pos| key pos })
+        self.class.new positions.map(&method(:key))
       end
     end
 
@@ -130,8 +130,8 @@ module Daru
     end
 
     def slice *args
-      start   = args[0]
-      en      = args[1]
+      start = args[0]
+      en = args[1]
 
       if start.is_a?(Integer) && en.is_a?(Integer)
         Index.new @keys[start..en]
@@ -326,27 +326,27 @@ module Daru
       return false
     end
 
-    def pos *args
-      if args.first.is_a? Integer
-        return args.first if args.size == 1
-        return args
+    def pos *indexes
+      if indexes.first.is_a? Integer
+        return indexes.first if indexes.size == 1
+        return indexes
       end
-      res = self[args]
+      res = self[indexes]
       return res if res.is_a? Integer
       res.map { |i| self[i] }
     end
 
-    def subset *args
-      if args.first.is_a? Integer
-        MultiIndex.from_tuples(args.map { |index| key(index) })
+    def subset *indexes
+      if indexes.first.is_a? Integer
+        MultiIndex.from_tuples(indexes.map { |index| key(index) })
       else
-        self[args].conform args
+        self[indexes].conform indexes
       end
     end
 
-    def at *args
-      return key(args.first) if args.size == 1
-      Daru::MultiIndex.from_tuples args.map { |p| key p }
+    def at *positions
+      return key(positions.first) if positions.size == 1
+      Daru::MultiIndex.from_tuples positions.map { |p| key p }
     end
 
     def add *indexes
@@ -528,13 +528,13 @@ module Daru
     # Returns positions given categories or positions
     # @note If the argument does not a valid category it treats it as position
     #   value and return it as it is.
-    # @param [Array<object>] *args categories or positions
+    # @param [Array<object>] *indexes categories or positions
     # @example
     #   x = Daru::CategoricalIndex.new [:a, 1, :a, 1, :c]
     #   x.pos :a, 1
     #   # => [0, 1, 2, 3]
-    def pos *args
-      positions = args.map do |index|
+    def pos *indexes
+      positions = indexes.map do |index|
         if include? index
           @cat_hash[index]
         elsif index.is_a?(Numeric) && index < @array.size
@@ -581,11 +581,11 @@ module Daru
     end
 
     # Return subset given categories or positions
-    # @param [Array<object>] *args categories or positions
+    # @param [Array<object>] *indexes categories or positions
     # @return [object] subset of the self containing the
     #   mentioned categories or positions
-    def subset *args
-      positions = pos(*args)
+    def subset *indexes
+      positions = pos(*indexes)
       new_index = positions.map { |pos| index_from_pos pos }
 
       Daru::CategoricalIndex.new new_index.flatten
@@ -595,11 +595,11 @@ module Daru
     #   capturing the categories at mentioned positions
     # @param [Array<Integer>] positional values
     # @return [object] index object
-    def at *args
-      if args.size == 1
-        index_from_pos(args.first)
+    def at *positions
+      if positions.size == 1
+        index_from_pos(positions.first)
       else
-        Daru::CategoricalIndex.new(args.map { |pos| index_from_pos pos })
+        Daru::CategoricalIndex.new(positions.map { |pos| index_from_pos pos })
       end
     end
 

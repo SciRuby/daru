@@ -61,8 +61,8 @@ module Daru
       #   # 6   8
       #   # 7   9
       #   # 8  10
-      def [](*args)
-        values = args.map do |a|
+      def [](*indexes)
+        values = indexes.map do |a|
           a.respond_to?(:to_a) ? a.to_a : a
         end.flatten
         Daru::Vector.new(values)
@@ -214,19 +214,19 @@ module Daru
     end
 
     # Returns vector of values given positional values
-    # @param [Array<object>] *args positional values
+    # @param [Array<object>] *positions positional values
     # @return [object] vector
-    def at *args
-      return @data[args.first] if args.size == 1
+    def at *positions
+      return @data[positions.first] if positions.size == 1
 
-      Daru::Vector.new args.map { |i| @data[i] }, index: @index.at(*args)
+      Daru::Vector.new positions.map { |i| @data[i] }, index: @index.at(*positions)
     end
 
     # Assign val by positions
-    # @param [Array<object>] *args positional values
+    # @param [Array<object>] *positions positional values
     # @param [object] val value to assign
-    def at_set args, val
-      args.map { |pos| @data[pos] = val }
+    def at_set positions, val
+      positions.map { |pos| @data[pos] = val }
     end
 
     # Just like in Hashes, you can specify the index label of the Daru::Vector
