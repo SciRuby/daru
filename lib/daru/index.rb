@@ -579,7 +579,7 @@ module Daru
     def size
       @array.size
     end
-    
+
     def empty?
       @array.empty?
     end
