@@ -275,7 +275,7 @@ module Daru
           order: @vectors
       end
     end
-    
+
     def vector_at *positions
       if positions.size == 1
         @data[positions.first].dup
@@ -285,7 +285,7 @@ module Daru
           index: @index,
           order: @vectors.at(*positions),
           name: @name
-      end      
+      end
     end
 
     # Insert a new row/vector of the specified name or modify a previous row.
@@ -324,7 +324,7 @@ module Daru
     def row
       Daru::Accessors::DataFrameByRow.new(self)
     end
-    
+
     def vector
       Daru::Accessors::DataFrameByVector.new(self)
     end
