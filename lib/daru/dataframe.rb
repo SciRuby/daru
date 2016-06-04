@@ -275,7 +275,7 @@ module Daru
           order: @vectors
       end
     end
-    
+
     def row_at_set positions, vector
       vector =
         if vector.is_a? Daru::Vector
