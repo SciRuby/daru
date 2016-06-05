@@ -1947,15 +1947,7 @@ module Daru
     end
 
     def insert_or_modify_row indexes, vector
-      vector =
-        case vector
-        when Daru::Vector
-          vector.reindex @vectors
-        when Hash
-          Daru::Vector.new(vector).reindex @vectors
-        else
-          Daru::Vector.new vector
-        end
+      vector = preprocess_vector vector
 
       raise SizeError, 'Vector length should match row length' if
         vector.size != @vectors.size
@@ -2299,6 +2291,18 @@ module Daru
       positions = [positions] if positions.is_a? Integer
       positions.each do |pos|
         raise IndexError, "#{pos} is not a valid position." if pos >= shape[0]
+      end
+    end
+
+    # Accepts hash, enumerable and vector and align it properly so it can be added
+    def preprocess_vector vector
+      case vector
+      when Daru::Vector
+        vector.reindex @vectors
+      when Hash
+        Daru::Vector.new(vector).reindex @vectors
+      else
+        Daru::Vector.new vector
       end
     end
   end
