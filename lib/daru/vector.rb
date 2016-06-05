@@ -935,7 +935,8 @@ module Daru
       @name = new_name
     end
 
-    # Duplicate elements and indexes
+    # Duplicated a vector
+    # @return [Daru::Vector] duplicated vector
     def dup
       Daru::Vector.new @data.dup, name: @name, metadata: @metadata.dup, index: @index.dup
     end

@@ -484,7 +484,7 @@ module Daru
   class CategoricalIndex < Index
     # Create a categorical index object.
     # @param indexes [Array<object>] array of indexes
-    # @return [object] categorical index
+    # @return [Daru::CategoricalIndex] categorical index
     # @example
     #   Daru::CategoricalIndex.new [:a, 1, :a, 1, :c]
     #   # => #<Daru::CategoricalIndex(5): {a, 1, a, 1, c}>
@@ -504,12 +504,14 @@ module Daru
       @array = map_cat_int.values_at(*indexes)
     end
 
-    # @return [object] duplicate index object
+    # Duplicates the index object and return it
+    # @return [Daru::CategoricalIndex] duplicated index object
     def dup
       # Improve it by intializing index by hash
       Daru::CategoricalIndex.new to_a
     end
 
+    # Returns true index or category is valid
     # @param index [object] the index value to look for
     # @return [true, false] true if index is included, false otherwise
     def include? index
@@ -586,7 +588,7 @@ module Daru
 
     # Return subset given categories or positions
     # @param [Array<object>] *indexes categories or positions
-    # @return [object] subset of the self containing the
+    # @return [Daru::CategoricalIndex] subset of the self containing the
     #   mentioned categories or positions
     def subset *indexes
       positions = pos(*indexes)
@@ -609,7 +611,7 @@ module Daru
 
     # Add specified index values to the index object
     # @param [Array<object>] *indexes index values to add
-    # @return [object] index object with added values
+    # @return [Daru::CategoricalIndex] index object with added values
     def add *indexes
       Daru::CategoricalIndex.new(to_a + indexes)
     end
