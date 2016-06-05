@@ -216,15 +216,35 @@ module Daru
     # Returns vector of values given positional values
     # @param [Array<object>] *positions positional values
     # @return [object] vector
+    # @example
+    #   dv = Daru::Vector.new 'a'..'e'
+    #   dv.at 0, 1, 2
+    #   # => #<Daru::Vector(3)>
+    #   #   0   a
+    #   #   1   b
+    #   #   2   c
     def at *positions
-      return @data[positions.first] if positions.size == 1
-
-      Daru::Vector.new positions.map { |i| @data[i] }, index: @index.at(*positions)
+      if positions.size == 1
+        @data[positions.first]
+      else
+        Daru::Vector.new positions.map { |i| @data[i] },
+          index: @index.at(*positions)
+      end
     end
 
-    # Assign val by positions
+    # Change value at given positions
     # @param [Array<object>] *positions positional values
     # @param [object] val value to assign
+    # @example
+    #   dv = Daru::Vector.new 'a'..'e'
+    #   dv.set_at [0, 1], 'x'
+    #   dv
+    #   # => #<Daru::Vector(5)>
+    #   #   0   x
+    #   #   1   x
+    #   #   2   c
+    #   #   3   d
+    #   #   4   e
     def set_at positions, val
       positions.map { |pos| @data[pos] = val }
     end
@@ -269,6 +289,8 @@ module Daru
       @index = new_index
     end
 
+    # Works similar to #[]= but also insert the vector in case index is not valid
+    # It is there only to be accessed by Daru::DataFrame and not meant for user.
     def set indexes, val
       cast(dtype: :array) if val.nil? && dtype != :array
       guard_type_check(val)
