@@ -399,12 +399,7 @@ module Daru
     end
 
     def add_row row, index=nil
-      row = hash_to_vector(row) if row.is_a? Hash
       self.row[index || @size] = row
-    end
-
-    def hash_to_vector hash
-      Daru::Vector.new hash.values, index: hash.keys
     end
 
     def add_vector n, vector
@@ -1944,8 +1939,11 @@ module Daru
 
     def insert_or_modify_row indexes, vector
       vector =
-        if vector.is_a? Daru::Vector
+        case vector
+        when Daru::Vector
           vector.reindex @vectors
+        when Hash
+          Daru::Vector.new(vector).reindex @vectors
         else
           Daru::Vector.new vector
         end
