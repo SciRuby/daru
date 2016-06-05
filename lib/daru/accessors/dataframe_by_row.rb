@@ -18,7 +18,7 @@ module Daru
       end
 
       def set_at positions, vector
-        @data_frame.row_set_at(positions, vector)
+        @data_frame.set_row_at(positions, vector)
       end
     end
   end

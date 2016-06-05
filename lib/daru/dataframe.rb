@@ -265,7 +265,17 @@ module Daru
 
     # Retrive rows by positions
     # @param [Array<Integer>] *positions positions of rows to retrive
-    # @return rows specified by positions
+    # @return [Daru::Vector, Daru::DataFrame] vector for single position and dataframe for multiple positions
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1, 2, 3],
+    #     b: ['a', 'b', 'c']
+    #   })
+    #   df.row_at 1, 2
+    #   # => #<Daru::DataFrame(2x2)>
+    #   #       a   b
+    #   #   1   2   b
+    #   #   2   3   c
     def row_at *positions
       if positions.size == 1
         return Daru::Vector.new @data.map { |vec| vec.at(*positions) },
@@ -281,7 +291,19 @@ module Daru
     # Set rows by positions
     # @param [Array<Integer>] positions positions of rows to set
     # @vector [Array, Daru::Vector] vector vector to be assigned
-    def row_set_at positions, vector
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1, 2, 3],
+    #     b: ['a', 'b', 'c']
+    #   })
+    #   df.set_row_at [0, 1], ['x', 'x']
+    #   df
+    #   #=> #<Daru::DataFrame(3x2)>
+    #   #       a   b
+    #   #   0   x   x
+    #   #   1   x   x
+    #   #   2   3   c
+    def set_row_at positions, vector
       vector =
         if vector.is_a? Daru::Vector
           vector.reindex @vectors
@@ -302,6 +324,18 @@ module Daru
 
     # Retrive vectors by positions
     # @param [Array<Integer>] *positions positions of vectors to retrive
+    # @return [Daru::Vector, Daru::DataFrame] vector for single position and dataframe for multiple positions
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1, 2, 3],
+    #     b: ['a', 'b', 'c']
+    #   })
+    #   df.at 0
+    #  # => #<Daru::Vector(3)>
+    #   #       a
+    #   #   0   1
+    #   #   1   2
+    #   #   2   3
     def at *positions
       if positions.size == 1
         @data[positions.first].dup
@@ -317,6 +351,18 @@ module Daru
     # Set vectors by positions
     # @param [Array<Integer>] positions positions of vectors to set
     # @param [Array, Daru::Vector] vector vector to be assigned
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1, 2, 3],
+    #     b: ['a', 'b', 'c']
+    #   })
+    #   df.set_at [0], ['x', 'y', 'z']
+    #   df
+    #   #=> #<Daru::DataFrame(3x2)>
+    #   #       a   b
+    #   #   0   x   a
+    #   #   1   y   b
+    #   #   2   z   c
     def set_at positions, vector
       vector =
         if vector.is_a? Daru::Vector
