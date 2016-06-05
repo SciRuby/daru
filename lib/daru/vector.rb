@@ -1276,6 +1276,6 @@ module Daru
       end
 
       update_internal_state
-    end    
+    end
   end
 end
