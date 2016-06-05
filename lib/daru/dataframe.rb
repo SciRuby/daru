@@ -187,7 +187,7 @@ module Daru
     end
 
     # The vectors (columns) index of the DataFrame
-    attr_reader :vectors, :data
+    attr_reader :vectors
 
     # The index of the rows of the DataFrame
     attr_reader :index
