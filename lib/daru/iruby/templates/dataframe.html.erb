@@ -40,7 +40,7 @@
     </tr>
 
     <% last_index = @index.to_a.last
-       last_row = row[last_index] %>
+       last_row = row_at @index.size-1 %>
 
     <tr>
       <td><%= last_index %></td>
