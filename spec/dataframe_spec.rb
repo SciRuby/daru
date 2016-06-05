@@ -861,7 +861,13 @@ describe Daru::DataFrame do
         its(:'b.to_a') { is_expected.to eq ['a', 'c'] }
       end
       
-      # TODO: Add specs for invalid positions
+      context "invalid position" do
+        it { expect { df.row.at 3 }.to raise_error IndexError }
+      end
+      
+      context "invalid positions" do
+        it { expect { df.row.at 2, 3 }.to raise_error IndexError }
+      end
     end
     
     context Daru::MultiIndex do
@@ -960,6 +966,14 @@ describe Daru::DataFrame do
       its(:'a.to_a') { is_expected.to eq ['x', 2, 'x'] }
       its(:'b.to_a') { is_expected.to eq ['y', 'b', 'y'] }
     end
+    
+    context "invalid position" do
+      it { expect { df.row.set_at [3], ['x', 'y'] }.to raise_error IndexError }
+    end
+    
+    context "invalid positions" do
+      it { expect { df.row.set_at [2, 3], ['x', 'y'] }.to raise_error IndexError }      
+    end
   end
   
   context "#at" do
@@ -992,7 +1006,13 @@ describe Daru::DataFrame do
         its(:'b.to_a') { is_expected.to eq [11, 12, 13] }
       end
       
-      # TODO: Add specs for invalid positions
+      context "single invalid position" do
+        it { expect { df. at 3 }.to raise_error IndexError }
+      end
+      
+      context "multiple invalid positions" do
+        it { expect { df.at 2, 3 }.to raise_error IndexError }
+      end
     end
     
     context Daru::MultiIndex do
@@ -1029,6 +1049,14 @@ describe Daru::DataFrame do
         it { expect(df[1].to_a).to eq [1, 2, 3] }
         its(:'b.to_a') { is_expected.to eq [11, 12, 13] }
       end
+      
+      context "single invalid position" do
+        it { expect { df. at 3 }.to raise_error IndexError }
+      end
+      
+      context "multiple invalid positions" do
+        it { expect { df.at 2, 3 }.to raise_error IndexError }
+      end      
     end
 
     context Daru::CategoricalIndex do
@@ -1059,6 +1087,14 @@ describe Daru::DataFrame do
         it { expect(df[1].to_a).to eq [1, 2, 3] }
         its(:'b.to_a') { is_expected.to eq [11, 12, 13] }
       end
+      
+      context "single invalid position" do
+        it { expect { df. at 3 }.to raise_error IndexError }
+      end
+      
+      context "multiple invalid positions" do
+        it { expect { df.at 2, 3 }.to raise_error IndexError }
+      end      
     end
   end  
 
@@ -1089,6 +1125,14 @@ describe Daru::DataFrame do
       it { expect(df[1].to_a).to eq [1, 2, 3] }
       its(:'a.to_a') { is_expected.to eq ['x', 'y', 'z'] }
       its(:'b.to_a') { is_expected.to eq ['x', 'y', 'z'] }
+    end
+    
+    context "invalid position" do
+      it { expect { df.set_at [3], ['x', 'y', 'z'] }.to raise_error IndexError }
+    end
+    
+    context "invalid positions" do
+      it { expect { df.set_at [2, 3], ['x', 'y', 'z'] }.to raise_error IndexError }
     end
   end
 

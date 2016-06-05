@@ -277,6 +277,8 @@ module Daru
     #   #   1   2   b
     #   #   2   3   c
     def row_at *positions
+      validate_row_positions(*positions)
+
       if positions.size == 1
         return Daru::Vector.new @data.map { |vec| vec.at(*positions) },
           index: @vectors
@@ -304,6 +306,7 @@ module Daru
     #   #   1   x   x
     #   #   2   3   c
     def set_row_at positions, vector
+      validate_row_positions(*positions)
       vector =
         if vector.is_a? Daru::Vector
           vector.reindex @vectors
@@ -337,6 +340,8 @@ module Daru
     #   #   1   2
     #   #   2   3
     def at *positions
+      validate_vector_positions(*positions)
+
       if positions.size == 1
         @data[positions.first].dup
       else
@@ -364,6 +369,7 @@ module Daru
     #   #   1   y   b
     #   #   2   z   c
     def set_at positions, vector
+      validate_vector_positions(*positions)
       vector =
         if vector.is_a? Daru::Vector
           vector.reindex @index
@@ -1844,25 +1850,19 @@ module Daru
                                        index: @index, name: @name)
     end
 
-    def access_row *args
-      # Problem with ranges
-      positions = @index.pos(*args)
+    def access_row *indexes
+      positions = @index.pos(*indexes)
 
       if positions.is_a? Numeric
         return Daru::Vector.new populate_row_for(positions),
           index: @vectors,
-          name: args.first
+          name: indexes.first
       else
-        # Can be improved
-        new_rows = @data.map { |vec| vec[*args] }
+        new_rows = @data.map { |vec| vec[*indexes] }
         return Daru::DataFrame.new new_rows,
-          index: @index.subset(*args),
+          index: @index.subset(*indexes),
           order: @vectors
       end
-      # Access multiple rows
-      rows = names.map { |name| row[name].to_a }
-
-      Daru::DataFrame.rows rows, index: names, name: @name, order: @vectors
     end
 
     def populate_row_for pos
@@ -2277,6 +2277,22 @@ module Daru
           name = pattern.sub('%v', v).sub('%n', number.to_s)
           [v, row[name]]
         }.to_h
+    end
+
+    # Raises IndexError when one of the positions is a valid position
+    def validate_vector_positions *positions
+      positions = [positions] if positions.is_a? Integer
+      positions.each do |pos|
+        raise IndexError, "#{pos} is not a valid position." if pos >= shape[1]
+      end
+    end
+
+    # Raises IndexError when one of the positions is a valid position
+    def validate_row_positions *positions
+      positions = [positions] if positions.is_a? Integer
+      positions.each do |pos|
+        raise IndexError, "#{pos} is not a valid position." if pos >= shape[0]
+      end
     end
   end
 end
