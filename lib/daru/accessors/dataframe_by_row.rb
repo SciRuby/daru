@@ -14,11 +14,11 @@ module Daru
       end
 
       def at *positions
-        @data_frame.at(*positions)
+        @data_frame.row_at(*positions)
       end
 
-      def at_set positions, vector
-        @data_frame.row_at_set(positions, vector)
+      def set_at positions, vector
+        @data_frame.row_set_at(positions, vector)
       end
     end
   end

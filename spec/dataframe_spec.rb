@@ -423,7 +423,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#vector[]" do
+  context "#[]" do
     context Daru::Index do
       before :each do
         @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
@@ -432,11 +432,11 @@ describe Daru::DataFrame do
       end
 
       it "returns a Vector" do
-        expect(@df.vector[:a]).to eq([1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five]))
+        expect(@df[:a]).to eq([1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five]))
       end
 
       it "returns a Vector by default" do
-        expect(@df.vector[:a]).to eq(Daru::Vector.new([1,2,3,4,5], name: :a,
+        expect(@df[:a]).to eq(Daru::Vector.new([1,2,3,4,5], name: :a,
           index: [:one, :two, :three, :four, :five]))
       end
 
@@ -444,7 +444,7 @@ describe Daru::DataFrame do
         temp = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]},
           order: [:a, :b], index: [:one, :two, :three, :four, :five])
 
-        expect(@df.vector[:a, :b]).to eq(temp)
+        expect(@df[:a, :b]).to eq(temp)
       end
 
       it "returns a DataFrame with metadata" do
@@ -455,7 +455,7 @@ describe Daru::DataFrame do
       end
 
       it "accesses vector with Integer index" do
-        expect(@df.vector[0]).to eq([1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five]))
+        expect(@df[0]).to eq([1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five]))
       end
 
       it "returns a subset of DataFrame when specified range" do
@@ -467,19 +467,19 @@ describe Daru::DataFrame do
       end
 
       it 'accepts axis parameter as a last argument' do
-        expect(@df[:a, :vector]).to eq @df.vector[:a]
+        expect(@df[:a, :vector]).to eq @df[:a]
         expect(@df[:one, :row]).to eq [1, 11, 11].dv(:one, [:a, :b, :c])
       end
     end
 
     context Daru::MultiIndex do
       it "accesses vector with an integer index" do
-        expect(@df_mi.vector[0]).to eq(
+        expect(@df_mi[0]).to eq(
           Daru::Vector.new(@vector_arry1, index: @multi_index))
       end
 
       it "returns a vector when specifying full tuple" do
-        expect(@df_mi.vector[:a, :one, :bar]).to eq(
+        expect(@df_mi[:a, :one, :bar]).to eq(
           Daru::Vector.new(@vector_arry1, index: @multi_index))
       end
 
@@ -488,20 +488,20 @@ describe Daru::DataFrame do
           [:one, :bar],
           [:two, :baz]
           ])
-        expect(@df_mi.vector[:a]).to eq(Daru::DataFrame.new([
+        expect(@df_mi[:a]).to eq(Daru::DataFrame.new([
           @vector_arry1,
           @vector_arry2
         ], index: @multi_index, order: sub_order))
       end
 
       it "returns a Vector if the last level of MultiIndex is tracked" do
-        expect(@df_mi.vector[:a, :one, :bar]).to eq(
+        expect(@df_mi[:a, :one, :bar]).to eq(
           Daru::Vector.new(@vector_arry1, index: @multi_index))
       end
     end
   end
 
-  context "#vector[]=" do
+  context "[]=" do
     context Daru::Index do
       before :each do
         @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
@@ -510,7 +510,7 @@ describe Daru::DataFrame do
       end
 
       it "assigns directly with the []= operator" do
-        @data_frame.vector[:a] = [100,200,300,400,500]
+        @data_frame[:a] = [100,200,300,400,500]
         expect(@data_frame).to eq(Daru::DataFrame.new({
           b: [11,12,13,14,15],
           a: [100,200,300,400,500],
@@ -519,61 +519,61 @@ describe Daru::DataFrame do
       end
 
       it "appends an Array as a Daru::Vector" do
-        @df.vector[:d] = [69,99,108,85,49]
+        @df[:d] = [69,99,108,85,49]
 
         expect(@df.d.class).to eq(Daru::Vector)
       end
 
       it "replaces an already present vector" do
-        @df.vector[:a] = [69,99,108,85,49].dv(nil, [:one, :two, :three, :four, :five])
+        @df[:a] = [69,99,108,85,49].dv(nil, [:one, :two, :three, :four, :five])
 
         expect(@df.a).to eq([69,99,108,85,49].dv(nil, [:one, :two, :three, :four, :five]))
       end
 
       it "appends a new vector to the DataFrame" do
-        @df.vector[:woo] = [69,99,108,85,49].dv(nil, [:one, :two, :three, :four, :five])
+        @df[:woo] = [69,99,108,85,49].dv(nil, [:one, :two, :three, :four, :five])
 
         expect(@df.vectors).to eq([:a, :b, :c, :woo].to_index)
       end
 
       it "creates an index for the new vector if not specified" do
-        @df.vector[:woo] = [69,99,108,85,49]
+        @df[:woo] = [69,99,108,85,49]
 
         expect(@df.woo.index).to eq([:one, :two, :three, :four, :five].to_index)
       end
 
       it "matches index of vector to be inserted with the DataFrame index" do
-        @df.vector[:shankar] = [69,99,108,85,49].dv(:shankar, [:two, :one, :three, :five, :four])
+        @df[:shankar] = [69,99,108,85,49].dv(:shankar, [:two, :one, :three, :five, :four])
 
         expect(@df.shankar).to eq([99,69,108,49,85].dv(:shankar,
           [:one, :two, :three, :four, :five]))
       end
 
       it "matches index of vector to be inserted, inserting nils where no match found" do
-        @df.vector[:shankar] = [1,2,3].dv(:shankar, [:one, :james, :hetfield])
+        @df[:shankar] = [1,2,3].dv(:shankar, [:one, :james, :hetfield])
 
         expect(@df.shankar).to eq([1,nil,nil,nil,nil].dv(:shankar, [:one, :two, :three, :four, :five]))
       end
 
       it "raises error for Array assignment of wrong length" do
         expect{
-          @df.vector[:shiva] = [1,2,3]
+          @df[:shiva] = [1,2,3]
           }.to raise_error
       end
 
       it "assigns correct name given empty dataframe" do
         df_empty = Daru::DataFrame.new({})
-        df_empty.vector[:a] = 1..5
-        df_empty.vector[:b] = 1..5
+        df_empty[:a] = 1..5
+        df_empty[:b] = 1..5
 
-        expect(df_empty.vector[:a].name).to equal(:a)
-        expect(df_empty.vector[:b].name).to equal(:b)
+        expect(df_empty[:a].name).to equal(:a)
+        expect(df_empty[:b].name).to equal(:b)
       end
 
       it "copies metadata when the target is a vector" do
         vec = Daru::Vector.new(1.upto(@df.size), index: @df.index, metadata: { cdc_type: 2 })
-        @df.vector[:woo] = vec.dup
-        expect(@df.vector[:woo].metadata).to eq vec.metadata
+        @df[:woo] = vec.dup
+        expect(@df[:woo].metadata).to eq vec.metadata
       end
 
       it "doesn't delete metadata when the source is a dataframe with empty vectors" do
@@ -582,7 +582,7 @@ describe Daru::DataFrame do
           b: Daru::Vector.new([], metadata: 'beta'),
           })
 
-        empty_df.vector[:c] = Daru::Vector.new(1.upto(3))
+        empty_df[:c] = Daru::Vector.new(1.upto(3))
         expect(empty_df[:a].metadata).to eq 'alpha'
       end
 
@@ -594,12 +594,12 @@ describe Daru::DataFrame do
     context Daru::MultiIndex do
       it "raises error when incomplete index specified but index is absent" do
         expect {
-          @df_mi.vector[:d] = [100,200,300,400,100,200,300,400,100,200,300,400]
+          @df_mi[:d] = [100,200,300,400,100,200,300,400,100,200,300,400]
         }.to raise_error
       end
 
       it "assigns all sub-indexes when a top level index is specified" do
-        @df_mi.vector[:a] = [100,200,300,400,100,200,300,400,100,200,300,400]
+        @df_mi[:a] = [100,200,300,400,100,200,300,400,100,200,300,400]
 
         expect(@df_mi).to eq(Daru::DataFrame.new([
           [100,200,300,400,100,200,300,400,100,200,300,400],
@@ -622,14 +622,14 @@ describe Daru::DataFrame do
           @vector_arry2,
           [100,200,300,400,100,200,300,400,100,200,300,400]
           ], index: @multi_index, order: order)
-        @df_mi.vector[:c,:one,:bar] = [100,200,300,400,100,200,300,400,100,200,300,400]
+        @df_mi[:c,:one,:bar] = [100,200,300,400,100,200,300,400,100,200,300,400]
 
         expect(@df_mi).to eq(answer)
       end
 
       it "assigns correct name given empty dataframe" do
         df_empty = Daru::DataFrame.new([], index: @multi_index, order: @order_mi)
-        df_empty.vector[:c, :one, :bar] = 1..12
+        df_empty[:c, :one, :bar] = 1..12
 
         expect(df_empty[:c, :one, :bar].name).to eq "conebar"
       end
@@ -935,7 +935,7 @@ describe Daru::DataFrame do
     end
   end
   
-  context "#row.at_set" do
+  context "#row.set_at" do
     let(:df) do
       Daru::DataFrame.new({
         a: 1..3,
@@ -945,7 +945,7 @@ describe Daru::DataFrame do
     
     context "single position" do
       subject { df }
-      before { df.row.at_set [1], ['x', 'y'] }
+      before { df.row.set_at [1], ['x', 'y'] }
       
       its(:size) { is_expected.to eq 3 }
       its(:'a.to_a') { is_expected.to eq [1, 'x', 3] }
@@ -954,7 +954,7 @@ describe Daru::DataFrame do
     
     context "multiple position" do
       subject { df }
-      before { df.row.at_set [0, 2], ['x', 'y'] }
+      before { df.row.set_at [0, 2], ['x', 'y'] }
       
       its(:size) { is_expected.to eq 3 }
       its(:'a.to_a') { is_expected.to eq ['x', 2, 'x'] }
@@ -962,7 +962,7 @@ describe Daru::DataFrame do
     end
   end
   
-  context "#vector.at" do
+  context "#at" do
     context Daru::Index do
       let(:idx) { Daru::Index.new [:a, :b, :c] }
       let(:df) do
@@ -974,7 +974,7 @@ describe Daru::DataFrame do
       end
       
       context "single position" do
-        subject { df.vector.at 1 }
+        subject { df.at 1 }
         
         it { is_expected.to be_a Daru::Vector }
         its(:size) { is_expected.to eq 3 }
@@ -983,12 +983,12 @@ describe Daru::DataFrame do
       end
       
       context "multiple positions" do
-        subject { df.vector.at 0, 2 }
+        subject { df.at 0, 2 }
         
         it { is_expected.to be_a Daru::DataFrame }
         its(:shape) { is_expected.to eq [3, 2] }
         its(:index) { is_expected.to eq idx }
-        it { expect(df.vector[1].to_a).to eq [1, 2, 3] }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
         its(:'b.to_a') { is_expected.to eq [11, 12, 13] }
       end
       
@@ -1012,7 +1012,7 @@ describe Daru::DataFrame do
       end
       
       context "single position" do
-        subject { df.vector.at 1 }
+        subject { df.at 1 }
         
         it { is_expected.to be_a Daru::Vector }
         its(:size) { is_expected.to eq 3 }
@@ -1021,12 +1021,12 @@ describe Daru::DataFrame do
       end
       
       context "multiple positions" do
-        subject { df.vector.at 0, 2 }
+        subject { df.at 0, 2 }
         
         it { is_expected.to be_a Daru::DataFrame }
         its(:shape) { is_expected.to eq [3, 2] }
         its(:index) { is_expected.to eq idx }
-        it { expect(df.vector[1].to_a).to eq [1, 2, 3] }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
         its(:'b.to_a') { is_expected.to eq [11, 12, 13] }
       end
     end
@@ -1042,7 +1042,7 @@ describe Daru::DataFrame do
       end
       
       context "single position" do
-        subject { df.vector.at 1 }
+        subject { df.at 1 }
         
         it { is_expected.to be_a Daru::Vector }
         its(:size) { is_expected.to eq 3 }
@@ -1051,18 +1051,18 @@ describe Daru::DataFrame do
       end
       
       context "multiple positions" do
-        subject { df.vector.at 0, 2 }
+        subject { df.at 0, 2 }
         
         it { is_expected.to be_a Daru::DataFrame }
         its(:shape) { is_expected.to eq [3, 2] }
         its(:index) { is_expected.to eq idx }
-        it { expect(df.vector[1].to_a).to eq [1, 2, 3] }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
         its(:'b.to_a') { is_expected.to eq [11, 12, 13] }
       end
     end
   end  
 
-  context "#vector.at_set" do
+  context "#set_at" do
     let(:df) do
       Daru::DataFrame.new({
         1 => 1..3,
@@ -1073,20 +1073,20 @@ describe Daru::DataFrame do
     
     context "single position" do
       subject { df }
-      before { df.vector.at_set [1], ['x', 'y', 'z'] }
+      before { df.set_at [1], ['x', 'y', 'z'] }
 
       its(:shape) { is_expected.to eq [3, 3] }
-      it { expect(df.vector[1].to_a).to eq [1, 2, 3] }
+      it { expect(df[1].to_a).to eq [1, 2, 3] }
       its(:'a.to_a') { is_expected.to eq ['x', 'y', 'z'] }
       its(:'b.to_a') { is_expected.to eq [11, 12, 13] }
     end
     
     context "multiple position" do
       subject { df }
-      before { df.vector.at_set [1, 2], ['x', 'y', 'z'] }
+      before { df.set_at [1, 2], ['x', 'y', 'z'] }
 
       its(:shape) { is_expected.to eq [3, 3] }
-      it { expect(df.vector[1].to_a).to eq [1, 2, 3] }
+      it { expect(df[1].to_a).to eq [1, 2, 3] }
       its(:'a.to_a') { is_expected.to eq ['x', 'y', 'z'] }
       its(:'b.to_a') { is_expected.to eq ['x', 'y', 'z'] }
     end

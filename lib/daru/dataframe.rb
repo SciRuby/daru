@@ -1,5 +1,4 @@
 require 'daru/accessors/dataframe_by_row.rb'
-require 'daru/accessors/dataframe_by_vector.rb'
 require 'daru/maths/arithmetic/dataframe.rb'
 require 'daru/maths/statistics/dataframe.rb'
 require 'daru/plotting/dataframe.rb'
@@ -267,7 +266,7 @@ module Daru
     # Retrive rows by positions
     # @param [Array<Integer>] *positions positions of rows to retrive
     # @return rows specified by positions
-    def at *positions
+    def row_at *positions
       if positions.size == 1
         return Daru::Vector.new @data.map { |vec| vec.at(*positions) },
           index: @vectors
@@ -282,7 +281,7 @@ module Daru
     # Set rows by positions
     # @param [Array<Integer>] positions positions of rows to set
     # @vector [Array, Daru::Vector] vector vector to be assigned
-    def row_at_set positions, vector
+    def row_set_at positions, vector
       vector =
         if vector.is_a? Daru::Vector
           vector.reindex @vectors
@@ -294,7 +293,7 @@ module Daru
         vector.size != @vectors.size
 
       @data.each_with_index do |vec, pos|
-        vec.at_set(positions, vector.at(pos))
+        vec.set_at(positions, vector.at(pos))
       end
       @index = @data[0].index
 
@@ -303,7 +302,7 @@ module Daru
 
     # Retrive vectors by positions
     # @param [Array<Integer>] *positions positions of vectors to retrive
-    def vector_at *positions
+    def at *positions
       if positions.size == 1
         @data[positions.first].dup
       else
@@ -318,7 +317,7 @@ module Daru
     # Set vectors by positions
     # @param [Array<Integer>] positions positions of vectors to set
     # @param [Array, Daru::Vector] vector vector to be assigned
-    def vector_at_set positions, vector
+    def set_at positions, vector
       vector =
         if vector.is_a? Daru::Vector
           vector.reindex @index
@@ -367,10 +366,6 @@ module Daru
     #   df.row[:b] = [1,2,3] # set row ':b' to [1,2,3]
     def row
       Daru::Accessors::DataFrameByRow.new(self)
-    end
-
-    def vector
-      Daru::Accessors::DataFrameByVector.new(self)
     end
 
     # Duplicate the DataFrame entirely.
@@ -465,7 +460,7 @@ module Daru
       return to_enum(:each_row) unless block_given?
 
       @index.size.times do |pos|
-        yield at(pos)
+        yield row_at(pos)
       end
 
       self

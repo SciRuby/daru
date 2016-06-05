@@ -225,7 +225,7 @@ module Daru
     # Assign val by positions
     # @param [Array<object>] *positions positional values
     # @param [object] val value to assign
-    def at_set positions, val
+    def set_at positions, val
       positions.map { |pos| @data[pos] = val }
     end
 
