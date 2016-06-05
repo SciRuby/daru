@@ -1954,7 +1954,7 @@ module Daru
         vector.size != @vectors.size
 
       @data.each_with_index do |vec, pos|
-        vec.set(indexes, vector.at(pos))
+        vec.send(:set, indexes, vector.at(pos))
       end
       @index = @data[0].index
 

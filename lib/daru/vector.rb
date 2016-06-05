@@ -273,39 +273,7 @@ module Daru
 
       guard_type_check(val)
 
-      modify(indexes, val)
-
-      update_internal_state
-    end
-
-    def modify(indexes, val)
-      positions = @index.pos(*indexes)
-
-      if positions.is_a? Numeric
-        @data[positions] = val
-      else
-        positions.each { |pos| @data[pos] = val }
-      end
-    end
-
-    def insert(indexes, val)
-      new_index = @index.add(*indexes)
-      # May be create +=
-      (new_index.size - @index.size).times { @data << val }
-      @index = new_index
-    end
-
-    # Works similar to #[]= but also insert the vector in case index is not valid
-    # It is there only to be accessed by Daru::DataFrame and not meant for user.
-    def set indexes, val
-      cast(dtype: :array) if val.nil? && dtype != :array
-      guard_type_check(val)
-
-      if @index.respond?(*indexes)
-        modify(indexes, val)
-      else
-        insert(indexes, val)
-      end
+      modify_vector(indexes, val)
 
       update_internal_state
     end
@@ -1277,5 +1245,37 @@ module Daru
         raise IndexError, "#{pos} is not a valid position." if pos >= size
       end
     end
+
+    def modify_vector(indexes, val)
+      positions = @index.pos(*indexes)
+
+      if positions.is_a? Numeric
+        @data[positions] = val
+      else
+        positions.each { |pos| @data[pos] = val }
+      end
+    end
+
+    def insert_vector(indexes, val)
+      new_index = @index.add(*indexes)
+      # May be create +=
+      (new_index.size - @index.size).times { @data << val }
+      @index = new_index
+    end
+
+    # Works similar to #[]= but also insert the vector in case index is not valid
+    # It is there only to be accessed by Daru::DataFrame and not meant for user.
+    def set indexes, val
+      cast(dtype: :array) if val.nil? && dtype != :array
+      guard_type_check(val)
+
+      if @index.respond?(*indexes)
+        modify_vector(indexes, val)
+      else
+        insert_vector(indexes, val)
+      end
+
+      update_internal_state
+    end    
   end
 end
