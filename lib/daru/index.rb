@@ -519,9 +519,9 @@ module Daru
     # Returns array of categories
     # @example
     #   x = Daru::CategoricalIndex.new [:a, 1, :a, 1, :c]
-    #   x.cat
+    #   x.categories
     #   # => [:a, 1, :c]
-    def cat
+    def categories
       @cat_hash.keys
     end
 

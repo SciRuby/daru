@@ -331,7 +331,7 @@ module Daru
     #     b: ['a', 'b', 'c']
     #   })
     #   df.at 0
-    #  # => #<Daru::Vector(3)>
+    #   # => #<Daru::Vector(3)>
     #   #       a
     #   #   0   1
     #   #   1   2
