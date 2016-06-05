@@ -224,11 +224,16 @@ module Daru
     #   #   1   b
     #   #   2   c
     def at *positions
+      validate_positions(*positions)
+
       if positions.size == 1
         @data[positions.first]
       else
-        Daru::Vector.new positions.map { |i| @data[i] },
-          index: @index.at(*positions)
+        values = positions.map do |pos|
+          @data[pos]
+        end
+
+        Daru::Vector.new values, index: @index.at(*positions)
       end
     end
 
@@ -246,6 +251,7 @@ module Daru
     #   #   3   d
     #   #   4   e
     def set_at positions, val
+      validate_positions(*positions)
       positions.map { |pos| @data[pos] = val }
     end
 
@@ -1262,6 +1268,14 @@ module Daru
     def update_internal_state
       set_size
       set_missing_positions
+    end
+
+    # Raises IndexError when one of the positions is a valid position
+    def validate_positions *positions
+      positions = [positions] if positions.is_a? Integer
+      positions.each do |pos|
+        raise IndexError, "#{pos} is not a valid position." if pos >= size
+      end
     end
   end
 end

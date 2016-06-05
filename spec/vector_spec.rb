@@ -355,7 +355,13 @@ describe Daru::Vector do
             its(:'index.to_a') { is_expected.to eq [1, :c] }
           end
           
-          # TODO: Add specs for invalid positions
+          context "invalid position" do
+            it { expect { dv.at 3 }.to raise_error IndexError }
+          end
+          
+          context "invalid positions" do
+            it { expect { dv.at 2, 3 }.to raise_error IndexError }
+          end
         end
         
         context Daru::MultiIndex do
@@ -382,6 +388,14 @@ describe Daru::Vector do
             its(:'index.to_a') { is_expected.to eq [[:b, :two, :bar], 
               [:a, :two, :baz]] }
           end
+          
+          context "invalid position" do
+            it { expect { dv.at 4 }.to raise_error IndexError }
+          end
+          
+          context "invalid positions" do
+            it { expect { dv.at 2, 4 }.to raise_error IndexError }
+          end
         end
 
         context Daru::CategoricalIndex do
@@ -402,6 +416,14 @@ describe Daru::Vector do
             subject { dv.at 1 }
 
             it { is_expected.to eq 'b' }
+          end
+          
+          context "invalid position" do
+            it { expect { dv.at 5 }.to raise_error IndexError }
+          end
+          
+          context "invalid positions" do
+            it { expect { dv.at 2, 5 }.to raise_error IndexError }
           end
         end
       end
@@ -856,7 +878,13 @@ describe Daru::Vector do
             its(:to_a) { is_expected.to eq ['x', 'b', 'x'] }
           end
           
-          # TODO: Add specs for invalid positions
+          context "invalid position" do
+            it { expect { dv.set_at [3], 'x' }.to raise_error IndexError }
+          end
+          
+          context "invalid positions" do
+            it { expect { dv.set_at [2, 3], 'x' }.to raise_error IndexError }
+          end
         end
         
         context Daru::MultiIndex do
@@ -883,6 +911,14 @@ describe Daru::Vector do
 
             its(:to_a) { is_expected.to eq [1, 2, 'x', 'x'] }
           end
+          
+          context "invalid position" do
+            it { expect { dv.set_at [4], 'x' }.to raise_error IndexError }
+          end
+          
+          context "invalid positions" do
+            it { expect { dv.set_at [2, 4], 'x' }.to raise_error IndexError }
+          end          
         end
 
         context Daru::CategoricalIndex do
@@ -902,6 +938,14 @@ describe Daru::Vector do
 
             its(:to_a) { is_expected.to eq ['a', 'x', 'c', 'd', 'e'] }
           end
+          
+          context "invalid position" do
+            it { expect { dv.set_at [5], 'x' }.to raise_error IndexError }
+          end
+          
+          context "invalid positions" do
+            it { expect { dv.set_at [2, 5], 'x' }.to raise_error IndexError }
+          end          
         end
       end
 
