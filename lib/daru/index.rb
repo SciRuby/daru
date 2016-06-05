@@ -319,7 +319,7 @@ module Daru
     end
 
     def respond? *indexes
-      # Improve it
+      # FIXME: This is perhaps not a good method
       pos(*indexes)
       return true
     rescue IndexError
