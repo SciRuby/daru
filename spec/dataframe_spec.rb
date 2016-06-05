@@ -501,7 +501,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "[]=" do
+  context "#[]=" do
     context Daru::Index do
       before :each do
         @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
