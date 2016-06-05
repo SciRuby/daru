@@ -17,7 +17,7 @@
   <% end %>
 
   <% if size > threshold %>
-    <% last_index = @index.to_a.last %>
+    <% last_index = @index.size-1 %>
     <tr><td>...</td><td>...</td></tr>
     <tr>
       <td><%= last_index %></td>
