@@ -340,6 +340,10 @@ module Daru
     #   #   1   2
     #   #   2   3
     def at *positions
+      if positions.last == :row
+        positions.pop
+        return row_at(*positions)
+      end
       validate_vector_positions(*positions)
 
       if positions.size == 1
@@ -369,6 +373,11 @@ module Daru
     #   #   1   y   b
     #   #   2   z   c
     def set_at positions, vector
+      if positions.last == :row
+        positions.pop
+        return set_row_at(positions, vector)
+      end
+
       validate_vector_positions(*positions)
       vector =
         if vector.is_a? Daru::Vector
