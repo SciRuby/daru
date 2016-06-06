@@ -101,6 +101,38 @@ describe Daru::CategoricalIndex do
       its(:size) { is_expected.to eq 3 }
       its(:to_a) { is_expected.to eq [:a, :a, 1] }
     end
+    
+    context "range" do
+      subject { idx.at 2..3 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 2 }
+      its(:to_a) { is_expected.to eq [:a, 1] }   
+    end
+    
+    context "range with negative integers" do
+      subject { idx.at 2..-2 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 2 }
+      its(:to_a) { is_expected.to eq [:a, 1] }   
+    end    
+    
+    context "rangle with single element" do
+      subject { idx.at 2..2 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 1 }
+      its(:to_a) { is_expected.to eq [:a] }      
+    end
+    
+    context "invalid position" do
+      it { expect { idx.at 5 }.to raise_error IndexError }
+    end
+    
+    context "invalid positions" do
+      it { expect { idx.at 2, 5 }.to raise_error IndexError }
+    end    
   end
   
   context "#add" do

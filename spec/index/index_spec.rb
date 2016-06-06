@@ -231,7 +231,7 @@ describe Daru::Index do
     end
   end
   
-  context "at" do
+  context "#at" do
     let(:idx) { described_class.new [:a, :b, 1 ] }
     
     context "single position" do
@@ -244,6 +244,38 @@ describe Daru::Index do
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
       its(:to_a) { is_expected.to eq [:b, 1] }
+    end
+    
+    context "range" do
+      subject { idx.at 1..2 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 2 }
+      its(:to_a) { is_expected.to eq [:b, 1] }      
+    end
+    
+    context "range with negative integer" do
+      subject { idx.at 1..-1 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 2 }
+      its(:to_a) { is_expected.to eq [:b, 1] }      
+    end    
+    
+    context "rangle with single element" do
+      subject { idx.at 1..1 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 1 }
+      its(:to_a) { is_expected.to eq [:b] }      
+    end
+    
+    context "invalid position" do
+      it { expect { idx.at 3 }.to raise_error IndexError }
+    end
+    
+    context "invalid positions" do
+      it { expect { idx.at 2, 3 }.to raise_error IndexError }
     end
   end
 end

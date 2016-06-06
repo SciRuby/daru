@@ -114,8 +114,10 @@ module Daru
     end
 
     def at *positions
-      if positions.size == 1
-        key(positions.first)
+      positions = preprocess_positions(*positions)
+      validate_positions(*positions)
+      if positions.is_a? Integer
+        key(positions)
       else
         self.class.new positions.map(&method(:key))
       end
@@ -240,6 +242,30 @@ module Daru
         raise IndexError, "Specified index #{key.inspect} does not exist"
       end
     end
+
+    # Raises IndexError when one of the positions is an invalid position
+    def validate_positions *positions
+      positions = [positions] if positions.is_a? Integer
+      positions.each do |pos|
+        raise IndexError, "#{pos} is not a valid position." if pos >= size
+      end
+    end
+
+    # Preprocess ranges, integers and array in appropriate ways
+    def preprocess_positions *positions
+      if positions.size == 1
+        case positions.first
+        when Integer
+          positions.first
+        when Range
+          size.times.to_a[positions.first]
+        else
+          raise ArgumentError, 'Unkown position type.'
+        end
+      else
+        positions
+      end
+    end
   end # class Index
 
   class MultiIndex < Index
@@ -345,8 +371,13 @@ module Daru
     end
 
     def at *positions
-      return key(positions.first) if positions.size == 1
-      Daru::MultiIndex.from_tuples positions.map { |p| key p }
+      positions = preprocess_positions(*positions)
+      validate_positions(*positions)
+      if positions.is_a? Integer
+        key(positions)
+      else
+        Daru::MultiIndex.from_tuples positions.map(&method(:key))
+      end
     end
 
     def add *indexes
@@ -602,10 +633,12 @@ module Daru
     # @param [Array<Integer>] positional values
     # @return [object] index object
     def at *positions
-      if positions.size == 1
-        index_from_pos(positions.first)
+      positions = preprocess_positions(*positions)
+      validate_positions(*positions)
+      if positions.is_a? Integer
+        index_from_pos(positions)
       else
-        Daru::CategoricalIndex.new(positions.map { |pos| index_from_pos pos })
+        Daru::CategoricalIndex.new positions.map(&method(:index_from_pos))
       end
     end
 

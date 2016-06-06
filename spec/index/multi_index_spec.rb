@@ -487,6 +487,40 @@ describe Daru::MultiIndex do
       its(:to_a) { is_expected.to eq [[:b, :two, :bar],
         [:b, :two, :baz]] }
     end
+    
+    context "range" do
+      subject { idx.at 1..2 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 2 }
+      its(:to_a) { is_expected.to eq [[:b, :two, :bar],
+        [:b, :two, :baz]] }    
+    end
+    
+    context "range with negative integers" do
+      subject { idx.at 1..-2 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 2 }
+      its(:to_a) { is_expected.to eq [[:b, :two, :bar],
+        [:b, :two, :baz]] }    
+    end    
+    
+    context "rangle with single element" do
+      subject { idx.at 1..1 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 1 }
+      its(:to_a) { is_expected.to eq [[:b, :two, :bar]] }
+    end
+    
+    context "invalid position" do
+      it { expect { idx.at 4 }.to raise_error IndexError }
+    end
+    
+    context "invalid positions" do
+      it { expect { idx.at 2, 4 }.to raise_error IndexError }
+    end    
   end
 
   context "#add" do

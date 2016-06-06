@@ -1239,7 +1239,7 @@ module Daru
       set_missing_positions
     end
 
-    # Raises IndexError when one of the positions is a valid position
+    # Raises IndexError when one of the positions is an invalid position
     def validate_positions *positions
       positions = [positions] if positions.is_a? Integer
       positions.each do |pos|
