@@ -1263,6 +1263,8 @@ module Daru
       end
     end
 
+    # Helper method for []=.
+    # Assigs existing index to another value
     def modify_vector(indexes, val)
       positions = @index.pos(*indexes)
 
@@ -1273,6 +1275,8 @@ module Daru
       end
     end
 
+    # Helper method for []=.
+    # Add a new index and assign it value
     def insert_vector(indexes, val)
       new_index = @index.add(*indexes)
       # May be create +=
