@@ -632,30 +632,69 @@ module Daru
       @map_int_cat[@array[pos]]
     end
 
+    # Returns enumerator enumerating all index values in the order they occur
+    # @return [Enumerator] all index values
+    # @example
+    #   idx = Daru::CategoricalIndex.new [:a, :a, :b]
+    #   idx.each.to_a
+    #   # => [:a, :a, :b]
     def each
       return enum_for(:each) unless block_given?
       @array.each { |pos| yield @map_int_cat[pos] }
       self
     end
 
+    # Compares two index object. Returns true if every instance of category
+    # occur at the same position
+    # @param [Daru::CateogricalIndex] other index object to be checked against
+    # @return [true, false] true if other is similar to self
+    # @example
+    #   a = Daru::CategoricalIndex.new [:a, :a, :b]
+    #   b = Daru::CategoricalIndex.new [:b, :a, :a]
+    #   a == b
+    #   # => false
     def == other
       self.class == other.class &&
         size == other.size &&
         to_h == other.to_h
     end
 
+    # Returns all the index values
+    # @return [Array] all index values
+    # @example
+    #   idx = Daru::CategoricalIndex.new [:a, :b, :a]
+    #   idx.to_a
     def to_a
       each.to_a
     end
 
+    # Returns hash table mapping category to positions at which they occur
+    # @return [Hash] hash table mapping category to array of positions
+    # @example
+    #   idx = Daru::CategoricalIndex.new [:a, :b, :a]
+    #   idx.to_h
+    #   # => {:a=>[0, 2], :b=>[1]}
     def to_h
       @cat_hash
     end
 
+    # Returns size of the index object
+    # @return [Integer] total number of instances of all categories
+    # @example
+    #   idx = Daru::CategoricalIndex.new [:a, :b, :a]
+    #   idx.size
+    #   # => 3
     def size
       @array.size
     end
 
+    # Returns true if index object is storing no category
+    # @return [true, false] true if index object is empty
+    # @example
+    #   i = Daru::CategoricalIndex.new []
+    #   # => #<Daru::CategoricalIndex(0): {}>
+    #   i.empty?
+    #   # => true
     def empty?
       @array.empty?
     end
