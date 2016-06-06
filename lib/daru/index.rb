@@ -87,10 +87,23 @@ module Daru
     # Returns true if all arguments are either a valid category or position
     # @param [Array<object>] *indexes categories or positions
     # @return [true, false]
+    # @example
+    #   idx.respond? :a, 2
+    #   # => true
+    #   idx.respond? 3
+    #   # => false
     def respond? *indexes
       indexes.all? { |i| to_a.include?(i) || (i.is_a?(Numeric) && i < size) }
     end
 
+    # Returns positions given indexes or positions
+    # @note If the arugent is both a valid index and a valid position,
+    #   it will treated as valid index
+    # @param [Array<object>] *indexes indexes or positions
+    # @example
+    #   x = Daru::Index.new [:a, :b, :c]
+    #   x.pos :a, 1
+    #   # => [0, 1]
     def pos *indexes
       indexes = preprocess_range(indexes.first) if indexes.first.is_a? Range
 
@@ -113,6 +126,14 @@ module Daru
       end
     end
 
+    # Takes positional values and returns subset of the self
+    #   capturing the indexes at mentioned positions
+    # @param [Array<Integer>] positional values
+    # @return [object] index object
+    # @example
+    #   idx = Daru::Index.new [:a, :b, :c]
+    #   idx.at 0, 1
+    #   # => #<Daru::Index(2): {a, b}>
     def at *positions
       positions = preprocess_positions(*positions)
       validate_positions(*positions)
@@ -352,6 +373,14 @@ module Daru
       return false
     end
 
+    # Returns positions given indexes or positions
+    # @note If the arugent is both a valid index and a valid position,
+    #   it will treated as valid index
+    # @param [Array<object>] *indexes indexes or positions
+    # @example
+    #   idx = Daru::MultiIndex.from_tuples [[:a, :one], [:a, :two], [:b, :one], [:b, :two]]
+    #   idx.pos :a
+    #   # => [0, 1]
     def pos *indexes
       if indexes.first.is_a? Integer
         return indexes.first if indexes.size == 1
@@ -370,6 +399,16 @@ module Daru
       end
     end
 
+    # Takes positional values and returns subset of the self
+    #   capturing the indexes at mentioned positions
+    # @param [Array<Integer>] positional values
+    # @return [object] index object
+    # @example
+    #   idx = Daru::MultiIndex.from_tuples [[:a, :one], [:a, :two], [:b, :one], [:b, :two]]
+    #   idx.at 0, 1
+    #   # => #<Daru::MultiIndex(2x2)>
+    #   #   a one
+    #   #     two
     def at *positions
       positions = preprocess_positions(*positions)
       validate_positions(*positions)
@@ -585,6 +624,10 @@ module Daru
     # Returns index value from position
     # @param pos [Integer] the position to look for
     # @return [object] category corresponding to position
+    # @example
+    #   idx = Daru::CategoricalIndex.new [:a, :b, :a, :b, :c]
+    #   idx.index_from_pos 1
+    #   # => :b
     def index_from_pos pos
       @map_int_cat[@array[pos]]
     end
@@ -621,6 +664,10 @@ module Daru
     # @param [Array<object>] *indexes categories or positions
     # @return [Daru::CategoricalIndex] subset of the self containing the
     #   mentioned categories or positions
+    # @example
+    #   idx = Daru::CategoricalIndex.new [:a, :b, :a, :b, :c]
+    #   idx.subset :a, :b
+    #   # => #<Daru::CategoricalIndex(4): {a, b, a, b}>
     def subset *indexes
       positions = pos(*indexes)
       new_index = positions.map { |pos| index_from_pos pos }
@@ -632,6 +679,10 @@ module Daru
     #   capturing the categories at mentioned positions
     # @param [Array<Integer>] positional values
     # @return [object] index object
+    # @example
+    #   idx = Daru::CategoricalIndex.new [:a, :b, :a, :b, :c]
+    #   idx.at 0, 1
+    #   # => #<Daru::CategoricalIndex(2): {a, b}>
     def at *positions
       positions = preprocess_positions(*positions)
       validate_positions(*positions)
@@ -645,6 +696,10 @@ module Daru
     # Add specified index values to the index object
     # @param [Array<object>] *indexes index values to add
     # @return [Daru::CategoricalIndex] index object with added values
+    # @example
+    #   idx = Daru::CategoricalIndex.new [:a, :b, :a, :b, :c]
+    #   idx.add :d
+    #   # => #<Daru::CategoricalIndex(6): {a, b, a, b, c, d}>
     def add *indexes
       Daru::CategoricalIndex.new(to_a + indexes)
     end
