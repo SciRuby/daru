@@ -1379,10 +1379,11 @@ module Daru
 
       block = sort_prepare_block vector_order, opts
 
-      new_index = @index.reorder @index.size.times.sort(&block)
+      order = @index.size.times.sort(&block)
+      new_index = @index.reorder order
 
       @data.each do |vector|
-        vector.reindex!(new_index)
+        vector.reorder! order
       end
 
       self.index = new_index

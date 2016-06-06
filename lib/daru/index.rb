@@ -221,7 +221,7 @@ module Daru
 
     def reorder(new_order)
       from = to_a
-      Daru::Index.new(new_order.map { |i| from[i] })
+      self.class.new(new_order.map { |i| from[i] })
     end
 
     private
@@ -421,6 +421,11 @@ module Daru
 
     def add *indexes
       Daru::MultiIndex.from_tuples to_a << indexes
+    end
+
+    def reorder(new_order)
+      from = to_a
+      self.class.from_tuples(new_order.map { |i| from[i] })
     end
 
     def try_retrieve_from_integer int

@@ -2178,11 +2178,114 @@ describe Daru::DataFrame do
         ans = @df.sort([:a])
         expect(ans[:a].metadata).to eq({ cdc_type: 2 })
       end
-
     end
 
     context Daru::MultiIndex do
       pending
+    end
+    
+    context Daru::CategoricalIndex do
+      let(:idx) { Daru::CategoricalIndex.new [:a, 1, :a, 1, :c] }
+      let(:df) do
+        Daru::DataFrame.new({
+          a: [2, -1, 3, 4, 5],
+          b: ['x', 'y', 'x', 'a', 'y'],
+          c: [nil, nil, -2, 2, 1]
+        }, index: idx)
+      end
+      
+      context "ascending order" do
+        context "single vector" do
+          subject { df.sort [:a] }
+          
+          its(:'index.to_a') { is_expected.to eq [1, :a, :a, 1, :c] }
+          its(:'a.to_a') { is_expected.to eq [-1, 2, 3, 4, 5] }
+          its(:'b.to_a') { is_expected.to eq ['y', 'x', 'x', 'a', 'y'] }
+          its(:'c.to_a') { is_expected.to eq [nil, nil, -2, 2, 1] }
+        end
+        
+        context "multiple vectors" do
+          subject { df.sort [:c, :b] }
+          
+          its(:'index.to_a') { is_expected.to eq [:a, 1, :a, :c, 1] }
+          its(:'a.to_a') { is_expected.to eq [2, -1, 3, 5, 4] }
+          its(:'b.to_a') { is_expected.to eq ['x', 'y', 'x', 'y', 'a'] }
+          its(:'c.to_a') { is_expected.to eq [nil, nil, -2, 1, 2] }
+        end
+        
+        context "block" do
+          context "automatic handle nils" do
+            subject do
+              df.sort [:c], by: {c: lambda { |a| a.abs } }, handle_nils: true
+            end
+  
+            its(:'index.to_a') { is_expected.to eq [:a, 1, :c, :a, 1] }
+            its(:'a.to_a') { is_expected.to eq [2, -1, 5, 3, 4] }
+            its(:'b.to_a') { is_expected.to eq ['x', 'y', 'y', 'x', 'a'] }
+            its(:'c.to_a') { is_expected.to eq [nil, nil, 1, -2, 2] }
+          end
+          
+          context "manually handle nils" do
+            subject do
+              df.sort [:c], by: {c: lambda { |a| (a.nil?)?[1]:[0,a.abs] } }
+            end
+            
+            its(:'index.to_a') { is_expected.to eq [:c, :a, 1, :a, 1] }
+            its(:'a.to_a') { is_expected.to eq [5, 3, 4, 2, -1] }
+            its(:'b.to_a') { is_expected.to eq ['y', 'x', 'a', 'x', 'y'] }
+            its(:'c.to_a') { is_expected.to eq [1, -2, 2, nil, nil] }
+          end
+        end
+      end
+      
+      context "descending order" do
+        context "single vector" do
+          subject { df.sort [:a], ascending: false }
+          
+          its(:'index.to_a') { is_expected.to eq [:c, 1, :a, :a, 1] }
+          its(:'a.to_a') { is_expected.to eq [5, 4, 3, 2, -1] }
+          its(:'b.to_a') { is_expected.to eq ['y', 'a', 'x', 'x', 'y'] }
+          its(:'c.to_a') { is_expected.to eq [1, 2, -2, nil, nil] }
+        end
+        
+        context "multiple vectors" do
+          subject { df.sort [:c, :b], ascending: false }
+          
+          its(:'index.to_a') { is_expected.to eq [1, :a, 1, :c, :a] }
+          its(:'a.to_a') { is_expected.to eq [-1, 2, 4, 5, 3] }
+          its(:'b.to_a') { is_expected.to eq ['y', 'x', 'a', 'y', 'x'] }
+          its(:'c.to_a') { is_expected.to eq [nil, nil, 2, 1, -2] }
+        end
+        
+        context "block" do
+          context "automatic handle nils" do
+            subject do
+              df.sort [:c],
+                by: {c: lambda { |a| a.abs } },
+                handle_nils: true,
+                ascending: false
+            end
+  
+            its(:'index.to_a') { is_expected.to eq [:a, 1, :a, 1, :c] }
+            its(:'a.to_a') { is_expected.to eq [2, -1, 3, 4, 5] }
+            its(:'b.to_a') { is_expected.to eq ['x', 'y', 'x', 'a', 'y'] }
+            its(:'c.to_a') { is_expected.to eq [nil, nil, -2, 2, 1] }
+          end
+          
+          context "manually handle nils" do
+            subject do
+              df.sort [:c],
+                by: {c: lambda { |a| (a.nil?)?[1]:[0,a.abs] } },
+                ascending: false
+            end
+            
+            its(:'index.to_a') { is_expected.to eq [:a, 1, :a, 1, :c] }
+            its(:'a.to_a') { is_expected.to eq [2, -1, 3, 4, 5] }
+            its(:'b.to_a') { is_expected.to eq ['x', 'y', 'x', 'a', 'y'] }
+            its(:'c.to_a') { is_expected.to eq [nil, nil, -2, 2, 1] }
+          end
+        end
+      end
     end
   end
 

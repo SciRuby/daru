@@ -566,9 +566,8 @@ module Daru
 
       vector_index = resort_index(@data.each_with_index, opts, &block)
       vector, index = vector_index.transpose
-      old_index = @index.to_a
-      index.map! { |i| old_index[i] }
-      index = @index.class.new index unless @index.class == Daru::MultiIndex
+
+      index = @index.reorder index
 
       Daru::Vector.new(vector, index: index, name: @name, metadata: @metadata.dup, dtype: @dtype)
     end
@@ -910,6 +909,28 @@ module Daru
       update_internal_state
 
       self
+    end
+
+    # Reorder the vector
+    # @param [Array] order the order to reorder the vector with
+    # @return reordered vector
+    # @example
+    #   dv = Daru::Vector.new [3, 2, 1], index: ['c', 'b', 'a']
+    #   dv.reorder! [2, 1, 0]
+    #   # => #<Daru::Vector(3)>
+    #   #   a   1
+    #   #   b   2
+    #   #   c   3
+    def reorder! order
+      @index = @index.reorder order
+      @data = order.map { |i| @data[i] }
+      update_internal_state
+      self
+    end
+
+    # Non-destructive version of #reorder!
+    def reorder order
+      dup.reorder! order
     end
 
     # Create a new vector with a different index, and preserve the indexing of
