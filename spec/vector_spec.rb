@@ -362,6 +362,33 @@ describe Daru::Vector do
           context "invalid positions" do
             it { expect { dv.at 2, 3 }.to raise_error IndexError }
           end
+          
+          context "range" do
+            subject { dv.at 0..1 }
+            
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 2 }
+            its(:to_a) { is_expected.to eq ['a', 'b'] }
+            its(:'index.to_a') { is_expected.to eq [1, 0] }            
+          end
+          
+          context "range with negative end" do
+            subject { dv.at 0..-2 }
+            
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 2 }
+            its(:to_a) { is_expected.to eq ['a', 'b'] }
+            its(:'index.to_a') { is_expected.to eq [1, 0] }              
+          end
+          
+          context "range with single element" do
+            subject { dv.at 0..0 }
+            
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 1 }
+            its(:to_a) { is_expected.to eq ['a'] }
+            its(:'index.to_a') { is_expected.to eq [1] }
+          end
         end
         
         context Daru::MultiIndex do
@@ -396,6 +423,35 @@ describe Daru::Vector do
           context "invalid positions" do
             it { expect { dv.at 2, 4 }.to raise_error IndexError }
           end
+          
+          context "range" do
+            subject { dv.at 2..3 }
+            
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 2 }
+            its(:to_a) { is_expected.to eq [3, 4] }
+            its(:'index.to_a') { is_expected.to eq [[:b, :two, :bar], 
+              [:a, :two, :baz]] }            
+          end
+          
+          context "range with negative end" do
+            subject { dv.at 2..-1 }
+            
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 2 }
+            its(:to_a) { is_expected.to eq [3, 4] }
+            its(:'index.to_a') { is_expected.to eq [[:b, :two, :bar], 
+              [:a, :two, :baz]] }                 
+          end
+          
+          context "range with single element" do
+            subject { dv.at 2..2 }
+            
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 1 }
+            its(:to_a) { is_expected.to eq [3] }
+            its(:'index.to_a') { is_expected.to eq [[:b, :two, :bar]] }   
+          end
         end
 
         context Daru::CategoricalIndex do
@@ -424,6 +480,36 @@ describe Daru::Vector do
           
           context "invalid positions" do
             it { expect { dv.at 2, 5 }.to raise_error IndexError }
+          end
+          
+          context "range" do
+            subject { dv.at 0..2 }
+
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 3 }
+            its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
+            its(:index) { is_expected.to eq(
+              Daru::CategoricalIndex.new([:a, 1, 1])) }            
+          end
+          
+          context "range with negative end" do
+            subject { dv.at 0..-3 }
+
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 3 }
+            its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
+            its(:index) { is_expected.to eq(
+              Daru::CategoricalIndex.new([:a, 1, 1])) }            
+          end
+          
+          context "range with single element" do
+            subject { dv.at 0..0 }
+
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 1 }
+            its(:to_a) { is_expected.to eq ['a'] }
+            its(:index) { is_expected.to eq(
+              Daru::CategoricalIndex.new([:a])) }            
           end
         end
       end

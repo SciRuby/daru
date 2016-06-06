@@ -224,16 +224,16 @@ module Daru
     #   #   1   b
     #   #   2   c
     def at *positions
+      # to be used to form index
+      original_positions = positions
+      positions = preprocess_positions(*positions)
       validate_positions(*positions)
 
-      if positions.size == 1
-        @data[positions.first]
+      if positions.is_a? Integer
+        @data[positions]
       else
-        values = positions.map do |pos|
-          @data[pos]
-        end
-
-        Daru::Vector.new values, index: @index.at(*positions)
+        values = positions.map { |pos| @data[pos] }
+        Daru::Vector.new values, index: @index.at(*original_positions)
       end
     end
 
@@ -1246,6 +1246,22 @@ module Daru
         raise IndexError, "#{pos} is not a valid position." if pos >= size
       end
     end
+    
+    # Preprocess ranges, integers and array in appropriate ways
+    def preprocess_positions *positions
+      if positions.size == 1
+        case positions.first
+        when Integer
+          positions.first
+        when Range
+          size.times.to_a[positions.first]
+        else
+          raise ArgumentError, 'Unkown position type.'
+        end
+      else
+        positions
+      end
+    end    
 
     def modify_vector(indexes, val)
       positions = @index.pos(*indexes)
