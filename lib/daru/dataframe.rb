@@ -277,15 +277,17 @@ module Daru
     #   #   1   2   b
     #   #   2   3   c
     def row_at *positions
+      original_positions = positions
+      positions = preprocess_row_positions(*positions)
       validate_row_positions(*positions)
 
-      if positions.size == 1
+      if positions.is_a? Integer
         return Daru::Vector.new @data.map { |vec| vec.at(*positions) },
           index: @vectors
       else
-        new_rows = @data.map { |vec| vec.at(*positions) }
+        new_rows = @data.map { |vec| vec.at(*original_positions) }
         return Daru::DataFrame.new new_rows,
-          index: @index.at(*positions),
+          index: @index.at(*original_positions),
           order: @vectors
       end
     end
@@ -345,7 +347,7 @@ module Daru
       end
 
       original_positions = positions
-      positions = preprocess_positions(*positions)
+      positions = preprocess_vector_positions(*positions)
       validate_vector_positions(*positions)
 
       if positions.is_a? Integer
@@ -2308,13 +2310,28 @@ module Daru
     end
 
     # Preprocess ranges, integers and array in appropriate ways
-    def preprocess_positions *positions
+    def preprocess_row_positions *positions
       if positions.size == 1
         case positions.first
         when Integer
           positions.first
         when Range
-          size.times.to_a[positions.first]
+          shape[0].times.to_a[positions.first]
+        else
+          raise ArgumentError, 'Unkown position type.'
+        end
+      else
+        positions
+      end
+    end
+
+    def preprocess_vector_positions *positions
+      if positions.size == 1
+        case positions.first
+        when Integer
+          positions.first
+        when Range
+          shape[1].times.to_a[positions.first]
         else
           raise ArgumentError, 'Unkown position type.'
         end

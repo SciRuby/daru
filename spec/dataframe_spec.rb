@@ -868,6 +868,36 @@ describe Daru::DataFrame do
       context "invalid positions" do
         it { expect { df.row.at 2, 3 }.to raise_error IndexError }
       end
+      
+      context "range" do
+        subject { df.row.at 0..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 2 }
+        its(:'index.to_a') { is_expected.to eq [1, 0] }
+        its(:'a.to_a') { is_expected.to eq [1, 2] }
+        its(:'b.to_a') { is_expected.to eq ['a', 'b'] }        
+      end
+      
+      context "range with negative end" do
+        subject { df.row.at 0..-2 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 2 }
+        its(:'index.to_a') { is_expected.to eq [1, 0] }
+        its(:'a.to_a') { is_expected.to eq [1, 2] }
+        its(:'b.to_a') { is_expected.to eq ['a', 'b'] }         
+      end
+      
+      context "range with single element" do
+        subject { df.row.at 0..0 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 1 }
+        its(:'index.to_a') { is_expected.to eq [1] }
+        its(:'a.to_a') { is_expected.to eq [1] }
+        its(:'b.to_a') { is_expected.to eq ['a'] }          
+      end
     end
     
     context Daru::MultiIndex do
@@ -907,6 +937,51 @@ describe Daru::DataFrame do
           [:b, :two, :bar]] }
         its(:'b.to_a') { is_expected.to eq ['a', 'c'] }
       end
+      
+      context "invalid position" do
+        it { expect { df.row.at 4 }.to raise_error IndexError }
+      end
+      
+      context "invalid positions" do
+        it { expect { df.row.at 3, 4 }.to raise_error IndexError }
+      end
+      
+      context "range" do
+        subject { df.row.at 0..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 2 }
+        its(:'index.to_a') { is_expected.to eq [[:a, :one, :bar], 
+          [:a, :one, :baz]] }
+        its(:'a.to_a') { is_expected.to eq [1, 2] }
+        its(:'a.index.to_a') { is_expected.to eq [[:a, :one, :bar],
+          [:a, :one, :baz]] }
+        its(:'b.to_a') { is_expected.to eq ['a', 'b'] }
+      end
+      
+      context "range with negative end" do
+        subject { df.row.at 0..-3 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 2 }
+        its(:'index.to_a') { is_expected.to eq [[:a, :one, :bar], 
+          [:a, :one, :baz]] }
+        its(:'a.to_a') { is_expected.to eq [1, 2] }
+        its(:'a.index.to_a') { is_expected.to eq [[:a, :one, :bar],
+          [:a, :one, :baz]] }
+        its(:'b.to_a') { is_expected.to eq ['a', 'b'] }        
+      end
+      
+      context " range with single element" do
+        subject { df.row.at 0..0 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 1 }
+        its(:'index.to_a') { is_expected.to eq [[:a, :one, :bar]] }
+        its(:'a.to_a') { is_expected.to eq [1] }
+        its(:'a.index.to_a') { is_expected.to eq [[:a, :one, :bar]] }
+        its(:'b.to_a') { is_expected.to eq ['a'] }        
+      end
     end
 
     context Daru::CategoricalIndex do
@@ -938,6 +1013,50 @@ describe Daru::DataFrame do
         its(:'b.to_a') { is_expected.to eq ['a', 'c'] }
         its(:'b.index.to_a') { is_expected.to eq [:a, 1] }
       end
+      
+      context "invalid position" do
+        it { expect { df.at 5 }.to raise_error IndexError }
+      end
+      
+      context "invalid positions" do
+        it { expect { df.at 4, 5 }.to raise_error IndexError }
+      end
+      
+      context "range" do
+        subject { df.row.at 0..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 2 }
+        its(:'index.to_a') { is_expected.to eq [:a, 1] }
+        its(:'a.to_a') { is_expected.to eq [1, 2] }
+        its(:'a.index.to_a') { is_expected.to eq [:a, 1] }
+        its(:'b.to_a') { is_expected.to eq ['a', 'b'] }
+        its(:'b.index.to_a') { is_expected.to eq [:a, 1] }        
+      end
+      
+      context "range with negative end" do
+        subject { df.row.at 0..-4 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 2 }
+        its(:'index.to_a') { is_expected.to eq [:a, 1] }
+        its(:'a.to_a') { is_expected.to eq [1, 2] }
+        its(:'a.index.to_a') { is_expected.to eq [:a, 1] }
+        its(:'b.to_a') { is_expected.to eq ['a', 'b'] }
+        its(:'b.index.to_a') { is_expected.to eq [:a, 1] }          
+      end
+      
+      context " range with single element" do
+        subject { df.row.at 0..0 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 1 }
+        its(:'index.to_a') { is_expected.to eq [:a] }
+        its(:'a.to_a') { is_expected.to eq [1] }
+        its(:'a.index.to_a') { is_expected.to eq [:a] }
+        its(:'b.to_a') { is_expected.to eq ['a'] }
+        its(:'b.index.to_a') { is_expected.to eq [:a] }
+      end      
     end
   end
   
