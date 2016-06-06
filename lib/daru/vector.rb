@@ -568,6 +568,7 @@ module Daru
       vector, index = vector_index.transpose
       old_index = @index.to_a
       index.map! { |i| old_index[i] }
+      index = @index.class.new index unless @index.class == Daru::MultiIndex
 
       Daru::Vector.new(vector, index: index, name: @name, metadata: @metadata.dup, dtype: @dtype)
     end

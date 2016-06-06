@@ -1086,6 +1086,79 @@ describe Daru::Vector do
               [0,22,44,-56,111], index: mi_abs, name: :sort_abs, dtype: dtype))
           end
         end
+        
+        context Daru::CategoricalIndex do
+          let(:idx) { Daru::CategoricalIndex.new [:a, 1, :a, 1, :c] }
+          let(:dv_numeric) { Daru::Vector.new [4, 5, 3, 2, 1], index: idx }
+          let(:dv_string) { Daru::Vector.new ['xxxx', 'zzzzz', 'ccc', 'bb', 'a'], index: idx }
+          let(:dv_nil) { Daru::Vector.new [3, nil, 2, 1, -1], index: idx }
+          
+          context "increasing order" do
+            context "numeric" do
+              subject { dv_numeric.sort }
+              
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq [1, 2, 3, 4, 5] }
+              its(:'index.to_a') { is_expected.to eq [:c, 1, :a, :a, 1] }
+            end
+            
+            context "non-numeric" do
+              subject { dv_string.sort }
+              
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq ['a', 'bb', 'ccc', 'xxxx', 'zzzzz'] }
+              its(:'index.to_a') { is_expected.to eq [:c, 1, :a, :a, 1] }
+            end
+            
+            context "block" do
+              subject { dv_string.sort { |a, b| a.length <=> b.length } }
+              
+              its(:to_a) { is_expected.to eq ['a', 'bb', 'ccc', 'xxxx', 'zzzzz'] }
+              its(:'index.to_a') { is_expected.to eq [:c, 1, :a, :a, 1] }
+            end
+            
+            context "nils" do
+              subject { dv_nil.sort }
+              
+              its(:to_a) { is_expected.to eq [nil, -1, 1, 2, 3] }
+              its(:'index.to_a') { is_expected.to eq [1, :c, 1, :a, :a] }
+            end
+          end
+          
+          context "decreasing order" do
+            context "numeric" do
+              subject { dv_numeric.sort(ascending: false) }
+              
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq [5, 4, 3, 2, 1] }
+              its(:'index.to_a') { is_expected.to eq [1, :a, :a, 1, :c] }
+            end
+            
+            context "non-numeric" do
+              subject { dv_string.sort(ascending: false) }
+              
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq ['zzzzz', 'xxxx', 'ccc', 'bb', 'a'] }
+              its(:'index.to_a') { is_expected.to eq [1, :a, :a, 1, :c] }
+            end
+            
+            context "block" do
+              subject do
+                dv_string.sort(ascending: false) { |a, b| a.length <=> b.length }
+              end
+              
+              its(:to_a) { is_expected.to eq ['zzzzz', 'xxxx', 'ccc', 'bb', 'a'] }
+              its(:'index.to_a') { is_expected.to eq [1, :a, :a, 1, :c] }
+            end
+            
+            context "nils" do
+              subject { dv_nil.sort(ascending: false) }
+              
+              its(:to_a) { is_expected.to eq [3, 2, 1, -1, nil] }
+              its(:'index.to_a') { is_expected.to eq [:a, :a, 1, :c, 1] }
+            end            
+          end
+        end
       end
 
       context "#index=" do
