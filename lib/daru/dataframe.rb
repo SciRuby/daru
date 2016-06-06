@@ -1050,7 +1050,7 @@ module Daru
     #
     # @param [Fixnum] quantity (10) The number of elements to display from the bottom.
     def tail quantity=10
-      start = -quantity
+      start = [-quantity, -size].max
       row.at start..-1
     end
 
