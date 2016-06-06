@@ -1246,7 +1246,7 @@ module Daru
         raise IndexError, "#{pos} is not a valid position." if pos >= size
       end
     end
-    
+
     # Preprocess ranges, integers and array in appropriate ways
     def preprocess_positions *positions
       if positions.size == 1
@@ -1261,7 +1261,7 @@ module Daru
       else
         positions
       end
-    end    
+    end
 
     def modify_vector(indexes, val)
       positions = @index.pos(*indexes)
