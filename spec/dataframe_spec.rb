@@ -1013,6 +1013,35 @@ describe Daru::DataFrame do
       context "multiple invalid positions" do
         it { expect { df.at 2, 3 }.to raise_error IndexError }
       end
+      
+      context "range" do
+        subject { df.at 0..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }        
+      end
+      
+      context "range with negative end" do
+        subject { df.at 0..-2 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }        
+      end
+      
+      context "range with single element" do
+        subject { df.at 1..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 1] }
+        its(:index) { is_expected.to eq idx }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }
+      end
     end
     
     context Daru::MultiIndex do
@@ -1056,7 +1085,36 @@ describe Daru::DataFrame do
       
       context "multiple invalid positions" do
         it { expect { df.at 2, 3 }.to raise_error IndexError }
-      end      
+      end  
+      
+      context "range" do
+        subject { df.at 0..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }        
+      end
+      
+      context "range with negative end" do
+        subject { df.at 0..-2 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }           
+      end
+      
+      context "range with single element" do
+        subject { df.at 1..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 1] }
+        its(:index) { is_expected.to eq idx }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }          
+      end
     end
 
     context Daru::CategoricalIndex do
@@ -1094,7 +1152,36 @@ describe Daru::DataFrame do
       
       context "multiple invalid positions" do
         it { expect { df.at 2, 3 }.to raise_error IndexError }
-      end      
+      end
+      
+      context "range" do
+        subject { df.at 0..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }
+      end
+      
+      context "range with negative index" do
+        subject { df.at 0..-2 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }        
+      end
+      
+      context "range with single element" do
+        subject { df.at 1..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 1] }
+        its(:index) { is_expected.to eq idx }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }        
+      end
     end
   end  
 

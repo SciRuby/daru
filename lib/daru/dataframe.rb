@@ -321,7 +321,6 @@ module Daru
         vec.set_at(positions, vector.at(pos))
       end
       @index = @data[0].index
-
       set_size
     end
 
@@ -340,19 +339,21 @@ module Daru
     #   #   1   2
     #   #   2   3
     def at *positions
-      if positions.last == :row
-        positions.pop
-        return row_at(*positions)
+      if AXES.include? positions.last
+        axis = positions.pop
+        return row_at(*positions) if axis == :row
       end
+
+      original_positions = positions
+      positions = preprocess_positions(*positions)
       validate_vector_positions(*positions)
 
-      if positions.size == 1
-        @data[positions.first].dup
+      if positions.is_a? Integer
+        @data[positions].dup
       else
-        new_rows = positions.map { |pos| @data[pos].dup }
-        Daru::DataFrame.new new_rows,
+        Daru::DataFrame.new positions.map { |pos| @data[pos].dup },
           index: @index,
-          order: @vectors.at(*positions),
+          order: @vectors.at(*original_positions),
           name: @name
       end
     end
@@ -2303,6 +2304,22 @@ module Daru
         Daru::Vector.new(vector).reindex @vectors
       else
         Daru::Vector.new vector
+      end
+    end
+
+    # Preprocess ranges, integers and array in appropriate ways
+    def preprocess_positions *positions
+      if positions.size == 1
+        case positions.first
+        when Integer
+          positions.first
+        when Range
+          size.times.to_a[positions.first]
+        else
+          raise ArgumentError, 'Unkown position type.'
+        end
+      else
+        positions
       end
     end
   end
