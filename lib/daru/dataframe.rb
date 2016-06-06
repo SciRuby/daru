@@ -3,7 +3,6 @@ require 'daru/maths/arithmetic/dataframe.rb'
 require 'daru/maths/statistics/dataframe.rb'
 require 'daru/plotting/dataframe.rb'
 require 'daru/io/io.rb'
-require 'daru/exceptions.rb'
 
 module Daru
   class DataFrame # rubocop:disable Metrics/ClassLength
