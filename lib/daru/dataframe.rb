@@ -1041,13 +1041,7 @@ module Daru
     #
     # @param [Fixnum] quantity (10) The number of elements to display from the top.
     def head quantity=10
-      if quantity == 1
-        Daru::DataFrame.rows [row[0]],
-          index: [@index.at(0)],
-          order: @vectors
-      else
-        self[0..(quantity-1), :row]
-      end
+      row.at 0..(quantity-1)
     end
 
     alias :first :head
@@ -1056,8 +1050,8 @@ module Daru
     #
     # @param [Fixnum] quantity (10) The number of elements to display from the bottom.
     def tail quantity=10
-      start = [@size - quantity, 0].max
-      self[start..(@size-1), :row]
+      start = -quantity
+      row.at start..-1
     end
 
     alias :last :tail
