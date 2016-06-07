@@ -279,7 +279,7 @@ module Daru
     def row_at *positions
       original_positions = positions
       positions = preprocess_positions(*positions, nrows)
-      validate_row_positions(*positions)
+      validate_positions(*positions, nrows)
 
       if positions.is_a? Integer
         return Daru::Vector.new @data.map { |vec| vec.at(*positions) },
@@ -308,7 +308,7 @@ module Daru
     #   #   1   x   x
     #   #   2   3   c
     def set_row_at positions, vector
-      validate_row_positions(*positions)
+      validate_positions(*positions, nrows)
       vector =
         if vector.is_a? Daru::Vector
           vector.reindex @vectors
@@ -348,7 +348,7 @@ module Daru
 
       original_positions = positions
       positions = preprocess_positions(*positions, ncols)
-      validate_vector_positions(*positions)
+      validate_positions(*positions, ncols)
 
       if positions.is_a? Integer
         @data[positions].dup
@@ -381,7 +381,7 @@ module Daru
         return set_row_at(positions, vector)
       end
 
-      validate_vector_positions(*positions)
+      validate_positions(*positions, ncols)
       vector =
         if vector.is_a? Daru::Vector
           vector.reindex @index
@@ -2276,19 +2276,11 @@ module Daru
         }.to_h
     end
 
-    # Raises IndexError when one of the positions is a valid position
-    def validate_vector_positions *positions
+    # Raises IndexError when one of the positions is not a valid position
+    def validate_positions *positions, size
       positions = [positions] if positions.is_a? Integer
       positions.each do |pos|
-        raise IndexError, "#{pos} is not a valid position." if pos >= ncols
-      end
-    end
-
-    # Raises IndexError when one of the positions is a valid position
-    def validate_row_positions *positions
-      positions = [positions] if positions.is_a? Integer
-      positions.each do |pos|
-        raise IndexError, "#{pos} is not a valid position." if pos >= nrows
+        raise IndexError, "#{pos} is not a valid position." if pos >= size
       end
     end
 
