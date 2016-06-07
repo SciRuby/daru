@@ -151,18 +151,18 @@ describe Daru::CategoricalIndex do
     end
   end
   
-  context "#respond?" do
+  context "#valid?" do
     let(:idx) { described_class.new [:a, 1, :a, 1] }
 
     context "single index" do
-      it { expect(idx.respond? :a).to eq true }
-      it { expect(idx.respond? 2).to eq true }
-      it { expect(idx.respond? 4).to eq false }
+      it { expect(idx.valid? :a).to eq true }
+      it { expect(idx.valid? 2).to eq true }
+      it { expect(idx.valid? 4).to eq false }
     end
     
     context "multiple indexes" do
-      it { expect(idx.respond? :a, 1).to eq true }
-      it { expect(idx.respond? :a, 1, 5).to eq false }
+      it { expect(idx.valid? :a, 1).to eq true }
+      it { expect(idx.valid? :a, 1, 5).to eq false }
     end
   end
 end

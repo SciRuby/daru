@@ -76,17 +76,17 @@ describe Daru::Index do
     end
   end
   
-  context "#respond?" do
+  context "#valid?" do
     let(:idx) { Daru::Index.new [:a, :b, :c] }
     
     context "single index" do
-      it { expect(idx.respond? 2).to eq true }
-      it { expect(idx.respond? :d).to eq false }
+      it { expect(idx.valid? 2).to eq true }
+      it { expect(idx.valid? :d).to eq false }
     end
     
     context "multiple indexes" do
-      it { expect(idx.respond? :a, 1).to eq true }
-      it { expect(idx.respond? :a, 3).to eq false }
+      it { expect(idx.valid? :a, 1).to eq true }
+      it { expect(idx.valid? :a, 3).to eq false }
     end
   end
 

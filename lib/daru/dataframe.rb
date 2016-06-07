@@ -2280,7 +2280,7 @@ module Daru
     def validate_vector_positions *positions
       positions = [positions] if positions.is_a? Integer
       positions.each do |pos|
-        raise IndexError, "#{pos} is not a valid position." if pos >= shape[1]
+        raise IndexError, "#{pos} is not a valid position." if pos >= ncols
       end
     end
 
@@ -2288,7 +2288,7 @@ module Daru
     def validate_row_positions *positions
       positions = [positions] if positions.is_a? Integer
       positions.each do |pos|
-        raise IndexError, "#{pos} is not a valid position." if pos >= shape[0]
+        raise IndexError, "#{pos} is not a valid position." if pos >= nrows
       end
     end
 
@@ -2311,7 +2311,7 @@ module Daru
         when Integer
           positions.first
         when Range
-          shape[0].times.to_a[positions.first]
+          nrows.times.to_a[positions.first]
         else
           raise ArgumentError, 'Unkown position type.'
         end
@@ -2326,7 +2326,7 @@ module Daru
         when Integer
           positions.first
         when Range
-          shape[1].times.to_a[positions.first]
+          ncols.times.to_a[positions.first]
         else
           raise ArgumentError, 'Unkown position type.'
         end

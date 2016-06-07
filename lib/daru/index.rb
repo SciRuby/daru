@@ -88,11 +88,11 @@ module Daru
     # @param [Array<object>] *indexes categories or positions
     # @return [true, false]
     # @example
-    #   idx.respond? :a, 2
+    #   idx.valid? :a, 2
     #   # => true
-    #   idx.respond? 3
+    #   idx.valid? 3
     #   # => false
-    def respond? *indexes
+    def valid? *indexes
       indexes.all? { |i| to_a.include?(i) || (i.is_a?(Numeric) && i < size) }
     end
 
@@ -365,7 +365,7 @@ module Daru
       end
     end
 
-    def respond? *indexes
+    def valid? *indexes
       # FIXME: This is perhaps not a good method
       pos(*indexes)
       return true

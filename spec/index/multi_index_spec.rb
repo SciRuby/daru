@@ -545,7 +545,7 @@ describe Daru::MultiIndex do
     end
   end
 
-  context "#respond?" do
+  context "#valid?" do
     let(:idx) do
       described_class.from_tuples [
         [:a, :one, :bar],
@@ -556,13 +556,13 @@ describe Daru::MultiIndex do
     end
     
     context "single index" do
-      it { expect(idx.respond? :a, :one, :bar).to eq true }
-      it { expect(idx.respond? :b, :two, :three).to eq false }
+      it { expect(idx.valid? :a, :one, :bar).to eq true }
+      it { expect(idx.valid? :b, :two, :three).to eq false }
     end
     
     context "multiple indexes" do
-      it { expect(idx.respond? :a, :one).to eq true }
-      it { expect(idx.respond? :a, :three).to eq false }
+      it { expect(idx.valid? :a, :one).to eq true }
+      it { expect(idx.valid? :a, :three).to eq false }
     end
   end    
 end

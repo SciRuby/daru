@@ -1318,7 +1318,7 @@ module Daru
       cast(dtype: :array) if val.nil? && dtype != :array
       guard_type_check(val)
 
-      if @index.respond?(*indexes)
+      if @index.valid?(*indexes)
         modify_vector(indexes, val)
       else
         insert_vector(indexes, val)

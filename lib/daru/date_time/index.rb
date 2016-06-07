@@ -377,7 +377,7 @@ module Daru
       self[*args]
     end
 
-    def respond? *args
+    def valid? *args
       self[*args]
       true
     rescue IndexError
