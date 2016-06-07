@@ -278,7 +278,7 @@ module Daru
     #   #   2   3   c
     def row_at *positions
       original_positions = positions
-      positions = preprocess_row_positions(*positions)
+      positions = preprocess_positions(*positions, nrows)
       validate_row_positions(*positions)
 
       if positions.is_a? Integer
@@ -347,7 +347,7 @@ module Daru
       end
 
       original_positions = positions
-      positions = preprocess_vector_positions(*positions)
+      positions = preprocess_positions(*positions, ncols)
       validate_vector_positions(*positions)
 
       if positions.is_a? Integer
@@ -2305,28 +2305,13 @@ module Daru
     end
 
     # Preprocess ranges, integers and array in appropriate ways
-    def preprocess_row_positions *positions
+    def preprocess_positions *positions, size
       if positions.size == 1
         case positions.first
         when Integer
           positions.first
         when Range
-          nrows.times.to_a[positions.first]
-        else
-          raise ArgumentError, 'Unkown position type.'
-        end
-      else
-        positions
-      end
-    end
-
-    def preprocess_vector_positions *positions
-      if positions.size == 1
-        case positions.first
-        when Integer
-          positions.first
-        when Range
-          ncols.times.to_a[positions.first]
+          size.times.to_a[positions.first]
         else
           raise ArgumentError, 'Unkown position type.'
         end
