@@ -1093,6 +1093,10 @@ describe Daru::DataFrame do
     context "invalid positions" do
       it { expect { df.row.set_at [2, 3], ['x', 'y'] }.to raise_error IndexError }      
     end
+    
+    context "incorrect size" do
+      it { expect { df.row.set_at [1], ['x', 'y', 'z'] }.to raise_error SizeError }
+    end
   end
   
   context "#at" do
@@ -1339,6 +1343,10 @@ describe Daru::DataFrame do
     
     context "invalid positions" do
       it { expect { df.set_at [2, 3], ['x', 'y', 'z'] }.to raise_error IndexError }
+    end
+    
+    context "incorrect size" do
+      it { expect { df.set_at [1], ['x', 'y'] }.to raise_error SizeError }
     end
   end
 
