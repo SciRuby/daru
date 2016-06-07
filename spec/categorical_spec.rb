@@ -10,10 +10,10 @@ describe Daru::Vector do
     its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
   end
   
-  context "#to_factor!" do
+  context "#to_category!" do
     let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c] }
     subject { dv }
-    before { dv.to_factor! }
+    before { dv.to_category! }
     
     it { is_expected.to be_a Daru::Vector }
     its(:size) { is_expected.to eq 5 }
