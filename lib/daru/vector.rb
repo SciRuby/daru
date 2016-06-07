@@ -896,6 +896,10 @@ module Daru
 
     # Sets new index for vector. Preserves index->value correspondence.
     # Sets nil for new index keys absent from original index.
+    # @note Unlike #reorder! which takes positions as input it takes
+    #   index as an input to reorder the vector
+    # @param [Daru::Index, Daru::MultiIndex] new_index new index to order with
+    # @return [Daru::Vector] vector reindexed with new index
     def reindex! new_index
       values = []
       each_with_index do |val, i|
@@ -911,7 +915,9 @@ module Daru
       self
     end
 
-    # Reorder the vector
+    # Reorder the vector with given positions
+    # @note Unlike #reindex! which takes index as input, it takes
+    #   positions as an input to reorder the vector
     # @param [Array] order the order to reorder the vector with
     # @return reordered vector
     # @example
