@@ -63,7 +63,7 @@ module Daru
 
     def dummy_coding full
       categories = @cat_hash.keys
-      categories.shift unless full
+      categories.delete(base_category) unless full
 
       df = categories.map do |category|
         code_to_binary @cat_hash[category]
@@ -81,7 +81,7 @@ module Daru
     end
 
     def create_names categories
-      categories.map { |cat| "#{name}_#{cat}" }
+      categories.map { |cat| "#{name}_#{cat}".to_sym }
     end
   end
 end

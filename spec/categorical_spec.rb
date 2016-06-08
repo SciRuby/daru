@@ -54,7 +54,7 @@ describe Daru::Vector do
     
     it { is_expected.to be_a Daru::DataFrame }
     its(:shape) { is_expected.to eq [5, 2] }
-    it { expect(subject['abc_1'].to_a).to eq [0, 1, 0, 1, 0] }
-    it { expect(subject['abc_c'].to_a).to eq [0, 0, 0, 0, 1] }
+    it { expect(subject[:abc_1].to_a).to eq [0, 1, 0, 1, 0] }
+    it { expect(subject[:abc_c].to_a).to eq [0, 0, 0, 0, 1] }
   end
 end
