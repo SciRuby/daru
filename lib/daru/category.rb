@@ -1,5 +1,7 @@
 module Daru
   module Category
+    attr_accessor :coding_scheme, :base_category
+
     def initialize_catogory data, opts={}
       @type = :category
 
@@ -20,6 +22,15 @@ module Daru
       # Specify if the categories are ordered or not.
       # By default its unordered
       @order = opts[:order] || false
+
+      # The coding scheme to code with. Default is dummy coding.
+      @coding_scheme = :dummy
+
+      # Base category which won't be present in the coding
+      @base_category = @cat_hash.keys.first
+
+      # Stores the name of the vector
+      @name = opts[:name]
     end
 
     def each
@@ -42,6 +53,35 @@ module Daru
 
     def category
       @cat_hash.keys
+    end
+
+    def contrast_code full=false
+      send("#{coding_scheme}_coding".to_sym, full)
+    end
+
+    private
+
+    def dummy_coding full
+      categories = @cat_hash.keys
+      categories.shift unless full
+
+      df = categories.map do |category|
+        code_to_binary @cat_hash[category]
+      end
+
+      Daru::DataFrame.new df,
+        index: @index,
+        order: create_names(categories)
+    end
+
+    def code_to_binary positions
+      binary = Array.new(size, 0)
+      positions.map { |pos| binary[pos] = 1 }
+      binary
+    end
+
+    def create_names categories
+      categories.map { |cat| "#{name}_#{cat}" }
     end
   end
 end
