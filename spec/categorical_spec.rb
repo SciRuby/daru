@@ -56,8 +56,8 @@ describe Daru::Vector do
         
         it { is_expected.to be_a Daru::DataFrame }
         its(:shape) { is_expected.to eq [5, 2] }
-        it { expect(subject[:abc_1].to_a).to eq [0, 1, 0, 1, 0] }
-        it { expect(subject[:abc_c].to_a).to eq [0, 0, 0, 0, 1] }
+        its(:'abc_1.to_a') { is_expected.to eq [0, 1, 0, 1, 0] }
+        its(:'abc_c.to_a') { is_expected.to eq [0, 0, 0, 0, 1] }
       end
       
       context "manual base category" do
@@ -67,8 +67,8 @@ describe Daru::Vector do
         
         it { is_expected.to be_a Daru::DataFrame }
         its(:shape) { is_expected.to eq [5, 2] }
-        it { expect(subject[:abc_a].to_a).to eq [1, 0, 1, 0, 0] }
-        it { expect(subject[:abc_1].to_a).to eq [0, 1, 0, 1, 0] }        
+        its(:'abc_a.to_a') { is_expected.to eq [1, 0, 1, 0, 0] }
+        its(:'abc_1.to_a') { is_expected.to eq [0, 1, 0, 1, 0] }        
       end
     end
     
@@ -80,8 +80,8 @@ describe Daru::Vector do
         
         it { is_expected.to be_a Daru::DataFrame }
         its(:shape) { is_expected.to eq [5, 2] }
-        it { expect(subject[:abc_1].to_a).to eq [-1/3.0, 2/3.0, -1/3.0, 2/3.0, -1/3.0] }
-        it { expect(subject[:abc_c].to_a).to eq [-1/3.0, -1/3.0, -1/3.0, -1/3.0, 2/3.0] }
+        its(:'abc_1.to_a') { is_expected.to eq [-1/3.0, 2/3.0, -1/3.0, 2/3.0, -1/3.0] }
+        its(:'abc_c.to_a') { is_expected.to eq [-1/3.0, -1/3.0, -1/3.0, -1/3.0, 2/3.0] }
       end
       
       context "manual base category" do
@@ -94,8 +94,8 @@ describe Daru::Vector do
         
         it { is_expected.to be_a Daru::DataFrame }
         its(:shape) { is_expected.to eq [5, 2] }
-        it { expect(subject[:abc_a].to_a).to eq [2/3.0, -1/3.0, 2/3.0, -1/3.0, -1/3.0] }
-        it { expect(subject[:abc_1].to_a).to eq [-1/3.0, 2/3.0, -1/3.0, 2/3.0, -1/3.0] }
+        its(:'abc_a.to_a') { is_expected.to eq [2/3.0, -1/3.0, 2/3.0, -1/3.0, -1/3.0] }
+        its(:'abc_1.to_a') { is_expected.to eq [-1/3.0, 2/3.0, -1/3.0, 2/3.0, -1/3.0] }
       end
     end
   end
