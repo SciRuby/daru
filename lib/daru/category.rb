@@ -66,7 +66,7 @@ module Daru
       categories.delete(base_category) unless full
 
       df = categories.map do |category|
-        code_to_binary @cat_hash[category]
+        dummy_code @cat_hash[category]
       end
 
       Daru::DataFrame.new df,
@@ -74,10 +74,30 @@ module Daru
         order: create_names(categories)
     end
 
-    def code_to_binary positions
-      binary = Array.new(size, 0)
-      positions.map { |pos| binary[pos] = 1 }
-      binary
+    def simple_coding full
+      categories = @cat_hash.keys
+      categories.delete(base_category) unless full
+
+      df = categories.map do |category|
+        simple_code @cat_hash[category]
+      end
+
+      Daru::DataFrame.new df,
+        index: @index,
+        order: create_names(categories)      
+    end
+    
+    def simple_code positions
+      n = @cat_hash.keys.size.to_f
+      code = Array.new(size, -1/n)
+      positions.each { |pos| code[pos] = (n-1)/n }
+      code
+    end
+
+    def dummy_code positions
+      code = Array.new(size, 0)
+      positions.each { |pos| code[pos] = 1 }
+      code
     end
 
     def create_names categories
