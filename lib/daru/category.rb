@@ -84,9 +84,9 @@ module Daru
 
       Daru::DataFrame.new df,
         index: @index,
-        order: create_names(categories)      
+        order: create_names(categories)
     end
-    
+
     def simple_code positions
       n = @cat_hash.keys.size.to_f
       code = Array.new(size, -1/n)
