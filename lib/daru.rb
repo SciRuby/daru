@@ -69,10 +69,12 @@ autoload :Spreadsheet, 'spreadsheet'
 autoload :CSV, 'csv'
 
 require 'matrix'
-require 'securerandom'
+#require 'securerandom'
 require 'reportbuilder'
 
 require 'daru/version.rb'
+
+require 'daru/helpers/array.rb'
 require 'daru/index.rb'
 require 'daru/vector.rb'
 require 'daru/dataframe.rb'

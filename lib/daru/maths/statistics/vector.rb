@@ -59,7 +59,7 @@ module Daru
         end
 
         def sum_of_squared_deviation
-          (@data.inject(0) { |a,x| x.square + a } - sum.square.quo(n_valid).to_f).to_f
+          (@data.inject(0) { |a,x| x**2 + a } - (sum**2).quo(n_valid).to_f).to_f
         end
 
         # Retrieve unique values of non-nil data
