@@ -21,7 +21,7 @@ module Daru
 
       # Specify if the categories are ordered or not.
       # By default its unordered
-      @order = opts[:order] || false
+      @ordered = opts[:ordered] || false
 
       # The coding scheme to code with. Default is dummy coding.
       @coding_scheme = :dummy
@@ -48,7 +48,11 @@ module Daru
     end
 
     def ordered?
-      @order
+      @ordered
+    end
+
+    def ordered= bool
+      @ordered = bool
     end
 
     def categories
