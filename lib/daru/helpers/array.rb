@@ -33,7 +33,7 @@ module Daru
     def array_of?(array, match)
       array.is_a?(Array) &&
         !array.empty? &&
-        array.all? { |el| match === el }
+        array.all? { |el| match === el } # rubocop:disable Style/CaseEquality
     end
   end
 end
