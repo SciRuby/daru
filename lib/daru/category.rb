@@ -51,7 +51,7 @@ module Daru
       @order
     end
 
-    def category
+    def categories
       @cat_hash.keys
     end
 
