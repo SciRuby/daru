@@ -78,6 +78,12 @@ module Daru
         order: create_names(categories)
     end
 
+    def dummy_code positions
+      code = Array.new(size, 0)
+      positions.each { |pos| code[pos] = 1 }
+      code
+    end
+
     def simple_coding full
       categories = @cat_hash.keys
       categories.delete(base_category) unless full
@@ -98,10 +104,55 @@ module Daru
       code
     end
 
-    def dummy_code positions
-      code = Array.new(size, 0)
-      positions.each { |pos| code[pos] = 1 }
-      code
+    def helmert_coding(*)
+      categories = @cat_hash.keys[0..-2]
+
+      df = categories.each_index.map do |index|
+        helmert_code index
+      end
+
+      Daru::DataFrame.new df,
+        index: @index,
+        order: create_names(categories)
+    end
+
+    def helmert_code index
+      n = (categories.size - index).to_f
+
+      @array.map do |cat_index|
+        if cat_index == index
+          (n-1)/n
+        elsif cat_index > index
+          -1/n
+        else
+          0
+        end
+      end
+    end
+
+    def deviation_coding(*)
+      categories = @cat_hash.keys[0..-2]
+
+      df = categories.each_index.map do |index|
+        deviation_code index
+      end
+
+      Daru::DataFrame.new df,
+        index: @index,
+        order: create_names(categories)
+    end
+
+    def deviation_code index
+      last = categories.size - 1
+      @array.map do |cat_index|
+        if cat_index == index
+          1
+        elsif cat_index == last
+          -1
+        else
+          0
+        end
+      end
     end
 
     def create_names categories
