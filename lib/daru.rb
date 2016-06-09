@@ -69,7 +69,6 @@ autoload :Spreadsheet, 'spreadsheet'
 autoload :CSV, 'csv'
 
 require 'matrix'
-#require 'securerandom'
 require 'reportbuilder'
 
 require 'daru/version.rb'
