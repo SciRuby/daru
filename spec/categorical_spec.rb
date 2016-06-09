@@ -98,5 +98,27 @@ describe Daru::Vector do
         its(:'abc_1.to_a') { is_expected.to eq [-1/3.0, 2/3.0, -1/3.0, 2/3.0, -1/3.0] }
       end
     end
+
+    context "helmert coding" do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, name: 'abc' }
+      subject { dv.contrast_code }
+      before { dv.coding_scheme = :helmert }
+
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:shape) { is_expected.to eq [5, 2] }
+      its(:'abc_a.to_a') { is_expected.to eq [2/3.0, -1/3.0, 2/3.0, -1/3.0, -1/3.0] }
+      its(:'abc_1.to_a') { is_expected.to eq [0, 1/2.0, 0, 1/2.0, -1/2.0] }
+    end
+
+    context "deviation coding" do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, name: 'abc' }
+      subject { dv.contrast_code }
+      before { dv.coding_scheme = :deviation }
+
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:shape) { is_expected.to eq [5, 2] }
+      its(:'abc_a.to_a') { is_expected.to eq [1, 0, 1, 0, -1] }
+      its(:'abc_1.to_a') { is_expected.to eq [0, 1, 0, 1, -1] }
+    end
   end
 end
