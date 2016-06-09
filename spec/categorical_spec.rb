@@ -23,9 +23,9 @@ describe Daru::Vector do
     its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
   end
   
-  context "#category" do
+  context "#categories" do
     let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
-    subject { dv.category }
+    subject { dv.categories }
     
     it { is_expected.to be_a Array }
     its(:size) { is_expected.to eq 3 }
