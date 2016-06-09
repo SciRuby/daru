@@ -4,9 +4,9 @@ require 'open3'
 
 lib_folder = File.expand_path("../lib", __FILE__)
 
-RUBIES = ['ruby-2.2.4', 'ruby-2.3.0']
+RUBIES = ['ruby-2.0.0-p643', 'ruby-2.1.5', 'ruby-2.2.1', 'ruby-2.3.0']
 
-task :all do |task|
+task :run_all do
   RUBIES.each do |ruby_v|
     puts "\n  Using #{ruby_v}\n\n"
     command = "$rvm_path/wrappers/#{ruby_v}/rake summary"
@@ -14,7 +14,9 @@ task :all do |task|
   end
 end
 
-task :summary do |task|
+task all: [:cop, :run_all]
+
+task :summary do
   run 'rspec spec/ -r ./formatter.rb -f SimpleFormatter' rescue nil
 end
 
@@ -28,7 +30,7 @@ task :console do |task|
 end
 
 task :cop do |task|
-  run 'rubocop'
+  run 'rubocop' rescue nil
 end
 
 task :pry do |task|

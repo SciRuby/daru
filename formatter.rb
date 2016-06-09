@@ -1,7 +1,8 @@
-RSpec::Support.require_rspec_core "formatters/base_text_formatter"
+RSpec::Support.require_rspec_core 'formatters/base_text_formatter'
 
 class SimpleFormatter < RSpec::Core::Formatters::BaseTextFormatter
-  RSpec::Core::Formatters.register self, :example_passed, :example_pending, :example_failed, :dump_pending, :dump_failures, :dump_summary
+  RSpec::Core::Formatters.register self,
+    :example_passed, :example_pending, :example_failed, :dump_pending, :dump_failures, :dump_summary
 
   def example_passed(message)
     # Do nothing
