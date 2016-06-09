@@ -2,7 +2,7 @@ module Daru
   module Category
     attr_accessor :coding_scheme, :base_category
 
-    def initialize_catogory data, opts={}
+    def initialize_category data, opts={}
       @type = :category
 
       # Create a hash to map each category to positional indexes
