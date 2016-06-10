@@ -98,10 +98,26 @@ module Daru
       categories.last
     end
 
-    def sort
+    def sort!
       assert_ordered 'sort'
 
-      # TODO
+      # Build sorted index
+      old_index = @index.to_a
+      new_index = @cat_hash.values.map do |positions|
+        old_index.values_at(*positions)
+      end.flatten
+      @index = @index.class.new new_index
+
+      # Build sorted data
+      @cat_hash = categories.inject([{}, 0]) do |acc, cat|
+        hash, count = acc
+        cat_count = @cat_hash[cat].size
+        cat_count.times { |i| @array[count+i] = @map_int_cat.key(cat) }
+        hash[cat] = (count...(cat_count+count)).to_a
+        [hash, count + cat_count]
+      end.first
+      
+      @array
     end
 
     def contrast_code full=false

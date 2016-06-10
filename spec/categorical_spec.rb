@@ -171,16 +171,16 @@ describe Daru::Vector do
     end
   end
   
-  context "#sort" do
+  context "#sort!" do
     context "ordered" do
       let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, ordered: true }
-      subject { dv.sort }
-      before { dv.order = [:c, :a, 1] }
+      subject { dv }
+      before { dv.order = [:c, :a, 1]; dv.sort! }
       
-      it { is_expected.to eq Daru::Vector }
+      it { is_expected.to be_a Daru::Vector }
       its(:size) { is_expected.to eq 5 }
       its(:to_a) { is_expected.to eq [:c, :a, :a, 1, 1] }
-      its(:'index.to_a') { is_expected.to eq [] }
+      its(:'index.to_a') { is_expected.to eq [4, 0, 2, 1, 3] }
     end
     
     context "unordered" do
