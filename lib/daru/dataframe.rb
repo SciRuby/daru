@@ -117,9 +117,9 @@ module Daru
 
         opts[:order] ||= guess_order(source)
 
-        if source.all_are?(Array)
+        if ArrayHelper.array_of?(source, Array)
           DataFrame.new(source.transpose, opts)
-        elsif source.all_are?(Vector)
+        elsif ArrayHelper.array_of?(source, Vector)
           from_vector_rows(source, opts)
         else
           raise ArgumentError, "Can't create DataFrame from #{source}"
@@ -176,7 +176,7 @@ module Daru
       def from_vector_rows source, opts
         index = source.map(&:name)
                       .each_with_index.map { |n, i| n || i }
-                      .recode_repeated
+        index = ArrayHelper.recode_repeated(index)
 
         DataFrame.new({}, opts).tap do |df|
           source.each_with_index do |row, idx|
@@ -323,7 +323,7 @@ module Daru
     # +vectors_to_clone+ - Names of vectors to clone. Optional. Will return
     # a view of the whole data frame otherwise.
     def clone *vectors_to_clone
-      vectors_to_clone.flatten! if vectors_to_clone.all_are?(Array)
+      vectors_to_clone.flatten! if ArrayHelper.array_of?(vectors_to_clone, Array)
       vectors_to_clone = @vectors.to_a if vectors_to_clone.empty?
 
       h = vectors_to_clone.map { |vec| [vec, self[vec]] }.to_h
@@ -1317,8 +1317,7 @@ module Daru
         unless nrows == other_df.nrows
 
       new_fields = (@vectors.to_a + other_df.vectors.to_a)
-                   .recode_repeated
-                   .map(&:to_sym)
+      new_fields = ArrayHelper.recode_repeated(new_fields).map(&:to_sym)
 
       DataFrame.new({}, order: new_fields).tap do |df_new|
         (0...nrows).each do |i|
@@ -1923,7 +1922,7 @@ module Daru
 
     def initialize_from_array source, vectors, index, opts
       raise ArgumentError, 'All objects in data source should be same class' \
-        unless source.single_class?
+        unless source.map(&:class).uniq.size == 1
 
       case source.first
       when Array
@@ -1976,7 +1975,7 @@ module Daru
     def initialize_from_hash source, vectors, index, opts
       create_vectors_index_with vectors, source
 
-      if source.values.all_are? Vector
+      if ArrayHelper.array_of?(source.values, Vector)
         initialize_from_hash_with_vectors source, index, opts
       else
         initialize_from_hash_with_arrays source, index, opts

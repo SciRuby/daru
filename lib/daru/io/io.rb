@@ -9,11 +9,25 @@ module Daru
             # data is splitted by `\s+` -- there is no chance that
             # "empty" (currently just '') will be between data?..
             nil
-          elsif c.is_a?(String) && c.is_number?
-            c =~ /^\d+$/ ? c.to_i : c.tr(',','.').to_f
           else
-            c
+            try_string_to_number(c)
           end
+        end
+      end
+
+      private
+
+      INT_PATTERN = /^[-+]?\d+$/
+      FLOAT_PATTERN = /^[-+]?\d+[,.]?\d*(e-?\d+)?$/
+
+      def try_string_to_number(s)
+        case s
+        when INT_PATTERN
+          s.to_i
+        when FLOAT_PATTERN
+          s.tr(',', '.').to_f
+        else
+          s
         end
       end
     end
@@ -31,7 +45,7 @@ module Daru
         worksheet_id = opts[:worksheet_id]
         book         = Spreadsheet.open path
         worksheet    = book.worksheet worksheet_id
-        headers      = worksheet.row(0).recode_repeated.map(&:to_sym)
+        headers      = ArrayHelper.recode_repeated(worksheet.row(0)).map(&:to_sym)
 
         df = Daru::DataFrame.new({})
         headers.each_with_index do |h,i|
@@ -202,7 +216,7 @@ module Daru
           .tap { |c| yield c if block_given? }
           .to_a
 
-        headers       = csv_as_arrays.shift.recode_repeated.map
+        headers       = ArrayHelper.recode_repeated(csv_as_arrays.shift)
         csv_as_arrays = csv_as_arrays.transpose
 
         headers.each_with_index.map { |h, i| [h, csv_as_arrays[i]] }.to_h
