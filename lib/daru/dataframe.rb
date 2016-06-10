@@ -327,7 +327,7 @@ module Daru
       vectors_to_clone = @vectors.to_a if vectors_to_clone.empty?
 
       h = vectors_to_clone.map { |vec| [vec, self[vec]] }.to_h
-      Daru::DataFrame.new(h, clone: false)
+      Daru::DataFrame.new(h, clone: false, order: vectors_to_clone, name: @name)
     end
 
     # Returns a 'shallow' copy of DataFrame if missing data is not present,
