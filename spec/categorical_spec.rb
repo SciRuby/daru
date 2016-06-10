@@ -1,17 +1,69 @@
 describe Daru::Vector do
   context "initialize" do
-    let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
-    subject { dv }
+    context "default parameters" do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+      subject { dv }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:size) { is_expected.to eq 5 }
+      its(:type) { is_expected.to eq :category }
+      its(:ordered?) { is_expected.to eq false }
+      its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
+      its(:base_category) { is_expected.to eq :a }
+      its(:coding_scheme) { is_expected.to eq :dummy }
+      its(:index) { is_expected.to be_a Daru::Index }
+      its(:'index.to_a') { is_expected.to eq [0, 1, 2, 3, 4] }
+    end
     
-    it { is_expected.to be_a Daru::Vector }
-    its(:size) { is_expected.to eq 5 }
-    its(:type) { is_expected.to eq :category }
-    its(:ordered?) { is_expected.to eq false }
-    its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
-    its(:base_category) { is_expected.to eq :a }
-    its(:coding_scheme) { is_expected.to eq :dummy }
+    context "with index" do
+      context "as array" do
+        let(:dv) do
+          Daru::Vector.new [:a, 1, :a, 1, :c],
+            type: :category,
+            index: ['a', 'b', 'c', 'd', 'e']
+        end
+        subject { dv }
+        
+        its(:index) { is_expected.to be_a Daru::Index }
+        its(:'index.to_a') { is_expected.to eq ['a', 'b', 'c', 'd', 'e'] }
+      end
+      
+      context "as range" do
+        let(:dv) do
+          Daru::Vector.new [:a, 1, :a, 1, :c],
+            type: :category,
+            index: 'a'..'e'
+        end
+        subject { dv }
+          
+        its(:index) { is_expected.to be_a Daru::Index }
+        its(:'index.to_a') { is_expected.to eq ['a', 'b', 'c', 'd', 'e'] }
+      end
+      
+      context "as index object" do
+        let(:tuples) do
+          [
+            [:one, :tin, :bar],
+            [:one, :pin, :bar],
+            [:two, :pin, :bar],
+            [:two, :tin, :bar],
+            [:thr, :pin, :foo]
+          ]
+        end
+        let(:idx) { Daru::MultiIndex.from_tuples tuples }
+        let(:dv) do
+          Daru::Vector.new [:a, 1, :a, 1, :c],
+            type: :category,
+            index: idx
+        end
+        subject { dv }
+        
+        its(:index) { is_expected.to be_a Daru::MultiIndex }
+        its(:'index.to_a') { is_expected.to eq tuples }
+      end
+    end
   end
-  
+
   context "#to_category" do
     let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c] }
     subject { dv.to_category }
