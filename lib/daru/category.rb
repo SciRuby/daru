@@ -80,7 +80,7 @@ module Daru
 
     def order= new
       if new.to_set != categories.to_set
-        raise ArgumentError, 'The context of new and old order must be the same.'
+        raise ArgumentError, 'The contents of new and old order must be the same.'
       end
 
       @cat_hash = new.map { |cat| [cat, @cat_hash[cat]] }.to_h
