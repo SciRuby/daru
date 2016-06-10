@@ -1,6 +1,7 @@
 module Daru
   module Category
     attr_accessor :coding_scheme, :base_category
+    attr_reader :index
 
     def initialize_category data, opts={}
       @type = :category
@@ -31,6 +32,9 @@ module Daru
 
       # Stores the name of the vector
       @name = opts[:name]
+
+      # Index of the vector
+      @index = preprocess_index(opts[:index])
     end
 
     def each
@@ -97,7 +101,7 @@ module Daru
     def sort
       assert_ordered 'sort'
 
-      
+      # TODO
     end
 
     def contrast_code full=false
@@ -193,18 +197,39 @@ module Daru
     def deviation_code index
       last = categories.size - 1
       @array.map do |cat_index|
-        if cat_index == index
-          1
-        elsif cat_index == last
-          -1
-        else
-          0
+        case cat_index
+          when index then 1
+          when last  then -1
+          else 0
         end
       end
     end
 
     def create_names categories
       categories.map { |cat| "#{name}_#{cat}".to_sym }
+    end
+
+    def preprocess_index index
+      index = case index
+        when nil
+          Daru::Index.new size
+        when Range
+          Daru::Index.new index.to_a
+        when Array
+          Daru::Index.new index
+        when Daru::Index
+          index
+        else
+          raise ArgumentError, "Unregnized index type #{index.class}"
+        end
+      validate_index index
+      index
+    end
+
+    def validate_index index
+      # Change to SizeError
+      raise ArgumentError, "Size of index (#{index.size}) does not matches"\
+        "size of vector (#{size})" if size != index.size
     end
   end
 end
