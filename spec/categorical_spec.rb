@@ -48,6 +48,94 @@ describe Daru::Vector do
     its(:coding_scheme) { is_expected.to eq :deviation }
   end
   
+  context "#categories=" do
+    let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+    subject { dv }
+    before { dv.categories = [1, 2, 3] }
+    
+    its(:to_a) { is_expected.to eq [1, 2, 1, 2, 3] }
+  end
+  
+  context "#order=" do
+    context "valid reordering" do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+      subject { dv }
+      before { dv.order = [:c, 1, :a] }
+      
+      its(:categories) { is_expected.to eq [:c, 1, :a] }
+      its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
+    end
+    
+    context "invalid reordering" do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+
+      it { expect { dv.order = [:c, 1, :b] }.to raise_error ArgumentError }
+    end
+  end
+  
+  context "#min" do
+    context "ordered" do
+      context "default ordering" do
+        let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, ordered: true }
+
+        it { expect(dv.min).to eq :a }
+      end
+      
+      context "reorder" do
+        let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, ordered: true }
+        before { dv.order = [1, :a, :c] }
+        
+        it { expect(dv.min).to eq 1 }
+      end
+    end
+    
+    context "unordered" do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+
+      it { expect { dv.min }.to raise_error ArgumentError }
+    end
+  end
+
+  context "#max" do
+    context "ordered" do
+      context "default ordering" do
+        let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, ordered: true }
+
+        it { expect(dv.max).to eq :c }
+      end
+      
+      context "reorder" do
+        let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, ordered: true }
+        before { dv.order = [1, :c, :a] }
+        
+        it { expect(dv.max).to eq :a }
+      end
+    end
+    
+    context "unordered" do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+
+      it { expect { dv.max }.to raise_error ArgumentError }
+    end
+  end
+  
+  context "#sort" do
+    context "ordered" do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, ordered: true }
+      subject { dv.sort }
+      before { dv.order = [:c, :a, 1] }
+      
+      it { is_expected.to eq Daru::Vector }
+      its(:size) { is_expected.to eq 5 }
+      its(:to_a) { is_expected.to eq [:c, :a, :a, 1, 1] }
+      its(:'index.to_a') { is_expected.to eq [] }
+    end
+    
+    context "unordered" do
+      
+    end
+  end
+  
   context "#contrast_code" do
     context "dummy coding" do
       context "default base category" do
