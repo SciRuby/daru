@@ -59,11 +59,59 @@ module Daru
       @cat_hash.keys
     end
 
+    def categories= new
+      # Change to SizeError
+      if new.size != categories.size
+        raise ShapeError, "New categories size (#{new.size}) does not match"\
+          "with old categories size (#{categories.size})"
+      end
+
+      @cat_hash = new.each_with_index.map do |new_cat, i|
+        @map_int_cat[i] = new_cat
+
+        old_cat = categories[i]
+        [new_cat, @cat_hash[old_cat]]
+      end.to_h
+    end
+
+    def order= new
+      if new.to_set != categories.to_set
+        raise ArgumentError, 'The context of new and old order must be the same.'
+      end
+
+      @cat_hash = new.map { |cat| [cat, @cat_hash[cat]] }.to_h
+    end
+
+    def min
+      assert_ordered 'min'
+
+      categories.first
+    end
+
+    def max
+      assert_ordered 'max'
+
+      categories.last
+    end
+
+    def sort
+      assert_ordered 'sort'
+
+      
+    end
+
     def contrast_code full=false
       send("#{coding_scheme}_coding".to_sym, full)
     end
 
     private
+
+    def assert_ordered operation
+      if !ordered?
+        # Change ArgumentError to something more expressive
+        raise ArgumentError, "Can not apply #{operation} when vector is unordered"
+      end      
+    end
 
     def dummy_coding full
       categories = @cat_hash.keys
