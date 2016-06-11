@@ -17,7 +17,7 @@ end
 task all: [:cop, :run_all]
 
 task :summary do
-  run 'rspec spec/ -r ./formatter.rb -f SimpleFormatter' rescue nil
+  run 'rspec spec/ -r ./.rspec_formatter.rb -f SimpleFormatter' rescue nil
 end
 
 RSpec::Core::RakeTask.new(:spec)
