@@ -46,6 +46,19 @@ module Daru
     def to_a
       each.to_a
     end
+    
+    def [] *indexes
+      positions = @index.pos(*indexes)
+      new_index = @index.subset(*indexes)
+      return data_from_position(pos) if positions.is_a? Integer
+
+      data = positions.map { |pos| data_from_position pos }
+      Daru::Vector.new data,
+        index: new_index,
+        name: @name,
+        type: :category,
+        ordered: @ordered
+    end
 
     def size
       @array.size

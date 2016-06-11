@@ -179,19 +179,225 @@ describe Daru::Vector do
   end
   
   context "#sort!" do
-    context "ordered" do
-      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, ordered: true }
-      subject { dv }
-      before { dv.order = [:c, :a, 1]; dv.sort! }
-      
-      it { is_expected.to be_a Daru::Vector }
-      its(:size) { is_expected.to eq 5 }
-      its(:to_a) { is_expected.to eq [:c, :a, :a, 1, 1] }
-      its(:'index.to_a') { is_expected.to eq [4, 0, 2, 1, 3] }
-    end
+    let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, ordered: true }
+    subject { dv }
+    before { dv.order = [:c, :a, 1]; dv.sort! }
     
-    context "unordered" do
-      
+    it { is_expected.to be_a Daru::Vector }
+    its(:size) { is_expected.to eq 5 }
+    its(:to_a) { is_expected.to eq [:c, :a, :a, 1, 1] }
+    its(:'index.to_a') { is_expected.to eq [4, 0, 2, 1, 3] }
+  end
+  
+  context "#[]" do
+    context Daru::Index do
+      before :each do
+        @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, metadata: { cdc_type: 2 },
+          index: [:yoda, :anakin, :obi, :padme, :r2d2]
+      end
+
+      it "returns an element after passing an index" do
+        expect(@dv[:yoda]).to eq(1)
+      end
+
+      it "returns an element after passing a numeric index" do
+        expect(@dv[0]).to eq(1)
+      end
+
+      it "returns a vector with given indices for multiple indices" do
+        expect(@dv[:yoda, :anakin]).to eq(Daru::Vector.new([1,2], name: :yoda,
+          index: [:yoda, :anakin]))
+      end
+
+      it "returns a vector with given indices for multiple numeric indices" do
+        expect(@dv[0,1]).to eq(Daru::Vector.new([1,2], name: :yoda,
+          index: [:yoda, :anakin]))
+      end
+
+      it "returns a vector when specified symbol Range" do
+        expect(@dv[:yoda..:anakin]).to eq(Daru::Vector.new([1,2],
+          index: [:yoda, :anakin], name: :yoga))
+      end
+
+      it "returns a vector when specified numeric Range" do
+        expect(@dv[3..4]).to eq(Daru::Vector.new([4,5], name: :yoga,
+          index: [:padme, :r2d2]))
+      end
+
+      it "returns correct results for index of multiple index" do
+        v = Daru::Vector.new([1,2,3,4], index: ['a','c',1,:a])
+        expect(v['a']).to eq(1)
+        expect(v[:a]).to eq(4)
+        expect(v[1]).to eq(3)
+        expect(v[0]).to eq(1)
+      end
+
+      it "raises exception for invalid index" do
+        expect { @dv[:foo] }.to raise_error(IndexError)
+        expect { @dv[:obi, :foo] }.to raise_error(IndexError)
+      end
+
+      it "retains the original vector metadata" do
+        expect(@dv[:yoda, :anakin].metadata).to eq({ cdc_type: 2 })
+      end
+    end
+
+    context Daru::MultiIndex do
+      before do
+        @tuples = [
+          [:a,:one,:bar],
+          [:a,:one,:baz],
+          [:a,:two,:bar],
+          [:a,:two,:baz],
+          [:b,:one,:bar],
+          [:b,:two,:bar],
+          [:b,:two,:baz],
+          [:b,:one,:foo],
+          [:c,:one,:bar],
+          [:c,:one,:baz],
+          [:c,:two,:foo],
+          [:c,:two,:bar],
+          [:d,:one,:foo]
+        ]
+        @multi_index = Daru::MultiIndex.from_tuples(@tuples)
+        @vector = Daru::Vector.new(
+          Array.new(13) { |i| i }, index: @multi_index,
+          name: :mi_vector)
+      end
+
+      it "returns a single element when passed a row number" do
+        expect(@vector[1]).to eq(1)
+      end
+
+      it "returns a single element when passed the full tuple" do
+        expect(@vector[:a, :one, :baz]).to eq(1)
+      end
+
+      it "returns sub vector when passed first layer of tuple" do
+        mi = Daru::MultiIndex.from_tuples([
+          [:one,:bar],
+          [:one,:baz],
+          [:two,:bar],
+          [:two,:baz]])
+        expect(@vector[:a]).to eq(Daru::Vector.new([0,1,2,3], index: mi,
+          name: :sub_vector))
+      end
+
+      it "returns sub vector when passed first and second layer of tuple" do
+        mi = Daru::MultiIndex.from_tuples([
+          [:foo],
+          [:bar]])
+        expect(@vector[:c,:two]).to eq(Daru::Vector.new([10,11], index: mi,
+          name: :sub_sub_vector))
+      end
+
+      it "returns sub vector not a single element when passed the partial tuple" do
+        mi = Daru::MultiIndex.from_tuples([[:foo]])
+        expect(@vector[:d, :one]).to eq(Daru::Vector.new([12], index: mi,
+          name: :sub_sub_vector))
+      end
+
+      it "returns a vector with corresponding MultiIndex when specified numeric Range" do
+        mi = Daru::MultiIndex.from_tuples([
+          [:a,:two,:baz],
+          [:b,:one,:bar],
+          [:b,:two,:bar],
+          [:b,:two,:baz],
+          [:b,:one,:foo],
+          [:c,:one,:bar],
+          [:c,:one,:baz]
+        ])
+        expect(@vector[3..9]).to eq(Daru::Vector.new([3,4,5,6,7,8,9], index: mi,
+          name: :slice))
+      end
+
+      it "raises exception for invalid index" do
+        expect { @vector[:foo] }.to raise_error(IndexError)
+        expect { @vector[:a, :two, :foo] }.to raise_error(IndexError)
+        expect { @vector[:x, :one] }.to raise_error(IndexError)
+      end
+    end
+
+    context Daru::CategoricalIndex do
+      context "non-numerical index" do
+        let (:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
+        let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
+
+        context "single category" do
+          context "multiple instances" do
+            subject { dv[:a] }
+
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 3 }
+            its(:to_a) { is_expected.to eq  ['a', 'c', 'd'] }
+            its(:index) { is_expected.to eq(
+              Daru::CategoricalIndex.new([:a, :a, :a])) }
+          end
+
+          context "single instance" do
+            subject { dv[:c] }
+
+            it { is_expected.to eq 'e' }
+          end
+        end
+
+        context "multiple categories" do
+          subject { dv[:a, :c] }
+
+          it { is_expected.to be_a Daru::Vector }
+          its(:size) { is_expected.to eq 4 }
+          its(:to_a) { is_expected.to eq  ['a', 'c', 'd', 'e'] }
+          its(:index) { is_expected.to eq(
+            Daru::CategoricalIndex.new([:a, :a, :a, :c])) }
+        end
+
+        context "multiple positional indexes" do
+          subject { dv[0, 1, 2] }
+
+          it { is_expected.to be_a Daru::Vector }
+          its(:size) { is_expected.to eq 3 }
+          its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
+          its(:index) { is_expected.to eq(
+            Daru::CategoricalIndex.new([:a, :b, :a])) }
+        end
+
+        context "single positional index" do
+          subject { dv[1] }
+
+          it { is_expected.to eq 'b' }
+        end
+
+        context "invalid category" do
+          it { expect { dv[:x] }.to raise_error IndexError }
+        end
+
+        context "invalid positional index" do
+          it { expect { dv[30] }.to raise_error IndexError }
+        end
+      end
+
+      context "numerical index" do
+        let (:idx) { Daru::CategoricalIndex.new [1, 1, 2, 2, 3] }
+        let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
+
+        context "single category" do
+          context "multiple instances" do
+            subject { dv[1] }
+
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 2 }
+            its(:to_a) { is_expected.to eq  ['a', 'b'] }
+            its(:index) { is_expected.to eq(
+              Daru::CategoricalIndex.new([1, 1])) }
+          end
+
+          context "single instance" do
+            subject { dv[3] }
+
+            it { is_expected.to eq 'e' }
+          end
+        end
+      end
     end
   end
   
