@@ -160,6 +160,34 @@ module Daru
         index == other.index
     end
 
+    # Over rides original inspect for pretty printing in irb
+    def inspect spacing=20, threshold=15
+      row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
+
+      "#<#{self.class}(#{size})#{metadata && !metadata.empty? ? metadata.inspect : ''}>\n" +
+        Formatters::Table.format(
+          to_a.lazy.map { |v| [v] },
+          headers: @name && [@name],
+          row_headers: row_headers,
+          threshold: threshold,
+          spacing: spacing
+        )
+    end
+
+    # Convert to html for iruby
+    def to_html threshold=30
+      path = if index.is_a?(MultiIndex)
+               File.expand_path('../iruby/templates/vector_mi.html.erb', __FILE__)
+             else
+               File.expand_path('../iruby/templates/vector.html.erb', __FILE__)
+             end
+      ERB.new(File.read(path).strip).result(binding)
+    end
+
+    def to_s
+      to_html
+    end
+
     private
 
     def data_from_position position
