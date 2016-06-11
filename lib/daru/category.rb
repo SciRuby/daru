@@ -35,6 +35,9 @@ module Daru
 
       # Index of the vector
       @index = preprocess_index(opts[:index])
+      
+      # Store metadata
+      @metadata = opts[:metadata] || {}
     end
 
     def each
@@ -49,15 +52,29 @@ module Daru
     
     def [] *indexes
       positions = @index.pos(*indexes)
-      new_index = @index.subset(*indexes)
-      return data_from_position(pos) if positions.is_a? Integer
+      return data_from_position(positions) if positions.is_a? Integer
 
-      data = positions.map { |pos| data_from_position pos }
-      Daru::Vector.new data,
-        index: new_index,
+      Daru::Vector.new positions.map { |pos| data_from_position pos },
+        index: @index.subset(*indexes),
         name: @name,
         type: :category,
-        ordered: @ordered
+        ordered: @ordered,
+        metadata: @metadata
+    end
+
+    def at *positions
+      original_positions = positions
+      positions = preprocess_positions(*positions)
+      validate_positions(*positions)
+
+      return data_from_position(positions) if positions.is_a? Integer
+  
+      Daru::Vector.new positions.map { |pos| data_from_position(pos) },
+        index: @index.at(*original_positions),
+        name: @name,
+        type: :category,
+        ordered: @ordered,
+        metadata: @metadata
     end
 
     def size
@@ -137,7 +154,17 @@ module Daru
       send("#{coding_scheme}_coding".to_sym, full)
     end
 
+    def == other
+      size == other.size &&
+        to_a == other.to_a &&
+        index == other.index
+    end
+
     private
+
+    def data_from_position position
+      @map_int_cat[@array[position]]
+    end
 
     def assert_ordered operation
       if !ordered?
