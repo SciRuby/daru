@@ -167,10 +167,9 @@ module Daru
     end
 
     def assert_ordered operation
-      unless ordered?
-        # Change ArgumentError to something more expressive
-        raise ArgumentError, "Can not apply #{operation} when vector is unordered"
-      end
+      # Change ArgumentError to something more expressive
+      raise ArgumentError, "Can not apply #{operation} when vector is unordered"\
+        unless ordered?
     end
 
     def dummy_coding full
