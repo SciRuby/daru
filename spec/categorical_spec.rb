@@ -61,6 +61,13 @@ describe Daru::Vector do
         its(:index) { is_expected.to be_a Daru::MultiIndex }
         its(:'index.to_a') { is_expected.to eq tuples }
       end
+      
+      context "invalid index" do
+        it { expect { Daru::Vector.new [1, 1, 2],
+          type: :category,
+          index: [1, 2]
+        }.to raise_error ArgumentError }
+      end
     end
   end
 
