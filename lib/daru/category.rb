@@ -3,6 +3,9 @@ module Daru
     attr_accessor :coding_scheme, :base_category
     attr_reader :index
 
+    # For debuggin. To be removed
+    attr_reader :array, :cat_hash, :map_int_cat
+
     def initialize_category data, opts={}
       @type = :category
 
@@ -77,6 +80,11 @@ module Daru
         metadata: @metadata
     end
 
+    def where bool_arry
+      # FIXME: Pass an enumerator to save space
+      Daru::Core::Query.vector_where to_a, @index.to_a, bool_arry, dtype
+    end
+
     def size
       @array.size
     end
@@ -108,12 +116,23 @@ module Daru
       end.to_h
     end
 
+    def order
+      @cat_hash.keys
+    end
+
     def order= new
       if new.to_set != categories.to_set
         raise ArgumentError, 'The contents of new and old order must be the same.'
       end
 
       @cat_hash = new.map { |cat| [cat, @cat_hash[cat]] }.to_h
+
+      map_cat_int = @cat_hash.keys.each_with_index.to_a.to_h
+      @map_int_cat = map_cat_int.invert
+      @array = Array.new(size)
+      @cat_hash.map do |cat, positions|
+        positions.each { |pos| @array[pos] = map_cat_int[cat] }
+      end
     end
 
     def min
@@ -147,7 +166,7 @@ module Daru
         [hash, count + cat_count]
       end.first
 
-      @array
+      self
     end
 
     def contrast_code full=false
@@ -188,6 +207,26 @@ module Daru
     def to_s
       to_html
     end
+
+    {
+      eq: :==,
+      not_eq: :!=,
+      lt: :<,
+      lteq: :<=,
+      mt: :>,
+      mteq: :>=
+    }.each do |method, operator|
+      define_method(method) do |other|
+        mod = Daru::Core::Query
+        if other.is_a?(Daru::Vector)
+          mod.apply_vector_operator operator, self, other
+        else
+          mod.apply_scalar_operator operator, @array, @map_int_cat.key(other)
+        end
+      end
+    end
+    alias :gt :mt
+    alias :gteq :mteq
 
     private
 
