@@ -186,9 +186,14 @@ module Daru
         guard_sizes!
 
         @possibly_changed_type = true
+<<<<<<< 44c6bf4e427592bffc885ba1938399e94436c929
 
         set_missing_values opts[:missing_values]
         set_missing_positions(true)
+=======
+        set_missing_values opts[:missing_values]
+        set_missing_positions(true) unless @index.class == Daru::CategoricalIndex
+>>>>>>> fix some errors
         set_size
       end
     end
