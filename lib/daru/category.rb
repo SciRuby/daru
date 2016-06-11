@@ -35,7 +35,7 @@ module Daru
 
       # Index of the vector
       @index = preprocess_index(opts[:index])
-      
+
       # Store metadata
       @metadata = opts[:metadata] || {}
     end
@@ -49,7 +49,7 @@ module Daru
     def to_a
       each.to_a
     end
-    
+
     def [] *indexes
       positions = @index.pos(*indexes)
       return data_from_position(positions) if positions.is_a? Integer
@@ -68,7 +68,7 @@ module Daru
       validate_positions(*positions)
 
       return data_from_position(positions) if positions.is_a? Integer
-  
+
       Daru::Vector.new positions.map { |pos| data_from_position(pos) },
         index: @index.at(*original_positions),
         name: @name,
@@ -146,7 +146,7 @@ module Daru
         hash[cat] = (count...(cat_count+count)).to_a
         [hash, count + cat_count]
       end.first
-      
+
       @array
     end
 
@@ -167,10 +167,10 @@ module Daru
     end
 
     def assert_ordered operation
-      if !ordered?
+      unless ordered?
         # Change ArgumentError to something more expressive
         raise ArgumentError, "Can not apply #{operation} when vector is unordered"
-      end      
+      end
     end
 
     def dummy_coding full
@@ -254,9 +254,9 @@ module Daru
       last = categories.size - 1
       @array.map do |cat_index|
         case cat_index
-          when index then 1
-          when last  then -1
-          else 0
+        when index then 1
+        when last  then -1
+        else 0
         end
       end
     end
@@ -266,7 +266,8 @@ module Daru
     end
 
     def preprocess_index index
-      index = case index
+      index =
+        case index
         when nil
           Daru::Index.new size
         when Range
