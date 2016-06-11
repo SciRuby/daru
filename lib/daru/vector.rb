@@ -4,6 +4,7 @@ require 'daru/plotting/vector.rb'
 require 'daru/accessors/array_wrapper.rb'
 require 'daru/accessors/nmatrix_wrapper.rb'
 require 'daru/accessors/gsl_wrapper.rb'
+require 'daru/category.rb'
 
 module Daru
   class Vector # rubocop:disable Metrics/ClassLength
@@ -170,21 +171,26 @@ module Daru
     #   vecarr = Daru::Vector.new [1,2,3,4], index: [:a, :e, :i, :o]
     #   vechsh = Daru::Vector.new({a: 1, e: 2, i: 3, o: 4})
     def initialize source, opts={}
-      index, source = parse_source(source, opts)
-      set_name opts[:name]
+      if opts[:type] == :category
+        extend Daru::Category
+        initialize_category source, opts
+      else
+        index, source = parse_source(source, opts)
+        set_name opts[:name]
 
-      @metadata = opts[:metadata] || {}
+        @metadata = opts[:metadata] || {}
 
-      @data  = cast_vector_to(opts[:dtype] || :array, source, opts[:nm_dtype])
-      @index = Index.coerce(index || @data.size)
+        @data  = cast_vector_to(opts[:dtype] || :array, source, opts[:nm_dtype])
+        @index = Index.coerce(index || @data.size)
 
-      guard_sizes!
+        guard_sizes!
 
-      @possibly_changed_type = true
+        @possibly_changed_type = true
 
-      set_missing_values opts[:missing_values]
-      set_missing_positions(true)
-      set_size
+        set_missing_values opts[:missing_values]
+        set_missing_positions(true)
+        set_size
+      end
     end
 
     # Get one or more elements with specified index or a range.
@@ -1084,6 +1090,10 @@ module Daru
     # :nocov:
 
     alias :dv :daru_vector
+
+    def to_category
+      Daru::Vector.new to_a, type: :category
+    end
 
     def method_missing(name, *args, &block)
       # FIXME: it is shamefully fragile. Should be either made stronger
