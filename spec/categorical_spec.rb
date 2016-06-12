@@ -843,6 +843,99 @@ describe Daru::Vector do
           Daru::CategoricalIndex.new([:a])) }            
       end
     end
+  end
+
+  context "#set_at" do
+    context Daru::Index do
+      let (:idx) { Daru::Index.new [1, 0, :c] }
+      let (:dv) { Daru::Vector.new ['a', 'b', 'c'], index: idx, type: :category }
+      before { dv.add_category 'x' }
+      
+      context "single position" do
+        subject { dv }
+        before { dv.set_at [1], 'x' }
+
+        its(:to_a) { is_expected.to eq ['a', 'x', 'c'] }
+      end
+      
+      context "multiple positions" do
+        subject { dv }
+        before { dv.set_at [0, 2], 'x' }
+        
+        its(:to_a) { is_expected.to eq ['x', 'b', 'x'] }
+      end
+      
+      context "invalid position" do
+        it { expect { dv.set_at [3], 'x' }.to raise_error IndexError }
+      end
+      
+      context "invalid positions" do
+        it { expect { dv.set_at [2, 3], 'x' }.to raise_error IndexError }
+      end
+    end
+    
+    context Daru::MultiIndex do
+      let(:idx) do
+        Daru::MultiIndex.from_tuples [
+          [:a,:one,:bar],
+          [:a,:one,:baz],
+          [:b,:two,:bar],
+          [:a,:two,:baz],
+        ]
+      end
+      let(:dv) { Daru::Vector.new 1..4, index: idx, type: :category }
+      before { dv.add_category 'x' }
+      
+      context "single position" do
+        subject { dv }
+        before { dv.set_at [1], 'x' }
+
+        its(:to_a) { is_expected.to eq [1, 'x', 3, 4] }
+      end
+      
+      context "multiple positions" do
+        subject { dv }
+        before { dv.set_at [2, 3], 'x' }
+
+        its(:to_a) { is_expected.to eq [1, 2, 'x', 'x'] }
+      end
+      
+      context "invalid position" do
+        it { expect { dv.set_at [4], 'x' }.to raise_error IndexError }
+      end
+      
+      context "invalid positions" do
+        it { expect { dv.set_at [2, 4], 'x' }.to raise_error IndexError }
+      end          
+    end
+
+    context Daru::CategoricalIndex do
+      let (:idx) { Daru::CategoricalIndex.new [:a, 1, 1, :a, :c] }
+      let (:dv)  { Daru::Vector.new 'a'..'e', index: idx, type: :category }
+      before { dv.add_category 'x' }
+
+      context "multiple positional indexes" do
+        subject { dv }
+        before { dv.set_at [0, 1, 2], 'x' }
+
+        its(:to_a) { is_expected.to eq ['x', 'x', 'x', 'd', 'e'] }
+      end
+
+      context "single positional index" do
+        subject { dv }
+        before { dv.set_at [1], 'x' }
+
+        its(:to_a) { is_expected.to eq ['a', 'x', 'c', 'd', 'e'] }
+      end
+      
+      context "invalid position" do
+        it { expect { dv.set_at [5], 'x' }.to raise_error IndexError }
+      end
+      
+      context "invalid positions" do
+        it { expect { dv.set_at [2, 5], 'x' }.to raise_error IndexError }
+      end
+    end
   end  
 
   context "#contrast_code" do

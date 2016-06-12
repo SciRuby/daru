@@ -101,6 +101,11 @@ module Daru
       end      
     end
 
+    def set_at positions, val
+      validate_positions(*positions)
+      positions.map { |pos| modify_category_at pos, val }
+    end
+
     def where bool_arry
       # FIXME: Pass an enumerator to save space
       Daru::Core::Query.vector_where to_a, @index.to_a, bool_arry, dtype
@@ -286,7 +291,8 @@ module Daru
 
     def assert_ordered operation
       # Change ArgumentError to something more expressive
-      raise ArgumentError, "Can not apply #{operation} when vector is unordered"\
+      raise ArgumentError, "Can not apply #{operation} when vector is unordered. "\
+        'To make the categorical data ordered, use #ordered = true'\
         unless ordered?
     end
 
