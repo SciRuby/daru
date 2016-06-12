@@ -37,88 +37,200 @@ end
 describe "Arel-like syntax" do
   describe "comparison operators" do
     describe Daru::Vector do
-      before do
-        @vector = Daru::Vector.new([23,51,1214,352,32,11])
-        @comparator = Daru::Vector.new([45,22,1214,55,32,9])
-        @klass = Daru::Core::Query::BoolArray
+      describe "non-categorical type" do
+        before do
+          @vector = Daru::Vector.new([23,51,1214,352,32,11])
+          @comparator = Daru::Vector.new([45,22,1214,55,32,9])
+          @klass = Daru::Core::Query::BoolArray
+        end
+  
+        context "#eq" do
+          it "accepts scalar value" do
+            expect(@vector.eq(352)).to eq(
+              @klass.new([false,false,false,true,false,false]))
+          end
+  
+          it "accepts vector and compares corrensponding elements" do
+            expect(@vector.eq(@comparator)).to eq(
+              @klass.new([false,false,true,false,true,false]))
+          end
+        end
+  
+        context "#not_eq" do
+          it "accepts scalar value" do
+            expect(@vector.not_eq(51)).to eq(
+              @klass.new([true, false, true, true, true, true]))
+          end
+  
+          it "accepts vector and compares corrensponding elements" do
+            expect(@vector.not_eq(@comparator)).to eq(
+              @klass.new([true, true, false, true, false, true]))
+          end
+        end
+  
+        context "#lt" do
+          it "accepts scalar value" do
+            expect(@vector.lt(51)).to eq(
+              @klass.new([true, false, false, false, true, true]))
+          end
+  
+          it "accepts vector and compares corrensponding elements" do
+            expect(@vector.lt(@comparator)).to eq(
+              @klass.new([true,false,false,false,false,false]))
+          end
+        end
+  
+        context "#lteq" do
+          it "accepts scalar value" do
+            expect(@vector.lteq(51)).to eq(
+              @klass.new([true, true, false, false, true, true]))
+          end
+  
+          it "accepts vector and compares corrensponding elements" do
+            expect(@vector.lteq(@comparator)).to eq(
+              @klass.new([true,false,true,false,true,false]))
+          end
+        end
+  
+        context "#mt" do
+          it "accepts scalar value" do
+            expect(@vector.mt(51)).to eq(
+              @klass.new([false, false, true, true, false, false]))
+          end
+  
+          it "accepts vector and compares corrensponding elements" do
+            expect(@vector.mt(@comparator)).to eq(
+              @klass.new([false,true,false,true,false,true]))
+          end
+        end
+  
+        context "#mteq" do
+          it "accepts scalar value" do
+            expect(@vector.mteq(51)).to eq(
+              @klass.new([false, true, true, true, false, false]))
+          end
+  
+          it "accepts vector and compares corrensponding elements" do
+            expect(@vector.mteq(@comparator)).to eq(
+              @klass.new([false,true,true,true,true,true]))
+          end
+        end
+  
+        context "#in" do
+          it "checks if any of elements in the arg are present in the vector" do
+            expect(@vector.in([23,55,1,33,32])).to eq(
+              @klass.new([true, false, false, false, true, false]))
+          end
+        end
       end
+      
+      describe "categorical type" do
+        let(:dv) { Daru::Vector.new ['e', 'd', 'd', 'b', 'b'],
+          categories: ['a', 'b', 'c', 'd', 'e'], type: :category }
+        let(:comp) { Daru::Vector.new ['a', 'd', 'b', 'e', 'b'],
+          categories: ['a', 'b', 'c', 'd', 'e'], type: :category }
+        let(:query_bool_class) { Daru::Core::Query::BoolArray }
 
-      context "#eq" do
-        it "accepts scalar value" do
-          expect(@vector.eq(352)).to eq(
-            @klass.new([false,false,false,true,false,false]))
+        context "#eq" do
+          context "scalar" do
+            subject { dv.eq 'd' }
+            
+            it { is_expected.to be_a query_bool }
+            its(:to_a) { is_expected.to eq [false, true, true, false, false] }
+          end
+
+          context "vector" do
+            subject { dv.eq comp }
+            
+            it { is_expected.to be_a query_bool_class }
+            its(:to_a) { is_expected.to eq [false, true, false, false, true] }
+          end
         end
-
-        it "accepts vector and compares corrensponding elements" do
-          expect(@vector.eq(@comparator)).to eq(
-            @klass.new([false,false,true,false,true,false]))
+  
+        context "#not_eq" do
+          context "scalar" do
+            subject { dv.not_eq 'd' }
+            
+            it { is_expected.to be_a query_bool_class }
+            its(:to_a) { is_expected.to eq [true, false, false, true, true] }
+          end
+          
+          context "vector" do
+            subject { dv.not_eq comp }
+            
+            it { is_expected.to be_a query_bool_class }
+            its(:to_a) { is_expected.to eq [true, false, true, true, false] }
+          end
         end
-      end
-
-      context "#not_eq" do
-        it "accepts scalar value" do
-          expect(@vector.not_eq(51)).to eq(
-            @klass.new([true, false, true, true, true, true]))
+  
+        context "#lt" do
+          context "scalar" do
+            subject { dv.lt 'd' }
+            
+            it { is_expected.to be_a query_bool_class }
+            its(:to_a) { is_expected.to eq [false, false, false, true, true] }
+          end
+          
+          context "vector" do
+            subject { dv.lt comp }
+            
+            it { is_expected.to be_a query_bool_class }
+            its(:to_a) { is_expected.to eq [false, false, false, true, false] }
+          end
         end
-
-        it "accepts vector and compares corrensponding elements" do
-          expect(@vector.not_eq(@comparator)).to eq(
-            @klass.new([true, true, false, true, false, true]))
+  
+        context "#lteq" do
+          context "scalar" do
+            subject { dv.lteq 'd' }
+            
+            it { is_expected.to be_a query_bool_class }
+            its(:to_a) { is_expected.to eq [false, true, true, true, true] }
+          end
+          
+          context "vector" do
+            subject { dv.lteq comp }
+            
+            it { is_expected.to be_a query_bool_class }
+            its(:to_a) { is_expected.to eq [false, true, false, true, true] }
+          end
         end
-      end
-
-      context "#lt" do
-        it "accepts scalar value" do
-          expect(@vector.lt(51)).to eq(
-            @klass.new([true, false, false, false, true, true]))
+  
+        context "#mt" do
+          context "scalar" do
+            subject { dv.lteq 'd' }
+            
+            it { is_expected.to be_a query_bool_class }
+            its(:to_a) { is_expected.to eq [false, false, false, false, false] }
+          end
+          
+          context "vector" do
+            subject { dv.lteq comp }
+            
+            it { is_expected.to be_a query_bool_class }
+            its(:to_a) { is_expected.to eq [true, false, true, false, false] }
+          end
         end
-
-        it "accepts vector and compares corrensponding elements" do
-          expect(@vector.lt(@comparator)).to eq(
-            @klass.new([true,false,false,false,false,false]))
+  
+        context "#mteq" do
+          context "scalar" do
+            subject { dv.lteq 'd' }
+            
+            it { is_expected.to be_a query_bool_class }
+            its(:to_a) { is_expected.to eq [false, false, false, false, false] }
+          end
+          
+          context "vector" do
+            subject { dv.lteq comp }
+            
+            it { is_expected.to be_a query_bool_class }
+            its(:to_a) { is_expected.to eq [true, false, true, false, false] }
+          end
         end
-      end
-
-      context "#lteq" do
-        it "accepts scalar value" do
-          expect(@vector.lteq(51)).to eq(
-            @klass.new([true, true, false, false, true, true]))
-        end
-
-        it "accepts vector and compares corrensponding elements" do
-          expect(@vector.lteq(@comparator)).to eq(
-            @klass.new([true,false,true,false,true,false]))
-        end
-      end
-
-      context "#mt" do
-        it "accepts scalar value" do
-          expect(@vector.mt(51)).to eq(
-            @klass.new([false, false, true, true, false, false]))
-        end
-
-        it "accepts vector and compares corrensponding elements" do
-          expect(@vector.mt(@comparator)).to eq(
-            @klass.new([false,true,false,true,false,true]))
-        end
-      end
-
-      context "#mteq" do
-        it "accepts scalar value" do
-          expect(@vector.mteq(51)).to eq(
-            @klass.new([false, true, true, true, false, false]))
-        end
-
-        it "accepts vector and compares corrensponding elements" do
-          expect(@vector.mteq(@comparator)).to eq(
-            @klass.new([false,true,true,true,true,true]))
-        end
-      end
-
-      context "#in" do
-        it "checks if any of elements in the arg are present in the vector" do
-          expect(@vector.in([23,55,1,33,32])).to eq(
-            @klass.new([true, false, false, false, true, false]))
+  
+        context "#in" do
+          subject { dv.in ['b', 'd'] }
+          it { is_expected.to be_a query_bool_class }
+          its(:to_a) { is_expected.to eq [false, true, true, true, true] }
         end
       end
     end
