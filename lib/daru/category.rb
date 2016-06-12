@@ -66,9 +66,9 @@ module Daru
 
     def [] *indexes
       positions = @index.pos(*indexes)
-      return data_from_position(positions) if positions.is_a? Integer
+      return category_from_position(positions) if positions.is_a? Integer
 
-      Daru::Vector.new positions.map { |pos| data_from_position pos },
+      Daru::Vector.new positions.map { |pos| category_from_position pos },
         index: @index.subset(*indexes),
         name: @name,
         type: :category,
@@ -81,14 +81,24 @@ module Daru
       positions = preprocess_positions(*positions)
       validate_positions(*positions)
 
-      return data_from_position(positions) if positions.is_a? Integer
+      return category_from_position(positions) if positions.is_a? Integer
 
-      Daru::Vector.new positions.map { |pos| data_from_position(pos) },
+      Daru::Vector.new positions.map { |pos| category_from_position(pos) },
         index: @index.at(*original_positions),
         name: @name,
         type: :category,
         ordered: @ordered,
         metadata: @metadata
+    end
+
+    def []= *indexes, val
+      positions = @index.pos(*indexes)
+
+      if positions.is_a? Numeric
+        modify_category_at positions, val
+      else
+        positions.each { |pos| modify_category_at pos, val }
+      end      
     end
 
     def where bool_arry
@@ -270,7 +280,7 @@ module Daru
       @array = map_cat_int.values_at(*data)
     end
 
-    def data_from_position position
+    def category_from_position position
       @map_int_cat[@array[position]]
     end
 
@@ -394,6 +404,15 @@ module Daru
       # Change to SizeError
       raise ArgumentError, "Size of index (#{index.size}) does not matches"\
         "size of vector (#{size})" if size != index.size
+    end
+
+    def modify_category_at pos, category
+      raise ArgumentError, "Invalid category #{category}" unless
+        categories.include? category
+      old_category = category_from_position pos
+      @array[pos] = @map_int_cat.key(category)
+      @cat_hash[old_category].delete pos
+      @cat_hash[category] << pos
     end
   end
 end

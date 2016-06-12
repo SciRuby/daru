@@ -478,6 +478,183 @@ describe Daru::Vector do
       end
     end
   end
+
+  context "#[]=" do
+    context Daru::Index do
+      before :each do
+        @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga,
+          index: [:yoda, :anakin, :obi, :padme, :r2d2], type: :category
+        @dv.add_category 666
+      end
+
+      it "assigns at the specified index" do
+        @dv[:yoda] = 666
+        expect(@dv[:yoda]).to eq(666)
+      end
+
+      it "assigns at the specified Integer index" do
+        @dv[0] = 666
+        expect(@dv[:yoda]).to eq(666)
+      end
+
+      it "assigns correctly for a mixed index Vector" do
+        v = Daru::Vector.new [1,2,3,4], index: ['a',:a,0,66], type: :category
+        v.add_category 666
+        v['a'] = 666
+        expect(v['a']).to eq(666)
+
+        v[0] = 666
+        expect(v[0]).to eq(666)
+
+        v[3] = 666
+        expect(v[3]).to eq(666)
+
+        expect(v).to eq(Daru::Vector.new([666,2,666,666],
+          index: ['a',:a,0,66], type: :category))
+      end
+    end
+
+    context Daru::MultiIndex do
+      before :each do
+        @tuples = [
+          [:a,:one,:bar],
+          [:a,:one,:baz],
+          [:a,:two,:bar],
+          [:a,:two,:baz],
+          [:b,:one,:bar],
+          [:b,:two,:bar],
+          [:b,:two,:baz],
+          [:b,:one,:foo],
+          [:c,:one,:bar],
+          [:c,:one,:baz],
+          [:c,:two,:foo],
+          [:c,:two,:bar]
+        ]
+        @multi_index = Daru::MultiIndex.from_tuples(@tuples)
+        @vector = Daru::Vector.new Array.new(12) { |i| i }, index: @multi_index,
+          type: :category, name: :mi_vector
+        @vector.add_category 69
+      end
+
+      it "assigns all lower layer indices when specified a first layer index" do
+        @vector[:b] = 69
+        expect(@vector).to eq(Daru::Vector.new([0,1,2,3,69,69,69,69,8,9,10,11],
+          index: @multi_index, name: :top_layer_assignment, type: :category
+          ))
+      end
+
+      it "assigns all lower indices when specified first and second layer index" do
+        @vector[:b, :one] = 69
+        expect(@vector).to eq(Daru::Vector.new([0,1,2,3,69,5,6,69,8,9,10,11],
+          index: @multi_index, name: :second_layer_assignment, type: :category))
+      end
+
+      it "assigns just the precise value when specified complete tuple" do
+        @vector[:b, :one, :foo] = 69
+        expect(@vector).to eq(Daru::Vector.new([0,1,2,3,4,5,6,69,8,9,10,11],
+          index: @multi_index, name: :precise_assignment, type: :category))
+      end
+
+      it "assigns correctly when numeric index" do
+        @vector[7] = 69
+        expect(@vector).to eq(Daru::Vector.new([0,1,2,3,4,5,6,69,8,9,10,11],
+          index: @multi_index, name: :precise_assignment, type: :category))
+      end
+
+      it "fails predictably on unknown index" do
+        expect { @vector[:d] = 69 }.to raise_error(IndexError)
+        expect { @vector[:b, :three] = 69 }.to raise_error(IndexError)
+        expect { @vector[:b, :two, :test] = 69 }.to raise_error(IndexError)
+      end
+    end
+    
+    context Daru::CategoricalIndex do
+      context "non-numerical index" do
+        let (:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
+        let (:dv)  { Daru::Vector.new 'a'..'e', index: idx, type: :category }
+        before { dv.add_category 'x' }
+
+        context "single category" do
+          context "multiple instances" do
+            subject { dv }
+            before { dv[:a] = 'x' }
+
+            its(:size) { is_expected.to eq 5 }
+            its(:to_a) { is_expected.to eq  ['x', 'b', 'x', 'x', 'e'] }
+            its(:index) { is_expected.to eq idx }
+          end
+
+          context "single instance" do
+            subject { dv }
+            before { dv[:b] = 'x' }
+
+            its(:size) { is_expected.to eq 5 }
+            its(:to_a) { is_expected.to eq  ['a', 'x', 'c', 'd', 'e'] }
+            its(:index) { is_expected.to eq idx }
+          end
+        end
+
+        context "multiple categories" do
+          subject { dv }
+          before { dv[:a, :c] = 'x' }
+
+          its(:size) { is_expected.to eq 5 }
+          its(:to_a) { is_expected.to eq  ['x', 'b', 'x', 'x', 'x'] }
+          its(:index) { is_expected.to eq idx }
+        end
+
+        context "multiple positional indexes" do
+          subject { dv }
+          before { dv[0, 1, 2] = 'x' }
+
+          its(:size) { is_expected.to eq 5 }
+          its(:to_a) { is_expected.to eq ['x', 'x', 'x', 'd', 'e'] }
+          its(:index) { is_expected.to eq idx }
+        end
+
+        context "single positional index" do
+          subject { dv }
+          before { dv[1] = 'x' }
+
+          its(:size) { is_expected.to eq 5 }
+          its(:to_a) { is_expected.to eq ['a', 'x', 'c', 'd', 'e'] }
+          its(:index) { is_expected.to eq idx }
+        end
+
+        context "invalid category" do
+          it { expect { dv[:x] = 'x' }.to raise_error IndexError }
+        end
+
+        context "invalid positional index" do
+          it { expect { dv[30] = 'x'}.to raise_error IndexError }
+        end
+      end
+
+      context "numerical index" do
+        let (:idx) { Daru::CategoricalIndex.new [1, 1, 2, 2, 3] }
+        let (:dv)  { Daru::Vector.new 'a'..'e', index: idx, type: :category }
+        before { dv.add_category 'x' }
+
+        context "single category" do
+          subject { dv }
+          before { dv[1] = 'x' }
+
+          its(:size) { is_expected.to eq 5 }
+          its(:to_a) { is_expected.to eq ['x', 'x', 'c', 'd', 'e'] }
+          its(:index) { is_expected.to eq idx }
+        end
+        
+        context "multiple categories" do
+          subject { dv }
+          before { dv[1, 2] = 'x' }
+
+          its(:size) { is_expected.to eq 5 }
+          its(:to_a) { is_expected.to eq ['x', 'x', 'x', 'x', 'e'] }
+          its(:index) { is_expected.to eq idx }              
+        end
+      end
+    end
+  end
   
   context "#at" do
     context Daru::Index do
