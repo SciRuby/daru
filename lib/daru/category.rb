@@ -9,19 +9,13 @@ module Daru
     def initialize_category data, opts={}
       @type = :category
 
-      # Create a hash to map each category to positional indexes
-      categories = data.each_with_index.group_by(&:first)
-      @cat_hash = categories.map { |cat, group| [cat, group.map(&:last)] }.to_h
+      initialize_core_attributes data
 
-      # Map each category to a unique integer for effective storage in @array
-      map_cat_int = categories.keys.each_with_index.to_h
-
-      # Inverse mapping of map_cat_int
-      @map_int_cat = map_cat_int.invert
-
-      # To link every instance to its category,
-      # it stores integer for every instance representing its category
-      @array = map_cat_int.values_at(*data)
+      if opts[:categories]
+        validate_categories(opts[:categories])
+        add_extra_categories(opts[:categories] - categories)
+        self.order = opts[:categories]
+      end
 
       # Specify if the categories are ordered or not.
       # By default its unordered
@@ -51,6 +45,23 @@ module Daru
 
     def to_a
       each.to_a
+    end
+
+    def add_category(*new_categories)
+      new_categories = new_categories - categories
+      add_extra_categories new_categories
+    end
+
+    def count category
+      raise ArgumentError, "Invalid category #{category}" unless
+        categories.include?(category)
+
+      @cat_hash[category].size
+    end
+
+    def frequencies
+      Daru::Vector.new @cat_hash.values.map { |val| val.size },
+        index: categories
     end
 
     def [] *indexes
@@ -229,6 +240,35 @@ module Daru
     alias :gteq :mteq
 
     private
+
+    def validate_categories input_categories
+      raise ArgumentError, 'Input categories and speculated categories mismatch' unless
+        (categories - input_categories).empty?
+    end
+
+    def add_extra_categories extra_categories
+      total_categories = categories.size
+      extra_categories.each_with_index do |cat, index|
+        @cat_hash[cat] = []
+        @map_int_cat[total_categories+index] = cat
+      end
+    end
+
+    def initialize_core_attributes data
+      # Create a hash to map each category to positional indexes
+      categories = data.each_with_index.group_by(&:first)
+      @cat_hash = categories.map { |cat, group| [cat, group.map(&:last)] }.to_h
+
+      # Map each category to a unique integer for effective storage in @array
+      map_cat_int = categories.keys.each_with_index.to_h
+
+      # Inverse mapping of map_cat_int
+      @map_int_cat = map_cat_int.invert
+
+      # To link every instance to its category,
+      # it stores integer for every instance representing its category
+      @array = map_cat_int.values_at(*data)
+    end
 
     def data_from_position position
       @map_int_cat[@array[position]]

@@ -69,6 +69,80 @@ describe Daru::Vector do
         }.to raise_error ArgumentError }
       end
     end
+    
+    context "with categories" do
+      context "extra categories" do
+        subject { Daru::Vector.new [:a, 1, :a, 1, :c],
+          type: :category, categories: [:a, :b, :c, 1] }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:type) { is_expected.to eq :category }
+        its(:size) { is_expected.to eq 5 }
+        its(:order) { is_expected.to eq [:a, :b, :c, 1] }
+        its(:categories) { is_expected.to eq [:a, :b, :c, 1] }
+      end
+      
+      context "incomplete" do
+        it do
+          expect { Daru::Vector.new [:a, 1, :a, 1, :c],
+            type: :category, categories: [:b, :c, 1] }.
+            to raise_error ArgumentError
+        end
+      end
+    end
+  end
+
+  context "#add_category" do
+    context "single category" do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+      subject { dv }
+      before { dv.add_category :b }
+      
+      its(:categories) { is_expected.to eq [:a, 1, :c, :b] }
+      its(:order) { is_expected.to eq [:a, 1, :c, :b] }
+    end
+    
+    context "multiple categories" do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+      subject { dv }
+      before { dv.add_category :b, :d }
+      
+      its(:categories) { is_expected.to eq [:a, 1, :c, :b, :d] }
+      its(:order) { is_expected.to eq [:a, 1, :c, :b, :d] }
+    end
+  end
+  
+  context "count" do
+    context "existant category" do
+      context "more than 0" do
+        subject(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+  
+        it { expect(dv.count :a).to eq 2 }
+      end
+      
+      context "equal to 0" do
+        subject(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+        before { dv.add_category :b }
+  
+        it { expect(dv.count :b).to eq 0 }
+      end
+    end
+    
+    context "non existant category" do
+      subject(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+      
+      it { expect { dv.count :k }.to raise_error ArgumentError }
+    end
+  end
+
+  context "#frequencies" do
+    let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c],
+      type: :category,
+      categories: [:a, :b, :c, :d, 1] }
+    subject { dv.frequencies }
+
+    its(:'index.to_a') { is_expected.to eq [:a, :b, :c, :d, 1] }
+    its(:to_a) { is_expected.to eq [2, 0, 1, 0, 2] }
   end
 
   context "#to_category" do
