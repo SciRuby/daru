@@ -125,17 +125,17 @@ describe "Arel-like syntax" do
       end
       
       describe "categorical type" do
-        let(:dv) { Daru::Vector.new ['e', 'd', 'd', 'b', 'b'],
-          categories: ['a', 'b', 'c', 'd', 'e'], type: :category }
-        let(:comp) { Daru::Vector.new ['a', 'd', 'b', 'e', 'b'],
-          categories: ['a', 'b', 'c', 'd', 'e'], type: :category }
+        let(:dv) { Daru::Vector.new ['e', 'd', 'd', 'x', 'x'],
+          categories: ['a', 'x', 'c', 'd', 'e'], type: :category }
+        let(:comp) { Daru::Vector.new ['a', 'd', 'x', 'e', 'x'],
+          categories: ['a', 'x', 'c', 'd', 'e'], type: :category }
         let(:query_bool_class) { Daru::Core::Query::BoolArray }
 
         context "#eq" do
           context "scalar" do
             subject { dv.eq 'd' }
             
-            it { is_expected.to be_a query_bool }
+            it { is_expected.to be_a query_bool_class }
             its(:to_a) { is_expected.to eq [false, true, true, false, false] }
           end
 
@@ -197,14 +197,14 @@ describe "Arel-like syntax" do
   
         context "#mt" do
           context "scalar" do
-            subject { dv.lteq 'd' }
+            subject { dv.mt 'd' }
             
             it { is_expected.to be_a query_bool_class }
-            its(:to_a) { is_expected.to eq [false, false, false, false, false] }
+            its(:to_a) { is_expected.to eq [true, false, false, false, false] }
           end
           
           context "vector" do
-            subject { dv.lteq comp }
+            subject { dv.mt comp }
             
             it { is_expected.to be_a query_bool_class }
             its(:to_a) { is_expected.to eq [true, false, true, false, false] }
@@ -213,25 +213,25 @@ describe "Arel-like syntax" do
   
         context "#mteq" do
           context "scalar" do
-            subject { dv.lteq 'd' }
+            subject { dv.mteq 'd' }
             
             it { is_expected.to be_a query_bool_class }
-            its(:to_a) { is_expected.to eq [false, false, false, false, false] }
+            its(:to_a) { is_expected.to eq [true, true, true, false, false] }
           end
           
           context "vector" do
-            subject { dv.lteq comp }
+            subject { dv.mteq comp }
             
             it { is_expected.to be_a query_bool_class }
-            its(:to_a) { is_expected.to eq [true, false, true, false, false] }
+            its(:to_a) { is_expected.to eq [true, true, true, false, true] }
           end
         end
   
-        context "#in" do
-          subject { dv.in ['b', 'd'] }
-          it { is_expected.to be_a query_bool_class }
-          its(:to_a) { is_expected.to eq [false, true, true, true, true] }
-        end
+        # context "#in" do
+        #   subject { dv.in ['b', 'd'] }
+        #   it { is_expected.to be_a query_bool_class }
+        #   its(:to_a) { is_expected.to eq [false, true, true, true, true] }
+        # end
       end
     end
   end
@@ -269,18 +269,43 @@ describe "Arel-like syntax" do
     end
 
     context Daru::Vector do
-      before do
-        @vector = Daru::Vector.new([2,5,1,22,51,4])
+      context "non-categorical type" do
+        before do
+          @vector = Daru::Vector.new([2,5,1,22,51,4])
+        end
+  
+        it "accepts a simple single statement" do
+          expect(@vector.where(@vector.lt(10))).to eq(
+            Daru::Vector.new([2,5,1,4], index: Daru::Index.new([0,1,2,5])))
+        end
+  
+        it "accepts somewhat complex operator chaining" do
+          expect(@vector.where((@vector.lt(6) | @vector.eq(51)))).to eq(
+            Daru::Vector.new([2,5,1,51,4], index: Daru::Index.new([0,1,2,4,5])))
+        end
       end
-
-      it "accepts a simple single statement" do
-        expect(@vector.where(@vector.lt(10))).to eq(
-          Daru::Vector.new([2,5,1,4], index: Daru::Index.new([0,1,2,5])))
-      end
-
-      it "accepts somewhat complex operator chaining" do
-        expect(@vector.where((@vector.lt(6) | @vector.eq(51)))).to eq(
-          Daru::Vector.new([2,5,1,51,4], index: Daru::Index.new([0,1,2,4,5])))
+      
+      context "categorical type" do
+        let(:dv) { Daru::Vector.new ['a', 'c', 'x', 'x', 'c'],
+          categories: ['a', 'x', 'c'], type: :category }
+        
+        context "simple single statement" do
+          subject { dv.where(dv.lt('x')) }
+          
+          it { is_expected.to be_a Daru::Vector }
+          its(:type) { is_expected.to eq :category }
+          its(:to_a) { is_expected.to eq ['a'] }
+          its(:'index.to_a') { is_expected.to eq [0] }
+        end
+        
+        context "complex operator chaining" do
+          subject { dv.where((dv.lt('x') | dv.eq('c'))) }
+          
+          it { is_expected.to be_a Daru::Vector }
+          its(:type) { is_expected.to eq :category }
+          its(:to_a) { is_expected.to eq ['a', 'c', 'c'] }
+          its(:'index.to_a') { is_expected.to eq [0, 1, 4] }
+        end
       end
 
       it "preserves name" do

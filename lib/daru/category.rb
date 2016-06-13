@@ -205,6 +205,10 @@ module Daru
         index == other.index
     end
 
+    def to_ints
+      @array
+    end
+
     # Over rides original inspect for pretty printing in irb
     def inspect spacing=20, threshold=15
       row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
@@ -245,7 +249,7 @@ module Daru
       define_method(method) do |other|
         mod = Daru::Core::Query
         if other.is_a?(Daru::Vector)
-          mod.apply_vector_operator operator, self, other
+          mod.apply_vector_operator operator, to_ints, other.to_ints
         else
           mod.apply_scalar_operator operator, @array, @map_int_cat.key(other)
         end
@@ -253,6 +257,10 @@ module Daru
     end
     alias :gt :mt
     alias :gteq :mteq
+
+    def where bool_arry
+      Daru::Core::Query.vector_where to_a, @index.to_a, bool_arry, dtype, type
+    end
 
     private
 

@@ -186,14 +186,8 @@ module Daru
         guard_sizes!
 
         @possibly_changed_type = true
-<<<<<<< 44c6bf4e427592bffc885ba1938399e94436c929
-
-        set_missing_values opts[:missing_values]
-        set_missing_positions(true)
-=======
         set_missing_values opts[:missing_values]
         set_missing_positions(true) unless @index.class == Daru::CategoricalIndex
->>>>>>> fix some errors
         set_size
       end
     end
@@ -442,7 +436,7 @@ module Daru
     #   # 13   5
     #   # 15   1
     def where bool_arry
-      Daru::Core::Query.vector_where @data.to_a, @index.to_a, bool_arry, dtype, @name
+      Daru::Core::Query.vector_where @data.to_a, @index.to_a, bool_arry, dtype, type, @name
     end
 
     def head q=10
