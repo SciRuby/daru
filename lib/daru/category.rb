@@ -14,7 +14,7 @@ module Daru
       if opts[:categories]
         validate_categories(opts[:categories])
         add_extra_categories(opts[:categories] - categories)
-        self.order = opts[:categories]
+        set_order opts[:categories]
       end
 
       # Specify if the categories are ordered or not.
@@ -126,39 +126,25 @@ module Daru
     def categories
       @cat_hash.keys
     end
+    
+    alias_method :order, :categories
 
-    def categories= new
-      # Change to SizeError
-      if new.size != categories.size
-        raise ShapeError, "New categories size (#{new.size}) does not match"\
-          "with old categories size (#{categories.size})"
-      end
+    def categories= cat_with_order
+      validate_categories(cat_with_order)
+      add_extra_categories(cat_with_order - categories)
+      set_order cat_with_order
+    end
 
-      @cat_hash = new.each_with_index.map do |new_cat, i|
-        @map_int_cat[i] = new_cat
-
-        old_cat = categories[i]
-        [new_cat, @cat_hash[old_cat]]
+    def rename_categories old_to_new
+      @cat_hash = @cat_hash.keys.each_with_index.map do |old_cat, i|
+        if old_to_new.include? old_cat
+          new_cat = old_to_new[old_cat]
+          @map_int_cat[i] = new_cat
+          [new_cat, @cat_hash[old_cat]]
+        else
+          [old_cat, @cat_hash[old_cat]]
+        end
       end.to_h
-    end
-
-    def order
-      @cat_hash.keys
-    end
-
-    def order= new
-      if new.to_set != categories.to_set
-        raise ArgumentError, 'The contents of new and old order must be the same.'
-      end
-
-      @cat_hash = new.map { |cat| [cat, @cat_hash[cat]] }.to_h
-
-      map_cat_int = @cat_hash.keys.each_with_index.to_a.to_h
-      @map_int_cat = map_cat_int.invert
-      @array = Array.new(size)
-      @cat_hash.map do |cat, positions|
-        positions.each { |pos| @array[pos] = map_cat_int[cat] }
-      end
     end
 
     def min
@@ -428,5 +414,20 @@ module Daru
       @cat_hash[old_category].delete pos
       @cat_hash[category] << pos
     end
+
+    def set_order new
+      if new.to_set != categories.to_set
+        raise ArgumentError, 'The contents of new and old order must be the same.'
+      end
+
+      @cat_hash = new.map { |cat| [cat, @cat_hash[cat]] }.to_h
+
+      map_cat_int = @cat_hash.keys.each_with_index.to_a.to_h
+      @map_int_cat = map_cat_int.invert
+      @array = Array.new(size)
+      @cat_hash.map do |cat, positions|
+        positions.each { |pos| @array[pos] = map_cat_int[cat] }
+      end
+    end    
   end
 end

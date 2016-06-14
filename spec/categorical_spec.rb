@@ -165,6 +165,28 @@ describe Daru::Vector do
     its(:'to_a') { is_expected.to eq [:a, 1, :c] }
   end
   
+  context "#categories=" do
+    context "extra categories" do
+      subject { Daru::Vector.new [:a, 1, :a, 1, :c],
+        type: :category }
+      before { subject.categories = [:a, :b, :c, 1] }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:type) { is_expected.to eq :category }
+      its(:categories) { is_expected.to eq [:a, :b, :c, 1] }
+      its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
+    end
+    
+    context "incomplete" do
+      subject { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+
+      it do
+        expect { subject.categories = [:b, :c, 1] }.
+          to raise_error ArgumentError
+      end
+    end
+  end
+  
   context "#base_category" do
     let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
     subject { dv }
@@ -181,29 +203,12 @@ describe Daru::Vector do
     its(:coding_scheme) { is_expected.to eq :deviation }
   end
   
-  context "#categories=" do
+  context "#rename_categories" do
     let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
     subject { dv }
-    before { dv.categories = [1, 2, 3] }
+    before { dv.rename_categories :a => 1, 1 => 2 }
     
-    its(:to_a) { is_expected.to eq [1, 2, 1, 2, 3] }
-  end
-  
-  context "#order=" do
-    context "valid reordering" do
-      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
-      subject { dv }
-      before { dv.order = [:c, 1, :a] }
-      
-      its(:categories) { is_expected.to eq [:c, 1, :a] }
-      its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
-    end
-    
-    context "invalid reordering" do
-      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
-
-      it { expect { dv.order = [:c, 1, :b] }.to raise_error ArgumentError }
-    end
+    its(:to_a) { is_expected.to eq [1, 2, 1, 2, :c] }
   end
   
   context "#min" do
@@ -216,7 +221,7 @@ describe Daru::Vector do
       
       context "reorder" do
         let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, ordered: true }
-        before { dv.order = [1, :a, :c] }
+        before { dv.categories = [1, :a, :c] }
         
         it { expect(dv.min).to eq 1 }
       end
@@ -239,7 +244,7 @@ describe Daru::Vector do
       
       context "reorder" do
         let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, ordered: true }
-        before { dv.order = [1, :c, :a] }
+        before { dv.categories = [1, :c, :a] }
         
         it { expect(dv.max).to eq :a }
       end
@@ -255,7 +260,7 @@ describe Daru::Vector do
   context "#sort!" do
     let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, ordered: true }
     subject { dv }
-    before { dv.order = [:c, :a, 1]; dv.sort! }
+    before { dv.categories = [:c, :a, 1]; dv.sort! }
     
     it { is_expected.to be_a Daru::Vector }
     its(:size) { is_expected.to eq 5 }
