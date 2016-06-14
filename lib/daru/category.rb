@@ -148,19 +148,19 @@ module Daru
     end
 
     def min
-      assert_ordered 'min'
+      assert_ordered :min
 
       categories.first
     end
 
     def max
-      assert_ordered 'max'
+      assert_ordered :max
 
       categories.last
     end
 
     def sort!
-      assert_ordered 'sort'
+      assert_ordered :sort
 
       # Build sorted index
       old_index = @index.to_a
@@ -299,7 +299,7 @@ module Daru
 
     def assert_ordered operation
       # Change ArgumentError to something more expressive
-      raise ArgumentError, "Can not apply #{operation} when vector is unordered. "\
+      raise ArgumentError, "Can not apply #{operation.to_s} when vector is unordered. "\
         'To make the categorical data ordered, use #ordered = true'\
         unless ordered?
     end
