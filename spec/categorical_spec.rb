@@ -251,10 +251,22 @@ describe Daru::Vector do
     end
     
     context "unordered" do
-      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c, :a], type: :category }
 
       it { expect { dv.max }.to raise_error ArgumentError }
     end
+  end
+  
+  context "summary" do
+    let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c, :a], type: :category }
+    subject { dv.summary }
+    
+    it { is_expected.to be_a Daru::Vector }
+    its(:categories) { is_expected.to eq 3 }
+    its(:max_freq) { is_expected.to eq 3 }
+    its(:max_category) { is_expected.to eq :a }
+    its(:min_freq) { is_expected.to eq 1 }
+    its(:min_category) { is_expected.to eq :c }
   end
   
   context "#sort!" do

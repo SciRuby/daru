@@ -248,6 +248,20 @@ module Daru
       Daru::Core::Query.vector_where to_a, @index.to_a, bool_arry, dtype, type
     end
 
+    # TODO Cut function
+    def summary
+      values = {
+        size: size,
+        categories: categories.size,
+        max_freq: @cat_hash.values.map(&:size).max,
+        max_category: @cat_hash.keys.max_by { |cat| @cat_hash[cat].size },
+        min_freq: @cat_hash.values.map(&:size).min,
+        min_category: @cat_hash.keys.min_by { |cat| @cat_hash[cat].size }
+      }
+      
+      Daru::Vector.new values
+    end
+
     private
 
     def validate_categories input_categories
