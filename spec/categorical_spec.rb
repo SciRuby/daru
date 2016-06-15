@@ -92,6 +92,38 @@ describe Daru::Vector do
     end
   end
 
+  context "#each" do
+    let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c] }
+    subject { dv.each }
+    
+    it { is_expected.to be_a Enumerator }
+    its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
+  end
+  
+  context "#to_a" do
+    let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c] }
+    subject { dv.to_a }
+    
+    it { is_expected.to be_a Array }
+    its(:size) { is_expected.to eq 5 }
+    it { is_expected.to eq [:a, 1, :a, 1, :c] }
+  end
+  
+  context "#dup" do
+    let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+    before do
+      dv.categories = [:a, :b, :c, 1]
+      dv.name = 'daru'
+      dv.ordered = true
+    end
+    subject { dv.dup }
+    
+    its(:type) { is_expected.to eq :category }
+    its(:ordered?) { is_expected.to eq true }
+    its(:categories) { is_expected.to eq [:a, :b, :c, 1] }
+    its(:name) { is_expected.to eq 'daru' }
+  end
+
   context "#add_category" do
     context "single category" do
       let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }

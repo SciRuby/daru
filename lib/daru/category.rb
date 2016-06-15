@@ -1,6 +1,6 @@
 module Daru
   module Category
-    attr_accessor :coding_scheme, :base_category
+    attr_accessor :coding_scheme, :base_category, :name
     attr_reader :index
 
     # For debuggin. To be removed
@@ -59,6 +59,18 @@ module Daru
     # @return [Array] array of all categorical data which vector is storing
     def to_a
       each.to_a
+    end
+
+    # Duplicated a vector
+    # @return [Daru::Vector] duplicated vector
+    def dup
+      Daru::Vector.new to_a,
+        name: @name,
+        metadata: @metadata.dup,
+        index: @index.dup,
+        type: :category,
+        categories: categories,
+        ordered: ordered?
     end
 
     # Associates new category to vector.
