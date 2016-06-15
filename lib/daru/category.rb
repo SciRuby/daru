@@ -15,6 +15,17 @@ module Daru
     # @option opts [object] :index gives index to vector. By default its from 0 to size-1
     # @option opts [Hash] :metadata metadata associated with the vector.
     # @return the categorical data created
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c],
+    #     type: :category,
+    #     ordered: true,
+    #     categories: [:a, :b, :c, 1]
+    #   # => #<Daru::Vector(5)>
+    #   #   0   a
+    #   #   1   1
+    #   #   2   a
+    #   #   3   1
+    #   #   4   c
     def initialize_category data, opts={}
       @type = :category
 
@@ -57,14 +68,28 @@ module Daru
 
     # Returns all categorical data
     # @return [Array] array of all categorical data which vector is storing
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
+    #   dv.to_a
+    #   # => [:a, 1, :a, 1, :c]
+
     def to_a
       each.to_a
     end
 
     # Duplicated a vector
     # @return [Daru::Vector] duplicated vector
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
+    #   dv.dup
+    #   # => #<Daru::Vector(5)>
+    #   #   0   a
+    #   #   1   1
+    #   #   2   a
+    #   #   3   1
+    #   #   4   c    
     def dup
-      Daru::Vector.new to_a,
+      Daru::Vector.new to_a.dup,
         name: @name,
         metadata: @metadata.dup,
         index: @index.dup,
@@ -73,8 +98,13 @@ module Daru
         ordered: ordered?
     end
 
-    # Associates new category to vector.
-    # @param [Array] *new_categories new categories to be added
+    # Associates a category to the vector.
+    # @param [Array] *new_categories new categories to be associated
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
+    #   dv.add_category :b
+    #   dv.categories
+    #   # => [:a, :b, :c, 1]
     def add_category(*new_categories)
       new_categories = new_categories - categories
       add_extra_categories new_categories
@@ -83,6 +113,10 @@ module Daru
     # Returns frequency of given category
     # @param [object] category given category whose count has to be founded
     # @return count/frequency of given category
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
+    #   dv.count :a
+    #   # => 2
     def count category
       raise ArgumentError, "Invalid category #{category}" unless
         categories.include?(category)
@@ -93,6 +127,14 @@ module Daru
     # Returns a vector storing count/frequency of each category
     # @return [Daru::Vector] Return a vector whose indexes are categories
     #   and corresponding values are its count
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
+    #   dv.frequencies
+    #   # => #<Daru::Vector(4)>
+    #   #   a   2
+    #   #   b   0
+    #   #   c   1
+    #   #   1   2    
     def frequencies
       Daru::Vector.new @cat_hash.values.map { |val| val.size },
         index: categories
@@ -103,6 +145,18 @@ module Daru
     # @note Since it accepts both indexes and postions. In case of collision,
     #   arguement will be treated as index
     # @return vector containing values specified at specified indexes/positions
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c],
+    #     type: :category,
+    #     index: 'a'..'e'
+    #   dv[:a, 1]
+    #   # => #<Daru::Vector(2)>
+    #   #   a   a
+    #   #   b   1
+    #   dv[0, 1]
+    #   # => #<Daru::Vector(2)>
+    #   #   a   a
+    #   #   b   1    
     def [] *indexes
       positions = @index.pos(*indexes)
       return category_from_position(positions) if positions.is_a? Integer
@@ -118,6 +172,14 @@ module Daru
     # Returns vector for positions specified.
     # @param [Array] *positions positions at which values to be retrived.
     # @return vector containing values specified at specified positions
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
+    #   dv.at 0..-2
+    #   # => #<Daru::Vector(4)>
+    #   #   0   a
+    #   #   1   1
+    #   #   2   a
+    #   #   3   1
     def at *positions
       original_positions = positions
       positions = preprocess_positions(*positions)
@@ -134,9 +196,21 @@ module Daru
     end
 
     # Modifies values at specified indexes/positions.
+    # @note In order to add a new category you need to associate it via #add_category
     # @param [Array] *indexes indexes/positions at which to modify value
     # @param [object] val value to assign at specific indexes/positions
     # @return modified vector
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
+    #   dv.add_category :b
+    #   dv[0] = :b
+    #   dv
+    #   # => #<Daru::Vector(5)>
+    #   #   0   b
+    #   #   1   1
+    #   #   2   a
+    #   #   3   1
+    #   #   4   c    
     def []= *indexes, val
       positions = @index.pos(*indexes)
 
@@ -152,6 +226,16 @@ module Daru
     # @param [Array] positions positions at which to modify value
     # @param [object] val value to assign at specific positions
     # @return modified vector
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
+    #   dv.add_category :b
+    #   dv.set_at [0, 1], :b
+    #   # => #<Daru::Vector(5)>
+    #   #   0   b
+    #   #   1   b
+    #   #   2   a
+    #   #   3   1
+    #   #   4   c
     def set_at positions, val
       validate_positions(*positions)
       positions.map { |pos| modify_category_at pos, val }
@@ -160,24 +244,43 @@ module Daru
 
     # Size of categorical data.
     # @return total number of values in the vector
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
+    #   dv.size
+    #   # => 5
     def size
       @array.size
     end
 
     # Tells whether vector is ordered or not.
     # @return [Boolean] true if vector is ordered, false otherwise
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
+    #   dv.ordered?
+    #   # => false
     def ordered?
       @ordered
     end
 
     # Make categorical data ordered or unordered.
     # @param [Boolean] bool true if categorical data is to be to ordered, false otherwise
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
+    #   dv.ordered = true
+    #   dv.ordered?
+    #   # => true
     def ordered= bool
       @ordered = bool
     end
 
     # Returns all the categories with the inherent order
     # @return [Array] categories of the vector with the order
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c],
+    #     type: :category,
+    #     categories: [:a, :b, :c, 1]
+    #   dv.categories
+    #   # => [:a, :b, :c, 1]
     def categories
       @cat_hash.keys
     end
@@ -187,6 +290,11 @@ module Daru
     # Sets order of the categories.
     # @note If extra categories are specified, they get added too.
     # @param [Array] cat_with_order categories specifying their order
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
+    #   dv.categories = [:a, :b, :c, 1]
+    #   dv.categories
+    #   # => [:a, :b, :c, 1]
     def categories= cat_with_order
       validate_categories(cat_with_order)
       add_extra_categories(cat_with_order - categories)
@@ -196,6 +304,16 @@ module Daru
     # Rename categories.
     # @param [Hash] old_to_new a hash mapping categories whose name to be changed
     #   to their new names
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
+    #   dv.rename_categories :a => :b
+    #   dv
+    #   # => #<Daru::Vector(5)>
+    #   #   0   b
+    #   #   1   1
+    #   #   2   b
+    #   #   3   1
+    #   #   4   c    
     def rename_categories old_to_new
       @cat_hash = @cat_hash.keys.each_with_index.map do |old_cat, i|
         if old_to_new.include? old_cat
@@ -212,6 +330,11 @@ module Daru
     # @note This operation will only work if vector is ordered.
     #   To set the vector ordered do `vector.ordered = true`
     # @return [object] the minimum category acording to the order
+    # @example
+    #   dv = Daru::Vector.new ['second', 'second', 'third', 'first'],
+    #     categories: ['first', 'second', 'third']
+    #   dv.min
+    #   # => 'first'
     def min
       assert_ordered :min
       categories.first
@@ -221,6 +344,11 @@ module Daru
     # @note This operation will only work if vector is ordered.
     #   To set the vector ordered do `vector.ordered = true`
     # @return [object] the maximum category acording to the order
+    # @example
+    #   dv = Daru::Vector.new ['second', 'second', 'third', 'first'],
+    #     categories: ['first', 'second', 'third']
+    #   dv.max
+    #   # => 'third'
     def max
       assert_ordered :max
       categories.last
@@ -230,6 +358,17 @@ module Daru
     # @note This operation will only work if vector is ordered.
     #   To set the vector ordered, do `vector.ordered = true`
     # @return [Daru::Vector] sorted vector
+    # @example
+    #   dv = Daru::Vector.new ['second', 'second', 'third', 'first'],
+    #     categories: ['first', 'second', 'thrid'],
+    #     type: :categories,
+    #     ordered: true
+    #   dv.sort!
+    #   # => #<Daru::Vector(4)>
+    #   #       3  first
+    #   #       0 second
+    #   #       1 second
+    #   #       2  third    
     def sort!
       assert_ordered :sort
 
@@ -251,7 +390,14 @@ module Daru
 
       self
     end
-    
+
+    # Set coding scheme
+    # @param [Symbol] scheme to set
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
+    #   dv.coding_scheme = :deviation
+    #   dv.coding_scheme
+    #   # => :deviation
     def coding_scheme= scheme
       raise ArgumentError, "Unknown or unsupported coding scheme #{scheme}." unless
         CODING_SCHEMES.include? scheme
@@ -265,12 +411,29 @@ module Daru
     # @param [true, false] full true if you want k variables for k categories,
     #   false if you want k-1 variables for k categories
     # @return [Daru::DataFrame] dataframe containing all coded variables
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
+    #   dv.contrast_code
+    #   # => #<Daru::DataFrame(5x2)>
+    #   #         daru_1 daru_c
+    #   #       0      0      0
+    #   #       1      1      0
+    #   #       2      0      0
+    #   #       3      1      0
+    #   #       4      0      1    
     def contrast_code full=false
       send("#{coding_scheme}_coding".to_sym, full)
     end
 
     # Two categorical vectors are equal if their index and corresponding values are same
     # return [true, false] true if two vectors are similar
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
+    #   other = Daru::Vector.new [:a, 1, :a, 1, :c],
+    #     type: :category,
+    #     index: 1..5
+    #   dv == other
+    #   # => false
     def == other
       size == other.size &&
         to_a == other.to_a &&
@@ -280,6 +443,12 @@ module Daru
     # Returns integer coding for categorical data in the order starting from 0.
     # For example if order is [:a, :b, :c], then :a, will be coded as 0, :b as 1 and :c as 2
     # @return [Array] integer coding of all values of vector
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c],
+    #     type: :category,
+    #     categories: [:a, :b, :c, 1]
+    #   dv.to_ints
+    #   # => [0, 1, 0, 1, 2]
     def to_ints
       @array
     end
@@ -333,11 +502,41 @@ module Daru
     alias :gt :mt
     alias :gteq :mteq
 
+    # For querying the data
+    # @param [object] arel like query syntax
+    # @return [Daru::Vector] Vector which makes the conditions true
+    # @example
+    #   dv = Daru::Vector.new ['I', 'II', 'I', 'III', 'I', 'II'],
+    #     type: :category,
+    #     ordered: true,
+    #     categories: ['I', 'II', 'III']
+    #   dv.where(dv.mt('I') & dv.lt('III'))
+    #   # => #<Daru::Vector(2)>
+    #   #   1  II
+    #   #   5  II    
     def where bool_arry
       Daru::Core::Query.vector_where to_a, @index.to_a, bool_arry, dtype, type
     end
 
-    # TODO Cut function
+    # Gives the summary of data using following parameters
+    # - size: size of the data
+    # - categories: total number of categories
+    # - max_freq: Max no of times a category occurs
+    # - max_category: The category which occurs max no of times
+    # - min_freq: Min no of times a category occurs
+    # - min_category: The category which occurs min no of times
+    # @return [Daru::Vector] Vector with index as following parameters
+    #   and values as values to these parameters
+    # @example
+    #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
+    #   dv.summary
+    #   # => #<Daru::Vector(6)>
+    #   #         size            5
+    #   #   categories            3
+    #   #     max_freq            2
+    #   # max_category            a
+    #   #     min_freq            1
+    #   # min_category            c
     def summary
       values = {
         size: size,
