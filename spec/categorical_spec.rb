@@ -91,6 +91,17 @@ describe Daru::Vector, "categorical" do
       end
     end
   end
+  
+  context "#cut" do
+    let(:dv) { Daru::Vector.new [1, 2, 5, 14] }
+    subject { dv.cut (0..20).step(5) }
+    
+    it { is_expected.to be_a Daru::Vector }
+    its(:type) { is_expected.to eq :category }
+    its(:size) { is_expected.to eq 4 }
+    its(:categories) { is_expected.to eq ['0-4', '5-9', '10-14', '15-19'] }
+    its(:to_a) { is_expected.to eq ['0-4', '0-4', '5-9', '10-14'] }
+  end
 
   context "#each" do
     let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c] }

@@ -1164,6 +1164,16 @@ module Daru
       end
     end
 
+    def cut partitions
+      partitions = partitions.to_a
+      values = to_a.map { |val| cut_find_category partitions, val }
+
+      Daru::Vector.new values,
+        index: @index,
+        type: :category,
+        categories: cut_categories(partitions)
+    end
+
     private
 
     def parse_source source, opts
@@ -1334,6 +1344,19 @@ module Daru
       end
 
       update_internal_state
+    end
+
+    def cut_find_category partitions, val
+      right_index = partitions.index { |i| i > val }
+      raise ArgumentError, "Invalid partition" if right_index.nil?
+      left_index = right_index - 1
+      "#{partitions[left_index]}-#{partitions[right_index]-1}"
+    end
+
+    def cut_categories partitions
+      (partitions.size-1).times.map do |left_index|
+        "#{partitions[left_index]}-#{partitions[left_index+1]-1}"
+      end
     end
   end
 end
