@@ -1,7 +1,7 @@
 module Daru
   module Category
-    attr_accessor :coding_scheme, :base_category, :name
-    attr_reader :index
+    attr_accessor :base_category, :name
+    attr_reader :index, :coding_scheme
 
     # For debuggin. To be removed
     attr_reader :array, :cat_hash, :map_int_cat
@@ -251,6 +251,14 @@ module Daru
 
       self
     end
+    
+    def coding_scheme= scheme
+      raise ArgumentError, "Unknown or unsupported coding scheme #{scheme}." unless
+        CODING_SCHEMES.include? scheme
+      @coding_scheme = scheme
+    end
+    
+    CODING_SCHEMES = [:dummy, :deviation, :helmert, :simple]
 
     # Contrast code the vector acording to the coding scheme set.
     # @note To set the coding scheme use #coding_scheme=

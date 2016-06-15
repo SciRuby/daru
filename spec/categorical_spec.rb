@@ -1,4 +1,4 @@
-describe Daru::Vector do
+describe Daru::Vector, "categorical" do
   context "initialize" do
     context "default parameters" do
       let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
@@ -228,11 +228,19 @@ describe Daru::Vector do
   end
   
   context "#coding_scheme" do
-    let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
-    subject { dv }
-    before { dv.coding_scheme = :deviation }
+    context "valid coding scheme" do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+      subject { dv }
+      before { dv.coding_scheme = :deviation }
+      
+      its(:coding_scheme) { is_expected.to eq :deviation }
+    end
     
-    its(:coding_scheme) { is_expected.to eq :deviation }
+    context "invalid coding scheme" do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+      
+      it { expect { dv.coding_scheme = :foo }.to raise_error ArgumentError }
+    end
   end
   
   context "#rename_categories" do
