@@ -40,7 +40,7 @@ module Daru
       @name = opts[:name]
 
       # Index of the vector
-      @index = preprocess_index(opts[:index])
+      @index = coerce_index(opts[:index])
 
       # Store metadata
       @metadata = opts[:metadata] || {}
@@ -465,7 +465,7 @@ module Daru
       categories.map { |cat| "#{name}_#{cat}".to_sym }
     end
 
-    def preprocess_index index
+    def coerce_index index
       index =
         case index
         when nil
@@ -490,7 +490,8 @@ module Daru
     end
 
     def modify_category_at pos, category
-      raise ArgumentError, "Invalid category #{category}" unless
+      raise ArgumentError, "Invalid category #{category}, "\
+        'to add a new category use #add_category' unless
         categories.include? category
       old_category = category_from_position pos
       @array[pos] = @map_int_cat.key(category)
