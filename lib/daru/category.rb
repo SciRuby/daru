@@ -72,7 +72,6 @@ module Daru
     #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
     #   dv.to_a
     #   # => [:a, 1, :a, 1, :c]
-
     def to_a
       each.to_a
     end
@@ -87,7 +86,7 @@ module Daru
     #   #   1   1
     #   #   2   a
     #   #   3   1
-    #   #   4   c    
+    #   #   4   c
     def dup
       Daru::Vector.new to_a.dup,
         name: @name,
@@ -106,7 +105,7 @@ module Daru
     #   dv.categories
     #   # => [:a, :b, :c, 1]
     def add_category(*new_categories)
-      new_categories = new_categories - categories
+      new_categories -= categories
       add_extra_categories new_categories
     end
 
@@ -134,7 +133,7 @@ module Daru
     #   #   a   2
     #   #   b   0
     #   #   c   1
-    #   #   1   2    
+    #   #   1   2
     def frequencies
       Daru::Vector.new @cat_hash.values.map(&:size),
         index: categories
@@ -156,7 +155,7 @@ module Daru
     #   dv[0, 1]
     #   # => #<Daru::Vector(2)>
     #   #   a   a
-    #   #   b   1    
+    #   #   b   1
     def [] *indexes
       positions = @index.pos(*indexes)
       return category_from_position(positions) if positions.is_a? Integer
@@ -210,7 +209,7 @@ module Daru
     #   #   1   1
     #   #   2   a
     #   #   3   1
-    #   #   4   c    
+    #   #   4   c
     def []= *indexes, val
       positions = @index.pos(*indexes)
 
@@ -313,7 +312,7 @@ module Daru
     #   #   1   1
     #   #   2   b
     #   #   3   1
-    #   #   4   c    
+    #   #   4   c
     def rename_categories old_to_new
       @cat_hash = @cat_hash.keys.each_with_index.map do |old_cat, i|
         if old_to_new.include? old_cat
@@ -368,7 +367,7 @@ module Daru
     #   #       3  first
     #   #       0 second
     #   #       1 second
-    #   #       2  third    
+    #   #       2  third
     def sort!
       assert_ordered :sort
 
@@ -403,8 +402,8 @@ module Daru
         CODING_SCHEMES.include? scheme
       @coding_scheme = scheme
     end
-    
-    CODING_SCHEMES = [:dummy, :deviation, :helmert, :simple]
+
+    CODING_SCHEMES = [:dummy, :deviation, :helmert, :simple].freeze
 
     # Contrast code the vector acording to the coding scheme set.
     # @note To set the coding scheme use #coding_scheme=
@@ -420,7 +419,7 @@ module Daru
     #   #       1      1      0
     #   #       2      0      0
     #   #       3      1      0
-    #   #       4      0      1    
+    #   #       4      0      1
     def contrast_code full=false
       send("#{coding_scheme}_coding".to_sym, full)
     end
@@ -513,12 +512,15 @@ module Daru
     #   dv.where(dv.mt('I') & dv.lt('III'))
     #   # => #<Daru::Vector(2)>
     #   #   1  II
-    #   #   5  II    
+    #   #   5  II
     def where bool_arry
       Daru::Core::Query.vector_where to_a, @index.to_a, bool_arry, dtype, type
     end
 
+<<<<<<< 44bc5a497bb46026c09694782f7b371d13a16498
 <<<<<<< e19d8e2c34cd719e8441e3fcc92ab5cdb9f8afc7
+=======
+>>>>>>> solve ofences
     # Gives the summary of data using following parameters
     # - size: size of the data
     # - categories: total number of categories
@@ -538,9 +540,12 @@ module Daru
     #   # max_category            a
     #   #     min_freq            1
     #   # min_category            c
+<<<<<<< 44bc5a497bb46026c09694782f7b371d13a16498
 =======
     # TODO: Cut function
 >>>>>>> solve offences
+=======
+>>>>>>> solve ofences
     def summary
       values = {
         size: size,

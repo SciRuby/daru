@@ -1348,13 +1348,13 @@ module Daru
 
     def cut_find_category partitions, val
       right_index = partitions.index { |i| i > val }
-      raise ArgumentError, "Invalid partition" if right_index.nil?
+      raise ArgumentError, 'Invalid partition' if right_index.nil?
       left_index = right_index - 1
       "#{partitions[left_index]}-#{partitions[right_index]-1}"
     end
 
     def cut_categories partitions
-      (partitions.size-1).times.map do |left_index|
+      Array.new(partitions.size-1) do |left_index|
         "#{partitions[left_index]}-#{partitions[left_index+1]-1}"
       end
     end
