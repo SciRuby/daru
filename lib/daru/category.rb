@@ -34,7 +34,7 @@ module Daru
       if opts[:categories]
         validate_categories(opts[:categories])
         add_extra_categories(opts[:categories] - categories)
-        set_order opts[:categories]
+        order_with opts[:categories]
       end
 
       # Specify if the categories are ordered or not.
@@ -136,7 +136,7 @@ module Daru
     #   #   c   1
     #   #   1   2    
     def frequencies
-      Daru::Vector.new @cat_hash.values.map { |val| val.size },
+      Daru::Vector.new @cat_hash.values.map(&:size),
         index: categories
     end
 
@@ -284,7 +284,7 @@ module Daru
     def categories
       @cat_hash.keys
     end
-    
+
     alias_method :order, :categories
 
     # Sets order of the categories.
@@ -298,7 +298,7 @@ module Daru
     def categories= cat_with_order
       validate_categories(cat_with_order)
       add_extra_categories(cat_with_order - categories)
-      set_order cat_with_order
+      order_with cat_with_order
     end
 
     # Rename categories.
@@ -518,6 +518,7 @@ module Daru
       Daru::Core::Query.vector_where to_a, @index.to_a, bool_arry, dtype, type
     end
 
+<<<<<<< e19d8e2c34cd719e8441e3fcc92ab5cdb9f8afc7
     # Gives the summary of data using following parameters
     # - size: size of the data
     # - categories: total number of categories
@@ -537,6 +538,9 @@ module Daru
     #   # max_category            a
     #   #     min_freq            1
     #   # min_category            c
+=======
+    # TODO: Cut function
+>>>>>>> solve offences
     def summary
       values = {
         size: size,
@@ -546,7 +550,7 @@ module Daru
         min_freq: @cat_hash.values.map(&:size).min,
         min_category: @cat_hash.keys.min_by { |cat| @cat_hash[cat].size }
       }
-      
+
       Daru::Vector.new values
     end
 
@@ -587,7 +591,7 @@ module Daru
 
     def assert_ordered operation
       # Change ArgumentError to something more expressive
-      raise ArgumentError, "Can not apply #{operation.to_s} when vector is unordered. "\
+      raise ArgumentError, "Can not apply #{operation} when vector is unordered. "\
         'To make the categorical data ordered, use #ordered = true'\
         unless ordered?
     end
@@ -718,7 +722,7 @@ module Daru
       @cat_hash[category] << pos
     end
 
-    def set_order new
+    def order_with new
       if new.to_set != categories.to_set
         raise ArgumentError, 'The contents of new and old order must be the same.'
       end
@@ -731,6 +735,6 @@ module Daru
       @cat_hash.map do |cat, positions|
         positions.each { |pos| @array[pos] = map_cat_int[cat] }
       end
-    end    
+    end
   end
 end

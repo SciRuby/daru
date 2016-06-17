@@ -1302,5 +1302,5 @@ describe Daru::Vector, "categorical" do
         ]}
       end
     end
-  end  
+  end
 end
