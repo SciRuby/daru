@@ -119,7 +119,7 @@ module Daru
     end
 
     # The name of the Daru::Vector. String.
-    attr_reader :name
+    attr_accessor :name
     # The row index. Can be either Daru::Index or Daru::MultiIndex.
     attr_reader :index
     # The total number of elements of the vector.

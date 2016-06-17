@@ -1777,6 +1777,29 @@ module Daru
       end
     end
 
+    def interact_code vector_names, full
+      dfs = vector_names.zip(full).map do |vec_name, f|
+        self[vec_name].contrast_code(full=f).each.to_a
+      end
+
+      recursive_multiply dfs
+    end
+
+    def recursive_multiply dfs
+      if dfs.size == 1
+        return dfs
+      else
+        left = dfs.first
+        dfs.shift
+        rest = recursive_multiply(dfs).first
+        left.product(rest).map do |vec1, vec2|
+          v = vec1 * vec2
+          v.name = "#{vec1.name}_#{vec2.name}"
+          v
+        end
+      end
+    end
+
     private
 
     def should_be_vector! val

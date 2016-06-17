@@ -1304,3 +1304,61 @@ describe Daru::Vector, "categorical" do
     end
   end
 end
+
+describe Daru::DataFrame, "categorical" do
+  context "#interact_code" do
+    let(:df) do
+      Daru::DataFrame.new({
+        a: [1, 2, 3, 4, 5],
+        b: ['first', 'second', 'first', 'second', 'third'],
+        c: ['a', 'b', 'a', 'b', 'c']
+      })
+    end
+    before do
+      df[:b] = df[:b].to_category
+      df[:b].categories = ['first', 'second', 'third']
+      df[:c] = df[:c].to_category
+      df[:c].categories = ['a', 'b', 'c']
+    end
+
+    context "both full" do
+      subject { df.interact_code [:b, :c], [true, true] }
+      
+      it { is_expected.to eq Daru::DataFrame }
+      its(:size) { is_expected.to eq 5 }
+      its(:first_a) { is_expected.to eq [1, 0, 1, 0, 0] }
+      its(:first_b) { is_expected.to eq [0, 0, 0, 0, 0] }
+      its(:first_c) { is_expected.to eq [0, 0, 0, 0, 0] }
+      its(:second_a) { is_expected.to eq [0, 0, 0, 0, 0] }
+      its(:second_b) { is_expected.to eq [0, 1, 0, 1, 0] }
+      its(:second_c) { is_expected.to eq [0, 0, 0, 0, 0] }
+      its(:third_a) { is_expected.to eq [0, 0, 0, 0, 0] }
+      its(:third_b) { is_expected.to eq [0, 0, 0, 0, 0] }
+      its(:third_c) { is_expected.to eq [0, 0, 0, 0, 1] }
+    end
+
+    context "one full" do
+      subject { df.interact_code [:b, :c], [true, false] }
+      
+      it { is_expected.to eq Daru::DataFrame }
+      its(:size) { is_expected.to eq 5 }
+      its(:first_b) { is_expected.to eq [0, 0, 0, 0, 0] }
+      its(:first_c) { is_expected.to eq [0, 0, 0, 0, 0] }
+      its(:second_b) { is_expected.to eq [0, 1, 0, 1, 0] }
+      its(:second_c) { is_expected.to eq [0, 0, 0, 0, 0] }
+      its(:third_b) { is_expected.to eq [0, 0, 0, 0, 0] }
+      its(:third_c) { is_expected.to eq [0, 0, 0, 0, 1] }      
+    end
+
+    context "none full" do
+      subject { df.interact_code [:b, :c], [true, false] }
+      
+      it { is_expected.to eq Daru::DataFrame }
+      its(:size) { is_expected.to eq 5 }
+      its(:second_b) { is_expected.to eq [0, 1, 0, 1, 0] }
+      its(:second_c) { is_expected.to eq [0, 0, 0, 0, 0] }
+      its(:third_b) { is_expected.to eq [0, 0, 0, 0, 0] }
+      its(:third_c) { is_expected.to eq [0, 0, 0, 0, 1] }      
+    end
+  end
+end
