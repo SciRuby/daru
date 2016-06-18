@@ -188,6 +188,8 @@ module Daru
 
     # The vectors (columns) index of the DataFrame
     attr_reader :vectors
+    # TOREMOVE
+    attr_reader :data
 
     # The index of the rows of the DataFrame
     attr_reader :index
@@ -1782,19 +1784,21 @@ module Daru
         self[vec_name].contrast_code(full=f).each.to_a
       end
 
-      recursive_multiply dfs
+      all_vectors = recursive_product(dfs)
+      Daru::DataFrame.new all_vectors,
+        order: all_vectors.map { |vec| vec.name }
     end
 
-    def recursive_multiply dfs
+    def recursive_product dfs
       if dfs.size == 1
-        return dfs
+        dfs.first
       else
         left = dfs.first
         dfs.shift
-        rest = recursive_multiply(dfs).first
+        rest = recursive_product dfs
         left.product(rest).map do |vec1, vec2|
           v = vec1 * vec2
-          v.name = "#{vec1.name}_#{vec2.name}"
+          v.rename "#{vec1.name}:#{vec2.name}"
           v
         end
       end
@@ -2066,7 +2070,7 @@ module Daru
       @vectors = Index.coerce(vectors)
 
       @data = @vectors.each_with_index.map do |_vec,idx|
-        Daru::Vector.new(source[idx], index: @index)
+        Daru::Vector.new(source[idx], index: @index, name: vectors[idx])
       end
     end
 

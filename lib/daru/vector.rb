@@ -119,7 +119,7 @@ module Daru
     end
 
     # The name of the Daru::Vector. String.
-    attr_accessor :name
+    attr_reader :name
     # The row index. Can be either Daru::Index or Daru::MultiIndex.
     attr_reader :index
     # The total number of elements of the vector.
@@ -1149,7 +1149,7 @@ module Daru
     alias :dv :daru_vector
 
     def to_category
-      Daru::Vector.new to_a, type: :category
+      Daru::Vector.new to_a, type: :category, name: @name
     end
 
     def method_missing(name, *args, &block)
