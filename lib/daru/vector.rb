@@ -966,7 +966,10 @@ module Daru
     # @param new_name [Symbol] The new name.
     def rename new_name
       @name = new_name
+      self
     end
+
+    alias_method :name=, :rename
 
     # Duplicated a vector
     # @return [Daru::Vector] duplicated vector

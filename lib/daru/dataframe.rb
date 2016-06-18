@@ -1392,20 +1392,6 @@ module Daru
       self
     end
 
-    def convert_categorical_vectors names
-      names.map do |n|
-        if self[n].type == :category
-          old = [n, self[n]]
-          self[n] = Daru::Vector.new(self[n].to_ints)
-          old
-        end
-      end.compact
-    end
-
-    def restore_categorical_vectors old
-      old.each { |name, vector| self[name] = vector }
-    end
-
     # Non-destructive version of #sort!
     def sort vector_order, opts={}
       dup.sort! vector_order, opts
@@ -1815,18 +1801,28 @@ module Daru
 
     private
 
-    def recursive_product dfs
-      if dfs.size == 1
-        dfs.first
-      else
-        left = dfs.first
-        dfs.shift
-        rest = recursive_product dfs
-        left.product(rest).map do |vec1, vec2|
-          v = vec1 * vec2
-          v.rename "#{vec1.name}:#{vec2.name}"
-          v
+    def convert_categorical_vectors names
+      names.map do |n|
+        if self[n].type == :category
+          old = [n, self[n]]
+          self[n] = Daru::Vector.new(self[n].to_ints)
+          old
         end
+      end.compact
+    end
+
+    def restore_categorical_vectors old
+      old.each { |name, vector| self[name] = vector }
+    end
+
+    def recursive_product dfs
+      return dfs.first if dfs.size == 1
+
+      left = dfs.first
+      dfs.shift
+      right = recursive_product dfs
+      left.product(right).map do |dv1, dv2|
+        (dv1*dv2).rename "#{dv1.name}:#{dv2.name}"
       end
     end
 

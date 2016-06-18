@@ -1690,6 +1690,10 @@ describe Daru::Vector do
       @v.rename "This is a vector"
       expect(@v.name).to eq("This is a vector")
     end
+    
+    it "returns vector" do
+      expect(@v.rename 'hello').to be_a Daru::Vector
+    end
   end
 
   context "#any?" do

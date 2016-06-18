@@ -91,6 +91,14 @@ describe Daru::Vector, "categorical" do
       end
     end
   end
+
+  context "#rename" do
+    let(:dv) { Daru::Vector.new [1, 2, 1], type: :category }
+    subject { dv.rename 'hello' }
+    
+    it { is_expected.to be_a Daru::Vector }
+    its(:name) { is_expected.to eq 'hello' }
+  end
   
   context "#cut" do
     let(:dv) { Daru::Vector.new [1, 2, 5, 14] }

@@ -1,7 +1,7 @@
 module Daru
   module Category
-    attr_accessor :base_category, :name
-    attr_reader :index, :coding_scheme
+    attr_accessor :base_category
+    attr_reader :index, :coding_scheme, :name
 
     # For debuggin. To be removed
     attr_reader :array, :cat_hash, :map_int_cat
@@ -57,6 +57,13 @@ module Daru
       @metadata = opts[:metadata] || {}
       self
     end
+
+    def name= new_name
+      @name = new_name
+      self
+    end
+
+    alias_method :rename, :name=
 
     # Returns an enumerator that enumerates on categorical data
     # @return [Enumerator] an enumerator that enumerates over data stored in vector
