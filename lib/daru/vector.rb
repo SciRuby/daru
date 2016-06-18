@@ -231,7 +231,7 @@ module Daru
     def at *positions
       # to be used to form index
       original_positions = positions
-      positions = preprocess_positions(*positions)
+      positions = coerce_positions(*positions)
       validate_positions(*positions)
 
       if positions.is_a? Integer
@@ -1300,8 +1300,8 @@ module Daru
       end
     end
 
-    # Preprocess ranges, integers and array in appropriate ways
-    def preprocess_positions *positions
+    # coerce ranges, integers and array in appropriate ways
+    def coerce_positions *positions
       if positions.size == 1
         case positions.first
         when Integer

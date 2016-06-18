@@ -188,7 +188,7 @@ module Daru
     #   #   3   1
     def at *positions
       original_positions = positions
-      positions = preprocess_positions(*positions)
+      positions = coerce_positions(*positions)
       validate_positions(*positions)
 
       return category_from_position(positions) if positions.is_a? Integer

@@ -280,7 +280,7 @@ module Daru
     #   #   2   3   c
     def row_at *positions
       original_positions = positions
-      positions = preprocess_positions(*positions, nrows)
+      positions = coerce_positions(*positions, nrows)
       validate_positions(*positions, nrows)
 
       if positions.is_a? Integer
@@ -349,7 +349,7 @@ module Daru
       end
 
       original_positions = positions
-      positions = preprocess_positions(*positions, ncols)
+      positions = coerce_positions(*positions, ncols)
       validate_positions(*positions, ncols)
 
       if positions.is_a? Integer
@@ -1992,7 +1992,7 @@ module Daru
     end
 
     def insert_or_modify_row indexes, vector
-      vector = preprocess_vector vector
+      vector = coerce_vector vector
 
       raise SizeError, 'Vector length should match row length' if
         vector.size != @vectors.size
@@ -2332,7 +2332,7 @@ module Daru
     end
 
     # Accepts hash, enumerable and vector and align it properly so it can be added
-    def preprocess_vector vector
+    def coerce_vector vector
       case vector
       when Daru::Vector
         vector.reindex @vectors
@@ -2343,8 +2343,8 @@ module Daru
       end
     end
 
-    # Preprocess ranges, integers and array in appropriate ways
-    def preprocess_positions *positions, size
+    # coerce ranges, integers and array in appropriate ways
+    def coerce_positions *positions, size
       if positions.size == 1
         case positions.first
         when Integer
