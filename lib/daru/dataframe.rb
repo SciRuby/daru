@@ -1769,6 +1769,10 @@ module Daru
         @vectors.to_a.all? { |v| self[v] == other[v] }
     end
 
+    def to_category *names
+      names.each { |n| self[n] = self[n].to_category }
+    end
+
     def method_missing(name, *args, &block)
       if name =~ /(.+)\=/
         insert_or_modify_vector [name[/(.+)\=/].delete('=').to_sym], args[0]

@@ -1306,7 +1306,7 @@ describe Daru::Vector, "categorical" do
 end
 
 describe Daru::DataFrame, "categorical" do
-  context "#interact_code" do
+  context "#to_category" do
     let(:df) do
       Daru::DataFrame.new({
         a: [1, 2, 3, 4, 5],
@@ -1314,51 +1314,85 @@ describe Daru::DataFrame, "categorical" do
         c: ['a', 'b', 'a', 'b', 'c']
       })
     end
-    before do
-      df[:b] = df[:b].to_category
-      df[:b].categories = ['first', 'second', 'third']
-      df[:c] = df[:c].to_category
-      df[:c].categories = ['a', 'b', 'c']
+    before { df.to_category :b, :c }
+    subject { df }
+    
+    it { is_expected.to be_a Daru::DataFrame }
+    its(:'b.type') { is_expected.to eq :category }
+    its(:'c.type') { is_expected.to eq :category }
+  end
+  
+  context "#interact_code" do
+    context "two vectors" do
+      let(:df) do
+        Daru::DataFrame.new({
+          a: [1, 2, 3, 4, 5],
+          b: ['first', 'second', 'first', 'second', 'third'],
+          c: ['a', 'b', 'a', 'b', 'c']
+        })
+      end
+      before do
+        df.to_category :b, :c
+        df[:b].categories = ['first', 'second', 'third']
+        df[:c].categories = ['a', 'b', 'c']
+      end
+  
+      context "both full" do
+        subject { df.interact_code [:b, :c], [true, true] }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [5, 9] }
+        it { expect(subject['b_first:c_a'].to_a).to eq [1, 0, 1, 0, 0] }
+        it { expect(subject['b_first:c_b'].to_a).to eq [0, 0, 0, 0, 0] }
+        it { expect(subject['b_first:c_c'].to_a).to eq [0, 0, 0, 0, 0] }
+        it { expect(subject['b_second:c_a'].to_a).to eq [0, 0, 0, 0, 0] }
+        it { expect(subject['b_second:c_b'].to_a).to eq [0, 1, 0, 1, 0] }
+        it { expect(subject['b_second:c_c'].to_a).to eq [0, 0, 0, 0, 0] }
+        it { expect(subject['b_third:c_a'].to_a).to eq [0, 0, 0, 0, 0] }
+        it { expect(subject['b_third:c_b'].to_a).to eq [0, 0, 0, 0, 0] }
+        it { expect(subject['b_third:c_c'].to_a).to eq [0, 0, 0, 0, 1] }
+      end
+  
+      context "one full" do
+        subject { df.interact_code [:b, :c], [true, false] }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [5, 6] }
+        it { expect(subject['b_first:c_b'].to_a).to eq [0, 0, 0, 0, 0] }
+        it { expect(subject['b_first:c_c'].to_a).to eq [0, 0, 0, 0, 0] }
+        it { expect(subject['b_second:c_b'].to_a).to eq [0, 1, 0, 1, 0] }
+        it { expect(subject['b_second:c_c'].to_a).to eq [0, 0, 0, 0, 0] }
+        it { expect(subject['b_third:c_b'].to_a).to eq [0, 0, 0, 0, 0] }
+        it { expect(subject['b_third:c_c'].to_a).to eq [0, 0, 0, 0, 1] }
+      end
+  
+      context "none full" do
+        subject { df.interact_code [:b, :c], [false, false] }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [5, 4] }
+        it { expect(subject['b_second:c_b'].to_a).to eq [0, 1, 0, 1, 0] }
+        it { expect(subject['b_second:c_c'].to_a).to eq [0, 0, 0, 0, 0] }
+        it { expect(subject['b_third:c_b'].to_a).to eq [0, 0, 0, 0, 0] }
+        it { expect(subject['b_third:c_c'].to_a).to eq [0, 0, 0, 0, 1] } 
+      end
     end
 
-    context "both full" do
-      subject { df.interact_code [:b, :c], [true, true] }
+    context "more than two vectors" do
+      let(:df) do
+        Daru::DataFrame.new({
+          a: [1, 1, 2],
+          b: [2, 2, 3],
+          c: [3, 3, 4]
+        })
+      end
+      before { df.to_category :a, :b, :c }
+      subject { df.interact_code [:a, :b, :c], [false, false, true] }
       
       it { is_expected.to be_a Daru::DataFrame }
-      its(:shape) { is_expected.to eq [5, 9] }
-      it { expect(subject['b_first:c_a'].to_a).to eq [1, 0, 1, 0, 0] }
-      it { expect(subject['b_first:c_b'].to_a).to eq [0, 0, 0, 0, 0] }
-      it { expect(subject['b_first:c_c'].to_a).to eq [0, 0, 0, 0, 0] }
-      it { expect(subject['b_second:c_a'].to_a).to eq [0, 0, 0, 0, 0] }
-      it { expect(subject['b_second:c_b'].to_a).to eq [0, 1, 0, 1, 0] }
-      it { expect(subject['b_second:c_c'].to_a).to eq [0, 0, 0, 0, 0] }
-      it { expect(subject['b_third:c_a'].to_a).to eq [0, 0, 0, 0, 0] }
-      it { expect(subject['b_third:c_b'].to_a).to eq [0, 0, 0, 0, 0] }
-      it { expect(subject['b_third:c_c'].to_a).to eq [0, 0, 0, 0, 1] }
-    end
-
-    context "one full" do
-      subject { df.interact_code [:b, :c], [true, false] }
-      
-      it { is_expected.to be_a Daru::DataFrame }
-      its(:shape) { is_expected.to eq [5, 6] }
-      it { expect(subject['b_first:c_b'].to_a).to eq [0, 0, 0, 0, 0] }
-      it { expect(subject['b_first:c_c'].to_a).to eq [0, 0, 0, 0, 0] }
-      it { expect(subject['b_second:c_b'].to_a).to eq [0, 1, 0, 1, 0] }
-      it { expect(subject['b_second:c_c'].to_a).to eq [0, 0, 0, 0, 0] }
-      it { expect(subject['b_third:c_b'].to_a).to eq [0, 0, 0, 0, 0] }
-      it { expect(subject['b_third:c_c'].to_a).to eq [0, 0, 0, 0, 1] }
-    end
-
-    context "none full" do
-      subject { df.interact_code [:b, :c], [false, false] }
-      
-      it { is_expected.to be_a Daru::DataFrame }
-      its(:shape) { is_expected.to eq [5, 4] }
-      it { expect(subject['b_second:c_b'].to_a).to eq [0, 1, 0, 1, 0] }
-      it { expect(subject['b_second:c_c'].to_a).to eq [0, 0, 0, 0, 0] }
-      it { expect(subject['b_third:c_b'].to_a).to eq [0, 0, 0, 0, 0] }
-      it { expect(subject['b_third:c_c'].to_a).to eq [0, 0, 0, 0, 1] } 
+      its(:shape) { is_expected.to eq [3, 2] }
+      it { expect(subject['a_2:b_3:c_3'].to_a).to eq [0, 0, 0] }
+      it { expect(subject['a_2:b_3:c_4'].to_a).to eq [0, 0, 1] }
     end
   end
 end
