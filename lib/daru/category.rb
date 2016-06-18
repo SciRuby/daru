@@ -427,8 +427,12 @@ module Daru
     #   #       2      0      0
     #   #       3      1      0
     #   #       4      0      1
-    def contrast_code full=false
-      send("#{coding_scheme}_coding".to_sym, full)
+    def contrast_code opts={}
+      if opts[:user_defined]
+        user_defined_coding(opts[:user_defined])
+      else
+        send("#{coding_scheme}_coding".to_sym, opts[:full] || false)
+      end
     end
 
     # Two categorical vectors are equal if their index and corresponding values are same
@@ -489,7 +493,7 @@ module Daru
     end
 
     def reorder! order
-      # TODO: Could be optimized
+      # TODO: Room for optimization
       old_data = to_a
       new_data = order.map { |i| old_data[i] }
       initialize_core_attributes new_data
@@ -702,6 +706,12 @@ module Daru
         else 0
         end
       end
+    end
+
+    def user_defined_coding df
+      Daru::DataFrame.rows (Array.new(size) { |pos| df.row[at(pos)].to_a }),
+        index: @index,
+        order: df.vectors.to_a
     end
 
     def create_names categories

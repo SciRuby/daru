@@ -1087,6 +1087,25 @@ describe Daru::Vector, "categorical" do
       its(:'abc_a.to_a') { is_expected.to eq [1, 0, 1, 0, -1] }
       its(:'abc_1.to_a') { is_expected.to eq [0, 1, 0, 1, -1] }
     end
+
+    context "user-defined coding" do
+      let(:df) do
+        Daru::DataFrame.new({
+          rank_level1: [1, -2, -3],
+          rank_level2: [-4, 2, -1],
+          rank_level3: [-3, -1, 5]
+        }, index: ['I', 'II', 'III'])
+      end
+      let(:dv) { Daru::Vector.new ['III', 'II', 'I', 'II', 'II'],
+        name: 'rank', type: :category }
+      subject { dv.contrast_code user_defined: df }
+
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:shape) { is_expected.to eq [5, 3] }
+      its(:'rank_level1.to_a') { is_expected.to eq [-3, -2, 1, -2, -2] }
+      its(:'rank_level2.to_a') { is_expected.to eq [-1, 2, -4, 2, 2] }
+      its(:'rank_level3.to_a') { is_expected.to eq [5, -1, -3, -1, -1] }
+    end
   end
 
   context '#inspect' do

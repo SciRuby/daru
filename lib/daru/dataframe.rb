@@ -1791,7 +1791,7 @@ module Daru
 
     def interact_code vector_names, full
       dfs = vector_names.zip(full).map do |vec_name, f|
-        self[vec_name].contrast_code(full=f).each.to_a
+        self[vec_name].contrast_code(full: f).each.to_a
       end
 
       all_vectors = recursive_product(dfs)
