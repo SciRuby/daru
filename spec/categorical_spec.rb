@@ -190,13 +190,14 @@ describe Daru::Vector, "categorical" do
 
   context "#to_category" do
     let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c] }
-    subject { dv.to_category }
+    subject { dv.to_category ordered: true, categories: [:a, :b, :c, 1] }
 
     it { is_expected.to be_a Daru::Vector }
     its(:size) { is_expected.to eq 5 }
     its(:type) { is_expected.to eq :category }
-    its(:ordered?) { is_expected.to eq false }
+    its(:ordered?) { is_expected.to eq true }
     its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
+    its(:categories) { is_expected.to eq [:a, :b, :c, 1] }
   end
   
   context "#categories" do
@@ -1394,5 +1395,23 @@ describe Daru::DataFrame, "categorical" do
       it { expect(subject['a_2:b_3:c_3'].to_a).to eq [0, 0, 0] }
       it { expect(subject['a_2:b_3:c_4'].to_a).to eq [0, 0, 1] }
     end
+  end
+
+  context "#sort!" do
+    let(:df) do
+      Daru::DataFrame.new({
+        a: [1, 2, 1, 4, 5],
+        b: ['II', 'I', 'III', 'II', 'I'],
+      })
+    end
+    before do
+      df[:b] = df[:b].to_category ordereed: true, categories: ['I', 'II', 'III']
+      df.sort! [:a, :b]
+    end
+    subject { df }
+
+    its(:shape) { is_expected.to eq [5, 2] }
+    its(:'a.to_a') { is_expected.to eq [1, 1, 2, 4, 5] }
+    its(:'b.to_a') { is_expected.to eq ['II', 'III', 'I', 'II', 'I'] }
   end
 end

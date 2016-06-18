@@ -481,6 +481,14 @@ module Daru
       to_html
     end
 
+    def reorder! order
+      # TODO: Could be optimized
+      old_data = to_a
+      new_data = order.map { |i| old_data[i] }
+      initialize_core_attributes new_data
+      self
+    end
+
     {
       eq: :==,
       not_eq: :!=,

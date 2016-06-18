@@ -1372,10 +1372,16 @@ module Daru
     def sort! vector_order, opts={}
       raise ArgumentError, 'Required atleast one vector name' if vector_order.empty?
 
+      # To enable sorting with categorical data,
+      # map categories to integers preserving their order
+      old = convert_categorical_vectors vector_order
       block = sort_prepare_block vector_order, opts
 
       order = @index.size.times.sort(&block)
       new_index = @index.reorder order
+
+      # To reverse map mapping of categorical data to integers
+      restore_categorical_vectors old
 
       @data.each do |vector|
         vector.reorder! order
@@ -1384,6 +1390,20 @@ module Daru
       self.index = new_index
 
       self
+    end
+
+    def convert_categorical_vectors names
+      names.map do |n|
+        if self[n].type == :category
+          old = [n, self[n]]
+          self[n] = Daru::Vector.new(self[n].to_ints)
+          old
+        end
+      end.compact
+    end
+
+    def restore_categorical_vectors old
+      old.each { |name, vector| self[name] = vector }
     end
 
     # Non-destructive version of #sort!
@@ -1793,6 +1813,8 @@ module Daru
         order: all_vectors.map { |vec| vec.name }
     end
 
+    private
+
     def recursive_product dfs
       if dfs.size == 1
         dfs.first
@@ -1807,8 +1829,6 @@ module Daru
         end
       end
     end
-
-    private
 
     def should_be_vector! val
       return val if val.is_a?(Daru::Vector)

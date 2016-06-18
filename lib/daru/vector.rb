@@ -1148,8 +1148,11 @@ module Daru
 
     alias :dv :daru_vector
 
-    def to_category
-      Daru::Vector.new to_a, type: :category, name: @name
+    def to_category opts={}
+      dv = Daru::Vector.new to_a, type: :category, name: @name
+      dv.ordered = opts[:ordered] || false
+      dv.categories = opts[:categories] if opts[:categories]
+      dv
     end
 
     def method_missing(name, *args, &block)
