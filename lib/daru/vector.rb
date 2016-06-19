@@ -173,6 +173,7 @@ module Daru
     def initialize source, opts={}
       if opts[:type] == :category
         extend Daru::Category
+        extend Daru::Plotting::Category
         initialize_category source, opts
       else
         index, source = parse_source(source, opts)

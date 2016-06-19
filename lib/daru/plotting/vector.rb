@@ -34,5 +34,20 @@ module Daru
         plot.show
       end
     end
+
+    module Category
+      def plot type=:frequency, opts={}
+        case type
+        when :frequency
+          plot = Nyaplot::Plot.new
+          values = frequencies
+          diagram = plot.add :bar, values.index.to_a, values.to_a
+          yield plot, diagram if block_given?
+          plot.show
+        else
+          raise ArgumentError, "#{type} type is not supported."
+        end
+      end
+    end
   end
 end if Daru.has_nyaplot?
