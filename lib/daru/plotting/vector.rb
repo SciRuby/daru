@@ -36,7 +36,7 @@ module Daru
     end
 
     module Category
-      def plot type=:frequency, opts={}
+      def plot type=:frequency
         case type
         when :frequency
           plot = Nyaplot::Plot.new

@@ -172,23 +172,12 @@ module Daru
     #   vechsh = Daru::Vector.new({a: 1, e: 2, i: 3, o: 4})
     def initialize source, opts={}
       if opts[:type] == :category
+        # Initialize category type vector
         extend Daru::Category
         initialize_category source, opts
       else
-        index, source = parse_source(source, opts)
-        set_name opts[:name]
-
-        @metadata = opts[:metadata] || {}
-
-        @data  = cast_vector_to(opts[:dtype] || :array, source, opts[:nm_dtype])
-        @index = Index.coerce(index || @data.size)
-
-        guard_sizes!
-
-        @possibly_changed_type = true
-        set_missing_values opts[:missing_values]
-        set_missing_positions(true) unless @index.class == Daru::CategoricalIndex
-        set_size
+        # Initialize non-category type vector
+        initialize_vector source, opts
       end
     end
 
@@ -1181,6 +1170,23 @@ module Daru
     end
 
     private
+
+    def initialize_vector source, opts
+      index, source = parse_source(source, opts)
+      set_name opts[:name]
+
+      @metadata = opts[:metadata] || {}
+
+      @data  = cast_vector_to(opts[:dtype] || :array, source, opts[:nm_dtype])
+      @index = Index.coerce(index || @data.size)
+
+      guard_sizes!
+
+      @possibly_changed_type = true
+      set_missing_values opts[:missing_values]
+      set_missing_positions(true) unless @index.class == Daru::CategoricalIndex
+      set_size
+    end
 
     def parse_source source, opts
       if source.is_a?(Hash)
