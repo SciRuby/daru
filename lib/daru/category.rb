@@ -1,5 +1,6 @@
 module Daru
   module Category
+    include Daru::Plotting::Category
     attr_accessor :base_category
     attr_reader :index, :coding_scheme, :name
 
