@@ -1,5 +1,5 @@
 module Daru
-  module Category
+  module Category # rubocop:disable Metrics/ModuleLength
     include Daru::Plotting::Category
     attr_accessor :base_category
     attr_reader :index, :coding_scheme, :name
@@ -376,7 +376,8 @@ module Daru
     #   #       0 second
     #   #       1 second
     #   #       2  third
-    def sort!
+    def sort! # rubocop:disable Metrics/AbcSize
+      # TODO: Simply the code
       assert_ordered :sort
 
       # Build sorted index

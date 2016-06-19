@@ -1796,18 +1796,17 @@ module Daru
 
       all_vectors = recursive_product(dfs)
       Daru::DataFrame.new all_vectors,
-        order: all_vectors.map { |vec| vec.name }
+        order: all_vectors.map(&:name)
     end
 
     private
 
     def convert_categorical_vectors names
       names.map do |n|
-        if self[n].type == :category
-          old = [n, self[n]]
-          self[n] = Daru::Vector.new(self[n].to_ints)
-          old
-        end
+        next if self[n].type != :category
+        old = [n, self[n]]
+        self[n] = Daru::Vector.new(self[n].to_ints)
+        old
       end.compact
     end
 
