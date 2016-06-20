@@ -49,7 +49,7 @@ module Daru
 
       def plot_with_category opts
         plot = Nyaplot::Plot.new
-        category_opts = opts[:category]
+        category_opts = opts[:categorized]
         type = opts[:type]
         case type
         when :line, :scatter
