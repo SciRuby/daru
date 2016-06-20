@@ -20,7 +20,7 @@ module Daru
       #   df = Daru::DataFrame.new({a:['A', 'B', 'C', 'D', 'E'], b:[10,20,30,40,50]})
       #   df.plot type: :bar, x: :a, y: :b
       def plot opts={}, &block
-        opts[:category]? plot_with_category(opts, &block) :
+        opts[:categorized]? plot_with_category(opts, &block) :
           plot_without_category(opts, &block)
       end
 
