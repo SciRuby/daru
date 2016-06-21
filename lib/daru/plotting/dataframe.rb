@@ -70,15 +70,17 @@ module Daru
 
         method = category_opts[:method]
         colors = get_color
+        shapes = get_shape
+        sizes = get_size
         diagrams.zip cat_dv.categories do |d, cat|
           d.title cat
           case method
           when :color
             d.color colors.next
           when :shape
-            # TODO: Add categorization by shape
+            d.shape shapes.next
           when :size
-            # TODO: Add categorization by size
+            d.size sizes.next
           else
             raise ArgumentError, "Unkown supported method #{method}"
           end
@@ -87,6 +89,21 @@ module Daru
         plot.legend true
         yield plot, *diagrams if block_given?
         plot.show
+      end
+
+      SHAPES = ['circle','triangle-up', 'diamond', 'square', 'triangle-down', 'cross']
+      def get_shape
+        return to_enum(:get_shape) unless block_given?
+        loop do
+          SHAPES.each { |shape| yield shape }
+        end
+      end
+
+      def get_size
+        return to_enum(:get_size) unless block_given?
+        loop do
+          (50..550).step(100).each { |s| yield s }
+        end
       end
 
       def get_color
