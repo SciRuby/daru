@@ -101,14 +101,27 @@ describe Daru::Vector, "categorical" do
   end
   
   context "#cut" do
-    let(:dv) { Daru::Vector.new [1, 2, 5, 14] }
-    subject { dv.cut (0..20).step(5) }
+    context "close at right end" do
+      let(:dv) { Daru::Vector.new [1, 2, 5, 14] }
+      subject { dv.cut (0..20).step(5) }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:type) { is_expected.to eq :category }
+      its(:size) { is_expected.to eq 4 }
+      its(:categories) { is_expected.to eq ['0-4', '5-9', '10-14', '15-19'] }
+      its(:to_a) { is_expected.to eq ['0-4', '0-4', '5-9', '10-14'] }
+    end
     
-    it { is_expected.to be_a Daru::Vector }
-    its(:type) { is_expected.to eq :category }
-    its(:size) { is_expected.to eq 4 }
-    its(:categories) { is_expected.to eq ['0-4', '5-9', '10-14', '15-19'] }
-    its(:to_a) { is_expected.to eq ['0-4', '0-4', '5-9', '10-14'] }
+    context "close at left end" do
+      let(:dv) { Daru::Vector.new [1, 2, 5, 14] }
+      subject { dv.cut (0..20).step(5), :left }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:type) { is_expected.to eq :category }
+      its(:size) { is_expected.to eq 4 }
+      its(:categories) { is_expected.to eq ['1-5', '6-10', '11-15', '16-20'] }
+      its(:to_a) { is_expected.to eq ['1-5', '1-5', '1-5', '11-15'] }
+    end
   end
 
   context "#each" do

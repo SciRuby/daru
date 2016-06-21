@@ -1159,14 +1159,14 @@ module Daru
       end
     end
 
-    def cut partitions
+    def cut partitions, close_at=:right
       partitions = partitions.to_a
-      values = to_a.map { |val| cut_find_category partitions, val }
+      values = to_a.map { |val| cut_find_category partitions, val, close_at }
 
       Daru::Vector.new values,
         index: @index,
         type: :category,
-        categories: cut_categories(partitions)
+        categories: cut_categories(partitions, close_at)
     end
 
     private
@@ -1358,16 +1358,29 @@ module Daru
       update_internal_state
     end
 
-    def cut_find_category partitions, val
-      right_index = partitions.index { |i| i > val }
-      raise ArgumentError, 'Invalid partition' if right_index.nil?
-      left_index = right_index - 1
-      "#{partitions[left_index]}-#{partitions[right_index]-1}"
+    def cut_find_category partitions, val, close_at
+      if close_at == :right
+        right_index = partitions.index { |i| i > val }
+        raise ArgumentError, 'Invalid partition' if right_index.nil?
+        left_index = right_index - 1
+        "#{partitions[left_index]}-#{partitions[right_index]-1}"
+      elsif close_at == :left
+        right_index = partitions.index { |i| i >= val }
+        raise ArgumentError, 'Invalid partition' if right_index.nil?
+        left_index = right_index - 1
+        "#{partitions[left_index]+1}-#{partitions[right_index]}"
+      end
     end
 
-    def cut_categories partitions
-      Array.new(partitions.size-1) do |left_index|
-        "#{partitions[left_index]}-#{partitions[left_index+1]-1}"
+    def cut_categories partitions, close_at
+      if close_at == :right
+        Array.new(partitions.size-1) do |left_index|
+          "#{partitions[left_index]}-#{partitions[left_index+1]-1}"
+        end
+      elsif close_at == :left
+        Array.new(partitions.size-1) do |left_index|
+          "#{partitions[left_index]+1}-#{partitions[left_index+1]}"
+        end
       end
     end
   end
