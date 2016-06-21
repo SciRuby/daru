@@ -142,11 +142,12 @@ module Daru
     #   #   b   0
     #   #   c   1
     #   #   1   2
-    def frequencies type = :count
+    def frequencies type=:count
       counts = @cat_hash.values.map(&:size)
-      values = case type
+      values =
+        case type
         when :count
-          counts       
+          counts
         when :fraction
           counts.map { |c| c / size.to_f }
         when :percentage

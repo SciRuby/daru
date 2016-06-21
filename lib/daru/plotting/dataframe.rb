@@ -22,7 +22,8 @@ module Daru
       def plot opts={}, &block
         # TODO: Solve plot not shown when no block is passed
         if opts[:categorized] ||
-          @index.valid?(opts[:x]) && self[opts[:x]].type == :category
+           @index.valid?(opts[:x]) &&
+           self[opts[:x]].type == :category
           plot_with_category(opts, &block)
         else
           plot_without_category(opts, &block)
@@ -66,7 +67,7 @@ module Daru
             y_vec = self[y].where(cat_dv.eq cat)
             df = Daru::DataFrame.new [x_vec, y_vec], order: [x, y]
             nyaplot_df = df.to_nyaplotdf
-    
+
             plot.add_with_df(nyaplot_df, type, x, y)
           end
 
@@ -84,22 +85,24 @@ module Daru
       def apply_variant_to_diagrams diagrams, category_opts, type
         method = category_opts[:method]
         cat_dv = self[category_opts[:by]]
-        # If user has mentioned color, size, set use them
-        if category_opts[method]
-          variant = category_opts[method].cycle
-        else
-          variant = send("get_#{method}".to_sym, type)
-        end
+        # If user has mentioned custom color, size, shape use them
+        variant =
+          if category_opts[method]
+            category_opts[method].cycle
+          else
+            send("get_#{method}".to_sym, type)
+          end
 
-        diagrams = diagrams.zip(cat_dv.categories) do |d, cat|
+        diagrams.zip(cat_dv.categories) do |d, cat|
           d.title cat
           d.send(method, variant.next)
           d.tooltip_contents [cat]*cat_dv.count(cat) if type == :scatter
         end
       end
 
-      SHAPES = ['circle','triangle-up', 'diamond', 'square', 'triangle-down', 'cross']
+      SHAPES = %w(circle,triangle-up, diamond, square, triangle-down, cross).freeze
       def get_shape type
+        validate_type type, :scatter
         SHAPES.cycle
       end
 
@@ -108,7 +111,7 @@ module Daru
         (50..550).step(100).cycle
       end
 
-      def get_color type
+      def get_color(*)
         Nyaplot::Colors.qual.cycle
       end
 
