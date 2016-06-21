@@ -142,9 +142,17 @@ module Daru
     #   #   b   0
     #   #   c   1
     #   #   1   2
-    def frequencies
-      Daru::Vector.new @cat_hash.values.map(&:size),
-        index: categories
+    def frequencies type = :count
+      counts = @cat_hash.values.map(&:size)
+      values = case type
+        when :count
+          counts       
+        when :fraction
+          counts.map { |c| c / size.to_f }
+        when :percentage
+          counts.map { |c| c / size.to_f * 100 }
+        end
+      Daru::Vector.new values, index: categories
     end
 
     # Returns vector for indexes/positions specified

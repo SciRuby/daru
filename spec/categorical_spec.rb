@@ -190,10 +190,24 @@ describe Daru::Vector, "categorical" do
     let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c],
       type: :category,
       categories: [:a, :b, :c, :d, 1] }
-    subject { dv.frequencies }
-
-    its(:'index.to_a') { is_expected.to eq [:a, :b, :c, :d, 1] }
-    its(:to_a) { is_expected.to eq [2, 0, 1, 0, 2] }
+    context "counts" do
+      subject { dv.frequencies }
+  
+      its(:'index.to_a') { is_expected.to eq [:a, :b, :c, :d, 1] }
+      its(:to_a) { is_expected.to eq [2, 0, 1, 0, 2] }
+    end
+    context "percentage" do
+      subject { dv.frequencies :percentage }
+  
+      its(:'index.to_a') { is_expected.to eq [:a, :b, :c, :d, 1] }
+      its(:to_a) { is_expected.to eq [40, 0, 20, 0, 40] }
+    end
+    context "fraction" do
+      subject { dv.frequencies :fraction }
+  
+      its(:'index.to_a') { is_expected.to eq [:a, :b, :c, :d, 1] }
+      its(:to_a) { is_expected.to eq [0.4, 0, 0.2, 0, 0.4] }      
+    end
   end
 
   context "#to_category" do
