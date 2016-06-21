@@ -20,8 +20,13 @@ module Daru
       #   df = Daru::DataFrame.new({a:['A', 'B', 'C', 'D', 'E'], b:[10,20,30,40,50]})
       #   df.plot type: :bar, x: :a, y: :b
       def plot opts={}, &block
-        opts[:categorized]? plot_with_category(opts, &block) :
+        # TODO: Solve plot not shown when no block is passed
+        if opts[:categorized] ||
+          @index.valid?(opts[:x]) && self[opts[:x]].type == :category
+          plot_with_category(opts, &block)
+        else
           plot_without_category(opts, &block)
+        end
       end
 
       private
@@ -48,11 +53,11 @@ module Daru
       end
 
       def plot_with_category opts
-        plot = Nyaplot::Plot.new
-        category_opts = opts[:categorized]
-        type = opts[:type]
-        case type
-        when :line, :scatter
+        case type = opts[:type]
+        when :scatter, :line
+          plot = Nyaplot::Plot.new
+          category_opts = opts[:categorized]
+          type = opts[:type]
           x, y = opts[:x], opts[:y]
           cat_dv = self[category_opts[:by]]
 
@@ -64,53 +69,57 @@ module Daru
     
             plot.add_with_df(nyaplot_df, type, x, y)
           end
+
+          apply_variant_to_diagrams diagrams, category_opts, type
+
+          plot.legend true
+          yield plot, *diagrams if block_given?
+          plot.show
+
         else
           raise ArgumentError, "Unsupported type #{type}"
         end
+      end
 
+      def apply_variant_to_diagrams diagrams, category_opts, type
         method = category_opts[:method]
-        colors = get_color
-        shapes = get_shape
-        sizes = get_size
-        diagrams.zip cat_dv.categories do |d, cat|
-          d.title cat
-          case method
-          when :color
-            d.color colors.next
-          when :shape
-            d.shape shapes.next
-          when :size
-            d.size sizes.next
-          else
-            raise ArgumentError, "Unkown supported method #{method}"
-          end
+        cat_dv = self[category_opts[:by]]
+        # If user has mentioned color, size, set use them
+        if category_opts[method]
+          variant = category_opts[method].cycle
+        else
+          variant = send("get_#{method}".to_sym, type)
         end
 
-        plot.legend true
-        yield plot, *diagrams if block_given?
-        plot.show
+        diagrams = diagrams.zip(cat_dv.categories) do |d, cat|
+          d.title cat
+          d.send(method, variant.next)
+          d.tooltip_contents [cat]*cat_dv.count(cat) if type == :scatter
+        end
       end
 
       SHAPES = ['circle','triangle-up', 'diamond', 'square', 'triangle-down', 'cross']
-      def get_shape
-        return to_enum(:get_shape) unless block_given?
-        loop do
-          SHAPES.each { |shape| yield shape }
-        end
+      def get_shape type
+        SHAPES.cycle
       end
 
-      def get_size
-        return to_enum(:get_size) unless block_given?
-        loop do
-          (50..550).step(100).each { |s| yield s }
-        end
+      def get_size type
+        validate_type type, :scatter
+        (50..550).step(100).cycle
       end
 
-      def get_color
-        return to_enum(:get_color) unless block_given?        
-        loop do
-          Nyaplot::Colors.qual.each { |col| yield col }
-        end
+      def get_color type
+        Nyaplot::Colors.qual.cycle
+      end
+
+      def get_stroke_width type
+        validate_type type, :line
+        (2..16).step(2).cycle
+      end
+
+      def validate_type type, *types
+        raise ArgumentError, "Invalid option for #{type} type" unless
+          types.include? type
       end
 
       def single_diagram? options

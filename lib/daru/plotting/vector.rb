@@ -36,12 +36,19 @@ module Daru
     end
 
     module Category
-      def plot type=:frequency
-        case type
-        when :frequency
+      def plot opts
+        case type = opts[:type]
+        when :bar
           plot = Nyaplot::Plot.new
-          values = frequencies
+          opts[:method] ||= :count
+          values = frequencies opts[:method]
           diagram = plot.add :bar, values.index.to_a, values.to_a
+          case opts[:method]
+          when :percentage
+            plot.yrange [0, 100]
+          when :fraction
+            plot.yrange [0, 1]
+          end
           yield plot, diagram if block_given?
           plot.show
         else
