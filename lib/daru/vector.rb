@@ -1141,7 +1141,7 @@ module Daru
     alias :dv :daru_vector
 
     def to_category opts={}
-      dv = Daru::Vector.new to_a, type: :category, name: @name
+      dv = Daru::Vector.new to_a, type: :category, name: @name, index: @index
       dv.ordered = opts[:ordered] || false
       dv.categories = opts[:categories] if opts[:categories]
       dv

@@ -224,12 +224,13 @@ describe Daru::Vector, "categorical" do
   end
 
   context "#to_category" do
-    let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c] }
+    let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], index: 1..5 }
     subject { dv.to_category ordered: true, categories: [:a, :b, :c, 1] }
 
     it { is_expected.to be_a Daru::Vector }
     its(:size) { is_expected.to eq 5 }
     its(:type) { is_expected.to eq :category }
+    its(:'index.to_a') { is_expected.to eq [1, 2, 3, 4, 5] }
     its(:ordered?) { is_expected.to eq true }
     its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
     its(:categories) { is_expected.to eq [:a, :b, :c, 1] }
