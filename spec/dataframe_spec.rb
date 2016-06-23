@@ -1599,10 +1599,10 @@ describe Daru::DataFrame do
   end
 
   context '#rename' do
-    it 'renames, you know' do
-      @data_frame.rename('other')
-      expect(@data_frame.name).to eq 'other'
-    end
+    subject { @data_frame.rename 'other' }
+
+    it { is_expected.to be_a Daru::DataFrame }
+    its(:name) { is_expected.to eq 'other' }
   end
 
   context "#dup" do

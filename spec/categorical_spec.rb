@@ -122,6 +122,17 @@ describe Daru::Vector, "categorical" do
       its(:categories) { is_expected.to eq ['1-5', '6-10', '11-15', '16-20'] }
       its(:to_a) { is_expected.to eq ['1-5', '1-5', '1-5', '11-15'] }
     end
+    
+    context "labels" do
+      let(:dv) { Daru::Vector.new [1, 2, 5, 14] }
+      subject { dv.cut (0..20).step(5), :left, [:a, :b, :c, :d] }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:type) { is_expected.to eq :category }
+      its(:size) { is_expected.to eq 4 }
+      its(:categories) { is_expected.to eq [:a, :b, :c, :d] }
+      its(:to_a) { is_expected.to eq [:a, :a, :a, :c] }
+    end
   end
 
   context "#each" do
@@ -295,9 +306,9 @@ describe Daru::Vector, "categorical" do
   
   context "#rename_categories" do
     let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
-    subject { dv }
-    before { dv.rename_categories :a => 1, 1 => 2 }
-    
+    subject { dv.rename_categories :a => 1, 1 => 2 }
+
+    it { is_expected.to be_a Daru::Vector }
     its(:to_a) { is_expected.to eq [1, 2, 1, 2, :c] }
   end
   

@@ -1660,7 +1660,10 @@ module Daru
     # Rename the DataFrame.
     def rename new_name
       @name = new_name
+      self
     end
+
+    alias_method :name=, :rename
 
     # Write this DataFrame to a CSV file.
     #

@@ -340,6 +340,7 @@ module Daru
           [old_cat, @cat_hash[old_cat]]
         end
       end.to_h
+      self
     end
 
     # Returns the minimum category acording to the order specified.

@@ -1159,14 +1159,22 @@ module Daru
       end
     end
 
-    def cut partitions, close_at=:right
+    def cut partitions, close_at=:right, labels=nil
       partitions = partitions.to_a
       values = to_a.map { |val| cut_find_category partitions, val, close_at }
+      cats = cut_categories(partitions, close_at)
 
-      Daru::Vector.new values,
+      dv = Daru::Vector.new values,
         index: @index,
         type: :category,
-        categories: cut_categories(partitions, close_at)
+        categories: cats
+
+      # Rename categories if new labels provided
+      if labels
+        dv.rename_categories Hash[cats.zip(labels)]
+      else
+        dv
+      end
     end
 
     private
