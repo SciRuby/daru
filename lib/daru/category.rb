@@ -153,7 +153,7 @@ module Daru
         when :percentage
           counts.map { |c| c / size.to_f * 100 }
         end
-      Daru::Vector.new values, index: categories
+      Daru::Vector.new values, index: categories, name: name
     end
 
     # Returns vector for indexes/positions specified

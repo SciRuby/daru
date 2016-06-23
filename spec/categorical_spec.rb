@@ -202,12 +202,14 @@ describe Daru::Vector, "categorical" do
   context "#frequencies" do
     let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c],
       type: :category,
+      name: :hello,
       categories: [:a, :b, :c, :d, 1] }
     context "counts" do
       subject { dv.frequencies }
   
       its(:'index.to_a') { is_expected.to eq [:a, :b, :c, :d, 1] }
       its(:to_a) { is_expected.to eq [2, 0, 1, 0, 2] }
+      its(:name) { is_expected.to eq :hello }
     end
     context "percentage" do
       subject { dv.frequencies :percentage }
