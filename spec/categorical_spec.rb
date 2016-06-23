@@ -114,7 +114,7 @@ describe Daru::Vector, "categorical" do
     
     context "close at left end" do
       let(:dv) { Daru::Vector.new [1, 2, 5, 14] }
-      subject { dv.cut (0..20).step(5), :left }
+      subject { dv.cut (0..20).step(5), close_at: :left }
       
       it { is_expected.to be_a Daru::Vector }
       its(:type) { is_expected.to eq :category }
@@ -125,7 +125,7 @@ describe Daru::Vector, "categorical" do
     
     context "labels" do
       let(:dv) { Daru::Vector.new [1, 2, 5, 14] }
-      subject { dv.cut (0..20).step(5), :left, [:a, :b, :c, :d] }
+      subject { dv.cut (0..20).step(5), close_at: :left, labels: [:a, :b, :c, :d] }
       
       it { is_expected.to be_a Daru::Vector }
       its(:type) { is_expected.to eq :category }

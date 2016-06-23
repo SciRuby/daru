@@ -1159,7 +1159,25 @@ module Daru
       end
     end
 
-    def cut partitions, close_at=:right, labels=nil
+    # Partition a numeric variable into categories.
+    # @param [Array<Numeric>] partitions an array whose consecutive elements
+    #   provide intervals for categories
+    # @param [:left, :right] close_at specifies whether the interval closes at
+    #   the right side of left side
+    # @param [Array] labels names of the categories
+    # @return [Daru::Vector] numeric variable converted to categorical variable
+    # @example
+    #   heights = Daru::Vector.new [30, 35, 32, 50, 42, 51]
+    #   height_cat = heights.cut [30, 40, 50, 60], labels=['low', 'medium', 'high']
+    #   # => #<Daru::Vector(6)>
+    #   #       0    low
+    #   #       1    low
+    #   #       2    low
+    #   #       3   high
+    #   #       4 medium
+    #   #       5   high
+    def cut partitions, opts={}
+      close_at, labels = opts[:close_at] || :right, opts[:labels]
       partitions = partitions.to_a
       values = to_a.map { |val| cut_find_category partitions, val, close_at }
       cats = cut_categories(partitions, close_at)
@@ -1367,25 +1385,29 @@ module Daru
     end
 
     def cut_find_category partitions, val, close_at
-      if close_at == :right
+      case close_at
+      when :right
         right_index = partitions.index { |i| i > val }
         raise ArgumentError, 'Invalid partition' if right_index.nil?
         left_index = right_index - 1
         "#{partitions[left_index]}-#{partitions[right_index]-1}"
-      elsif close_at == :left
+      when :left
         right_index = partitions.index { |i| i >= val }
         raise ArgumentError, 'Invalid partition' if right_index.nil?
         left_index = right_index - 1
         "#{partitions[left_index]+1}-#{partitions[right_index]}"
+      else
+        raise ArgumentError, "Invalid parameter #{close_at} to close_at."
       end
     end
 
     def cut_categories partitions, close_at
-      if close_at == :right
+      case close_at
+      when :right
         Array.new(partitions.size-1) do |left_index|
           "#{partitions[left_index]}-#{partitions[left_index+1]-1}"
         end
-      elsif close_at == :left
+      when :left
         Array.new(partitions.size-1) do |left_index|
           "#{partitions[left_index]+1}-#{partitions[left_index+1]}"
         end
