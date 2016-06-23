@@ -2433,6 +2433,11 @@ describe Daru::DataFrame do
         @df.index = Daru::Index.new([1,2])
       }.to raise_error(ArgumentError)
     end
+
+    it "is able to accept array" do
+      @df.index = (1..5).to_a
+      expect(@df.index).to eq Daru::Index.new (1..5).to_a
+    end
   end
 
   context "#vectors=" do

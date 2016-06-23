@@ -1482,4 +1482,40 @@ describe Daru::DataFrame, "categorical" do
     its(:'a.to_a') { is_expected.to eq [1, 1, 2, 4, 5] }
     its(:'b.to_a') { is_expected.to eq ['II', 'III', 'I', 'II', 'I'] }
   end
+
+  context "#split_by_category" do
+    let(:df) do
+      Daru::DataFrame.new({
+        a: [1, 2, 3, 4, 5, 6, 7],
+        b: [3, 2, 2, 35, 3, 2, 5],
+        cat: [:I, :II, :I, :III, :I, :III, :II]
+      })
+    end
+    let(:df1) do
+      Daru::DataFrame.new({
+        a: [1, 3, 5],
+        b: [3, 2, 3]
+      }, name: :I, index: [0, 2, 4])
+    end
+    let(:df2) do
+      Daru::DataFrame.new({
+        a: [2, 7],
+        b: [2, 5]
+      }, name: :II, index: [1, 6])
+    end
+    let(:df3) do
+      Daru::DataFrame.new({
+        a: [4, 6],
+        b: [35, 2]
+      }, name: :III, index: [3, 5])
+    end
+    before { df.to_category :cat }
+    subject { df.split_by_category :cat }
+
+    it { is_expected.to be_a Array }
+    its(:size) { is_expected.to eq 3 }
+    its(:first) { is_expected.to eq df1 }
+    it { expect(subject[1]).to eq df2 }
+    its(:last) { is_expected.to eq df3 }
+  end
 end

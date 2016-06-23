@@ -1199,8 +1199,8 @@ module Daru
     #   df.index.to_a #=> ['a','b','c','d']
     #   df.row['a'].to_a #=> [1,11]
     def index= idx
-      @data.each { |vec| vec.index = idx }
-      @index = idx
+      @index = Index.coerce idx
+      @data.each { |vec| vec.index = @index }
 
       self
     end
@@ -1800,6 +1800,18 @@ module Daru
       all_vectors = recursive_product(dfs)
       Daru::DataFrame.new all_vectors,
         order: all_vectors.map(&:name)
+    end
+
+    def split_by_category cat_name
+      cat_dv = self[cat_name]
+      raise ArguementError, "#{cat_name} is not a category vector" if
+        cat_dv.type != :category
+
+      cat_dv.categories.map do |cat|
+        where(cat_dv.eq cat).
+          rename(cat).
+          delete_vector cat_name
+      end
     end
 
     private
