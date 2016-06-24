@@ -170,6 +170,11 @@ describe "Arel-like syntax" do
         expect(@vector.where((@vector.lt(6) | @vector.eq(51)))).to eq(
           Daru::Vector.new([2,5,1,51,4], index: Daru::Index.new([0,1,2,4,5])))
       end
+
+      it "preserves name" do
+        named_vector = Daru::Vector.new([1,2,3], name: 'named')
+        expect(named_vector.where(named_vector.lteq(2)).name).to eq('named')
+      end
     end
   end
 end

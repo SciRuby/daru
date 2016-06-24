@@ -1442,6 +1442,13 @@ describe Daru::DataFrame do
 
         expect(a).to eq(Daru::DataFrame.new({a: [2], b: [3]}, order: [:a, :b], index: [1]))
       end
+
+      it "preserves names of vectors" do
+        df = Daru::DataFrame.new a: 1..3, b: 4..6
+        df1 = df.filter_rows { |r| r[:a] != 2 }
+
+        expect(df1[:a].name).to eq(df[:a].name)
+      end
     end
   end
 

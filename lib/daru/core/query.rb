@@ -56,7 +56,7 @@ module Daru
           )
         end
 
-        def vector_where data, index, bool_array, dtype
+        def vector_where data, index, bool_array, dtype, name
           new_data = []
           new_index = []
           bool_array.to_a.each_with_index do |b, i|
@@ -66,7 +66,7 @@ module Daru
             end
           end
 
-          Daru::Vector.new(new_data, index: new_index, dtype: dtype)
+          Daru::Vector.new(new_data, index: new_index, dtype: dtype, name: name)
         end
       end
     end

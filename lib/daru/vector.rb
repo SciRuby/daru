@@ -402,7 +402,7 @@ module Daru
     #   # 13   5
     #   # 15   1
     def where bool_arry
-      Daru::Core::Query.vector_where @data.to_a, @index.to_a, bool_arry, dtype
+      Daru::Core::Query.vector_where @data.to_a, @index.to_a, bool_arry, dtype, @name
     end
 
     def head q=10
