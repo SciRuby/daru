@@ -70,7 +70,7 @@ module Daru
     # @return [Enumerator] an enumerator that enumerates over data stored in vector
     def each
       return enum_for(:each) unless block_given?
-      @array.each { |pos| yield @map_int_cat[pos] }
+      @array.each { |pos| yield cat_from_int pos }
       self
     end
 
@@ -334,7 +334,6 @@ module Daru
       @cat_hash = @cat_hash.keys.each_with_index.map do |old_cat, i|
         if old_to_new.include? old_cat
           new_cat = old_to_new[old_cat]
-          @map_int_cat[i] = new_cat
           [new_cat, @cat_hash[old_cat]]
         else
           [old_cat, @cat_hash[old_cat]]
@@ -401,7 +400,7 @@ module Daru
       @cat_hash = categories.inject([{}, 0]) do |acc, cat|
         hash, count = acc
         cat_count = @cat_hash[cat].size
-        cat_count.times { |i| @array[count+i] = @map_int_cat.key(cat) }
+        cat_count.times { |i| @array[count+i] = int_from_cat(cat) }
         hash[cat] = (count...(cat_count+count)).to_a
         [hash, count + cat_count]
       end.first
@@ -525,7 +524,7 @@ module Daru
         if other.is_a?(Daru::Vector)
           mod.apply_vector_operator operator, to_ints, other.to_ints
         else
-          mod.apply_scalar_operator operator, @array, @map_int_cat.key(other)
+          mod.apply_scalar_operator operator, @array, int_from_cat(other)
         end
       end
     end
@@ -588,10 +587,8 @@ module Daru
     end
 
     def add_extra_categories extra_categories
-      total_categories = categories.size
       extra_categories.each_with_index do |cat, index|
         @cat_hash[cat] = []
-        @map_int_cat[total_categories+index] = cat
       end
     end
 
@@ -603,16 +600,13 @@ module Daru
       # Map each category to a unique integer for effective storage in @array
       map_cat_int = categories.keys.each_with_index.to_h
 
-      # Inverse mapping of map_cat_int
-      @map_int_cat = map_cat_int.invert
-
       # To link every instance to its category,
       # it stores integer for every instance representing its category
       @array = map_cat_int.values_at(*data)
     end
 
     def category_from_position position
-      @map_int_cat[@array[position]]
+      cat_from_int @array[position]
     end
 
     def assert_ordered operation
@@ -749,7 +743,7 @@ module Daru
         'to add a new category use #add_category' unless
         categories.include? category
       old_category = category_from_position pos
-      @array[pos] = @map_int_cat.key(category)
+      @array[pos] = int_from_cat category
       @cat_hash[old_category].delete pos
       @cat_hash[category] << pos
     end
@@ -762,11 +756,18 @@ module Daru
       @cat_hash = new.map { |cat| [cat, @cat_hash[cat]] }.to_h
 
       map_cat_int = @cat_hash.keys.each_with_index.to_a.to_h
-      @map_int_cat = map_cat_int.invert
       @array = Array.new(size)
       @cat_hash.map do |cat, positions|
         positions.each { |pos| @array[pos] = map_cat_int[cat] }
       end
+    end
+
+    def cat_from_int int
+      @cat_hash.keys[int]
+    end
+
+    def int_from_cat cat
+      @cat_hash.keys.index cat
     end
   end
 end
