@@ -571,9 +571,6 @@ module Daru
       # Map each category to a unique integer for effective storage in @array
       map_cat_int = categories.keys.each_with_index.to_h
 
-      # Inverse mapping of map_cat_int
-      @map_int_cat = map_cat_int.invert
-
       # To link every instance to its category,
       # it stores integer for every instance representing its category
       @array = map_cat_int.values_at(*indexes)
@@ -634,7 +631,7 @@ module Daru
     #   idx.index_from_pos 1
     #   # => :b
     def index_from_pos pos
-      @map_int_cat[@array[pos]]
+      cat_from_int @array[pos]
     end
 
     # Returns enumerator enumerating all index values in the order they occur
@@ -645,7 +642,7 @@ module Daru
     #   # => [:a, :a, :b]
     def each
       return enum_for(:each) unless block_given?
-      @array.each { |pos| yield @map_int_cat[pos] }
+      @array.each { |pos| yield cat_from_int pos }
       self
     end
 
@@ -746,6 +743,16 @@ module Daru
     #   # => #<Daru::CategoricalIndex(6): {a, b, a, b, c, d}>
     def add *indexes
       Daru::CategoricalIndex.new(to_a + indexes)
+    end
+
+    private
+
+    def int_from_cat cat
+      @cat_hash.keys.index cat
+    end
+
+    def cat_from_int cat
+      @cat_hash.keys[cat]
     end
   end
 end
