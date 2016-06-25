@@ -548,7 +548,6 @@ module Daru
       Daru::Core::Query.vector_where to_a, @index.to_a, bool_arry, dtype, type, name
     end
 
-
     # Gives the summary of data using following parameters
     # - size: size of the data
     # - categories: total number of categories

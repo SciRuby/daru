@@ -56,7 +56,8 @@ module Daru
           )
         end
 
-        def vector_where data, index, bool_array, dtype, type, name
+        def vector_where data, index, bool_array, dtype, type, name # rubocop:disable Metrics/ParameterLists
+          # TODO: Fix this method so it doesn't take so many arguments
           new_data = []
           new_index = []
           bool_array.to_a.each_with_index do |b, i|
