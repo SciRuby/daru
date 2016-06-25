@@ -34,6 +34,8 @@ module Daru
 
   SPLIT_TOKEN = ','.freeze
 
+  MISSING_VALUES = [nil, Float::NAN]
+
   class << self
     # A variable which will set whether Vector metadata is updated immediately or lazily.
     # Call the #update method every time a values are set or removed in order to update
