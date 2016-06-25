@@ -109,3 +109,129 @@ describe Daru::DataFrame, 'plotting' do
     end
   end
 end
+
+describe Daru::DataFrame, 'category plotting' do
+  context 'scatter' do
+    let(:df) do
+      Daru::DataFrame.new({
+        a: [1, 2, 4, -2, 5, 23, 0],
+        b: [3, 1, 3, -6, 2, 1, 0],
+        c: ['I', 'II', 'I', 'III', 'I', 'III', 'II']
+      })
+    end
+    let(:plot) { instance_double('Nyaplot::Plot') }
+    let(:diagram) { instance_double('Nyaplot::Diagram::Scatter') }
+  
+    before do
+      df.to_category :c
+      allow(Nyaplot::Plot).to receive(:new).and_return(plot)
+      allow(plot).to receive(:add_with_df).and_return(diagram)
+    end
+    
+    it 'plots scatter plot categoried by color with a block' do
+      expect(plot).to receive :add_with_df
+      expect(diagram).to receive(:title).exactly(3).times
+      expect(diagram).to receive(:color).exactly(3).times
+      expect(diagram).to receive(:tooltip_contents).exactly(3).times
+      expect(plot).to receive :legend
+      expect(plot).to receive :xrange
+      expect(plot).to receive :yrange
+      expect(plot).to receive :show
+      df.plot(type: :scatter, x: :a, y: :b, categorized: {by: :c, method: :color}) do |p, d|
+        p.xrange [-10, 10]
+        p.yrange [-10, 10]
+      end
+    end
+
+    it 'plots scatter plot categoried by color without a block' do
+      expect(plot).to receive :add_with_df
+      expect(diagram).to receive(:title).exactly(3).times
+      expect(diagram).to receive(:color).exactly(3).times
+      expect(diagram).to receive(:tooltip_contents).exactly(3).times
+      expect(plot).to receive :legend
+      expect(plot).to receive :show
+      df.plot(type: :scatter, x: :a, y: :b, categorized: {by: :c, method: :color})
+    end
+
+    it 'plots scatter plot categoried by shape without a block' do
+      expect(plot).to receive :add_with_df
+      expect(diagram).to receive(:title).exactly(3).times
+      expect(diagram).to receive(:shape).exactly(3).times
+      expect(diagram).to receive(:tooltip_contents).exactly(3).times
+      expect(plot).to receive :legend
+      expect(plot).to receive :show
+      df.plot(type: :scatter, x: :a, y: :b, categorized: {by: :c, method: :shape})
+    end
+
+    it 'plots scatter plot categoried by size without a block' do
+      expect(plot).to receive :add_with_df
+      expect(diagram).to receive(:title).exactly(3).times
+      expect(diagram).to receive(:size).exactly(3).times
+      expect(diagram).to receive(:tooltip_contents).exactly(3).times
+      expect(plot).to receive :legend
+      expect(plot).to receive :show
+      df.plot(type: :scatter, x: :a, y: :b, categorized: {by: :c, method: :size})
+    end
+  end
+
+  context 'line' do
+    let(:df) do
+      Daru::DataFrame.new({
+        a: [1, 2, 4, -2, 5, 23, 0],
+        b: [3, 1, 3, -6, 2, 1, 0],
+        c: ['I', 'II', 'I', 'III', 'I', 'III', 'II']
+      })
+    end
+    let(:plot) { instance_double('Nyaplot::Plot') }
+    let(:diagram) { instance_double('Nyaplot::Diagram::Scatter') }
+  
+    before do
+      df.to_category :c
+      allow(Nyaplot::Plot).to receive(:new).and_return(plot)
+      allow(plot).to receive(:add_with_df).and_return(diagram)
+    end
+    
+    it 'plots line plot categoried by color with a block' do
+      expect(plot).to receive :add_with_df
+      expect(diagram).to receive(:title).exactly(3).times
+      expect(diagram).to receive(:color).exactly(3).times
+      expect(plot).to receive :legend
+      expect(plot).to receive :xrange
+      expect(plot).to receive :yrange
+      expect(plot).to receive :show
+      df.plot(type: :line, x: :a, y: :b, categorized: {by: :c, method: :color}) do |p, d|
+        p.xrange [-10, 10]
+        p.yrange [-10, 10]
+      end
+    end
+
+    it 'plots line plot categoried by color without a block' do
+      expect(plot).to receive :add_with_df
+      expect(diagram).to receive(:title).exactly(3).times
+      expect(diagram).to receive(:color).exactly(3).times
+      expect(plot).to receive :legend
+      expect(plot).to receive :show
+      df.plot(type: :line, x: :a, y: :b, categorized: {by: :c, method: :color})
+    end
+
+    it 'plots line plot categoried by stroke width without a block' do
+      expect(plot).to receive :add_with_df
+      expect(diagram).to receive(:title).exactly(3).times
+      expect(diagram).to receive(:stroke_width).exactly(3).times
+      expect(plot).to receive :legend
+      expect(plot).to receive :show
+      df.plot(type: :line, x: :a, y: :b, categorized: {by: :c, method: :stroke_width})
+    end
+  end
+
+  context "invalid type" do
+    let(:df) do
+      Daru::DataFrame.new({
+        a: [1, 2, 4, -2, 5, 23, 0],
+        b: [3, 1, 3, -6, 2, 1, 0],
+        c: ['I', 'II', 'I', 'III', 'I', 'III', 'II']
+      })
+    end
+    it { expect { df.plot(type: :box, categorized: {by: :c, method: :color}) }.to raise_error ArgumentError }
+  end
+end
