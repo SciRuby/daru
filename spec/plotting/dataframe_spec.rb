@@ -143,34 +143,76 @@ describe Daru::DataFrame, 'category plotting' do
       end
     end
 
-    it 'plots scatter plot categoried by color without a block' do
+    it 'plots scatter plot categoried by color' do
       expect(plot).to receive :add_with_df
       expect(diagram).to receive(:title).exactly(3).times
       expect(diagram).to receive(:color).exactly(3).times
       expect(diagram).to receive(:tooltip_contents).exactly(3).times
       expect(plot).to receive :legend
       expect(plot).to receive :show
-      df.plot(type: :scatter, x: :a, y: :b, categorized: {by: :c, method: :color})
+      df.plot(type: :scatter, x: :a, y: :b,
+        categorized: {by: :c, method: :color})
     end
 
-    it 'plots scatter plot categoried by shape without a block' do
+    it 'plots scatter plot categoried by custom colors' do
+      expect(plot).to receive :add_with_df
+      expect(diagram).to receive(:title).exactly(3).times
+      expect(diagram).to receive(:color).with :red
+      expect(diagram).to receive(:color).with :blue
+      expect(diagram).to receive(:color).with :green
+      expect(diagram).to receive(:tooltip_contents).exactly(3).times
+      expect(plot).to receive :legend
+      expect(plot).to receive :show
+      df.plot(type: :scatter, x: :a, y: :b,
+        categorized: {by: :c, method: :color, color: [:red, :blue, :green]})
+    end
+
+    it 'plots scatter plot categoried by shape' do
       expect(plot).to receive :add_with_df
       expect(diagram).to receive(:title).exactly(3).times
       expect(diagram).to receive(:shape).exactly(3).times
       expect(diagram).to receive(:tooltip_contents).exactly(3).times
       expect(plot).to receive :legend
       expect(plot).to receive :show
-      df.plot(type: :scatter, x: :a, y: :b, categorized: {by: :c, method: :shape})
+      df.plot(type: :scatter, x: :a, y: :b,
+        categorized: {by: :c, method: :shape})
     end
 
-    it 'plots scatter plot categoried by size without a block' do
+    it 'plots scatter plot categoried by custom shapes' do
+      expect(plot).to receive :add_with_df
+      expect(diagram).to receive(:title).exactly(3).times
+      expect(diagram).to receive(:shape).with 'circle'
+      expect(diagram).to receive(:shape).with 'triangle-up'
+      expect(diagram).to receive(:shape).with 'diamond'
+      expect(diagram).to receive(:tooltip_contents).exactly(3).times
+      expect(plot).to receive :legend
+      expect(plot).to receive :show
+      df.plot(type: :scatter, x: :a, y: :b,
+        categorized: {by: :c, method: :shape, shape: %w(circle triangle-up diamond)})
+    end
+
+    it 'plots scatter plot categoried by size' do
       expect(plot).to receive :add_with_df
       expect(diagram).to receive(:title).exactly(3).times
       expect(diagram).to receive(:size).exactly(3).times
       expect(diagram).to receive(:tooltip_contents).exactly(3).times
       expect(plot).to receive :legend
       expect(plot).to receive :show
-      df.plot(type: :scatter, x: :a, y: :b, categorized: {by: :c, method: :size})
+      df.plot(type: :scatter, x: :a, y: :b,
+        categorized: {by: :c, method: :size})
+    end
+
+    it 'plots scatter plot categoried by cusom sizes' do
+      expect(plot).to receive :add_with_df
+      expect(diagram).to receive(:title).exactly(3).times
+      expect(diagram).to receive(:size).with 100
+      expect(diagram).to receive(:size).with 200
+      expect(diagram).to receive(:size).with 300
+      expect(diagram).to receive(:tooltip_contents).exactly(3).times
+      expect(plot).to receive :legend
+      expect(plot).to receive :show
+      df.plot(type: :scatter, x: :a, y: :b,
+        categorized: {by: :c, method: :size, size: [100, 200, 300]})
     end
   end
 
@@ -205,7 +247,7 @@ describe Daru::DataFrame, 'category plotting' do
       end
     end
 
-    it 'plots line plot categoried by color without a block' do
+    it 'plots line plot categoried by color' do
       expect(plot).to receive :add_with_df
       expect(diagram).to receive(:title).exactly(3).times
       expect(diagram).to receive(:color).exactly(3).times
@@ -214,13 +256,37 @@ describe Daru::DataFrame, 'category plotting' do
       df.plot(type: :line, x: :a, y: :b, categorized: {by: :c, method: :color})
     end
 
-    it 'plots line plot categoried by stroke width without a block' do
+    it 'plots line plot categoried by custom colors' do
+      expect(plot).to receive :add_with_df
+      expect(diagram).to receive(:title).exactly(3).times
+      expect(diagram).to receive(:color).with :red
+      expect(diagram).to receive(:color).with :blue
+      expect(diagram).to receive(:color).with :green
+      expect(plot).to receive :legend
+      expect(plot).to receive :show
+      df.plot(type: :line, x: :a, y: :b,
+        categorized: {by: :c, method: :color, color: [:red, :blue, :green]})
+    end
+
+    it 'plots line plot categoried by stroke width' do
       expect(plot).to receive :add_with_df
       expect(diagram).to receive(:title).exactly(3).times
       expect(diagram).to receive(:stroke_width).exactly(3).times
       expect(plot).to receive :legend
       expect(plot).to receive :show
       df.plot(type: :line, x: :a, y: :b, categorized: {by: :c, method: :stroke_width})
+    end
+
+    it 'plots line plot categoried by custom stroke widths' do
+      expect(plot).to receive :add_with_df
+      expect(diagram).to receive(:title).exactly(3).times
+      expect(diagram).to receive(:stroke_width).with 100
+      expect(diagram).to receive(:stroke_width).with 200
+      expect(diagram).to receive(:stroke_width).with 300
+      expect(plot).to receive :legend
+      expect(plot).to receive :show
+      df.plot(type: :line, x: :a, y: :b,
+        categorized: {by: :c, method: :stroke_width, stroke_width: [100, 200, 300]})
     end
   end
 

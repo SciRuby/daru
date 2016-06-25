@@ -1808,9 +1808,9 @@ module Daru
         cat_dv.type != :category
 
       cat_dv.categories.map do |cat|
-        where(cat_dv.eq cat).
-          rename(cat).
-          delete_vector cat_name
+        where(cat_dv.eq cat)
+          .rename(cat)
+          .delete_vector cat_name
       end
     end
 
