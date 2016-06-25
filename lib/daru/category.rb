@@ -568,7 +568,6 @@ module Daru
     #   # max_category            a
     #   #     min_freq            1
     #   # min_category            c
-    # TODO: Cut function
     def summary
       values = {
         size: size,
