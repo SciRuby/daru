@@ -22,16 +22,22 @@ module Daru
 
         x_axis  = options[:type] == :scatter ? Array.new(@size) { |i| i } : @index.to_a
         plot    = Nyaplot::Plot.new
-        diagram =
-          if [:box, :histogram].include? options[:type]
-            plot.add(options[:type], @data.to_a)
-          else
-            plot.add(options[:type], x_axis, @data.to_a)
-          end
+        diagram = create_diagram plot, options[:type], x_axis
 
         yield plot, diagram if block_given?
 
         plot.show
+      end
+
+      private
+
+      def create_diagram plot, type, x_axis
+        case type
+        when :box, :histogram
+          plot.add(type, @data.to_a)
+        else
+          plot.add(type, x_axis, @data.to_a)
+        end
       end
     end
 
@@ -43,16 +49,23 @@ module Daru
           opts[:method] ||= :count
           values = frequencies opts[:method]
           diagram = plot.add :bar, values.index.to_a, values.to_a
-          case opts[:method]
-          when :percentage
-            plot.yrange [0, 100]
-          when :fraction
-            plot.yrange [0, 1]
-          end
+          # Set yrange for good view
+          set_yrange plot, opts[:method]
           yield plot, diagram if block_given?
           plot.show
         else
           raise ArgumentError, "#{type} type is not supported."
+        end
+      end
+
+      private
+
+      def set_yrange plot, method
+        case method
+        when :percentage
+          plot.yrange [0, 100]
+        when :fraction
+          plot.yrange [0, 1]
         end
       end
     end

@@ -62,14 +62,7 @@ module Daru
           x, y = opts[:x], opts[:y]
           cat_dv = self[category_opts[:by]]
 
-          diagrams = cat_dv.categories.map do |cat|
-            x_vec = self[x].where(cat_dv.eq cat)
-            y_vec = self[y].where(cat_dv.eq cat)
-            df = Daru::DataFrame.new [x_vec, y_vec], order: [x, y]
-            nyaplot_df = df.to_nyaplotdf
-
-            plot.add_with_df(nyaplot_df, type, x, y)
-          end
+          diagrams = create_categorized_diagrams plot, cat_dv, x, y, type
 
           apply_variant_to_diagrams diagrams, category_opts, type
 
@@ -79,6 +72,17 @@ module Daru
 
         else
           raise ArgumentError, "Unsupported type #{type}"
+        end
+      end
+
+      def create_categorized_diagrams plot, cat_dv, x, y, type
+        cat_dv.categories.map do |cat|
+          x_vec = self[x].where(cat_dv.eq cat)
+          y_vec = self[y].where(cat_dv.eq cat)
+          df = Daru::DataFrame.new [x_vec, y_vec], order: [x, y]
+          nyaplot_df = df.to_nyaplotdf
+
+          plot.add_with_df(nyaplot_df, type, x, y)
         end
       end
 
