@@ -545,13 +545,10 @@ module Daru
     #   #   1  II
     #   #   5  II
     def where bool_arry
-      Daru::Core::Query.vector_where to_a, @index.to_a, bool_arry, dtype, type
+      Daru::Core::Query.vector_where to_a, @index.to_a, bool_arry, dtype, type, name
     end
 
-<<<<<<< 44bc5a497bb46026c09694782f7b371d13a16498
-<<<<<<< e19d8e2c34cd719e8441e3fcc92ab5cdb9f8afc7
-=======
->>>>>>> solve ofences
+
     # Gives the summary of data using following parameters
     # - size: size of the data
     # - categories: total number of categories
@@ -571,12 +568,7 @@ module Daru
     #   # max_category            a
     #   #     min_freq            1
     #   # min_category            c
-<<<<<<< 44bc5a497bb46026c09694782f7b371d13a16498
-=======
     # TODO: Cut function
->>>>>>> solve offences
-=======
->>>>>>> solve ofences
     def summary
       values = {
         size: size,
