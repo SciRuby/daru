@@ -331,7 +331,7 @@ module Daru
     #   #   3   1
     #   #   4   c
     def rename_categories old_to_new
-      @cat_hash = @cat_hash.keys.each_with_index.map do |old_cat, i|
+      @cat_hash = @cat_hash.keys.map do |old_cat|
         if old_to_new.include? old_cat
           new_cat = old_to_new[old_cat]
           [new_cat, @cat_hash[old_cat]]
@@ -587,9 +587,7 @@ module Daru
     end
 
     def add_extra_categories extra_categories
-      extra_categories.each_with_index do |cat, index|
-        @cat_hash[cat] = []
-      end
+      extra_categories.each { |cat| @cat_hash[cat] = [] }
     end
 
     def initialize_core_attributes data

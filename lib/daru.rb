@@ -34,7 +34,7 @@ module Daru
 
   SPLIT_TOKEN = ','.freeze
 
-  MISSING_VALUES = [nil, Float::NAN]
+  MISSING_VALUES = [nil, Float::NAN].freeze
 
   class << self
     # A variable which will set whether Vector metadata is updated immediately or lazily.
