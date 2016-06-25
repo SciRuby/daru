@@ -381,6 +381,30 @@ describe Daru::Vector, "categorical" do
     its(:'index.to_a') { is_expected.to eq [4, 0, 2, 1, 3] }
   end
   
+  context "#sort" do
+    context 'return sorted vector' do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, ordered: true }
+      subject { dv.sort }
+      before { dv.categories = [:c, :a, 1] }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:size) { is_expected.to eq 5 }
+      its(:to_a) { is_expected.to eq [:c, :a, :a, 1, 1] }
+      its(:'index.to_a') { is_expected.to eq [4, 0, 2, 1, 3] }
+    end
+    
+    context 'original vector unaffected' do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, ordered: true }
+      subject { dv }
+      before { dv.categories = [:c, :a, 1]; dv.sort }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:size) { is_expected.to eq 5 }
+      its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
+      its(:'index.to_a') { is_expected.to eq [0, 1, 2, 3, 4] }      
+    end
+  end
+  
   context "#[]" do
     context Daru::Index do
       before :each do

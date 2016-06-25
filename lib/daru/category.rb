@@ -408,6 +408,10 @@ module Daru
       self
     end
 
+    def sort
+      dup.sort!
+    end
+
     # Set coding scheme
     # @param [Symbol] scheme to set
     # @example
