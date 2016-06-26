@@ -187,6 +187,17 @@ describe Daru::Vector, "categorical" do
     end
   end
   
+  context '#remove_unused_categories' do
+    let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+    before do
+      dv.categories = [:a, :b, :c, 1]
+      dv.remove_unused_categories
+    end
+    subject { dv }
+    
+    its(:categories) { is_expected.to eq [:a, :c, 1] }
+  end
+  
   context "count" do
     context "existant category" do
       context "more than 0" do
@@ -305,11 +316,40 @@ describe Daru::Vector, "categorical" do
   end
   
   context "#rename_categories" do
-    let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
-    subject { dv.rename_categories :a => 1, 1 => 2 }
+    context 'rename' do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+      subject { dv.rename_categories :a => 1, 1 => 2 }
+  
+      it { is_expected.to be_a Daru::Vector }
+      its(:to_a) { is_expected.to eq [1, 2, 1, 2, :c] }
+    end
+    
+    context 'merge' do
+      let(:dv) { Daru::Vector.new [:a, :b, :c, :b, :e], type: :category }
+      before { dv.categories = [:a, :b, :c, :d, :e, :f] }
+      subject { dv.rename_categories :d => :a, :c => 1, :e => 1 }
+  
+      it { is_expected.to be_a Daru::Vector }
+      its(:categories) { is_expected.to eq [:a, :b, :f, 1] }
+      its(:to_a) { is_expected.to eq [:a, :b, 1, :b, 1] }
+    end
+  end
 
+  context '#to_non_category' do
+    let(:dv) { Daru::Vector.new [1, 2, 3], type: :category,
+      index: [:a, :b, :c], name: :hello }
+    subject { dv.to_non_category }
+    
     it { is_expected.to be_a Daru::Vector }
-    its(:to_a) { is_expected.to eq [1, 2, 1, 2, :c] }
+    its(:type) { is_expected.not_to eq :category }
+    its(:to_a) { is_expected.to eq [1, 2, 3] }
+    its(:'index.to_a') { is_expected.to eq [:a, :b, :c] }
+    its(:name) { is_expected.to eq :hello }
+  end
+
+  context '#to_category' do
+    let(:dv) { Daru::Vector.new [1, 2, 3], type: :category }
+    it { expect { dv.to_category }.to raise_error TypeError }
   end
   
   context "#min" do
@@ -360,7 +400,7 @@ describe Daru::Vector, "categorical" do
   
   context "summary" do
     let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c, :a], type: :category }
-    subject { dv.summary }
+    subject { dv.describe }
     
     it { is_expected.to be_a Daru::Vector }
     its(:categories) { is_expected.to eq 3 }

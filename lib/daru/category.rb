@@ -331,14 +331,21 @@ module Daru
     #   #   3   1
     #   #   4   c
     def rename_categories old_to_new
-      @cat_hash = @cat_hash.keys.map do |old_cat|
-        if old_to_new.include? old_cat
-          new_cat = old_to_new[old_cat]
-          [new_cat, @cat_hash[old_cat]]
-        else
-          [old_cat, @cat_hash[old_cat]]
-        end
-      end.to_h
+      old_categories = categories
+      data = to_a.map do |cat|
+        old_to_new.include?(cat) ? old_to_new[cat] : cat
+      end
+
+      initialize_core_attributes data
+      self.categories = (old_categories - old_to_new.keys) | old_to_new.values
+      self
+    end
+
+    def remove_unused_categories
+      old_categories = categories
+
+      initialize_core_attributes to_a
+      self.categories = old_categories & categories
       self
     end
 
@@ -581,6 +588,16 @@ module Daru
       }
 
       Daru::Vector.new values
+    end
+
+    alias_method :describe, :summary
+
+    def to_category
+      raise TypeError, 'The vector is already of type category.'
+    end
+
+    def to_non_category
+      Daru::Vector.new to_a, name: name, index: index
     end
 
     private
