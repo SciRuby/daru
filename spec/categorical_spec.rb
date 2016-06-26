@@ -393,7 +393,9 @@ describe Daru::Vector, "categorical" do
       its(:'index.to_a') { is_expected.to eq [4, 0, 2, 1, 3] }
     end
     
-    context 'original vector unaffected' do
+    context 'original vector unaffected
+    
+    ' do
       let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, ordered: true }
       subject { dv }
       before { dv.categories = [:c, :a, 1]; dv.sort }
@@ -1083,7 +1085,7 @@ describe Daru::Vector, "categorical" do
   context "#contrast_code" do
     context "dummy coding" do
       context "default base category" do
-        let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, name: 'abc' }
+        let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, name: :abc }
         subject { dv.contrast_code }
         
         it { is_expected.to be_a Daru::DataFrame }
@@ -1093,7 +1095,7 @@ describe Daru::Vector, "categorical" do
       end
       
       context "manual base category" do
-        let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, name: 'abc' }
+        let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, name: :abc }
         before { dv.base_category = :c }
         subject { dv.contrast_code }
         
@@ -1106,7 +1108,7 @@ describe Daru::Vector, "categorical" do
     
     context "simple coding" do
       context "default base category" do
-        let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, name: 'abc' }
+        let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, name: :abc }
         subject { dv.contrast_code }
         before { dv.coding_scheme = :simple }
         
@@ -1117,7 +1119,7 @@ describe Daru::Vector, "categorical" do
       end
       
       context "manual base category" do
-        let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, name: 'abc' }
+        let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, name: :abc }
         subject { dv.contrast_code }
         before do
           dv.coding_scheme = :simple
@@ -1132,7 +1134,7 @@ describe Daru::Vector, "categorical" do
     end
 
     context "helmert coding" do
-      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, name: 'abc' }
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, name: :abc }
       subject { dv.contrast_code }
       before { dv.coding_scheme = :helmert }
 
@@ -1143,7 +1145,7 @@ describe Daru::Vector, "categorical" do
     end
 
     context "deviation coding" do
-      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, name: 'abc' }
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, name: :abc }
       subject { dv.contrast_code }
       before { dv.coding_scheme = :deviation }
 
@@ -1162,7 +1164,7 @@ describe Daru::Vector, "categorical" do
         }, index: ['I', 'II', 'III'])
       end
       let(:dv) { Daru::Vector.new ['III', 'II', 'I', 'II', 'II'],
-        name: 'rank', type: :category }
+        name: :rank, type: :category }
       subject { dv.contrast_code user_defined: df }
 
       it { is_expected.to be_a Daru::DataFrame }
@@ -1170,6 +1172,24 @@ describe Daru::Vector, "categorical" do
       its(:'rank_level1.to_a') { is_expected.to eq [-3, -2, 1, -2, -2] }
       its(:'rank_level2.to_a') { is_expected.to eq [-1, 2, -4, 2, 2] }
       its(:'rank_level3.to_a') { is_expected.to eq [5, -1, -3, -1, -1] }
+    end
+
+    context 'naming' do
+      context "string" do
+        let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, name: 'abc' }
+        subject { dv.contrast_code }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:'vectors.to_a') { is_expected.to eq ['abc_1', 'abc_c'] }
+      end
+      
+      context "symbol" do
+        let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, name: :abc }
+        subject { dv.contrast_code }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:'vectors.to_a') { is_expected.to eq [:abc_1, :abc_c] }    
+      end      
     end
   end
 

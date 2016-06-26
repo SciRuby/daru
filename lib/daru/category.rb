@@ -713,7 +713,9 @@ module Daru
     end
 
     def create_names categories
-      categories.map { |cat| "#{name}_#{cat}".to_sym }
+      categories.map do |cat|
+        name.is_a?(Symbol) ? "#{name}_#{cat}".to_sym : "#{name}_#{cat}"
+      end
     end
 
     def coerce_index index
