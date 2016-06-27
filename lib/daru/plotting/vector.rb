@@ -79,27 +79,41 @@ module Daru
           plot = Gruff::Line.new
           plot.labels = size.times.to_a.zip(index.to_a).to_h
           plot.data :abc, to_a
-          yield plot if block_given?
-          plot.write 'output.png'
         when :pie
           plot = Gruff::Pie.new
           each_with_index do |data, index|
             plot.data index, data
           end
-          yield plot if block_given?
-          plot.write 'output.png'
         when :bar, nil
           plot = Gruff::Bar.new
           each_with_index do |data, index|
             plot.data index, data
           end
-          yield plot if block_given?
-          plot.write 'ouput.png'
         end
+        yield plot if block_given?
+        plot.write 'ouput.png'
       end
     end
 
     module Category
+      def plot opts={}
+        case opts[:type]
+        when :bar, nil
+          plot = Gruff::Bar.new
+          method = opts[:method] || :count
+          frequencies(method).each_with_index do |data, index|
+            plot.data index, data
+          end
+        when :pie
+          plot = Gruff::Pie.new
+          method = opts[:method] || :count
+          frequencies(method).each_with_index do |data, index|
+            plot.data index, data
+          end
+        end
+        yield plot if block_given?
+        plot.write 'output.png'
+      end
     end
   end
 end
