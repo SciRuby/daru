@@ -76,7 +76,6 @@ module Daru
   create_has_library :nmatrix
   create_has_library :nyaplot
   create_has_library :gruff
-
 end
 
 autoload :Spreadsheet, 'spreadsheet'

@@ -71,7 +71,7 @@ module Daru
     end
   end
 
-  module Plotting_Gruff
+  module PlottingGruff
     module Vector
       def plot opts={}
         case opts[:type]

@@ -66,7 +66,7 @@ module Daru
       case lib
       when :gruff
         @plotting_library = lib
-        extend Daru::Plotting_Gruff::Category if Daru.has_gruff?
+        extend Daru::PlottingGruff::Category if Daru.has_gruff?
       when :nyaplot
         @plotting_library = lib
         extend Daru::Plotting::Category if Daru.has_nyaplot?

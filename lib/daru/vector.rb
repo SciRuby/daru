@@ -186,7 +186,7 @@ module Daru
       case lib
       when :gruff
         @plotting_library = lib
-        extend Daru::Plotting_Gruff::Vector if Daru.has_gruff?
+        extend Daru::PlottingGruff::Vector if Daru.has_gruff?
       when :nyaplot
         @plotting_library = lib
         extend Daru::Plotting::Vector if Daru.has_nyaplot?
