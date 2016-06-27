@@ -70,4 +70,36 @@ module Daru
       end
     end
   end
-end if Daru.has_nyaplot?
+
+  module Plotting_Gruff
+    module Vector
+      def plot opts={}
+        case opts[:type]
+        when :line
+          plot = Gruff::Line.new
+          plot.labels = size.times.to_a.zip(index.to_a).to_h
+          plot.data :abc, to_a
+          yield plot if block_given?
+          plot.write 'output.png'
+        when :pie
+          plot = Gruff::Pie.new
+          each_with_index do |data, index|
+            plot.data index, data
+          end
+          yield plot if block_given?
+          plot.write 'output.png'
+        when :bar, nil
+          plot = Gruff::Bar.new
+          each_with_index do |data, index|
+            plot.data index, data
+          end
+          yield plot if block_given?
+          plot.write 'ouput.png'
+        end
+      end
+    end
+
+    module Category
+    end
+  end
+end

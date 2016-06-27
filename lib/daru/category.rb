@@ -1,6 +1,5 @@
 module Daru
   module Category # rubocop:disable Metrics/ModuleLength
-    include Daru::Plotting::Category
     attr_accessor :base_category
     attr_reader :index, :coding_scheme, :name
 
@@ -29,7 +28,6 @@ module Daru
     #   #   4   c
     def initialize_category data, opts={}
       @type = :category
-
       initialize_core_attributes data
 
       if opts[:categories]
@@ -62,6 +60,17 @@ module Daru
     def name= new_name
       @name = new_name
       self
+    end
+
+    def plotting_library= lib
+      case lib
+      when :gruff
+        @plotting_library = lib
+        extend Daru::Plotting_Gruff::Category if Daru.has_gruff?
+      when :nyaplot
+        @plotting_library = lib
+        extend Daru::Plotting::Category if Daru.has_nyaplot?
+      end
     end
 
     alias_method :rename, :name=
@@ -622,6 +631,9 @@ module Daru
       # To link every instance to its category,
       # it stores integer for every instance representing its category
       @array = map_cat_int.values_at(*data)
+
+      # Include plotting functionality
+      self.plotting_library = Daru.plotting_library
     end
 
     def category_from_position position

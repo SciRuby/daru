@@ -73,4 +73,5 @@ EOF
   spec.add_development_dependency 'ruby-prof'
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'nokogiri'
+  spec.add_development_dependency 'gruff'
 end

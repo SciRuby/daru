@@ -11,7 +11,6 @@ module Daru
     include Enumerable
     include Daru::Maths::Arithmetic::Vector
     include Daru::Maths::Statistics::Vector
-    include Daru::Plotting::Vector if Daru.has_nyaplot?
 
     class << self
       # Create a new vector by specifying the size and an optional value
@@ -139,6 +138,8 @@ module Daru
     attr_reader :data
     # Attach arbitrary metadata to vector (usu a hash)
     attr_accessor :metadata
+    # Ploting library being used for this vector
+    attr_reader :plotting_library
 
     # Create a Vector object.
     #
@@ -178,6 +179,17 @@ module Daru
       else
         # Initialize non-category type vector
         initialize_vector source, opts
+      end
+    end
+
+    def plotting_library= lib
+      case lib
+      when :gruff
+        @plotting_library = lib
+        extend Daru::Plotting_Gruff::Vector if Daru.has_gruff?
+      when :nyaplot
+        @plotting_library = lib
+        extend Daru::Plotting::Vector if Daru.has_nyaplot?
       end
     end
 
@@ -1212,6 +1224,8 @@ module Daru
       set_missing_values opts[:missing_values]
       set_missing_positions(true) unless @index.class == Daru::CategoricalIndex
       set_size
+      # Include plotting functionality
+      self.plotting_library = Daru.plotting_library
     end
 
     def parse_source source, opts
