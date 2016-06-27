@@ -306,6 +306,16 @@ describe "Arel-like syntax" do
           its(:to_a) { is_expected.to eq ['a', 'c', 'c'] }
           its(:'index.to_a') { is_expected.to eq [0, 1, 4] }
         end
+        
+        context "preserve categories" do
+          subject { dv.where((dv.lt('x') | dv.eq('c'))) }
+          
+          it { is_expected.to be_a Daru::Vector }
+          its(:type) { is_expected.to eq :category }
+          its(:to_a) { is_expected.to eq ['a', 'c', 'c'] }
+          its(:'index.to_a') { is_expected.to eq [0, 1, 4] }
+          its(:categories) { is_expected.to eq ['a', 'x', 'c'] }
+        end
       end
 
       it "preserves name" do

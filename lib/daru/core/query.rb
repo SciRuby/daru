@@ -56,19 +56,31 @@ module Daru
           )
         end
 
-        def vector_where data, index, bool_array, dtype, type, name # rubocop:disable Metrics/ParameterLists
-          # TODO: Fix this method so it doesn't take so many arguments
+        def vector_where dv, bool_array
           new_data = []
           new_index = []
           bool_array.to_a.each_with_index do |b, i|
             if b
-              new_data << data[i]
-              new_index << index[i]
+              new_data << dv.at(i)
+              new_index << dv.index.at(i)
             end
           end
+          
+          resultant_dv = Daru::Vector.new new_data,
+            index: dv.index.class.new(new_index),
+            dtype: dv.dtype,
+            type: dv.type,
+            name: dv.name
 
-          Daru::Vector.new(new_data, index: new_index, dtype: dtype, type: type, name: name)
-        end
+          # Preserve categories order for category vector
+          if dv.type == :category
+            resultant_dv.categories = dv.categories
+            # TODO: Remove below line and make categories= return self
+            resultant_dv
+          else
+            resultant_dv
+          end
+        end        
       end
     end
   end

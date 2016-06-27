@@ -271,9 +271,9 @@ describe Daru::Vector, "categorical" do
   
   context "#categories=" do
     context "extra categories" do
-      subject { Daru::Vector.new [:a, 1, :a, 1, :c],
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c],
         type: :category }
-      before { subject.categories = [:a, :b, :c, 1] }
+      subject { dv.categories = [:a, :b, :c, 1] }
       
       it { is_expected.to be_a Daru::Vector }
       its(:type) { is_expected.to eq :category }

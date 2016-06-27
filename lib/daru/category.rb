@@ -326,6 +326,7 @@ module Daru
       validate_categories(cat_with_order)
       add_extra_categories(cat_with_order - categories)
       order_with cat_with_order
+      self
     end
 
     # Rename categories.
@@ -565,8 +566,8 @@ module Daru
     #   # => #<Daru::Vector(2)>
     #   #   1  II
     #   #   5  II
-    def where bool_arry
-      Daru::Core::Query.vector_where to_a, @index.to_a, bool_arry, dtype, type, name
+    def where bool_array
+      Daru::Core::Query.vector_where self, bool_array
     end
 
     # Gives the summary of data using following parameters

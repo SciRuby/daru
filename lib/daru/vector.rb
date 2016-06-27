@@ -436,8 +436,8 @@ module Daru
     #   # 11   5
     #   # 13   5
     #   # 15   1
-    def where bool_arry
-      Daru::Core::Query.vector_where @data.to_a, @index.to_a, bool_arry, dtype, type, @name
+    def where bool_array
+      Daru::Core::Query.vector_where self, bool_array
     end
 
     def head q=10
