@@ -57,13 +57,13 @@ module Daru
         end
 
         def vector_where dv, bool_array
-          data = dv.to_a
+          data, index = dv.to_a, dv.index.to_a
           new_data = []
           new_index = []
           bool_array.to_a.each_with_index do |b, i|
             if b
               new_data << data[i]
-              new_index << dv.index.at(i)
+              new_index << index[i]
             end
           end
           
