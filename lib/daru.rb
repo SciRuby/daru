@@ -34,8 +34,6 @@ module Daru
 
   SPLIT_TOKEN = ','.freeze
 
-  MISSING_VALUES = [nil, Float::NAN].freeze
-
   @plotting_library = :nyaplot
 
   class << self
