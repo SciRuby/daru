@@ -498,6 +498,19 @@ describe Daru::Vector, "categorical" do
       it "retains the original vector metadata" do
         expect(@dv[:yoda, :anakin].metadata).to eq({ cdc_type: 2 })
       end
+      
+      context "preserves old categories" do
+        let(:dv) do
+          Daru::Vector.new [:a, :a, :b, :c, :b],
+            type: :category,
+            categories: [:c, :b, :a, :e]
+        end
+        subject { dv[0, 1, 4] }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:categories) { is_expected.to eq [:c, :b, :a, :e] }
+        its(:to_a) { is_expected.to eq [:a, :a, :b] }
+      end
     end
 
     context Daru::MultiIndex do
@@ -896,6 +909,19 @@ describe Daru::Vector, "categorical" do
         its(:to_a) { is_expected.to eq ['a'] }
         its(:'index.to_a') { is_expected.to eq [1] }
       end
+
+      context "preserves old categories" do
+        let(:dv) do
+          Daru::Vector.new [:a, :a, :b, :c, :b],
+            type: :category,
+            categories: [:c, :b, :a, :e]
+        end
+        subject { dv.at 0, 1, 4 }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:categories) { is_expected.to eq [:c, :b, :a, :e] }
+        its(:to_a) { is_expected.to eq [:a, :a, :b] }
+      end      
     end
     
     context Daru::MultiIndex do

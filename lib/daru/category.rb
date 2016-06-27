@@ -191,7 +191,8 @@ module Daru
         name: @name,
         type: :category,
         ordered: @ordered,
-        metadata: @metadata
+        metadata: @metadata,
+        categories: categories
     end
 
     # Returns vector for positions specified.
@@ -217,7 +218,8 @@ module Daru
         name: @name,
         type: :category,
         ordered: @ordered,
-        metadata: @metadata
+        metadata: @metadata,
+        categories: categories
     end
 
     # Modifies values at specified indexes/positions.
