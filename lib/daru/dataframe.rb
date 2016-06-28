@@ -8,7 +8,8 @@ module Daru
   class DataFrame # rubocop:disable Metrics/ClassLength
     include Daru::Maths::Arithmetic::DataFrame
     include Daru::Maths::Statistics::DataFrame
-    include Daru::Plotting::DataFrame if Daru.has_nyaplot?
+    # TODO: Remove this line but its causing erros due to unkown reason
+    include Daru::Plotting::DataFrame::NyaplotLibrary if Daru.has_nyaplot?
 
     class << self
       # Load data from a CSV file. Specify an optional block to grab the CSV
@@ -255,6 +256,20 @@ module Daru
       set_size
       validate
       update
+      self.plotting_library = Daru.plotting_library
+    end
+
+    def plotting_library= lib
+      case lib
+      when :gruff, :nyaplot
+        @plotting_library = lib
+        extend Module.const_get(
+          "Daru::Plotting::DataFrame::#{lib.to_s.capitalize}Library"
+        ) if Daru.send("has_#{lib}?".to_sym)
+      else
+        raise ArguementError, "Plotting library #{lib} not supported. "\
+          'Supported libraries are :nyaplot and :gruff'
+      end
     end
 
     # Access row or vector. Specify name of row/vector followed by axis(:row, :vector).
