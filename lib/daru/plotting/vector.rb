@@ -74,45 +74,59 @@ module Daru
   module PlottingGruff
     module Vector
       def plot opts={}
-        case opts[:type]
+        type = opts[:type] || :bar
+        size = opts[:size] || 500
+        case type
         when :line
-          plot = Gruff::Line.new
+          plot = Gruff::Line.new size
           plot.labels = size.times.to_a.zip(index.to_a).to_h
-          plot.data :abc, to_a
-        when :pie
-          plot = Gruff::Pie.new
+          plot.data name || :vector, to_a
+        when :pie, :bar
+          plot = Module.const_get("Gruff::#{type.to_s.capitalize}")
+            .new size
           each_with_index do |data, index|
             plot.data index, data
           end
-        when :bar, nil
-          plot = Gruff::Bar.new
+        when :scatter
+          plot = Gruff::Scatter.new size
+          plot.data name || :vector, index.to_a, to_a
+        when :sidebar
+          plot = Gruff::SideBar.new size
+          plot.labels = { 0 => (name.to_s || 'vector') }
           each_with_index do |data, index|
             plot.data index, data
           end
+        else
+          raise ArgumentError, "This type of plot is not supported."
         end
         yield plot if block_given?
-        plot.write 'ouput.png'
+        plot
       end
     end
 
     module Category
       def plot opts={}
-        case opts[:type]
-        when :bar, nil
-          plot = Gruff::Bar.new
+        type = opts[:type] || :bar
+        size = opts[:size] || 500
+        case type
+        when :bar, :pie
+          plot = Module.const_get("Gruff::#{type.to_s.capitalize}")
+            .new size
           method = opts[:method] || :count
           frequencies(method).each_with_index do |data, index|
             plot.data index, data
           end
-        when :pie
-          plot = Gruff::Pie.new
-          method = opts[:method] || :count
+        when :sidebar
+          plot = Gruff::SideBar.new size
+          plot.labels = { 0 => (name.to_s || 'vector') }
           frequencies(method).each_with_index do |data, index|
             plot.data index, data
           end
+        else
+          raise ArgumentError, "This type of plot is not supported."
         end
         yield plot if block_given?
-        plot.write 'output.png'
+        plot
       end
     end
   end
