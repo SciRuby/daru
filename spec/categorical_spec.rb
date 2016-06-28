@@ -273,7 +273,8 @@ describe Daru::Vector, "categorical" do
     context "extra categories" do
       let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c],
         type: :category }
-      subject { dv.categories = [:a, :b, :c, 1] }
+      before { dv.categories = [:a, :b, :c, 1] }
+      subject { dv }
       
       it { is_expected.to be_a Daru::Vector }
       its(:type) { is_expected.to eq :category }
@@ -433,9 +434,7 @@ describe Daru::Vector, "categorical" do
       its(:'index.to_a') { is_expected.to eq [4, 0, 2, 1, 3] }
     end
     
-    context 'original vector unaffected
-    
-    ' do
+    context 'original vector unaffected' do
       let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category, ordered: true }
       subject { dv }
       before { dv.categories = [:c, :a, 1]; dv.sort }

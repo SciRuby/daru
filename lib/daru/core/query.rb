@@ -76,7 +76,6 @@ module Daru
           # Preserve categories order for category vector
           if dv.type == :category
             resultant_dv.categories = dv.categories
-            # TODO: Remove below line and make categories= return self
             resultant_dv
           else
             resultant_dv

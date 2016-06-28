@@ -326,7 +326,6 @@ module Daru
       validate_categories(cat_with_order)
       add_extra_categories(cat_with_order - categories)
       order_with cat_with_order
-      self
     end
 
     # Rename categories.
