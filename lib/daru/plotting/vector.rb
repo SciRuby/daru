@@ -20,18 +20,18 @@ module Daru
           options = {
             type: :scatter
           }.merge(opts)
-  
+
           x_axis  = options[:type] == :scatter ? Array.new(@size) { |i| i } : @index.to_a
           plot    = Nyaplot::Plot.new
           diagram = create_diagram plot, options[:type], x_axis
-  
+
           yield plot, diagram if block_given?
-  
+
           plot.show
         end
-  
+
         private
-  
+
         def create_diagram plot, type, x_axis
           case type
           when :box, :histogram
@@ -39,7 +39,7 @@ module Daru
           else
             plot.add(type, x_axis, @data.to_a)
           end
-        end        
+        end
       end
 
       module GruffLibrary
@@ -52,8 +52,7 @@ module Daru
             plot.labels = size.times.to_a.zip(index.to_a).to_h
             plot.data name || :vector, to_a
           when :pie, :bar
-            plot = Module.const_get("Gruff::#{type.to_s.capitalize}")
-              .new size
+            plot = Module.const_get("Gruff::#{type.to_s.capitalize}").new size
             each_with_index do |data, index|
               plot.data index, data
             end
@@ -62,16 +61,16 @@ module Daru
             plot.data name || :vector, index.to_a, to_a
           when :sidebar
             plot = Gruff::SideBar.new size
-            plot.labels = { 0 => (name.to_s || 'vector') }
+            plot.labels = {0 => (name.to_s || 'vector')}
             each_with_index do |data, index|
               plot.data index, data
             end
           else
-            raise ArgumentError, "This type of plot is not supported."
+            raise ArgumentError, 'This type of plot is not supported.'
           end
           yield plot if block_given?
           plot
-        end        
+        end
       end
     end
 
@@ -92,9 +91,9 @@ module Daru
             raise ArgumentError, "#{type} type is not supported."
           end
         end
-  
+
         private
-  
+
         def set_yrange plot, method
           case method
           when :percentage
@@ -102,7 +101,7 @@ module Daru
           when :fraction
             plot.yrange [0, 1]
           end
-        end        
+        end
       end
 
       module GruffLibrary
@@ -111,24 +110,23 @@ module Daru
           size = opts[:size] || 500
           case type
           when :bar, :pie
-            plot = Module.const_get("Gruff::#{type.to_s.capitalize}")
-              .new size
+            plot = Module.const_get("Gruff::#{type.to_s.capitalize}").new size
             method = opts[:method] || :count
             frequencies(method).each_with_index do |data, index|
               plot.data index, data
             end
           when :sidebar
             plot = Gruff::SideBar.new size
-            plot.labels = { 0 => (name.to_s || 'vector') }
+            plot.labels = {0 => (name.to_s || 'vector')}
             frequencies(method).each_with_index do |data, index|
               plot.data index, data
             end
           else
-            raise ArgumentError, "This type of plot is not supported."
+            raise ArgumentError, 'This type of plot is not supported.'
           end
           yield plot if block_given?
           plot
-        end        
+        end
       end
     end
   end

@@ -68,7 +68,7 @@ module Daru
         @plotting_library = lib
         extend Module.const_get(
           "Daru::Plotting::Category::#{lib.to_s.capitalize}Library"
-          ) if Daru.send("has_#{lib}?".to_sym)
+        ) if Daru.send("has_#{lib}?".to_sym)
       else
         raise ArguementError, "Plotting library #{lib} not supported. "\
           'Supported libraries are :nyaplot and :gruff'

@@ -58,15 +58,14 @@ module Daru
 
         def vector_where dv, bool_array
           data, index = dv.to_a, dv.index.to_a
-          new_data = []
-          new_index = []
+          new_data, new_index = [], []
           bool_array.to_a.each_with_index do |b, i|
             if b
               new_data << data[i]
               new_index << index[i]
             end
           end
-          
+
           resultant_dv = Daru::Vector.new new_data,
             index: dv.index.class.new(new_index),
             dtype: dv.dtype,
@@ -74,13 +73,9 @@ module Daru
             name: dv.name
 
           # Preserve categories order for category vector
-          if dv.type == :category
-            resultant_dv.categories = dv.categories
-            resultant_dv
-          else
-            resultant_dv
-          end
-        end        
+          resultant_dv.categories = dv.categories if dv.type == :category
+          resultant_dv
+        end
       end
     end
   end
