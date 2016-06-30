@@ -21,9 +21,7 @@ module Daru
         #   df = Daru::DataFrame.new({a:['A', 'B', 'C', 'D', 'E'], b:[10,20,30,40,50]})
         #   df.plot type: :bar, x: :a, y: :b
         def plot opts={}, &block
-          if opts[:categorized] ||
-             @index.valid?(opts[:x]) &&
-             self[opts[:x]].type == :category
+          if opts[:categorized]
             plot_with_category(opts, &block)
           else
             plot_without_category(opts, &block)
@@ -191,6 +189,9 @@ module Daru
           size = opts[:size] || 500
           x = extract_x_vector opts[:x]
           y = extract_y_vectors opts[:y]
+          return plot_with_category(
+            size, type, x, y, opts[:categorized]
+          ) if opts[:categorized]
           case type
           when :line, :bar
             plot = Module.const_get("Gruff::#{type.capitalize}").new size
@@ -213,6 +214,24 @@ module Daru
         end
 
         private
+
+        def plot_with_category size, type, x, y, opts
+          x = Daru::Vector.new x
+          y = y.first
+          case type
+          when :scatter
+            plot = Gruff::Scatter.new size
+            cat_dv = self[opts[:by]]
+            cat_dv.categories.each do |cat|
+              bools = cat_dv.eq cat
+              plot.data cat, x.where(bools).to_a, y.where(bools).to_a
+            end
+          else
+            raise ArgumentError, "Type #{type} is not supported."
+          end
+          yield plot if block_given?
+          plot
+        end
 
         def extract_x_vector x_name
           x_name && self[x_name].to_a || index.to_a
