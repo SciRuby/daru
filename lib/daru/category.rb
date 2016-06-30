@@ -466,6 +466,7 @@ module Daru
       if opts[:user_defined]
         user_defined_coding(opts[:user_defined])
       else
+        # TODO: Make various coding schemes code DRY
         send("#{coding_scheme}_coding".to_sym, opts[:full] || false)
       end
     end

@@ -47,12 +47,12 @@ module Daru
           type = opts[:type] || :bar
           size = opts[:size] || 500
           case type
-          when :line
-            plot = Gruff::Line.new size
+          when :line, :bar
+            plot = Module.const_get("Gruff::#{type.capitalize}").new size
             plot.labels = size.times.to_a.zip(index.to_a).to_h
             plot.data name || :vector, to_a
-          when :pie, :bar
-            plot = Module.const_get("Gruff::#{type.to_s.capitalize}").new size
+          when :pie
+            plot = Gruff::Pie.new size
             each_with_index do |data, index|
               plot.data index, data
             end
@@ -65,6 +65,8 @@ module Daru
             each_with_index do |data, index|
               plot.data index, data
             end
+          # TODO: hist, box
+          # It turns out hist and box are not supported in Gruff yet
           else
             raise ArgumentError, 'This type of plot is not supported.'
           end
@@ -109,12 +111,18 @@ module Daru
           type = opts[:type] || :bar
           size = opts[:size] || 500
           case type
-          when :bar, :pie
-            plot = Module.const_get("Gruff::#{type.to_s.capitalize}").new size
+          when :bar
+            plot = Gruff::Bar.new size
+            method = opts[:method] || :count
+            dv = frequencies(method)
+            plot.labels = size.times.to_a.zip(dv.index.to_a).to_h
+            plot.data name || :vector, dv.to_a
+          when :pie
+            plot = Gruff::Pie.new size
             method = opts[:method] || :count
             frequencies(method).each_with_index do |data, index|
               plot.data index, data
-            end
+            end            
           when :sidebar
             plot = Gruff::SideBar.new size
             plot.labels = {0 => (name.to_s || 'vector')}

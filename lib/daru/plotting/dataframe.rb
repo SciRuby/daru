@@ -189,27 +189,47 @@ module Daru
         def plot opts={}
           type = opts[:type] || :bar
           size = opts[:size] || 500
-          x = opts[:x] && self[opts[:x]].to_a || index.to_a
-          y = opts[:y] || vectors.to_a
+          x = extract_x_vector opts[:x]
+          y = extract_y_vectors opts[:y]
           case type
-          when :line
-            plot = Gruff::Line.new size
+          when :line, :bar
+            plot = Module.const_get("Gruff::#{type.capitalize}").new size
             plot.labels = size.times.to_a.zip(x).to_h
-            numeric = self[*y].only_numerics(clone: false).dup_only_valid
-            numeric.each do |vec|
+            y.each do |vec|
               plot.data vec.name || :vector, vec.to_a
             end
           when :scatter
             plot = Gruff::Scatter.new size
-            numeric = self[*y].only_numerics(clone: false).dup_only_valid
-            numeric.each do |vec|
+            y.each do |vec|
               plot.data vec.name || :vector, x, vec.to_a
             end
+          # TODO: hist, box
+          # It turns out hist and box are not supported in Gruff yet
           else
             raise ArgumentError, 'This type of plot is not supported.'
           end
           yield plot if block_given?
           plot
+        end
+
+        private
+
+        def extract_x_vector x_name
+          x_name && self[x_name].to_a || index.to_a
+        end
+
+        def extract_y_vectors y_names
+          y_names =
+            case y_names
+            when nil
+              vectors.to_a
+            when Array
+              y_names
+            else
+              [y_names]
+            end
+
+          y_names.map { |y| self[y] }.select(&:numeric?)
         end
       end
     end
