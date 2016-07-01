@@ -530,7 +530,7 @@ module Daru
 
     # Reorder the vector with given positions
     # @note Unlike #reindex! which takes index as input, it takes
-    #   positions as an input to reorder the vector   
+    #   positions as an input to reorder the vector
     # @param [Array] order the order to reorder the vector with
     # @return reordered vector
     # @example
@@ -561,7 +561,7 @@ module Daru
     #   # => #<Daru::Vector(3)>
     #   #   a   1
     #   #   b   2
-    #   #   c   3    
+    #   #   c   3
     def reindex! idx
       idx = Daru::Index.new idx unless idx.is_a? Daru::Index
       raise ArgumentError, 'Invalid index specified' unless
