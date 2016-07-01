@@ -1154,6 +1154,12 @@ module Daru
 
     alias :dv :daru_vector
 
+    # Converts a non category type vector to category type vector.
+    # @param [Hash] opts options to convert to category
+    # @option opts [true, false] :ordered Specify if vector is ordered or not.
+    #   If it is ordered, it can be sorted and min, max like functions would work
+    # @option opts [Array] :categories set categories in the specified order
+    # @return [Daru::Vector] vector with type category
     def to_category opts={}
       dv = Daru::Vector.new to_a, type: :category, name: @name, index: @index
       dv.ordered = opts[:ordered] || false
@@ -1176,9 +1182,10 @@ module Daru
     # Partition a numeric variable into categories.
     # @param [Array<Numeric>] partitions an array whose consecutive elements
     #   provide intervals for categories
-    # @param [:left, :right] close_at specifies whether the interval closes at
+    # @param [Hash] opts options to cut the partition
+    # @option opts [:left, :right] :close_at specifies whether the interval closes at
     #   the right side of left side
-    # @param [Array] labels names of the categories
+    # @option opts [Array] :labels names of the categories
     # @return [Daru::Vector] numeric variable converted to categorical variable
     # @example
     #   heights = Daru::Vector.new [30, 35, 32, 50, 42, 51]

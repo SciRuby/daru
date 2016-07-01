@@ -1793,8 +1793,21 @@ module Daru
         @vectors.to_a.all? { |v| self[v] == other[v] }
     end
 
+    # Converts the specified non category type vectors to category type vectors
+    # @param [Array] *names names of non category type vectors to be converted
+    # @return [Daru::DataFrame] data frame in which specified vectors have been
+    #   converted to category type
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1, 2, 3],
+    #     b: ['a', 'a', 'b']
+    #   })
+    #   df.to_category :b
+    #   df[:b].type
+    #   # => :category
     def to_category *names
       names.each { |n| self[n] = self[n].to_category }
+      self
     end
 
     def method_missing(name, *args, &block)
@@ -1817,6 +1830,24 @@ module Daru
         order: all_vectors.map(&:name)
     end
 
+    # Split the dataframe into many dataframes based on category vector
+    # @param [object] cat_name name of category vector to split the dataframe
+    # @return [Array] array of dataframes split by category with category vector
+    #   used to split not included
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1, 2, 3],
+    #     b: ['a', 'a', 'b']
+    #   })
+    #   df.to_category :b
+    #   df.split_by_category :b
+    #   # => [#<Daru::DataFrame: a (2x1)>
+    #   #       a
+    #   #   0   1
+    #   #   1   2,
+    #   # #<Daru::DataFrame: b (1x1)>
+    #   #       a
+    #   #   2   3]
     def split_by_category cat_name
       cat_dv = self[cat_name]
       raise ArguementError, "#{cat_name} is not a category vector" if

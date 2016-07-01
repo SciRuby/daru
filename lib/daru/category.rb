@@ -50,7 +50,7 @@ module Daru
       @name = opts[:name]
 
       # Index of the vector
-      @index = coerce_index(opts[:index])
+      @index = coerce_index opts[:index]
 
       # Store metadata
       @metadata = opts[:metadata] || {}
@@ -528,12 +528,63 @@ module Daru
       to_html
     end
 
+    # Reorder the vector with given positions
+    # @note Unlike #reindex! which takes index as input, it takes
+    #   positions as an input to reorder the vector   
+    # @param [Array] order the order to reorder the vector with
+    # @return reordered vector
+    # @example
+    #   dv = Daru::Vector.new [3, 2, 1], index: ['c', 'b', 'a'], type: :category
+    #   dv.reorder! [2, 1, 0]
+    #   # => #<Daru::Vector(3)>
+    #   #   a   1
+    #   #   b   2
+    #   #   c   3
     def reorder! order
+      raise ArgumentError, 'Invalid order specified' unless
+        order.sort == size.times.to_a
       # TODO: Room for optimization
       old_data = to_a
       new_data = order.map { |i| old_data[i] }
       initialize_core_attributes new_data
       self
+    end
+
+    # Sets new index for vector. Preserves index->value correspondence.
+    # @note Unlike #reorder! which takes positions as input it takes
+    #   index as an input to reorder the vector
+    # @param [Daru::Index, Daru::MultiIndex, Array] idx new index to order with
+    # @return [Daru::Vector] vector reindexed with new index
+    # @example
+    #   dv = Daru::Vector.new [3, 2, 1], index: ['c', 'b', 'a'], type: :category
+    #   dv.reindex! ['a', 'b', 'c']
+    #   # => #<Daru::Vector(3)>
+    #   #   a   1
+    #   #   b   2
+    #   #   c   3    
+    def reindex! idx
+      idx = Daru::Index.new idx unless idx.is_a? Daru::Index
+      raise ArgumentError, 'Invalid index specified' unless
+        idx.to_a.sort == index.to_a.sort
+
+      old_categories = categories
+      data = idx.map { |i| self[i] }
+      initialize_core_attributes data
+      self.categories = old_categories
+      self.index = idx
+      self
+    end
+
+    # Non-destructive version of #reorder!
+    # See #reorder!
+    def reorder order
+      dup.reorder! order
+    end
+
+    # Non-destructive version of #reindex!
+    # See #reindex!
+    def reindex index
+      dup.reindex! index
     end
 
     {
@@ -606,12 +657,33 @@ module Daru
 
     alias_method :describe, :summary
 
+    # Raises TypeError since the vector to be converted is already of
+    #   type category
+    # @return [TypeError] Raises an exception
     def to_category
       raise TypeError, 'The vector is already of type category.'
     end
 
+    # Converts a category type vector to non category type vector
+    # @return [Daru::Vector] non category type vector
     def to_non_category
       Daru::Vector.new to_a, name: name, index: index
+    end
+
+    # Sets index of the vector
+    # @param [Daru::Index, Daru::MultiIndex, Daru::CategoricalIndex, Array, Range]
+    #   idx new index to assign to vector
+    # @return [Daru::Index, Daru::CategoricalIndex, Daru::MultiIndex] the index assigned
+    # @example
+    #   dv = Daru::Vector.new [1, 2, 3], type: :category
+    #   dv.index = 'a'..'c'
+    #   dv
+    #   # => #<Daru::Vector(3)>
+    #   #   a   1
+    #   #   b   2
+    #   #   c   3
+    def index= idx
+      @index = coerce_index idx
     end
 
     private
@@ -755,14 +827,14 @@ module Daru
     def coerce_index index
       index =
         case index
+        when Daru::MultiIndex, Daru::CategoricalIndex, Daru::Index
+          index
         when nil
           Daru::Index.new size
         when Range
           Daru::Index.new index.to_a
         when Array
           Daru::Index.new index
-        when Daru::Index
-          index
         else
           raise ArgumentError, "Unregnized index type #{index.class}"
         end

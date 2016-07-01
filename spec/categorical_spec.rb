@@ -100,6 +100,40 @@ describe Daru::Vector, "categorical" do
     its(:name) { is_expected.to eq 'hello' }
   end
   
+  context '#index=' do
+    context Daru::Index do
+      let(:idx) { Daru::Index.new [1, 2, 3] }
+      let(:dv) { Daru::Vector.new ['a', 'b', 'c'], type: :category }
+      before { dv.index = idx }
+      subject { dv }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:index) { is_expected.to be_a Daru::Index }
+      its(:'index.to_a') { is_expected.to eq [1, 2, 3] }
+    end
+    
+    context Range do
+      let(:dv) { Daru::Vector.new ['a', 'b', 'c'], type: :category }
+      before { dv.index = 1..3 }
+      subject { dv }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:index) { is_expected.to be_a Daru::Index }
+      its(:'index.to_a') { is_expected.to eq [1, 2, 3] }      
+    end
+    
+    context Daru::MultiIndex do
+      let(:idx) { Daru::MultiIndex.from_tuples [[:a, :one], [:a, :two], [:b, :one]] }
+      let(:dv) { Daru::Vector.new ['a', 'b', 'c'], type: :category }
+      before { dv.index = idx }
+      subject { dv }
+
+      it { is_expected.to be_a Daru::Vector }
+      its(:index) { is_expected.to be_a Daru::MultiIndex }
+      its(:'index.to_a') { is_expected.to eq [[:a, :one], [:a, :two], [:b, :one]] }
+    end
+  end
+  
   context "#cut" do
     context "close at right end" do
       let(:dv) { Daru::Vector.new [1, 2, 5, 14] }
@@ -351,6 +385,67 @@ describe Daru::Vector, "categorical" do
   context '#to_category' do
     let(:dv) { Daru::Vector.new [1, 2, 3], type: :category }
     it { expect { dv.to_category }.to raise_error TypeError }
+  end
+  
+  context '#reindex!' do
+    context Daru::Index do
+      let(:dv) { Daru::Vector.new [3, 2, 1, 3, 2, 1],
+        index: 'a'..'f', type: :category, categories: [1, 2, 3, 4] }
+      before { dv.reindex! ['e', 'f', 'a', 'b', 'c', 'd'] }
+      subject { dv }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:categories) { is_expected.to eq [1, 2, 3, 4] }
+      its(:to_a) { is_expected.to eq [2, 1, 3, 2, 1, 3] }
+    end
+    
+    context Daru::MultiIndex do
+      let(:tuples) do
+        [
+          [:a,:one,:baz],
+          [:a,:two,:bar],
+          [:a,:two,:baz],
+          [:b,:one,:bar],
+          [:b,:two,:bar],
+          [:b,:two,:baz]
+        ]
+      end
+      let(:idx) { Daru::MultiIndex.from_tuples tuples }
+      let(:dv) { Daru::Vector.new [3, 2, 1, 3, 2, 1],
+        index: idx, type: :category, categories: [1, 2, 3, 4] }
+      before { dv.reindex! [4, 5, 0, 1, 2, 3].map { |i| tuples[i] } }
+      subject { dv }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:categories) { is_expected.to eq [1, 2, 3, 4] }
+      its(:to_a) { is_expected.to eq [2, 1, 3, 2, 1, 3] }
+      its(:'index.to_a') { is_expected.to eq [4, 5, 0, 1, 2, 3]
+        .map { |i| tuples[i] } }
+    end
+    
+    context 'invalid index' do
+      let(:dv) { Daru::Vector.new [1, 2, 3], type: :category }
+      
+      it { expect { dv.reindex! [1, 1, 1] }.to raise_error ArgumentError }
+    end    
+  end
+
+  context '#reorder!' do
+    context 'valid order' do
+      let(:dv) { Daru::Vector.new [3, 2, 1, 3, 2, 1], index: 'a'..'f', type: :category }
+      before { dv.reorder! [5, 4, 3, 2, 1, 0] }
+      subject { dv }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:categories) { is_expected.to eq [1, 2, 3] }
+      its(:to_a) { is_expected.to eq [1, 2, 3, 1, 2, 3] }
+    end
+    
+    context 'invalid order' do
+      let(:dv) { Daru::Vector.new [1, 2, 3], type: :category }
+      
+      it { expect { dv.reorder! [1, 1, 1] }.to raise_error ArgumentError }
+    end
   end
   
   context "#min" do

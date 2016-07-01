@@ -122,7 +122,7 @@ module Daru
             method = opts[:method] || :count
             frequencies(method).each_with_index do |data, index|
               plot.data index, data
-            end            
+            end
           when :sidebar
             plot = Gruff::SideBar.new size
             plot.labels = {0 => (name.to_s || 'vector')}
