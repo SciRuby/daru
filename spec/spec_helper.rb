@@ -6,6 +6,7 @@ require 'distribution'
 require 'tempfile'
 require 'pry-byebug'
 require 'nokogiri'
+require 'gruff'
 
 def mri?
   RUBY_ENGINE == 'ruby'
