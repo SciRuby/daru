@@ -193,17 +193,8 @@ module Daru
             size, type, x, y, opts[:categorized]
           ) if opts[:categorized]
           case type
-          when :line, :bar
-            plot = Module.const_get("Gruff::#{type.capitalize}").new size
-            plot.labels = size.times.to_a.zip(x).to_h
-            y.each do |vec|
-              plot.data vec.name || :vector, vec.to_a
-            end
-          when :scatter
-            plot = Gruff::Scatter.new size
-            y.each do |vec|
-              plot.data vec.name || :vector, x, vec.to_a
-            end
+          when :line, :bar, :scatter
+            plot = send("#{type}_plot", size, x, y)
           # TODO: hist, box
           # It turns out hist and box are not supported in Gruff yet
           else
@@ -214,6 +205,32 @@ module Daru
         end
 
         private
+
+        def line_plot size, x, y
+          plot = Gruff::Line.new size
+          plot.labels = size.times.to_a.zip(x).to_h
+          y.each do |vec|
+            plot.data vec.name || :vector, vec.to_a
+          end
+          plot
+        end
+
+        def bar_plot size, x, y
+          plot = Gruff::Bar.new size
+          plot.labels = size.times.to_a.zip(x).to_h
+          y.each do |vec|
+            plot.data vec.name || :vector, vec.to_a
+          end
+          plot
+        end
+
+        def scatter_plot size, x, y
+          plot = Gruff::Scatter.new size
+          y.each do |vec|
+            plot.data vec.name || :vector, x, vec.to_a
+          end
+          plot
+        end
 
         def plot_with_category size, type, x, y, opts
           x = Daru::Vector.new x

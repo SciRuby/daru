@@ -6,6 +6,7 @@ describe Daru::Vector, 'plotting' do
   let(:diagram) { instance_double('Nyaplot::Diagram') }
 
   before do
+    Daru.plotting_library = :nyaplot
     allow(Nyaplot::Plot).to receive(:new).and_return(plot)
   end
 
@@ -73,6 +74,7 @@ describe Daru::Vector, 'plotting category' do
       categories: ['I', 'II', 'III']
   end  
   before do
+    Daru.plotting_library = :nyaplot
     allow(Nyaplot::Plot).to receive(:new).and_return(plot)
   end
   context 'bar' do
@@ -176,11 +178,15 @@ describe Daru::Vector, 'plotting vector with gruff' do
       dv.plot type: :sidebar
     end
   end
+  
+  context 'invalid type' do
+    it { expect { dv.plot type: :lol }.to raise_error ArgumentError }
+  end
 end
 
 describe Daru::Vector, 'plotting category vector with gruff' do
-  let(:dv) { Daru::Vector.new [1, 2, 3], type: :catgory }
   before { Daru.plotting_library = :gruff }
+  let(:dv) { Daru::Vector.new [1, 2, 3], type: :category }
 
   context 'bar' do
     let(:plot) { instance_double 'Gruff::Bar' }
@@ -216,5 +222,9 @@ describe Daru::Vector, 'plotting category vector with gruff' do
       expect(plot).to receive(:data).exactly(3).times
       dv.plot type: :sidebar
     end
+  end
+
+  context 'invalid type' do
+    it { expect { dv.plot type: :lol }.to raise_error ArgumentError }
   end
 end
