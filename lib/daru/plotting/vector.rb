@@ -47,30 +47,49 @@ module Daru
           type = opts[:type] || :bar
           size = opts[:size] || 500
           case type
-          when :line, :bar
-            plot = Module.const_get("Gruff::#{type.capitalize}").new size
-            plot.labels = size.times.to_a.zip(index.to_a).to_h
-            plot.data name || :vector, to_a
-          when :pie
-            plot = Gruff::Pie.new size
-            each_with_index do |data, index|
-              plot.data index, data
-            end
-          when :scatter
-            plot = Gruff::Scatter.new size
-            plot.data name || :vector, index.to_a, to_a
-          when :sidebar
-            plot = Gruff::SideBar.new size
-            plot.labels = {0 => (name.to_s || 'vector')}
-            each_with_index do |data, index|
-              plot.data index, data
-            end
+          when :line, :bar, :pie, :scatter, :sidebar
+            plot = send("#{type}_plot", size)
           # TODO: hist, box
           # It turns out hist and box are not supported in Gruff yet
           else
             raise ArgumentError, 'This type of plot is not supported.'
           end
           yield plot if block_given?
+          plot
+        end
+
+        private
+
+        def line_plot size
+          plot = Gruff::Line.new size
+          plot.labels = size.times.to_a.zip(index.to_a).to_h
+          plot.data name || :vector, to_a
+          plot
+        end
+
+        def bar_plot size
+          plot = Gruff::Bar.new size
+          plot.labels = size.times.to_a.zip(index.to_a).to_h
+          plot.data name || :vector, to_a
+          plot
+        end
+
+        def pie_plot size
+          plot = Gruff::Pie.new size
+          each_with_index { |data, index| plot.data index, data }
+          plot
+        end
+
+        def scatter_plot size
+          plot = Gruff::Scatter.new size
+          plot.data name || :vector, index.to_a, to_a
+          plot
+        end
+
+        def sidebar_plot size
+          plot = Gruff::SideBar.new size
+          plot.labels = {0 => (name.to_s || 'vector')}
+          each_with_index { |data, index| plot.data index, data }
           plot
         end
       end
@@ -111,28 +130,41 @@ module Daru
           type = opts[:type] || :bar
           size = opts[:size] || 500
           case type
-          when :bar
-            plot = Gruff::Bar.new size
-            method = opts[:method] || :count
-            dv = frequencies(method)
-            plot.labels = size.times.to_a.zip(dv.index.to_a).to_h
-            plot.data name || :vector, dv.to_a
-          when :pie
-            plot = Gruff::Pie.new size
-            method = opts[:method] || :count
-            frequencies(method).each_with_index do |data, index|
-              plot.data index, data
-            end
-          when :sidebar
-            plot = Gruff::SideBar.new size
-            plot.labels = {0 => (name.to_s || 'vector')}
-            frequencies(method).each_with_index do |data, index|
-              plot.data index, data
-            end
+          when :bar, :pie, :sidebar
+            plot = send("category_#{type}_plot".to_sym, size, opts[:method])
           else
             raise ArgumentError, 'This type of plot is not supported.'
           end
           yield plot if block_given?
+          plot
+        end
+
+        private
+
+        def category_bar_plot size, method
+          plot = Gruff::Bar.new size
+          method = opts[:method] || :count
+          dv = frequencies(method)
+          plot.labels = size.times.to_a.zip(dv.index.to_a).to_h
+          plot.data name || :vector, dv.to_a
+          plot
+        end
+
+        def category_pie_plot size, method
+          plot = Gruff::Pie.new size
+          method = opts[:method] || :count
+          frequencies(method).each_with_index do |data, index|
+            plot.data index, data
+          end
+          plot
+        end
+
+        def category_sidebar_plot size, method
+          plot = Gruff::SideBar.new size
+          plot.labels = {0 => (name.to_s || 'vector')}
+          frequencies(method).each_with_index do |data, index|
+            plot.data index, data
+          end
           plot
         end
       end
