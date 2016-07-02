@@ -143,7 +143,7 @@ module Daru
 
         def category_bar_plot size, method
           plot = Gruff::Bar.new size
-          method = opts[:method] || :count
+          method = method || :count
           dv = frequencies(method)
           plot.labels = size.times.to_a.zip(dv.index.to_a).to_h
           plot.data name || :vector, dv.to_a
@@ -152,7 +152,7 @@ module Daru
 
         def category_pie_plot size, method
           plot = Gruff::Pie.new size
-          method = opts[:method] || :count
+          method = method || :count
           frequencies(method).each_with_index do |data, index|
             plot.data index, data
           end
