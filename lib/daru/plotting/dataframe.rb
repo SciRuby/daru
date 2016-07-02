@@ -102,7 +102,7 @@ module Daru
           end
         end
 
-        SHAPES = %w(circle,triangle-up, diamond, square, triangle-down, cross).freeze
+        SHAPES = %w(circle triangle-up diamond square triangle-down cross).freeze
         def get_shape type
           validate_type type, :scatter
           SHAPES.cycle
