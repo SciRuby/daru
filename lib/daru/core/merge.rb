@@ -1,14 +1,30 @@
 module Daru
   module Core
     class MergeFrame
+      class NilSorter
+        include Comparable
+
+        def nil?
+          true
+        end
+
+        def ==(_other)
+          false
+        end
+
+        def <=>(other)
+          other.nil? ? 0 : -1
+        end
+      end
+
       def initialize left_df, right_df, opts={}
         @on = opts[:on]
         @keep_left, @keep_right = extract_left_right(opts[:how])
 
         validate_on!(left_df, right_df)
 
-        @left  = df_to_a(left_df).sort_by { |h| h.values_at(*on) }
-        @right = df_to_a(right_df).sort_by { |h| h.values_at(*on) }
+        @left  = df_to_a(left_df).sort_by { |h| sanitize_join_keys(h.values_at(*on)) }
+        @right = df_to_a(right_df).sort_by { |h| sanitize_join_keys(h.values_at(*on)) }
 
         @left_keys, @right_keys = merge_keys(left_df, right_df, on)
       end
@@ -43,6 +59,10 @@ module Daru
       def extract_left_right(how)
         LEFT_RIGHT_COMBINATIONS[how] or
           raise ArgumentError, "Unrecognized join option: #{how}"
+      end
+
+      def sanitize_join_keys(join_keys)
+        join_keys.map { |v| v || NilSorter.new }
       end
 
       def df_to_a df
@@ -116,7 +136,7 @@ module Daru
       end
 
       def first_key(arr)
-        arr.empty? ? nil : arr.first.values_at(*on)
+        arr.empty? ? nil : sanitize_join_keys(arr.first.values_at(*on))
       end
 
       def validate_on!(left_df, right_df)
