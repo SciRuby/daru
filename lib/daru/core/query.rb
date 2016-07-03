@@ -66,7 +66,7 @@ module Daru
             name: dv.name
 
           # Preserve categories order for category vector
-          resultant_dv.categories = dv.categories if dv.type == :category
+          resultant_dv.categories = dv.categories if dv.category?
           resultant_dv
         end
 

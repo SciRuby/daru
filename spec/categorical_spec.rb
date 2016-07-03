@@ -69,6 +69,13 @@ describe Daru::Vector, "categorical" do
         }.to raise_error ArgumentError }
       end
     end
+
+    context '#category?' do
+      let(:non_cat) { Daru::Vector.new [1, 2, 3] }
+      let(:cat) { Daru::Vector.new [1, 2, 3], type: :category }
+      it { expect(non_cat.category?).to eq false }
+      it { expect(cat.category?).to eq true }
+    end
     
     context "with categories" do
       context "extra categories" do
@@ -384,7 +391,7 @@ describe Daru::Vector, "categorical" do
 
   context '#to_category' do
     let(:dv) { Daru::Vector.new [1, 2, 3], type: :category }
-    it { expect { dv.to_category }.to raise_error TypeError }
+    it { expect(dv.to_category).to eq dv }
   end
   
   context '#reindex!' do

@@ -499,35 +499,6 @@ module Daru
       @array
     end
 
-    # Over rides original inspect for pretty printing in irb
-    def inspect spacing=20, threshold=15
-      row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
-
-      "#<#{self.class}(#{size})#{metadata && !metadata.empty? ? metadata.inspect : ''}>\n" +
-        Formatters::Table.format(
-          to_a.lazy.map { |v| [v] },
-          headers: @name && [@name],
-          row_headers: row_headers,
-          threshold: threshold,
-          spacing: spacing
-        )
-    end
-
-    # Convert to html for iruby
-    def to_html threshold=30
-      path =
-        if index.is_a?(MultiIndex)
-          File.expand_path('../iruby/templates/vector_mi.html.erb', __FILE__)
-        else
-          File.expand_path('../iruby/templates/vector.html.erb', __FILE__)
-        end
-      ERB.new(File.read(path).strip).result(binding)
-    end
-
-    def to_s
-      to_html
-    end
-
     # Reorder the vector with given positions
     # @note Unlike #reindex! which takes index as input, it takes
     #   positions as an input to reorder the vector
@@ -573,18 +544,6 @@ module Daru
       self.categories = old_categories
       self.index = idx
       self
-    end
-
-    # Non-destructive version of #reorder!
-    # See #reorder!
-    def reorder order
-      dup.reorder! order
-    end
-
-    # Non-destructive version of #reindex!
-    # See #reindex!
-    def reindex index
-      dup.reindex! index
     end
 
     {
@@ -634,7 +593,7 @@ module Daru
     #   and values as values to these parameters
     # @example
     #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
-    #   dv.summary
+    #   dv.describe
     #   # => #<Daru::Vector(6)>
     #   #         size            5
     #   #   categories            3
@@ -642,26 +601,21 @@ module Daru
     #   # max_category            a
     #   #     min_freq            1
     #   # min_category            c
-    def summary
-      values = {
+    def describe
+      Daru::Vector.new(
         size: size,
         categories: categories.size,
         max_freq: @cat_hash.values.map(&:size).max,
         max_category: @cat_hash.keys.max_by { |cat| @cat_hash[cat].size },
         min_freq: @cat_hash.values.map(&:size).min,
         min_category: @cat_hash.keys.min_by { |cat| @cat_hash[cat].size }
-      }
-
-      Daru::Vector.new values
+      )
     end
 
-    alias_method :describe, :summary
-
-    # Raises TypeError since the vector to be converted is already of
-    #   type category
-    # @return [TypeError] Raises an exception
+    # Does nothing since its already of type category.
+    # @return [Daru::Vector] categorical vector
     def to_category
-      raise TypeError, 'The vector is already of type category.'
+      self
     end
 
     # Converts a category type vector to non category type vector
@@ -718,7 +672,7 @@ module Daru
     end
 
     def assert_ordered operation
-      # Change ArgumentError to something more expressive
+      # TODO: Change ArgumentError to something more expressive
       raise ArgumentError, "Can not apply #{operation} when vector is unordered. "\
         'To make the categorical data ordered, use #ordered = true'\
         unless ordered?

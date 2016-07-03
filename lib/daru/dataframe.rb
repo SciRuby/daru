@@ -1850,8 +1850,8 @@ module Daru
     #   #   2   3]
     def split_by_category cat_name
       cat_dv = self[cat_name]
-      raise ArguementError, "#{cat_name} is not a category vector" if
-        cat_dv.type != :category
+      raise ArguementError, "#{cat_name} is not a category vector" unless
+        cat_dv.category?
 
       cat_dv.categories.map do |cat|
         where(cat_dv.eq cat)
@@ -1864,7 +1864,7 @@ module Daru
 
     def convert_categorical_vectors names
       names.map do |n|
-        next if self[n].type != :category
+        next unless self[n].category?
         old = [n, self[n]]
         self[n] = Daru::Vector.new(self[n].to_ints)
         old

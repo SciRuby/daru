@@ -529,6 +529,16 @@ module Daru
       @type
     end
 
+    # Tells if vector is categorical or not.
+    # @return [true, false] true if vector is of type category, false otherwise
+    # @example
+    #   dv = Daru::Vector.new [1, 2, 3], type: :category
+    #   dv.category?
+    #   # => true
+    def category?
+      type == :category
+    end
+
     # Get index of element
     def index_of element
       case dtype
@@ -894,7 +904,7 @@ module Daru
 
       "#<#{self.class}(#{size})#{metadata && !metadata.empty? ? metadata.inspect : ''}>\n" +
         Formatters::Table.format(
-          @data.lazy.map { |v| [v] },
+          to_a.lazy.map { |v| [v] },
           headers: @name && [@name],
           row_headers: row_headers,
           threshold: threshold,
