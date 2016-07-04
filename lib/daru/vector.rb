@@ -1,6 +1,7 @@
 require 'daru/maths/arithmetic/vector.rb'
 require 'daru/maths/statistics/vector.rb'
-require 'daru/plotting/vector.rb'
+require 'daru/plotting/gruff.rb'
+require 'daru/plotting/nyaplot.rb'
 require 'daru/accessors/array_wrapper.rb'
 require 'daru/accessors/nmatrix_wrapper.rb'
 require 'daru/accessors/gsl_wrapper.rb'

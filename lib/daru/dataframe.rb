@@ -1,7 +1,8 @@
 require 'daru/accessors/dataframe_by_row.rb'
 require 'daru/maths/arithmetic/dataframe.rb'
 require 'daru/maths/statistics/dataframe.rb'
-require 'daru/plotting/dataframe.rb'
+require 'daru/plotting/gruff.rb'
+require 'daru/plotting/nyaplot.rb'
 require 'daru/io/io.rb'
 
 module Daru
