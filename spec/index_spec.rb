@@ -152,6 +152,13 @@ describe Daru::Index do
       expect(@mixed_id['c']).to eq(2)
     end
   end
+
+  context "#each" do
+    it "returns an enum when no block specified" do
+      index = Daru::Index.new([1,2,3,4,5])
+      expect(index.each.class).to eq(Enumerator)
+    end
+  end
 end
 
 describe Daru::MultiIndex do
