@@ -37,6 +37,8 @@ module Daru
     end
 
     def each(&block)
+      return to_enum(:each) unless block_given?
+
       @relation_hash.each_key(&block)
       self
     end
