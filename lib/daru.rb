@@ -69,7 +69,7 @@ end
   begin
     gem lib[0], lib[1]
     require lib[0]
-  rescue LoadError => e
+  rescue LoadError
     STDERR.puts "\nInstall the #{lib[0]} gem version #{lib[1]} for using"\
     " #{lib[0]} functions."
   end
