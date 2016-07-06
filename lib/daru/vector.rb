@@ -900,10 +900,11 @@ module Daru
     # :nocov:
 
     # Over rides original inspect for pretty printing in irb
-    def inspect spacing=20, threshold=15
+    # TODO: Solve Rubocop AbcSize offence
+    def inspect spacing=20, threshold=15 # rubocop:disable Metrics/AbcSize
       row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
 
-      "#<#{self.class}(#{size})#{metadata && !metadata.empty? ? metadata.inspect : ''}>\n" +
+      "#<#{self.class}(#{size})#{':cataegory' if category?}#{metadata.inspect if metadata && !metadata.empty?}>\n" +
         Formatters::Table.format(
           to_a.lazy.map { |v| [v] },
           headers: @name && [@name],
