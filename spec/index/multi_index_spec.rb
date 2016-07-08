@@ -1,3 +1,5 @@
+require 'spec_helper.rb'
+
 describe Daru::MultiIndex do
   before(:each) do
     @index_tuples = [
