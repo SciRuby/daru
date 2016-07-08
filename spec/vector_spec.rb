@@ -252,6 +252,266 @@ describe Daru::Vector do
             expect { @vector[:x, :one] }.to raise_error(IndexError)
           end
         end
+
+        context Daru::CategoricalIndex do
+          # before { skip }
+          context "non-numerical index" do
+            let (:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
+            let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
+
+            context "single category" do
+              context "multiple instances" do
+                subject { dv[:a] }
+
+                it { is_expected.to be_a Daru::Vector }
+                its(:size) { is_expected.to eq 3 }
+                its(:to_a) { is_expected.to eq  ['a', 'c', 'd'] }
+                its(:index) { is_expected.to eq(
+                  Daru::CategoricalIndex.new([:a, :a, :a])) }
+              end
+
+              context "single instance" do
+                subject { dv[:c] }
+
+                it { is_expected.to eq 'e' }
+              end
+            end
+
+            context "multiple categories" do
+              subject { dv[:a, :c] }
+
+              it { is_expected.to be_a Daru::Vector }
+              its(:size) { is_expected.to eq 4 }
+              its(:to_a) { is_expected.to eq  ['a', 'c', 'd', 'e'] }
+              its(:index) { is_expected.to eq(
+                Daru::CategoricalIndex.new([:a, :a, :a, :c])) }
+            end
+
+            context "multiple positional indexes" do
+              subject { dv[0, 1, 2] }
+
+              it { is_expected.to be_a Daru::Vector }
+              its(:size) { is_expected.to eq 3 }
+              its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
+              its(:index) { is_expected.to eq(
+                Daru::CategoricalIndex.new([:a, :b, :a])) }
+            end
+
+            context "single positional index" do
+              subject { dv[1] }
+
+              it { is_expected.to eq 'b' }
+            end
+
+            context "invalid category" do
+              it { expect { dv[:x] }.to raise_error IndexError }
+            end
+
+            context "invalid positional index" do
+              it { expect { dv[30] }.to raise_error IndexError }
+            end
+          end
+
+          context "numerical index" do
+            let (:idx) { Daru::CategoricalIndex.new [1, 1, 2, 2, 3] }
+            let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
+
+            context "single category" do
+              context "multiple instances" do
+                subject { dv[1] }
+
+                it { is_expected.to be_a Daru::Vector }
+                its(:size) { is_expected.to eq 2 }
+                its(:to_a) { is_expected.to eq  ['a', 'b'] }
+                its(:index) { is_expected.to eq(
+                  Daru::CategoricalIndex.new([1, 1])) }
+              end
+
+              context "single instance" do
+                subject { dv[3] }
+
+                it { is_expected.to eq 'e' }
+              end
+            end
+          end
+        end
+      end
+
+      context "#at" do
+        context Daru::Index do
+          let (:idx) { Daru::Index.new [1, 0, :c] }
+          let (:dv) { Daru::Vector.new ['a', 'b', 'c'], index: idx }
+          
+          context "single position" do
+            it { expect(dv.at 1).to eq 'b' }
+          end
+          
+          context "multiple positions" do
+            subject { dv.at 0, 2 }
+            
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 2 }
+            its(:to_a) { is_expected.to eq ['a', 'c'] }
+            its(:'index.to_a') { is_expected.to eq [1, :c] }
+          end
+          
+          context "invalid position" do
+            it { expect { dv.at 3 }.to raise_error IndexError }
+          end
+          
+          context "invalid positions" do
+            it { expect { dv.at 2, 3 }.to raise_error IndexError }
+          end
+          
+          context "range" do
+            subject { dv.at 0..1 }
+            
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 2 }
+            its(:to_a) { is_expected.to eq ['a', 'b'] }
+            its(:'index.to_a') { is_expected.to eq [1, 0] }            
+          end
+          
+          context "range with negative end" do
+            subject { dv.at 0..-2 }
+            
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 2 }
+            its(:to_a) { is_expected.to eq ['a', 'b'] }
+            its(:'index.to_a') { is_expected.to eq [1, 0] }              
+          end
+          
+          context "range with single element" do
+            subject { dv.at 0..0 }
+            
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 1 }
+            its(:to_a) { is_expected.to eq ['a'] }
+            its(:'index.to_a') { is_expected.to eq [1] }
+          end
+        end
+        
+        context Daru::MultiIndex do
+          let (:idx) do
+            Daru::MultiIndex.from_tuples [
+              [:a,:one,:bar],
+              [:a,:one,:baz],
+              [:b,:two,:bar],
+              [:a,:two,:baz],
+            ]
+          end
+          let (:dv) { Daru::Vector.new 1..4, index: idx }
+          
+          context "single position" do
+            it { expect(dv.at 1).to eq 2 }
+          end
+          
+          context "multiple positions" do
+            subject { dv.at 2, 3 }
+            
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 2 }
+            its(:to_a) { is_expected.to eq [3, 4] }
+            its(:'index.to_a') { is_expected.to eq [[:b, :two, :bar], 
+              [:a, :two, :baz]] }
+          end
+          
+          context "invalid position" do
+            it { expect { dv.at 4 }.to raise_error IndexError }
+          end
+          
+          context "invalid positions" do
+            it { expect { dv.at 2, 4 }.to raise_error IndexError }
+          end
+          
+          context "range" do
+            subject { dv.at 2..3 }
+            
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 2 }
+            its(:to_a) { is_expected.to eq [3, 4] }
+            its(:'index.to_a') { is_expected.to eq [[:b, :two, :bar], 
+              [:a, :two, :baz]] }            
+          end
+          
+          context "range with negative end" do
+            subject { dv.at 2..-1 }
+            
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 2 }
+            its(:to_a) { is_expected.to eq [3, 4] }
+            its(:'index.to_a') { is_expected.to eq [[:b, :two, :bar], 
+              [:a, :two, :baz]] }                 
+          end
+          
+          context "range with single element" do
+            subject { dv.at 2..2 }
+            
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 1 }
+            its(:to_a) { is_expected.to eq [3] }
+            its(:'index.to_a') { is_expected.to eq [[:b, :two, :bar]] }   
+          end
+        end
+
+        context Daru::CategoricalIndex do
+          let (:idx) { Daru::CategoricalIndex.new [:a, 1, 1, :a, :c] }
+          let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
+
+          context "multiple positional indexes" do
+            subject { dv.at 0, 1, 2 }
+
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 3 }
+            its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
+            its(:index) { is_expected.to eq(
+              Daru::CategoricalIndex.new([:a, 1, 1])) }
+          end
+
+          context "single positional index" do
+            subject { dv.at 1 }
+
+            it { is_expected.to eq 'b' }
+          end
+          
+          context "invalid position" do
+            it { expect { dv.at 5 }.to raise_error IndexError }
+          end
+          
+          context "invalid positions" do
+            it { expect { dv.at 2, 5 }.to raise_error IndexError }
+          end
+          
+          context "range" do
+            subject { dv.at 0..2 }
+
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 3 }
+            its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
+            its(:index) { is_expected.to eq(
+              Daru::CategoricalIndex.new([:a, 1, 1])) }            
+          end
+          
+          context "range with negative end" do
+            subject { dv.at 0..-3 }
+
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 3 }
+            its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
+            its(:index) { is_expected.to eq(
+              Daru::CategoricalIndex.new([:a, 1, 1])) }            
+          end
+          
+          context "range with single element" do
+            subject { dv.at 0..0 }
+
+            it { is_expected.to be_a Daru::Vector }
+            its(:size) { is_expected.to eq 1 }
+            its(:to_a) { is_expected.to eq ['a'] }
+            its(:index) { is_expected.to eq(
+              Daru::CategoricalIndex.new([:a])) }            
+          end
+        end
       end
 
       context "#[]=" do
@@ -344,8 +604,182 @@ describe Daru::Vector do
             expect { @vector[:b, :two, :test] = 69 }.to raise_error(IndexError)
           end
         end
+        
+        context Daru::CategoricalIndex do
+          context "non-numerical index" do
+            let (:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
+            let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
+
+            context "single category" do
+              context "multiple instances" do
+                subject { dv }
+                before { dv[:a] = 'x' }
+
+                its(:size) { is_expected.to eq 5 }
+                its(:to_a) { is_expected.to eq  ['x', 'b', 'x', 'x', 'e'] }
+                its(:index) { is_expected.to eq idx }
+              end
+
+              context "single instance" do
+                subject { dv }
+                before { dv[:b] = 'x' }
+
+                its(:size) { is_expected.to eq 5 }
+                its(:to_a) { is_expected.to eq  ['a', 'x', 'c', 'd', 'e'] }
+                its(:index) { is_expected.to eq idx }
+              end
+            end
+
+            context "multiple categories" do
+              subject { dv }
+              before { dv[:a, :c] = 'x' }
+
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq  ['x', 'b', 'x', 'x', 'x'] }
+              its(:index) { is_expected.to eq idx }
+            end
+
+            context "multiple positional indexes" do
+              subject { dv }
+              before { dv[0, 1, 2] = 'x' }
+
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq ['x', 'x', 'x', 'd', 'e'] }
+              its(:index) { is_expected.to eq idx }
+            end
+
+            context "single positional index" do
+              subject { dv }
+              before { dv[1] = 'x' }
+
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq ['a', 'x', 'c', 'd', 'e'] }
+              its(:index) { is_expected.to eq idx }
+            end
+
+            context "invalid category" do
+              it { expect { dv[:x] = 'x' }.to raise_error IndexError }
+            end
+
+            context "invalid positional index" do
+              it { expect { dv[30] = 'x'}.to raise_error IndexError }
+            end
+          end
+
+          context "numerical index" do
+            let (:idx) { Daru::CategoricalIndex.new [1, 1, 2, 2, 3] }
+            let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
+
+            context "single category" do
+              subject { dv }
+              before { dv[1] = 'x' }
+
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq ['x', 'x', 'c', 'd', 'e'] }
+              its(:index) { is_expected.to eq idx }
+            end
+            
+            context "multiple categories" do
+              subject { dv }
+              before { dv[1, 2] = 'x' }
+
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq ['x', 'x', 'x', 'x', 'e'] }
+              its(:index) { is_expected.to eq idx }              
+            end
+          end
+        end
       end
 
+      context "#set_at" do
+        context Daru::Index do
+          let (:idx) { Daru::Index.new [1, 0, :c] }
+          let (:dv) { Daru::Vector.new ['a', 'b', 'c'], index: idx }
+          
+          context "single position" do
+            subject { dv }
+            before { dv.set_at [1], 'x' }
+
+            its(:to_a) { is_expected.to eq ['a', 'x', 'c'] }
+          end
+          
+          context "multiple positions" do
+            subject { dv }
+            before { dv.set_at [0, 2], 'x' }
+            
+            its(:to_a) { is_expected.to eq ['x', 'b', 'x'] }
+          end
+          
+          context "invalid position" do
+            it { expect { dv.set_at [3], 'x' }.to raise_error IndexError }
+          end
+          
+          context "invalid positions" do
+            it { expect { dv.set_at [2, 3], 'x' }.to raise_error IndexError }
+          end
+        end
+        
+        context Daru::MultiIndex do
+          let(:idx) do
+            Daru::MultiIndex.from_tuples [
+              [:a,:one,:bar],
+              [:a,:one,:baz],
+              [:b,:two,:bar],
+              [:a,:two,:baz],
+            ]
+          end
+          let(:dv) { Daru::Vector.new 1..4, index: idx }
+          
+          context "single position" do
+            subject { dv }
+            before { dv.set_at [1], 'x' }
+
+            its(:to_a) { is_expected.to eq [1, 'x', 3, 4] }
+          end
+          
+          context "multiple positions" do
+            subject { dv }
+            before { dv.set_at [2, 3], 'x' }
+
+            its(:to_a) { is_expected.to eq [1, 2, 'x', 'x'] }
+          end
+          
+          context "invalid position" do
+            it { expect { dv.set_at [4], 'x' }.to raise_error IndexError }
+          end
+          
+          context "invalid positions" do
+            it { expect { dv.set_at [2, 4], 'x' }.to raise_error IndexError }
+          end          
+        end
+
+        context Daru::CategoricalIndex do
+          let (:idx) { Daru::CategoricalIndex.new [:a, 1, 1, :a, :c] }
+          let (:dv)  { Daru::Vector.new 'a'..'e', index: idx }
+
+          context "multiple positional indexes" do
+            subject { dv }
+            before { dv.set_at [0, 1, 2], 'x' }
+
+            its(:to_a) { is_expected.to eq ['x', 'x', 'x', 'd', 'e'] }
+          end
+
+          context "single positional index" do
+            subject { dv }
+            before { dv.set_at [1], 'x' }
+
+            its(:to_a) { is_expected.to eq ['a', 'x', 'c', 'd', 'e'] }
+          end
+          
+          context "invalid position" do
+            it { expect { dv.set_at [5], 'x' }.to raise_error IndexError }
+          end
+          
+          context "invalid positions" do
+            it { expect { dv.set_at [2, 5], 'x' }.to raise_error IndexError }
+          end          
+        end
+      end
 
       context '#head' do
         subject(:vector) do
@@ -650,6 +1084,79 @@ describe Daru::Vector do
             ])
             expect(@vector.sort { |a,b| a.abs <=> b.abs }).to eq(Daru::Vector.new(
               [0,22,44,-56,111], index: mi_abs, name: :sort_abs, dtype: dtype))
+          end
+        end
+        
+        context Daru::CategoricalIndex do
+          let(:idx) { Daru::CategoricalIndex.new [:a, 1, :a, 1, :c] }
+          let(:dv_numeric) { Daru::Vector.new [4, 5, 3, 2, 1], index: idx }
+          let(:dv_string) { Daru::Vector.new ['xxxx', 'zzzzz', 'ccc', 'bb', 'a'], index: idx }
+          let(:dv_nil) { Daru::Vector.new [3, nil, 2, 1, -1], index: idx }
+          
+          context "increasing order" do
+            context "numeric" do
+              subject { dv_numeric.sort }
+              
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq [1, 2, 3, 4, 5] }
+              its(:'index.to_a') { is_expected.to eq [:c, 1, :a, :a, 1] }
+            end
+            
+            context "non-numeric" do
+              subject { dv_string.sort }
+              
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq ['a', 'bb', 'ccc', 'xxxx', 'zzzzz'] }
+              its(:'index.to_a') { is_expected.to eq [:c, 1, :a, :a, 1] }
+            end
+            
+            context "block" do
+              subject { dv_string.sort { |a, b| a.length <=> b.length } }
+              
+              its(:to_a) { is_expected.to eq ['a', 'bb', 'ccc', 'xxxx', 'zzzzz'] }
+              its(:'index.to_a') { is_expected.to eq [:c, 1, :a, :a, 1] }
+            end
+            
+            context "nils" do
+              subject { dv_nil.sort }
+              
+              its(:to_a) { is_expected.to eq [nil, -1, 1, 2, 3] }
+              its(:'index.to_a') { is_expected.to eq [1, :c, 1, :a, :a] }
+            end
+          end
+          
+          context "decreasing order" do
+            context "numeric" do
+              subject { dv_numeric.sort(ascending: false) }
+              
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq [5, 4, 3, 2, 1] }
+              its(:'index.to_a') { is_expected.to eq [1, :a, :a, 1, :c] }
+            end
+            
+            context "non-numeric" do
+              subject { dv_string.sort(ascending: false) }
+              
+              its(:size) { is_expected.to eq 5 }
+              its(:to_a) { is_expected.to eq ['zzzzz', 'xxxx', 'ccc', 'bb', 'a'] }
+              its(:'index.to_a') { is_expected.to eq [1, :a, :a, 1, :c] }
+            end
+            
+            context "block" do
+              subject do
+                dv_string.sort(ascending: false) { |a, b| a.length <=> b.length }
+              end
+              
+              its(:to_a) { is_expected.to eq ['zzzzz', 'xxxx', 'ccc', 'bb', 'a'] }
+              its(:'index.to_a') { is_expected.to eq [1, :a, :a, 1, :c] }
+            end
+            
+            context "nils" do
+              subject { dv_nil.sort(ascending: false) }
+              
+              its(:to_a) { is_expected.to eq [3, 2, 1, -1, nil] }
+              its(:'index.to_a') { is_expected.to eq [:a, :a, 1, :c, 1] }
+            end            
           end
         end
       end
@@ -1183,6 +1690,10 @@ describe Daru::Vector do
       @v.rename "This is a vector"
       expect(@v.name).to eq("This is a vector")
     end
+    
+    it "returns vector" do
+      expect(@v.rename 'hello').to be_a Daru::Vector
+    end
   end
 
   context "#any?" do
@@ -1309,121 +1820,6 @@ describe Daru::Vector do
 
     it 'is VARCHAR for everyting else' do
       expect(Daru::Vector.new(['123 and stuff', 456, 789e-10]).db_type).to eq 'VARCHAR (255)'
-    end
-  end
-
-  context '#inspect' do
-    context 'simple' do
-      subject(:vector) { Daru::Vector.new [1,2,3], index: [:a, :b, :c], name: 'test' }
-      its(:inspect) { is_expected.to eq %Q{
-        |#<Daru::Vector(3)>
-        |      test
-        |    a    1
-        |    b    2
-        |    c    3
-      }.unindent }
-    end
-
-    context 'no name' do
-      subject(:vector) { Daru::Vector.new [1,2,3], index: [:a, :b, :c] }
-      its(:inspect) { is_expected.to eq %Q{
-        |#<Daru::Vector(3)>
-        |   a   1
-        |   b   2
-        |   c   3
-      }.unindent }
-    end
-
-    context 'with nils' do
-      subject(:vector) { Daru::Vector.new [1,nil,3], index: [:a, :b, :c], name: 'test' }
-      its(:inspect) { is_expected.to eq %Q{
-        |#<Daru::Vector(3)>
-        |      test
-        |    a    1
-        |    b  nil
-        |    c    3
-      }.unindent }
-    end
-
-    context 'with metadata' do
-      subject(:vector) { Daru::Vector.new [1,2,3], index: [:a, :b, :c], name: 'test', metadata: {hey: 'JUDE!'} }
-      its(:inspect) { is_expected.to eq %Q{
-        |#<Daru::Vector(3){:hey=>"JUDE!"}>
-        |      test
-        |    a    1
-        |    b    2
-        |    c    3
-      }.unindent }
-    end
-
-    context 'very large amount of data' do
-      subject(:vector) { Daru::Vector.new [1,2,3] * 100, name: 'test' }
-      its(:inspect) { is_expected.to eq %Q{
-        |#<Daru::Vector(300)>
-        |      test
-        |    0    1
-        |    1    2
-        |    2    3
-        |    3    1
-        |    4    2
-        |    5    3
-        |    6    1
-        |    7    2
-        |    8    3
-        |    9    1
-        |   10    2
-        |   11    3
-        |   12    1
-        |   13    2
-        |   14    3
-        |  ...  ...
-      }.unindent }
-    end
-
-    context 'really long name or data' do
-      subject(:vector) { Daru::Vector.new [1,2,'this is ridiculously long'],
-        index: [:a, :b, :c], name: 'and this is not much better faithfully'
-      }
-      its(:inspect) { is_expected.to eq %Q{
-        |#<Daru::Vector(3)>
-        |                      and this is not much
-        |                    a                    1
-        |                    b                    2
-        |                    c this is ridiculously
-      }.unindent }
-    end
-
-    context 'with multiindex' do
-      subject(:vector) {
-        Daru::Vector.new(
-          [1,2,3,4,5,6,7],
-          name: 'test',
-          index: Daru::MultiIndex.from_tuples([
-              %w[foo one],
-              %w[foo two],
-              %w[foo three],
-              %w[bar one],
-              %w[bar two],
-              %w[bar three],
-              %w[baz one],
-           ]),
-        )
-      }
-
-      its(:inspect) { is_expected.to eq %Q{
-        |#<Daru::Vector(7)>
-        |              test
-        |   foo   one     1
-        |         two     2
-        |       three     3
-        |   bar   one     4
-        |         two     5
-        |       three     6
-        |   baz   one     7
-      }.unindent}
-    end
-
-    context 'threshold and spacing settings' do
     end
   end
 

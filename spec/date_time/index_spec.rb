@@ -375,6 +375,71 @@ describe DateTimeIndex do
       }.to raise_error(ArgumentError)
     end
   end
+  
+  context "#pos" do
+    let(:idx) do
+      described_class.new([
+        DateTime.new(2014,3,3),
+        DateTime.new(2014,3,4),
+        DateTime.new(2014,3,5),
+        DateTime.new(2014,3,6)
+        ], freq: :infer
+      )
+    end
+    
+    context "single index" do
+      it { expect(idx.pos '2014-3-4').to eq 1 }
+    end
+    
+    context "multiple indexes" do
+      subject { idx.pos '2014' }
+      
+      it { is_expected.to be_a Array }
+      its(:size) { is_expected.to eq 4 }
+      it { is_expected.to eq [0, 1, 2, 3] }
+    end
+    
+    context "single positional index" do
+      it { expect(idx.pos 1).to eq 1 }
+    end
+    
+    context "multiple positional indexes" do
+      subject { idx.pos 0, 2 }
+      
+      it { is_expected.to be_a Array }
+      its(:size) { is_expected.to eq 3 }
+      it { is_expected.to eq [0, 1, 2] }
+    end
+  end
+  
+  context "#subset" do
+    let(:idx) do
+      described_class.new([
+        DateTime.new(2014,3,3),
+        DateTime.new(2014,3,4),
+        DateTime.new(2014,3,5),
+        DateTime.new(2014,3,6)
+        ], freq: :infer
+      )
+    end
+    
+    context "multiple indexes" do
+      subject { idx.subset '2014' }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 4 }
+      it { is_expected.to eq idx }
+    end
+    
+    context "multiple positional indexes" do
+      subject { idx.subset 0, 2 }
+      
+      it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 3 }
+      its(:to_a) { is_expected.to eq [DateTime.new(2014, 3, 3),
+        DateTime.new(2014, 3, 4), DateTime.new(2014, 3, 5)] }
+    end
+  end
 
   context "#slice" do
     it "supports both DateTime objects" do
@@ -411,6 +476,25 @@ describe DateTimeIndex do
     it "returns the size of the DateTimeIndex" do
       index = DateTimeIndex.date_range start: DateTime.new(2014,5,3), periods: 100
       expect(index.size).to eq(100)
+    end
+  end
+  
+  context "#add" do
+    before { skip }
+    let(:idx) { Daru::Index.new [:a, :b, :c] }
+
+    context "single index" do
+      subject { idx }
+      before { idx.add :d }
+      
+      its(:to_a) { is_expected.to eq [:a, :b, :c, :d] }
+    end
+    
+    context "mulitple indexes" do
+      subject { idx }
+      before { idx.add :d, :e }
+      
+      its(:to_a) { is_expected.to eq [:a, :b, :c, :d, :e] }
     end
   end
 

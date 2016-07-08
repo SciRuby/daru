@@ -779,10 +779,578 @@ describe Daru::DataFrame do
 
     context Daru::MultiIndex do
       pending
+      # TO DO
+    end
+
+    context Daru::CategoricalIndex do
+      let(:idx) { Daru::CategoricalIndex.new [:a, 1, :a, 1, :c] }
+      let(:df) do
+        Daru::DataFrame.new({
+          a: 'a'..'e',
+          b: 1..5
+        }, index: idx)
+      end
+
+      context "modify exiting row" do
+        context "single category" do
+          subject { df }
+          before { df.row[:a] = ['x', 'y'] }
+
+          it { is_expected.to be_a Daru::DataFrame }
+          its(:index) { is_expected.to eq idx }
+          its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
+          its(:'a.to_a') { is_expected.to eq ['x', 'b', 'x', 'd', 'e'] }
+          its(:'b.to_a') { is_expected.to eq ['y', 2, 'y', 4, 5] }
+        end
+  
+        context "multiple categories" do
+          subject { df }
+          before { df.row[:a, 1] = ['x', 'y'] }
+  
+          it { is_expected.to be_a Daru::DataFrame }
+          its(:index) { is_expected.to eq idx }
+          its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
+          its(:'a.to_a') { is_expected.to eq ['x', 'x', 'x', 'x', 'e'] }
+          its(:'b.to_a') { is_expected.to eq ['y', 'y', 'y', 'y', 5] }
+        end
+
+        context "positional index" do
+          subject { df }
+          before { df.row[0, 2] = ['x', 'y'] }
+
+          it { is_expected.to be_a Daru::DataFrame }
+          its(:index) { is_expected.to eq idx }
+          its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
+          its(:'a.to_a') { is_expected.to eq ['x', 'b', 'x', 'd', 'e'] }
+          its(:'b.to_a') { is_expected.to eq ['y', 2, 'y', 4, 5] }
+        end
+      end
+
+      context "add new row" do
+        # TODO
+      end
+    end    
+  end
+
+  context "#row.at" do
+    context Daru::Index do
+      let(:idx) { Daru::Index.new [1, 0, :c] }
+      let(:df) do
+        Daru::DataFrame.new({
+          a: 1..3,
+          b: 'a'..'c'
+        }, index: idx)
+      end
+      
+      context "single position" do
+        subject { df.row.at 1 }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:size) { is_expected.to eq 2 }
+        its(:to_a) { is_expected.to eq [2, 'b'] }
+        its(:'index.to_a') { is_expected.to eq [:a, :b] }
+      end
+      
+      context "multiple positions" do
+        subject { df.row.at 0, 2 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 2 }
+        its(:'index.to_a') { is_expected.to eq [1, :c] }
+        its(:'a.to_a') { is_expected.to eq [1, 3] }
+        its(:'b.to_a') { is_expected.to eq ['a', 'c'] }
+      end
+      
+      context "invalid position" do
+        it { expect { df.row.at 3 }.to raise_error IndexError }
+      end
+      
+      context "invalid positions" do
+        it { expect { df.row.at 2, 3 }.to raise_error IndexError }
+      end
+      
+      context "range" do
+        subject { df.row.at 0..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 2 }
+        its(:'index.to_a') { is_expected.to eq [1, 0] }
+        its(:'a.to_a') { is_expected.to eq [1, 2] }
+        its(:'b.to_a') { is_expected.to eq ['a', 'b'] }        
+      end
+      
+      context "range with negative end" do
+        subject { df.row.at 0..-2 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 2 }
+        its(:'index.to_a') { is_expected.to eq [1, 0] }
+        its(:'a.to_a') { is_expected.to eq [1, 2] }
+        its(:'b.to_a') { is_expected.to eq ['a', 'b'] }         
+      end
+      
+      context "range with single element" do
+        subject { df.row.at 0..0 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 1 }
+        its(:'index.to_a') { is_expected.to eq [1] }
+        its(:'a.to_a') { is_expected.to eq [1] }
+        its(:'b.to_a') { is_expected.to eq ['a'] }          
+      end
+    end
+    
+    context Daru::MultiIndex do
+      let (:idx) do
+        Daru::MultiIndex.from_tuples [
+          [:a,:one,:bar],
+          [:a,:one,:baz],
+          [:b,:two,:bar],
+          [:a,:two,:baz],
+        ]
+      end
+      let (:df) do
+        Daru::DataFrame.new({
+          a: 1..4,
+          b: 'a'..'d'
+        }, index: idx )
+      end
+      
+      context "single position" do
+        subject { df.row.at 1 }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:size) { is_expected.to eq 2 }
+        its(:to_a) { is_expected.to eq [2, 'b'] }
+        its(:'index.to_a') { is_expected.to eq [:a, :b] }
+      end
+      
+      context "multiple positions" do
+        subject { df.row.at 0, 2 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 2 }
+        its(:'index.to_a') { is_expected.to eq [[:a, :one, :bar], 
+          [:b, :two, :bar]] }
+        its(:'a.to_a') { is_expected.to eq [1, 3] }
+        its(:'a.index.to_a') { is_expected.to eq [[:a, :one, :bar],
+          [:b, :two, :bar]] }
+        its(:'b.to_a') { is_expected.to eq ['a', 'c'] }
+      end
+      
+      context "invalid position" do
+        it { expect { df.row.at 4 }.to raise_error IndexError }
+      end
+      
+      context "invalid positions" do
+        it { expect { df.row.at 3, 4 }.to raise_error IndexError }
+      end
+      
+      context "range" do
+        subject { df.row.at 0..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 2 }
+        its(:'index.to_a') { is_expected.to eq [[:a, :one, :bar], 
+          [:a, :one, :baz]] }
+        its(:'a.to_a') { is_expected.to eq [1, 2] }
+        its(:'a.index.to_a') { is_expected.to eq [[:a, :one, :bar],
+          [:a, :one, :baz]] }
+        its(:'b.to_a') { is_expected.to eq ['a', 'b'] }
+      end
+      
+      context "range with negative end" do
+        subject { df.row.at 0..-3 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 2 }
+        its(:'index.to_a') { is_expected.to eq [[:a, :one, :bar], 
+          [:a, :one, :baz]] }
+        its(:'a.to_a') { is_expected.to eq [1, 2] }
+        its(:'a.index.to_a') { is_expected.to eq [[:a, :one, :bar],
+          [:a, :one, :baz]] }
+        its(:'b.to_a') { is_expected.to eq ['a', 'b'] }        
+      end
+      
+      context " range with single element" do
+        subject { df.row.at 0..0 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 1 }
+        its(:'index.to_a') { is_expected.to eq [[:a, :one, :bar]] }
+        its(:'a.to_a') { is_expected.to eq [1] }
+        its(:'a.index.to_a') { is_expected.to eq [[:a, :one, :bar]] }
+        its(:'b.to_a') { is_expected.to eq ['a'] }        
+      end
+    end
+
+    context Daru::CategoricalIndex do
+      let (:idx) { Daru::CategoricalIndex.new [:a, 1, 1, :a, :c] }
+      let (:df)  do
+        Daru::DataFrame.new({
+          a: 1..5,
+          b: 'a'..'e'
+        }, index: idx )
+      end
+
+      context "single positional index" do
+        subject { df.row.at 1 }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:size) { is_expected.to eq 2 }
+        its(:to_a) { is_expected.to eq [2, 'b'] }
+        its(:'index.to_a') { is_expected.to eq [:a, :b] }
+      end
+
+      context "multiple positional indexes" do
+        subject { df.row.at 0, 2 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 2 }
+        its(:'index.to_a') { is_expected.to eq [:a, 1] }
+        its(:'a.to_a') { is_expected.to eq [1, 3] }
+        its(:'a.index.to_a') { is_expected.to eq [:a, 1] }
+        its(:'b.to_a') { is_expected.to eq ['a', 'c'] }
+        its(:'b.index.to_a') { is_expected.to eq [:a, 1] }
+      end
+      
+      context "invalid position" do
+        it { expect { df.at 5 }.to raise_error IndexError }
+      end
+      
+      context "invalid positions" do
+        it { expect { df.at 4, 5 }.to raise_error IndexError }
+      end
+      
+      context "range" do
+        subject { df.row.at 0..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 2 }
+        its(:'index.to_a') { is_expected.to eq [:a, 1] }
+        its(:'a.to_a') { is_expected.to eq [1, 2] }
+        its(:'a.index.to_a') { is_expected.to eq [:a, 1] }
+        its(:'b.to_a') { is_expected.to eq ['a', 'b'] }
+        its(:'b.index.to_a') { is_expected.to eq [:a, 1] }        
+      end
+      
+      context "range with negative end" do
+        subject { df.row.at 0..-4 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 2 }
+        its(:'index.to_a') { is_expected.to eq [:a, 1] }
+        its(:'a.to_a') { is_expected.to eq [1, 2] }
+        its(:'a.index.to_a') { is_expected.to eq [:a, 1] }
+        its(:'b.to_a') { is_expected.to eq ['a', 'b'] }
+        its(:'b.index.to_a') { is_expected.to eq [:a, 1] }          
+      end
+      
+      context " range with single element" do
+        subject { df.row.at 0..0 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:size) { is_expected.to eq 1 }
+        its(:'index.to_a') { is_expected.to eq [:a] }
+        its(:'a.to_a') { is_expected.to eq [1] }
+        its(:'a.index.to_a') { is_expected.to eq [:a] }
+        its(:'b.to_a') { is_expected.to eq ['a'] }
+        its(:'b.index.to_a') { is_expected.to eq [:a] }
+      end      
+    end
+  end
+  
+  context "#row.set_at" do
+    let(:df) do
+      Daru::DataFrame.new({
+        a: 1..3,
+        b: 'a'..'c'
+      })
+    end
+    
+    context "single position" do
+      subject { df }
+      before { df.row.set_at [1], ['x', 'y'] }
+      
+      its(:size) { is_expected.to eq 3 }
+      its(:'a.to_a') { is_expected.to eq [1, 'x', 3] }
+      its(:'b.to_a') { is_expected.to eq ['a', 'y', 'c'] }
+    end
+    
+    context "multiple position" do
+      subject { df }
+      before { df.row.set_at [0, 2], ['x', 'y'] }
+      
+      its(:size) { is_expected.to eq 3 }
+      its(:'a.to_a') { is_expected.to eq ['x', 2, 'x'] }
+      its(:'b.to_a') { is_expected.to eq ['y', 'b', 'y'] }
+    end
+    
+    context "invalid position" do
+      it { expect { df.row.set_at [3], ['x', 'y'] }.to raise_error IndexError }
+    end
+    
+    context "invalid positions" do
+      it { expect { df.row.set_at [2, 3], ['x', 'y'] }.to raise_error IndexError }      
+    end
+    
+    context "incorrect size" do
+      it { expect { df.row.set_at [1], ['x', 'y', 'z'] }.to raise_error SizeError }
+    end
+  end
+  
+  context "#at" do
+    context Daru::Index do
+      let(:idx) { Daru::Index.new [:a, :b, :c] }
+      let(:df) do
+        Daru::DataFrame.new({
+          1 => 1..3,
+          a: 'a'..'c',
+          b: 11..13
+        }, index: idx)
+      end
+      
+      context "single position" do
+        subject { df.at 1 }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:size) { is_expected.to eq 3 }
+        its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
+        its(:index) { is_expected.to eq idx }
+      end
+      
+      context "multiple positions" do
+        subject { df.at 0, 2 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
+        its(:'b.to_a') { is_expected.to eq [11, 12, 13] }
+      end
+      
+      context "single invalid position" do
+        it { expect { df. at 3 }.to raise_error IndexError }
+      end
+      
+      context "multiple invalid positions" do
+        it { expect { df.at 2, 3 }.to raise_error IndexError }
+      end
+      
+      context "range" do
+        subject { df.at 0..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }        
+      end
+      
+      context "range with negative end" do
+        subject { df.at 0..-2 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }        
+      end
+      
+      context "range with single element" do
+        subject { df.at 1..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 1] }
+        its(:index) { is_expected.to eq idx }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }
+      end
+    end
+    
+    context Daru::MultiIndex do
+      let (:idx) do
+        Daru::MultiIndex.from_tuples [
+          [:a,:one,:bar],
+          [:a,:one,:baz],
+          [:b,:two,:bar],
+        ]
+      end
+      let(:df) do
+        Daru::DataFrame.new({
+          1 => 1..3,
+          a: 'a'..'c',
+          b: 11..13
+        }, index: idx)
+      end
+      
+      context "single position" do
+        subject { df.at 1 }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:size) { is_expected.to eq 3 }
+        its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
+        its(:index) { is_expected.to eq idx }
+      end
+      
+      context "multiple positions" do
+        subject { df.at 0, 2 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
+        its(:'b.to_a') { is_expected.to eq [11, 12, 13] }
+      end
+      
+      context "single invalid position" do
+        it { expect { df. at 3 }.to raise_error IndexError }
+      end
+      
+      context "multiple invalid positions" do
+        it { expect { df.at 2, 3 }.to raise_error IndexError }
+      end  
+      
+      context "range" do
+        subject { df.at 0..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }        
+      end
+      
+      context "range with negative end" do
+        subject { df.at 0..-2 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }           
+      end
+      
+      context "range with single element" do
+        subject { df.at 1..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 1] }
+        its(:index) { is_expected.to eq idx }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }          
+      end
+    end
+
+    context Daru::CategoricalIndex do
+      let (:idx) { Daru::CategoricalIndex.new [:a, 1, 1] }
+      let(:df) do
+        Daru::DataFrame.new({
+          1 => 1..3,
+          a: 'a'..'c',
+          b: 11..13
+        }, index: idx)
+      end
+      
+      context "single position" do
+        subject { df.at 1 }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:size) { is_expected.to eq 3 }
+        its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
+        its(:index) { is_expected.to eq idx }
+      end
+      
+      context "multiple positions" do
+        subject { df.at 0, 2 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
+        its(:'b.to_a') { is_expected.to eq [11, 12, 13] }
+      end
+      
+      context "single invalid position" do
+        it { expect { df. at 3 }.to raise_error IndexError }
+      end
+      
+      context "multiple invalid positions" do
+        it { expect { df.at 2, 3 }.to raise_error IndexError }
+      end
+      
+      context "range" do
+        subject { df.at 0..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }
+      end
+      
+      context "range with negative index" do
+        subject { df.at 0..-2 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 2] }
+        its(:index) { is_expected.to eq idx }
+        it { expect(df[1].to_a).to eq [1, 2, 3] }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }        
+      end
+      
+      context "range with single element" do
+        subject { df.at 1..1 }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:shape) { is_expected.to eq [3, 1] }
+        its(:index) { is_expected.to eq idx }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c'] }        
+      end
+    end
+  end  
+
+  context "#set_at" do
+    let(:df) do
+      Daru::DataFrame.new({
+        1 => 1..3,
+        a: 'a'..'c',
+        b: 11..13
+      })
+    end
+    
+    context "single position" do
+      subject { df }
+      before { df.set_at [1], ['x', 'y', 'z'] }
+
+      its(:shape) { is_expected.to eq [3, 3] }
+      it { expect(df[1].to_a).to eq [1, 2, 3] }
+      its(:'a.to_a') { is_expected.to eq ['x', 'y', 'z'] }
+      its(:'b.to_a') { is_expected.to eq [11, 12, 13] }
+    end
+    
+    context "multiple position" do
+      subject { df }
+      before { df.set_at [1, 2], ['x', 'y', 'z'] }
+
+      its(:shape) { is_expected.to eq [3, 3] }
+      it { expect(df[1].to_a).to eq [1, 2, 3] }
+      its(:'a.to_a') { is_expected.to eq ['x', 'y', 'z'] }
+      its(:'b.to_a') { is_expected.to eq ['x', 'y', 'z'] }
+    end
+    
+    context "invalid position" do
+      it { expect { df.set_at [3], ['x', 'y', 'z'] }.to raise_error IndexError }
+    end
+    
+    context "invalid positions" do
+      it { expect { df.set_at [2, 3], ['x', 'y', 'z'] }.to raise_error IndexError }
+    end
+    
+    context "incorrect size" do
+      it { expect { df.set_at [1], ['x', 'y'] }.to raise_error SizeError }
     end
   end
 
-  context "#row" do
+  context "#row[]" do
     context Daru::Index do
       before :each do
         @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
@@ -835,7 +1403,7 @@ describe Daru::DataFrame do
         expect(@df_mi.row[0]).to eq(Daru::Vector.new([11,1,11,1], index: @order_mi))
       end
 
-      it "returns a DataFrame when specifying numeric range" do
+      it "returns a DataFrame whecn specifying numeric range" do
         sub_index = Daru::MultiIndex.from_tuples([
           [:a,:one,:bar],
           [:a,:one,:baz]
@@ -879,6 +1447,63 @@ describe Daru::DataFrame do
           [11,12],
           [1,2]
         ], index: sub_index, order: @order_mi))
+      end
+    end
+
+    context Daru::CategoricalIndex do
+      let(:idx) { Daru::CategoricalIndex.new [:a, 1, :a, 1, :c] }
+      let(:df) do
+        Daru::DataFrame.new({
+          a: 'a'..'e',
+          b: 1..5
+        }, index: idx)
+      end
+
+      context "single category" do
+        context "multiple instances" do
+          subject { df.row[:a] }
+
+          it { is_expected.to be_a Daru::DataFrame }
+          its(:index) { is_expected.to eq Daru::CategoricalIndex.new [:a, :a] }
+          its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
+          its(:a) { Daru::Vector.new ['a', 'c'] }
+          its(:b) { Daru::Vector.new [1, 3] }
+        end
+
+        context "single instance" do
+          subject { df.row[:c] }
+
+          it { is_expected.to be_a Daru::Vector }
+          its(:index) { is_expected.to eq Daru::Index.new [:a, :b] }
+          its(:to_a) { is_expected.to eq ['e', 5] }
+        end
+      end
+
+      context "multiple categories" do
+        subject { df.row[:a, 1] }
+
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:index) { is_expected.to eq Daru::CategoricalIndex.new(
+          [:a, 1, :a, 1 ]) }
+        its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
+        its(:a) { Daru::Vector.new ['a', 'c', 'b', 'd'] }
+        its(:b) { Daru::Vector.new [1, 3, 2, 4] }
+      end
+
+      context "positional index" do
+        subject { df.row[0] }
+
+        it { is_expected.to be_a Daru::Vector }
+        its(:index) { is_expected.to eq Daru::Index.new [:a, :b] }
+        its(:to_a) { is_expected.to eq ['a', 1] }
+      end
+
+      context "invalid positional index" do
+        it { expect { df.row[5] }.to raise_error IndexError }
+      end
+
+      context "invalid category" do
+        it { expect { df.row[:d] }.to raise_error IndexError }
       end
     end
   end
@@ -974,10 +1599,10 @@ describe Daru::DataFrame do
   end
 
   context '#rename' do
-    it 'renames, you know' do
-      @data_frame.rename('other')
-      expect(@data_frame.name).to eq 'other'
-    end
+    subject { @data_frame.rename 'other' }
+
+    it { is_expected.to be_a Daru::DataFrame }
+    its(:name) { is_expected.to eq 'other' }
   end
 
   context "#dup" do
@@ -1561,11 +2186,114 @@ describe Daru::DataFrame do
         ans = @df.sort([:a])
         expect(ans[:a].metadata).to eq({ cdc_type: 2 })
       end
-
     end
 
     context Daru::MultiIndex do
       pending
+    end
+    
+    context Daru::CategoricalIndex do
+      let(:idx) { Daru::CategoricalIndex.new [:a, 1, :a, 1, :c] }
+      let(:df) do
+        Daru::DataFrame.new({
+          a: [2, -1, 3, 4, 5],
+          b: ['x', 'y', 'x', 'a', 'y'],
+          c: [nil, nil, -2, 2, 1]
+        }, index: idx)
+      end
+      
+      context "ascending order" do
+        context "single vector" do
+          subject { df.sort [:a] }
+          
+          its(:'index.to_a') { is_expected.to eq [1, :a, :a, 1, :c] }
+          its(:'a.to_a') { is_expected.to eq [-1, 2, 3, 4, 5] }
+          its(:'b.to_a') { is_expected.to eq ['y', 'x', 'x', 'a', 'y'] }
+          its(:'c.to_a') { is_expected.to eq [nil, nil, -2, 2, 1] }
+        end
+        
+        context "multiple vectors" do
+          subject { df.sort [:c, :b] }
+          
+          its(:'index.to_a') { is_expected.to eq [:a, 1, :a, :c, 1] }
+          its(:'a.to_a') { is_expected.to eq [2, -1, 3, 5, 4] }
+          its(:'b.to_a') { is_expected.to eq ['x', 'y', 'x', 'y', 'a'] }
+          its(:'c.to_a') { is_expected.to eq [nil, nil, -2, 1, 2] }
+        end
+        
+        context "block" do
+          context "automatic handle nils" do
+            subject do
+              df.sort [:c], by: {c: lambda { |a| a.abs } }, handle_nils: true
+            end
+  
+            its(:'index.to_a') { is_expected.to eq [:a, 1, :c, :a, 1] }
+            its(:'a.to_a') { is_expected.to eq [2, -1, 5, 3, 4] }
+            its(:'b.to_a') { is_expected.to eq ['x', 'y', 'y', 'x', 'a'] }
+            its(:'c.to_a') { is_expected.to eq [nil, nil, 1, -2, 2] }
+          end
+          
+          context "manually handle nils" do
+            subject do
+              df.sort [:c], by: {c: lambda { |a| (a.nil?)?[1]:[0,a.abs] } }
+            end
+            
+            its(:'index.to_a') { is_expected.to eq [:c, :a, 1, :a, 1] }
+            its(:'a.to_a') { is_expected.to eq [5, 3, 4, 2, -1] }
+            its(:'b.to_a') { is_expected.to eq ['y', 'x', 'a', 'x', 'y'] }
+            its(:'c.to_a') { is_expected.to eq [1, -2, 2, nil, nil] }
+          end
+        end
+      end
+      
+      context "descending order" do
+        context "single vector" do
+          subject { df.sort [:a], ascending: false }
+          
+          its(:'index.to_a') { is_expected.to eq [:c, 1, :a, :a, 1] }
+          its(:'a.to_a') { is_expected.to eq [5, 4, 3, 2, -1] }
+          its(:'b.to_a') { is_expected.to eq ['y', 'a', 'x', 'x', 'y'] }
+          its(:'c.to_a') { is_expected.to eq [1, 2, -2, nil, nil] }
+        end
+        
+        context "multiple vectors" do
+          subject { df.sort [:c, :b], ascending: false }
+          
+          its(:'index.to_a') { is_expected.to eq [1, :a, 1, :c, :a] }
+          its(:'a.to_a') { is_expected.to eq [-1, 2, 4, 5, 3] }
+          its(:'b.to_a') { is_expected.to eq ['y', 'x', 'a', 'y', 'x'] }
+          its(:'c.to_a') { is_expected.to eq [nil, nil, 2, 1, -2] }
+        end
+        
+        context "block" do
+          context "automatic handle nils" do
+            subject do
+              df.sort [:c],
+                by: {c: lambda { |a| a.abs } },
+                handle_nils: true,
+                ascending: false
+            end
+  
+            its(:'index.to_a') { is_expected.to eq [:a, 1, :a, 1, :c] }
+            its(:'a.to_a') { is_expected.to eq [2, -1, 3, 4, 5] }
+            its(:'b.to_a') { is_expected.to eq ['x', 'y', 'x', 'a', 'y'] }
+            its(:'c.to_a') { is_expected.to eq [nil, nil, -2, 2, 1] }
+          end
+          
+          context "manually handle nils" do
+            subject do
+              df.sort [:c],
+                by: {c: lambda { |a| (a.nil?)?[1]:[0,a.abs] } },
+                ascending: false
+            end
+            
+            its(:'index.to_a') { is_expected.to eq [:a, 1, :a, 1, :c] }
+            its(:'a.to_a') { is_expected.to eq [2, -1, 3, 4, 5] }
+            its(:'b.to_a') { is_expected.to eq ['x', 'y', 'x', 'a', 'y'] }
+            its(:'c.to_a') { is_expected.to eq [nil, nil, -2, 2, 1] }
+          end
+        end
+      end
     end
   end
 
@@ -1704,6 +2432,11 @@ describe Daru::DataFrame do
       expect {
         @df.index = Daru::Index.new([1,2])
       }.to raise_error(ArgumentError)
+    end
+
+    it "is able to accept array" do
+      @df.index = (1..5).to_a
+      expect(@df.index).to eq Daru::Index.new (1..5).to_a
     end
   end
 

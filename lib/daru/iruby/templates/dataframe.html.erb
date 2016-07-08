@@ -23,10 +23,10 @@
     </tr>
   <% end %>
 
-  <% @index.first(threshold).each do |index| %>
+  <% @index.first(threshold).each_with_index do |index, pos| %>
     <tr>
       <td><%= index %></td>
-      <% row[index].each do |element| %>
+      <% row.at(pos).each do |element| %>
         <td><%= element.to_s %></td>
       <% end %>
     </tr>
@@ -40,7 +40,7 @@
     </tr>
 
     <% last_index = @index.to_a.last
-       last_row = row[last_index] %>
+       last_row = row_at @index.size-1 %>
 
     <tr>
       <td><%= last_index %></td>

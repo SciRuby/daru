@@ -9,8 +9,16 @@ module Daru
         @data_frame[*names, :row]
       end
 
-      def []=(name, vector)
-        @data_frame[name, :row] = vector
+      def []=(*names, vector)
+        @data_frame[*names, :row] = vector
+      end
+
+      def at *positions
+        @data_frame.row_at(*positions)
+      end
+
+      def set_at positions, vector
+        @data_frame.set_row_at(positions, vector)
       end
     end
   end

@@ -1,16 +1,17 @@
 require 'daru/maths/arithmetic/vector.rb'
 require 'daru/maths/statistics/vector.rb'
-require 'daru/plotting/vector.rb'
+require 'daru/plotting/gruff.rb'
+require 'daru/plotting/nyaplot.rb'
 require 'daru/accessors/array_wrapper.rb'
 require 'daru/accessors/nmatrix_wrapper.rb'
 require 'daru/accessors/gsl_wrapper.rb'
+require 'daru/category.rb'
 
 module Daru
   class Vector # rubocop:disable Metrics/ClassLength
     include Enumerable
     include Daru::Maths::Arithmetic::Vector
     include Daru::Maths::Statistics::Vector
-    include Daru::Plotting::Vector if Daru.has_nyaplot?
 
     class << self
       # Create a new vector by specifying the size and an optional value
@@ -61,8 +62,8 @@ module Daru
       #   # 6   8
       #   # 7   9
       #   # 8  10
-      def [](*args)
-        values = args.map do |a|
+      def [](*indexes)
+        values = indexes.map do |a|
           a.respond_to?(:to_a) ? a.to_a : a
         end.flatten
         Daru::Vector.new(values)
@@ -138,6 +139,8 @@ module Daru
     attr_reader :data
     # Attach arbitrary metadata to vector (usu a hash)
     attr_accessor :metadata
+    # Ploting library being used for this vector
+    attr_reader :plotting_library
 
     # Create a Vector object.
     #
@@ -170,21 +173,27 @@ module Daru
     #   vecarr = Daru::Vector.new [1,2,3,4], index: [:a, :e, :i, :o]
     #   vechsh = Daru::Vector.new({a: 1, e: 2, i: 3, o: 4})
     def initialize source, opts={}
-      index, source = parse_source(source, opts)
-      set_name opts[:name]
+      if opts[:type] == :category
+        # Initialize category type vector
+        extend Daru::Category
+        initialize_category source, opts
+      else
+        # Initialize non-category type vector
+        initialize_vector source, opts
+      end
+    end
 
-      @metadata = opts[:metadata] || {}
-
-      @data  = cast_vector_to(opts[:dtype] || :array, source, opts[:nm_dtype])
-      @index = Index.coerce(index || @data.size)
-
-      guard_sizes!
-
-      @possibly_changed_type = true
-
-      set_missing_values opts[:missing_values]
-      set_missing_positions(true)
-      set_size
+    def plotting_library= lib
+      case lib
+      when :gruff, :nyaplot
+        @plotting_library = lib
+        extend Module.const_get(
+          "Daru::Plotting::Vector::#{lib.to_s.capitalize}Library"
+        ) if Daru.send("has_#{lib}?".to_sym)
+      else
+        raise ArguementError, "Plotting library #{lib} not supported. "\
+          'Supported libraries are :nyaplot and :gruff'
+      end
     end
 
     # Get one or more elements with specified index or a range.
@@ -199,17 +208,60 @@ module Daru
     #   # For vectors employing hierarchial multi index
     #
     def [](*input_indexes)
-      # Get a proper index object
-      indexes = @index[*input_indexes]
+      # Get array of positions indexes
+      positions = @index.pos(*input_indexes)
 
       # If one object is asked return it
-      return @data[indexes] if indexes.is_a? Numeric
+      return @data[positions] if positions.is_a? Numeric
 
-      # Form a new Vector using indexes and return it
+      # Form a new Vector using positional indexes
       Daru::Vector.new(
-        indexes.map { |loc| @data[@index[loc]] },
-        name: @name, metadata: @metadata.dup, index: indexes.conform(input_indexes), dtype: @dtype
+        positions.map { |loc| @data[loc] },
+        name: @name, metadata: @metadata.dup,
+        index: @index.subset(*input_indexes), dtype: @dtype
       )
+    end
+
+    # Returns vector of values given positional values
+    # @param [Array<object>] *positions positional values
+    # @return [object] vector
+    # @example
+    #   dv = Daru::Vector.new 'a'..'e'
+    #   dv.at 0, 1, 2
+    #   # => #<Daru::Vector(3)>
+    #   #   0   a
+    #   #   1   b
+    #   #   2   c
+    def at *positions
+      # to be used to form index
+      original_positions = positions
+      positions = coerce_positions(*positions)
+      validate_positions(*positions)
+
+      if positions.is_a? Integer
+        @data[positions]
+      else
+        values = positions.map { |pos| @data[pos] }
+        Daru::Vector.new values, index: @index.at(*original_positions)
+      end
+    end
+
+    # Change value at given positions
+    # @param [Array<object>] *positions positional values
+    # @param [object] val value to assign
+    # @example
+    #   dv = Daru::Vector.new 'a'..'e'
+    #   dv.set_at [0, 1], 'x'
+    #   dv
+    #   # => #<Daru::Vector(5)>
+    #   #   0   x
+    #   #   1   x
+    #   #   2   c
+    #   #   3   d
+    #   #   4   e
+    def set_at positions, val
+      validate_positions(*positions)
+      positions.map { |pos| @data[pos] = val }
     end
 
     # Just like in Hashes, you can specify the index label of the Daru::Vector
@@ -225,26 +277,12 @@ module Daru
     #   #  a 999
     #   #  b   2
     #   #  c   3
-    def []=(*location, value)
-      cast(dtype: :array) if value.nil? && dtype != :array
+    def []=(*indexes, val)
+      cast(dtype: :array) if val.nil? && dtype != :array
 
-      guard_type_check(value)
+      guard_type_check(val)
 
-      pos = @index[*location]
-
-      if pos.is_a?(Numeric)
-        @data[pos] = value
-      else
-        pos.each { |tuple| self[tuple] = value }
-
-        # FIXME: Can't guess how to activate this rescue branch -- zverok
-        #
-        # begin
-        #   pos.each { |tuple| self[tuple] = value }
-        # rescue NoMethodError
-        #   raise IndexError, "Specified index #{pos.inspect} does not exist."
-        # end
-      end
+      modify_vector(indexes, val)
 
       update_internal_state
     end
@@ -401,8 +439,8 @@ module Daru
     #   # 11   5
     #   # 13   5
     #   # 15   1
-    def where bool_arry
-      Daru::Core::Query.vector_where @data.to_a, @index.to_a, bool_arry, dtype, @name
+    def where bool_array
+      Daru::Core::Query.vector_where self, bool_array
     end
 
     def head q=10
@@ -492,6 +530,16 @@ module Daru
       @type
     end
 
+    # Tells if vector is categorical or not.
+    # @return [true, false] true if vector is of type category, false otherwise
+    # @example
+    #   dv = Daru::Vector.new [1, 2, 3], type: :category
+    #   dv.category?
+    #   # => true
+    def category?
+      type == :category
+    end
+
     # Get index of element
     def index_of element
       case dtype
@@ -537,8 +585,8 @@ module Daru
 
       vector_index = resort_index(@data.each_with_index, opts, &block)
       vector, index = vector_index.transpose
-      old_index = @index.to_a
-      index.map! { |i| old_index[i] }
+
+      index = @index.reorder index
 
       Daru::Vector.new(vector, index: index, name: @name, metadata: @metadata.dup, dtype: @dtype)
     end
@@ -852,12 +900,13 @@ module Daru
     # :nocov:
 
     # Over rides original inspect for pretty printing in irb
-    def inspect spacing=20, threshold=15
+    # TODO: Solve Rubocop AbcSize offence
+    def inspect spacing=20, threshold=15 # rubocop:disable Metrics/AbcSize
       row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
 
-      "#<#{self.class}(#{size})#{metadata && !metadata.empty? ? metadata.inspect : ''}>\n" +
+      "#<#{self.class}(#{size})#{':cataegory' if category?}#{metadata.inspect if metadata && !metadata.empty?}>\n" +
         Formatters::Table.format(
-          @data.lazy.map { |v| [v] },
+          to_a.lazy.map { |v| [v] },
           headers: @name && [@name],
           row_headers: row_headers,
           threshold: threshold,
@@ -867,6 +916,10 @@ module Daru
 
     # Sets new index for vector. Preserves index->value correspondence.
     # Sets nil for new index keys absent from original index.
+    # @note Unlike #reorder! which takes positions as input it takes
+    #   index as an input to reorder the vector
+    # @param [Daru::Index, Daru::MultiIndex] new_index new index to order with
+    # @return [Daru::Vector] vector reindexed with new index
     def reindex! new_index
       values = []
       each_with_index do |val, i|
@@ -880,6 +933,30 @@ module Daru
       update_internal_state
 
       self
+    end
+
+    # Reorder the vector with given positions
+    # @note Unlike #reindex! which takes index as input, it takes
+    #   positions as an input to reorder the vector
+    # @param [Array] order the order to reorder the vector with
+    # @return reordered vector
+    # @example
+    #   dv = Daru::Vector.new [3, 2, 1], index: ['c', 'b', 'a']
+    #   dv.reorder! [2, 1, 0]
+    #   # => #<Daru::Vector(3)>
+    #   #   a   1
+    #   #   b   2
+    #   #   c   3
+    def reorder! order
+      @index = @index.reorder order
+      @data = order.map { |i| @data[i] }
+      update_internal_state
+      self
+    end
+
+    # Non-destructive version of #reorder!
+    def reorder order
+      dup.reorder! order
     end
 
     # Create a new vector with a different index, and preserve the indexing of
@@ -904,9 +981,13 @@ module Daru
     # @param new_name [Symbol] The new name.
     def rename new_name
       @name = new_name
+      self
     end
 
-    # Duplicate elements and indexes
+    alias_method :name=, :rename
+
+    # Duplicated a vector
+    # @return [Daru::Vector] duplicated vector
     def dup
       Daru::Vector.new @data.dup, name: @name, metadata: @metadata.dup, index: @index.dup
     end
@@ -1085,6 +1166,19 @@ module Daru
 
     alias :dv :daru_vector
 
+    # Converts a non category type vector to category type vector.
+    # @param [Hash] opts options to convert to category
+    # @option opts [true, false] :ordered Specify if vector is ordered or not.
+    #   If it is ordered, it can be sorted and min, max like functions would work
+    # @option opts [Array] :categories set categories in the specified order
+    # @return [Daru::Vector] vector with type category
+    def to_category opts={}
+      dv = Daru::Vector.new to_a, type: :category, name: @name, index: @index
+      dv.ordered = opts[:ordered] || false
+      dv.categories = opts[:categories] if opts[:categories]
+      dv
+    end
+
     def method_missing(name, *args, &block)
       # FIXME: it is shamefully fragile. Should be either made stronger
       # (string/symbol dychotomy, informative errors) or removed totally. - zverok
@@ -1097,7 +1191,63 @@ module Daru
       end
     end
 
+    # Partition a numeric variable into categories.
+    # @param [Array<Numeric>] partitions an array whose consecutive elements
+    #   provide intervals for categories
+    # @param [Hash] opts options to cut the partition
+    # @option opts [:left, :right] :close_at specifies whether the interval closes at
+    #   the right side of left side
+    # @option opts [Array] :labels names of the categories
+    # @return [Daru::Vector] numeric variable converted to categorical variable
+    # @example
+    #   heights = Daru::Vector.new [30, 35, 32, 50, 42, 51]
+    #   height_cat = heights.cut [30, 40, 50, 60], labels=['low', 'medium', 'high']
+    #   # => #<Daru::Vector(6)>
+    #   #       0    low
+    #   #       1    low
+    #   #       2    low
+    #   #       3   high
+    #   #       4 medium
+    #   #       5   high
+    def cut partitions, opts={}
+      close_at, labels = opts[:close_at] || :right, opts[:labels]
+      partitions = partitions.to_a
+      values = to_a.map { |val| cut_find_category partitions, val, close_at }
+      cats = cut_categories(partitions, close_at)
+
+      dv = Daru::Vector.new values,
+        index: @index,
+        type: :category,
+        categories: cats
+
+      # Rename categories if new labels provided
+      if labels
+        dv.rename_categories Hash[cats.zip(labels)]
+      else
+        dv
+      end
+    end
+
     private
+
+    def initialize_vector source, opts
+      index, source = parse_source(source, opts)
+      set_name opts[:name]
+
+      @metadata = opts[:metadata] || {}
+
+      @data  = cast_vector_to(opts[:dtype] || :array, source, opts[:nm_dtype])
+      @index = Index.coerce(index || @data.size)
+
+      guard_sizes!
+
+      @possibly_changed_type = true
+      set_missing_values opts[:missing_values]
+      set_missing_positions(true) unless @index.class == Daru::CategoricalIndex
+      set_size
+      # Include plotting functionality
+      self.plotting_library = Daru.plotting_library
+    end
 
     def parse_source source, opts
       if source.is_a?(Hash)
@@ -1207,6 +1357,96 @@ module Daru
     def update_internal_state
       set_size
       set_missing_positions
+    end
+
+    # Raises IndexError when one of the positions is an invalid position
+    def validate_positions *positions
+      positions = [positions] if positions.is_a? Integer
+      positions.each do |pos|
+        raise IndexError, "#{pos} is not a valid position." if pos >= size
+      end
+    end
+
+    # coerce ranges, integers and array in appropriate ways
+    def coerce_positions *positions
+      if positions.size == 1
+        case positions.first
+        when Integer
+          positions.first
+        when Range
+          size.times.to_a[positions.first]
+        else
+          raise ArgumentError, 'Unkown position type.'
+        end
+      else
+        positions
+      end
+    end
+
+    # Helper method for []=.
+    # Assigs existing index to another value
+    def modify_vector(indexes, val)
+      positions = @index.pos(*indexes)
+
+      if positions.is_a? Numeric
+        @data[positions] = val
+      else
+        positions.each { |pos| @data[pos] = val }
+      end
+    end
+
+    # Helper method for []=.
+    # Add a new index and assign it value
+    def insert_vector(indexes, val)
+      new_index = @index.add(*indexes)
+      # May be create +=
+      (new_index.size - @index.size).times { @data << val }
+      @index = new_index
+    end
+
+    # Works similar to #[]= but also insert the vector in case index is not valid
+    # It is there only to be accessed by Daru::DataFrame and not meant for user.
+    def set indexes, val
+      cast(dtype: :array) if val.nil? && dtype != :array
+      guard_type_check(val)
+
+      if @index.valid?(*indexes)
+        modify_vector(indexes, val)
+      else
+        insert_vector(indexes, val)
+      end
+
+      update_internal_state
+    end
+
+    def cut_find_category partitions, val, close_at
+      case close_at
+      when :right
+        right_index = partitions.index { |i| i > val }
+        raise ArgumentError, 'Invalid partition' if right_index.nil?
+        left_index = right_index - 1
+        "#{partitions[left_index]}-#{partitions[right_index]-1}"
+      when :left
+        right_index = partitions.index { |i| i >= val }
+        raise ArgumentError, 'Invalid partition' if right_index.nil?
+        left_index = right_index - 1
+        "#{partitions[left_index]+1}-#{partitions[right_index]}"
+      else
+        raise ArgumentError, "Invalid parameter #{close_at} to close_at."
+      end
+    end
+
+    def cut_categories partitions, close_at
+      case close_at
+      when :right
+        Array.new(partitions.size-1) do |left_index|
+          "#{partitions[left_index]}-#{partitions[left_index+1]-1}"
+        end
+      when :left
+        Array.new(partitions.size-1) do |left_index|
+          "#{partitions[left_index]+1}-#{partitions[left_index+1]}"
+        end
+      end
     end
   end
 end

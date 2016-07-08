@@ -366,6 +366,24 @@ module Daru
       end
     end
 
+    def pos *args
+      # to filled
+      out = self[*args]
+      return out if out.is_a? Numeric
+      out.map { |date| self[date] }
+    end
+
+    def subset *args
+      self[*args]
+    end
+
+    def valid? *args
+      self[*args]
+      true
+    rescue IndexError
+      false
+    end
+
     # Retrive a slice of the index by specifying first and last members of the slice.
     #
     # @param [String, DateTime] first Start of the slice as a string or DateTime.

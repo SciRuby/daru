@@ -1,14 +1,16 @@
 require 'daru/accessors/dataframe_by_row.rb'
 require 'daru/maths/arithmetic/dataframe.rb'
 require 'daru/maths/statistics/dataframe.rb'
-require 'daru/plotting/dataframe.rb'
+require 'daru/plotting/gruff.rb'
+require 'daru/plotting/nyaplot.rb'
 require 'daru/io/io.rb'
 
 module Daru
   class DataFrame # rubocop:disable Metrics/ClassLength
     include Daru::Maths::Arithmetic::DataFrame
     include Daru::Maths::Statistics::DataFrame
-    include Daru::Plotting::DataFrame if Daru.has_nyaplot?
+    # TODO: Remove this line but its causing erros due to unkown reason
+    include Daru::Plotting::DataFrame::NyaplotLibrary if Daru.has_nyaplot?
 
     class << self
       # Load data from a CSV file. Specify an optional block to grab the CSV
@@ -188,6 +190,8 @@ module Daru
 
     # The vectors (columns) index of the DataFrame
     attr_reader :vectors
+    # TOREMOVE
+    attr_reader :data
 
     # The index of the rows of the DataFrame
     attr_reader :index
@@ -253,6 +257,20 @@ module Daru
       set_size
       validate
       update
+      self.plotting_library = Daru.plotting_library
+    end
+
+    def plotting_library= lib
+      case lib
+      when :gruff, :nyaplot
+        @plotting_library = lib
+        extend Module.const_get(
+          "Daru::Plotting::DataFrame::#{lib.to_s.capitalize}Library"
+        ) if Daru.send("has_#{lib}?".to_sym)
+      else
+        raise ArguementError, "Plotting library #{lib} not supported. "\
+          'Supported libraries are :nyaplot and :gruff'
+      end
     end
 
     # Access row or vector. Specify name of row/vector followed by axis(:row, :vector).
@@ -261,6 +279,138 @@ module Daru
     def [](*names)
       axis = extract_axis(names, :vector)
       dispatch_to_axis axis, :access, *names
+    end
+
+    # Retrive rows by positions
+    # @param [Array<Integer>] *positions positions of rows to retrive
+    # @return [Daru::Vector, Daru::DataFrame] vector for single position and dataframe for multiple positions
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1, 2, 3],
+    #     b: ['a', 'b', 'c']
+    #   })
+    #   df.row_at 1, 2
+    #   # => #<Daru::DataFrame(2x2)>
+    #   #       a   b
+    #   #   1   2   b
+    #   #   2   3   c
+    def row_at *positions
+      original_positions = positions
+      positions = coerce_positions(*positions, nrows)
+      validate_positions(*positions, nrows)
+
+      if positions.is_a? Integer
+        return Daru::Vector.new @data.map { |vec| vec.at(*positions) },
+          index: @vectors
+      else
+        new_rows = @data.map { |vec| vec.at(*original_positions) }
+        return Daru::DataFrame.new new_rows,
+          index: @index.at(*original_positions),
+          order: @vectors
+      end
+    end
+
+    # Set rows by positions
+    # @param [Array<Integer>] positions positions of rows to set
+    # @vector [Array, Daru::Vector] vector vector to be assigned
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1, 2, 3],
+    #     b: ['a', 'b', 'c']
+    #   })
+    #   df.set_row_at [0, 1], ['x', 'x']
+    #   df
+    #   #=> #<Daru::DataFrame(3x2)>
+    #   #       a   b
+    #   #   0   x   x
+    #   #   1   x   x
+    #   #   2   3   c
+    def set_row_at positions, vector
+      validate_positions(*positions, nrows)
+      vector =
+        if vector.is_a? Daru::Vector
+          vector.reindex @vectors
+        else
+          Daru::Vector.new vector
+        end
+
+      raise SizeError, 'Vector length should match row length' if
+        vector.size != @vectors.size
+
+      @data.each_with_index do |vec, pos|
+        vec.set_at(positions, vector.at(pos))
+      end
+      @index = @data[0].index
+      set_size
+    end
+
+    # Retrive vectors by positions
+    # @param [Array<Integer>] *positions positions of vectors to retrive
+    # @return [Daru::Vector, Daru::DataFrame] vector for single position and dataframe for multiple positions
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1, 2, 3],
+    #     b: ['a', 'b', 'c']
+    #   })
+    #   df.at 0
+    #   # => #<Daru::Vector(3)>
+    #   #       a
+    #   #   0   1
+    #   #   1   2
+    #   #   2   3
+    def at *positions
+      if AXES.include? positions.last
+        axis = positions.pop
+        return row_at(*positions) if axis == :row
+      end
+
+      original_positions = positions
+      positions = coerce_positions(*positions, ncols)
+      validate_positions(*positions, ncols)
+
+      if positions.is_a? Integer
+        @data[positions].dup
+      else
+        Daru::DataFrame.new positions.map { |pos| @data[pos].dup },
+          index: @index,
+          order: @vectors.at(*original_positions),
+          name: @name
+      end
+    end
+
+    # Set vectors by positions
+    # @param [Array<Integer>] positions positions of vectors to set
+    # @param [Array, Daru::Vector] vector vector to be assigned
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1, 2, 3],
+    #     b: ['a', 'b', 'c']
+    #   })
+    #   df.set_at [0], ['x', 'y', 'z']
+    #   df
+    #   #=> #<Daru::DataFrame(3x2)>
+    #   #       a   b
+    #   #   0   x   a
+    #   #   1   y   b
+    #   #   2   z   c
+    def set_at positions, vector
+      if positions.last == :row
+        positions.pop
+        return set_row_at(positions, vector)
+      end
+
+      validate_positions(*positions, ncols)
+      vector =
+        if vector.is_a? Daru::Vector
+          vector.reindex @index
+        else
+          Daru::Vector.new vector
+        end
+
+      raise SizeError, 'Vector length should match index length' if
+        vector.size != @index.size
+
+      positions.each { |pos| @data[pos] = vector }
     end
 
     # Insert a new row/vector of the specified name or modify a previous row.
@@ -386,8 +536,8 @@ module Daru
     def each_row
       return to_enum(:each_row) unless block_given?
 
-      @index.each do |index|
-        yield access_row(index)
+      @index.size.times do |pos|
+        yield row_at(pos)
       end
 
       self
@@ -909,7 +1059,7 @@ module Daru
     #
     # @param [Fixnum] quantity (10) The number of elements to display from the top.
     def head quantity=10
-      self[0..(quantity-1), :row]
+      row.at 0..(quantity-1)
     end
 
     alias :first :head
@@ -918,8 +1068,8 @@ module Daru
     #
     # @param [Fixnum] quantity (10) The number of elements to display from the bottom.
     def tail quantity=10
-      start = [@size - quantity, 0].max
-      self[start..(@size-1), :row]
+      start = [-quantity, -size].max
+      row.at start..-1
     end
 
     alias :last :tail
@@ -1065,8 +1215,8 @@ module Daru
     #   df.index.to_a #=> ['a','b','c','d']
     #   df.row['a'].to_a #=> [1,11]
     def index= idx
-      @data.each { |vec| vec.index = idx }
-      @index = idx
+      @index = Index.coerce idx
+      @data.each { |vec| vec.index = @index }
 
       self
     end
@@ -1238,12 +1388,19 @@ module Daru
     def sort! vector_order, opts={}
       raise ArgumentError, 'Required atleast one vector name' if vector_order.empty?
 
+      # To enable sorting with categorical data,
+      # map categories to integers preserving their order
+      old = convert_categorical_vectors vector_order
       block = sort_prepare_block vector_order, opts
 
-      new_index = @index.reorder @index.size.times.sort(&block)
+      order = @index.size.times.sort(&block)
+      new_index = @index.reorder order
+
+      # To reverse map mapping of categorical data to integers
+      restore_categorical_vectors old
 
       @data.each do |vector|
-        vector.reindex!(new_index)
+        vector.reorder! order
       end
 
       self.index = new_index
@@ -1519,7 +1676,10 @@ module Daru
     # Rename the DataFrame.
     def rename new_name
       @name = new_name
+      self
     end
+
+    alias_method :name=, :rename
 
     # Write this DataFrame to a CSV file.
     #
@@ -1634,6 +1794,23 @@ module Daru
         @vectors.to_a.all? { |v| self[v] == other[v] }
     end
 
+    # Converts the specified non category type vectors to category type vectors
+    # @param [Array] *names names of non category type vectors to be converted
+    # @return [Daru::DataFrame] data frame in which specified vectors have been
+    #   converted to category type
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1, 2, 3],
+    #     b: ['a', 'a', 'b']
+    #   })
+    #   df.to_category :b
+    #   df[:b].type
+    #   # => :category
+    def to_category *names
+      names.each { |n| self[n] = self[n].to_category }
+      self
+    end
+
     def method_missing(name, *args, &block)
       if name =~ /(.+)\=/
         insert_or_modify_vector [name[/(.+)\=/].delete('=').to_sym], args[0]
@@ -1644,7 +1821,71 @@ module Daru
       end
     end
 
+    def interact_code vector_names, full
+      dfs = vector_names.zip(full).map do |vec_name, f|
+        self[vec_name].contrast_code(full: f).each.to_a
+      end
+
+      all_vectors = recursive_product(dfs)
+      Daru::DataFrame.new all_vectors,
+        order: all_vectors.map(&:name)
+    end
+
+    # Split the dataframe into many dataframes based on category vector
+    # @param [object] cat_name name of category vector to split the dataframe
+    # @return [Array] array of dataframes split by category with category vector
+    #   used to split not included
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1, 2, 3],
+    #     b: ['a', 'a', 'b']
+    #   })
+    #   df.to_category :b
+    #   df.split_by_category :b
+    #   # => [#<Daru::DataFrame: a (2x1)>
+    #   #       a
+    #   #   0   1
+    #   #   1   2,
+    #   # #<Daru::DataFrame: b (1x1)>
+    #   #       a
+    #   #   2   3]
+    def split_by_category cat_name
+      cat_dv = self[cat_name]
+      raise ArguementError, "#{cat_name} is not a category vector" unless
+        cat_dv.category?
+
+      cat_dv.categories.map do |cat|
+        where(cat_dv.eq cat)
+          .rename(cat)
+          .delete_vector cat_name
+      end
+    end
+
     private
+
+    def convert_categorical_vectors names
+      names.map do |n|
+        next unless self[n].category?
+        old = [n, self[n]]
+        self[n] = Daru::Vector.new(self[n].to_ints)
+        old
+      end.compact
+    end
+
+    def restore_categorical_vectors old
+      old.each { |name, vector| self[name] = vector }
+    end
+
+    def recursive_product dfs
+      return dfs.first if dfs.size == 1
+
+      left = dfs.first
+      dfs.shift
+      right = recursive_product dfs
+      left.product(right).map do |dv1, dv2|
+        (dv1*dv2).rename "#{dv1.name}:#{dv2.name}"
+      end
+    end
 
     def should_be_vector! val
       return val if val.is_a?(Daru::Vector)
@@ -1719,46 +1960,19 @@ module Daru
                                        index: @index, name: @name)
     end
 
-    def access_row *names
-      if @index.is_a?(MultiIndex)
-        access_row_multi_index(*names)
+    def access_row *indexes
+      positions = @index.pos(*indexes)
+
+      if positions.is_a? Numeric
+        return Daru::Vector.new populate_row_for(positions),
+          index: @vectors,
+          name: indexes.first
       else
-        access_row_single_index(*names)
+        new_rows = @data.map { |vec| vec[*indexes] }
+        return Daru::DataFrame.new new_rows,
+          index: @index.subset(*indexes),
+          order: @vectors
       end
-    end
-
-    def access_row_multi_index *names
-      location = names.first
-
-      pos = @index[names]
-      if pos.is_a?(Integer)
-        return Daru::Vector.new(populate_row_for(pos), index: @vectors, name: pos)
-      end
-
-      new_rows = pos.map { |tuple| populate_row_for(tuple) }
-
-      if !location.is_a?(Range) && names.size < @index.width
-        pos = pos.drop_left_level names.size
-      end
-
-      Daru::DataFrame.rows(new_rows, order: @vectors, name: @name, index: pos)
-    end
-
-    def access_row_single_index *names
-      location = names.first
-
-      if names.count < 2
-        names = @index[location]
-        if names.is_a?(Numeric)
-          row = @data.map { |vector| vector[location] }
-
-          return Daru::Vector.new(row, index: @vectors, name: coerce_name(location))
-        end
-      end
-      # Access multiple rows
-      rows = names.map { |name| self.row[name].to_a }
-
-      Daru::DataFrame.rows rows, index: names, name: @name, order: @vectors
     end
 
     def populate_row_for pos
@@ -1838,23 +2052,16 @@ module Daru
       end
     end
 
-    def insert_or_modify_row name, vector
-      raise NotImplementedError, "Still can't insert rows in multi index dataframes" \
-        if index.is_a?(MultiIndex)
+    def insert_or_modify_row indexes, vector
+      vector = coerce_vector vector
 
-      name = name[0]
-      vec = Vector.coerce(vector, name: coerce_name(name), index: @vectors)
+      raise SizeError, 'Vector length should match row length' if
+        vector.size != @vectors.size
 
-      if @index.include? name
-        each_vector_with_index do |v,i|
-          v[name] = vec.index.include?(i) ? vec[i] : nil
-        end
-      else
-        @index |= [name]
-        each_vector_with_index do |v,i|
-          v.concat((vec.index.include?(i) ? vec[i] : nil), name)
-        end
+      @data.each_with_index do |vec, pos|
+        vec.send(:set, indexes, vector.at(pos))
       end
+      @index = @data[0].index
 
       set_size
     end
@@ -1944,7 +2151,7 @@ module Daru
       @vectors = Index.coerce(vectors)
 
       @data = @vectors.each_with_index.map do |_vec,idx|
-        Daru::Vector.new(source[idx], index: @index)
+        Daru::Vector.new(source[idx], index: @index, name: vectors[idx])
       end
     end
 
@@ -2173,6 +2380,42 @@ module Daru
           name = pattern.sub('%v', v).sub('%n', number.to_s)
           [v, row[name]]
         }.to_h
+    end
+
+    # Raises IndexError when one of the positions is not a valid position
+    def validate_positions *positions, size
+      positions = [positions] if positions.is_a? Integer
+      positions.each do |pos|
+        raise IndexError, "#{pos} is not a valid position." if pos >= size
+      end
+    end
+
+    # Accepts hash, enumerable and vector and align it properly so it can be added
+    def coerce_vector vector
+      case vector
+      when Daru::Vector
+        vector.reindex @vectors
+      when Hash
+        Daru::Vector.new(vector).reindex @vectors
+      else
+        Daru::Vector.new vector
+      end
+    end
+
+    # coerce ranges, integers and array in appropriate ways
+    def coerce_positions *positions, size
+      if positions.size == 1
+        case positions.first
+        when Integer
+          positions.first
+        when Range
+          size.times.to_a[positions.first]
+        else
+          raise ArgumentError, 'Unkown position type.'
+        end
+      else
+        positions
+      end
     end
   end
 end
