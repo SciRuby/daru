@@ -2315,14 +2315,12 @@ module Daru
 
     def prepare_pivot_values index, vectors, opts
       case opts[:values]
-      when Symbol
-        [opts[:values]]
-      when Array
-        opts[:values]
-      when nil
+      when nil # values not specified at all.
         (@vectors.to_a - (index | vectors)) & numeric_vector_names
-      else
-        raise ArgumentError, "Can't make pivot by #{opts[:values].class}"
+      when Array # multiple values specified.
+        opts[:values]
+      else # single value specified.
+        [opts[:values]]
       end
     end
 

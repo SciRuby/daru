@@ -28,11 +28,21 @@ describe Daru::DataFrame do
       expect(@left.join(@right, how: :inner, on: [:name])).to eq(answer)
     end
 
-    xit "performs an inner join of two dataframes that has one to many mapping" do
+    it "performs an inner join of two dataframes that has one to many mapping" do
       answer = Daru::DataFrame.new({
         :name_1 => ['Pirate', 'Pirate', 'Pirate', 'Pirate'],
         :id => [1,1,1,1],
         :name_2 => ['Rutabaga', 'Pirate', 'Darth Vader', 'Ninja']
+      }, order: [:name_1, :id, :name_2])
+      expect(@left.join(@right_many, how: :inner, on: [:id])).to eq(answer)
+    end
+
+    it "performs an inner join of two dataframes that has many to many mapping" do
+      @left[:id].recode! { |v| v == 2 ? 1 : v }
+      answer = Daru::DataFrame.new({
+        :name_1 => ['Pirate', 'Pirate', 'Pirate', 'Pirate', 'Monkey', 'Monkey', 'Monkey', 'Monkey'],
+        :id => [1,1,1,1,1,1,1,1],
+        :name_2 => ['Rutabaga', 'Pirate', 'Darth Vader', 'Ninja', 'Rutabaga', 'Pirate', 'Darth Vader', 'Ninja']
       }, order: [:name_1, :id, :name_2])
       expect(@left.join(@right_many, how: :inner, on: [:id])).to eq(answer)
     end
@@ -42,6 +52,38 @@ describe Daru::DataFrame do
         :id_1 => [nil,2,3,1,nil,4],
         :name => ["Darth Vader", "Monkey", "Ninja", "Pirate", "Rutabaga", "Spaghetti"],
         :id_2 => [3,nil,4,2,1,nil]
+      }, order: [:id_1, :name, :id_2])
+      expect(@left.join(@right, how: :outer, on: [:name])).to eq(answer)
+    end
+
+    it "performs a full outer join when the right join keys have nils" do
+      @right[:name].recode! { |v| v == 'Rutabaga' ? nil : v }
+      answer = Daru::DataFrame.new({
+        :id_1 => [nil, nil,2,3,1,4],
+        :name => [nil, "Darth Vader", "Monkey", "Ninja", "Pirate", "Spaghetti"],
+        :id_2 => [1,3,nil,4,2,nil]
+      }, order: [:id_1, :name, :id_2])
+      expect(@left.join(@right, how: :outer, on: [:name])).to eq(answer)
+    end
+
+    it "performs a full outer join when the left join keys have nils" do
+      @left[:name].recode! { |v| v == 'Monkey' ? nil : v }
+      answer = Daru::DataFrame.new({
+        :id_1 => [2,nil,3,1,nil,4],
+        :name => [nil, "Darth Vader", "Ninja", "Pirate", "Rutabaga", "Spaghetti"],
+        :id_2 => [nil,3,4,2,1,nil]
+      }, order: [:id_1, :name, :id_2])
+      expect(@left.join(@right, how: :outer, on: [:name])).to eq(answer)
+    end
+
+    it "performs a full outer join when both left and right join keys have nils" do
+      @left[:name].recode! { |v| v == 'Monkey' ? nil : v }
+      @right[:name].recode! { |v| v == 'Rutabaga' ? nil : v }
+
+      answer = Daru::DataFrame.new({
+        :id_1 => [nil,2,nil,3,1,4],
+        :name => [nil, nil, "Darth Vader", "Ninja", "Pirate", "Spaghetti"],
+        :id_2 => [1,nil,3,4,2,nil]
       }, order: [:id_1, :name, :id_2])
       expect(@left.join(@right, how: :outer, on: [:name])).to eq(answer)
     end

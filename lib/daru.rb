@@ -78,11 +78,18 @@ module Daru
   create_has_library :gruff
 end
 
-autoload :Spreadsheet, 'spreadsheet'
-autoload :CSV, 'csv'
+[['reportbuilder', '~>1.4'], ['spreadsheet', '~>1.1.1']].each do |lib|
+  begin
+    gem lib[0], lib[1]
+    require lib[0]
+  rescue LoadError
+    STDERR.puts "\nInstall the #{lib[0]} gem version #{lib[1]} for using"\
+    " #{lib[0]} functions."
+  end
+end
 
+autoload :CSV, 'csv'
 require 'matrix'
-require 'reportbuilder'
 
 require 'daru/version.rb'
 

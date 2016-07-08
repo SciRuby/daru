@@ -1,3 +1,166 @@
+describe Daru::Index do
+  context ".new" do
+    it "creates an Index object if Index-like data is supplied" do
+      i = Daru::Index.new [:one, 'one', 1, 2, :two]
+      expect(i.class).to eq(Daru::Index)
+      expect(i.to_a) .to eq([:one, 'one', 1, 2, :two])
+    end
+
+    it "creates a MultiIndex if tuples are supplied" do
+      i = Daru::Index.new([
+        [:b,:one,:bar],
+        [:b,:two,:bar],
+        [:b,:two,:baz],
+        [:b,:one,:foo]
+      ])
+
+      expect(i.class).to eq(Daru::MultiIndex)
+      expect(i.levels).to eq([[:b], [:one, :two], [:bar, :baz, :foo]])
+      expect(i.labels).to eq([[0,0,0,0],[0,1,1,0],[0,0,1,2]])
+    end
+
+    it "creates DateTimeIndex if date-like objects specified" do
+      i = Daru::Index.new([
+        DateTime.new(2012,2,4), DateTime.new(2012,2,5), DateTime.new(2012,2,6)])
+      expect(i.class).to eq(Daru::DateTimeIndex)
+      expect(i.to_a).to eq([DateTime.new(2012,2,4), DateTime.new(2012,2,5), DateTime.new(2012,2,6)])
+      expect(i.frequency).to eq('D')
+    end
+  end
+
+  context "#initialize" do
+    it "creates an Index from Array" do
+      idx = Daru::Index.new ['speaker', 'mic', 'guitar', 'amp']
+
+      expect(idx.to_a).to eq(['speaker', 'mic', 'guitar', 'amp'])
+    end
+
+    it "creates an Index from Range" do
+      idx = Daru::Index.new 1..5
+
+      expect(idx).to eq(Daru::Index.new [1, 2, 3, 4, 5])
+    end
+
+    it "raises ArgumentError on invalid input type" do
+      expect { Daru::Index.new 'foo' }.to raise_error ArgumentError
+    end
+
+    it "accepts all sorts of objects for Indexing" do
+      idx = Daru::Index.new [:a, 'a', :hello, '23', 23]
+
+      expect(idx.to_a).to eq([:a, 'a', :hello, '23', 23])
+    end
+  end
+
+  context '#keys' do
+    subject(:idx) { Daru::Index.new ['speaker', 'mic', 'guitar', 'amp'] }
+
+    it 'returns key by position' do
+      expect(idx.key(2)).to eq 'guitar'
+    end
+
+    it 'returns nil on too large pos' do
+      expect(idx.key(20)).to be_nil
+    end
+
+    it 'returns nil on wrong arg type' do
+      expect(idx.key(nil)).to be_nil
+    end
+  end
+
+  context "#size" do
+    it "correctly returns the size of the index" do
+      idx = Daru::Index.new ['speaker', 'mic', 'guitar', 'amp']
+
+      expect(idx.size).to eq(4)
+    end
+  end
+
+  context '#inspect' do
+    context 'small index' do
+      subject { Daru::Index.new ['one', 'two', 'three']  }
+      its(:inspect) { is_expected.to eq "#<Daru::Index(3): {one, two, three}>" }
+    end
+
+    context 'large index' do
+      subject { Daru::Index.new ('a'..'z').to_a  }
+      its(:inspect) { is_expected.to eq "#<Daru::Index(26): {a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t ... z}>" }
+    end
+  end
+
+  context "#&" do
+    before :each do
+      @left = Daru::Index.new [:miles, :geddy, :eric]
+      @right = Daru::Index.new [:geddy, :richie, :miles]
+    end
+
+    it "intersects 2 indexes and returns an Index" do
+      expect(@left & @right).to eq([:miles, :geddy].to_index)
+    end
+
+    it "intersects an Index and an Array to return an Index" do
+      expect(@left & [:bob, :geddy, :richie]).to eq([:geddy].to_index)
+    end
+  end
+
+  context "#|" do
+    before :each do
+      @left = Daru::Index.new [:miles, :geddy, :eric]
+      @right = Daru::Index.new [:bob, :jimi, :richie]
+    end
+
+    it "unions 2 indexes and returns an Index" do
+      expect(@left | @right).to eq([:miles, :geddy, :eric, :bob, :jimi, :richie].to_index)
+    end
+
+    it "unions an Index and an Array to return an Index" do
+      expect(@left | [:bob, :jimi, :richie]).to eq([:miles, :geddy, :eric,
+        :bob, :jimi, :richie].to_index)
+    end
+  end
+
+  context "#[]" do
+    before do
+      @id = Daru::Index.new [:one, :two, :three, :four, :five, :six, :seven]
+      @mixed_id = Daru::Index.new ['a','b','c',:d,:a,8,3,5]
+    end
+
+    it "works with ranges" do
+      expect(@id[:two..:five]).to eq(Daru::Index.new([:two, :three, :four, :five]))
+
+      expect(@mixed_id['a'..'c']).to eq(Daru::Index.new(['a','b','c']))
+
+      # If both start and end are numbers then refer to numerical indexes
+      expect(@mixed_id[0..2]).to eq(Daru::Index.new(['a','b','c']))
+
+      # If atleast one is a number then refer to actual indexing
+      expect(@mixed_id.slice('b',8)).to eq(Daru::Index.new(['b','c',:d,:a,8]))
+    end
+
+    it "returns multiple keys if specified multiple indices" do
+      expect(@id[0,1,3,4]).to eq(Daru::Index.new([:one, :two, :four, :five]))
+      expect(@mixed_id[0,5,3,2]).to eq(Daru::Index.new(['a', 8, :d, 'c']))
+    end
+
+    it "returns correct index position for non-numeric index" do
+      expect(@id[:four]).to eq(3)
+      expect(@id[3]).to eq(3)
+    end
+
+    it "returns correct index position for mixed index" do
+      expect(@mixed_id[8]).to eq(5)
+      expect(@mixed_id['c']).to eq(2)
+    end
+  end
+
+  context "#each" do
+    it "returns an enum when no block specified" do
+      index = Daru::Index.new([1,2,3,4,5])
+      expect(index.each.class).to eq(Enumerator)
+    end
+  end
+end
+
 describe Daru::MultiIndex do
   before(:each) do
     @index_tuples = [

@@ -1,14 +1,37 @@
 module Daru
   module Core
     class MergeFrame
+      class NilSorter
+        include Comparable
+
+        def nil?
+          true
+        end
+
+        def ==(_other)
+          false
+        end
+
+        def <=>(other)
+          other.nil? ? 0 : -1
+        end
+      end
+
       def initialize left_df, right_df, opts={}
         @on = opts[:on]
         @keep_left, @keep_right = extract_left_right(opts[:how])
 
         validate_on!(left_df, right_df)
 
-        @left  = df_to_a(left_df).sort_by { |h| h.values_at(*on) }
-        @right = df_to_a(right_df).sort_by { |h| h.values_at(*on) }
+        key_sanitizer = ->(h) { sanitize_merge_keys(h.values_at(*on)) }
+
+        @left = df_to_a(left_df)
+        @left.sort_by!(&key_sanitizer)
+        @left_key_values = @left.map(&key_sanitizer)
+
+        @right = df_to_a(right_df)
+        @right.sort_by!(&key_sanitizer)
+        @right_key_values = @right.map(&key_sanitizer)
 
         @left_keys, @right_keys = merge_keys(left_df, right_df, on)
       end
@@ -17,8 +40,8 @@ module Daru
         res = []
 
         until left.empty? && right.empty?
-          lkey = first_key(left)
-          rkey = first_key(right)
+          lkey = first_left_key
+          rkey = first_right_key
 
           row(lkey, rkey).tap { |r| res << r if r }
         end
@@ -29,8 +52,10 @@ module Daru
       private
 
       attr_reader :on,
-        :left, :keep_left, :left_keys,
-        :right, :keep_right, :right_keys
+        :left, :left_key_values, :keep_left, :left_keys,
+        :right, :right_key_values, :keep_right, :right_keys
+
+      attr_accessor :merge_key
 
       LEFT_RIGHT_COMBINATIONS = {
         #       left   right
@@ -43,6 +68,10 @@ module Daru
       def extract_left_right(how)
         LEFT_RIGHT_COMBINATIONS[how] or
           raise ArgumentError, "Unrecognized join option: #{how}"
+      end
+
+      def sanitize_merge_keys(merge_keys)
+        merge_keys.map { |v| v || NilSorter.new }
       end
 
       def df_to_a df
@@ -80,21 +109,70 @@ module Daru
           raise 'Unexpected condition met during merge'
           # :nocov:
         when lkey == rkey
-          merge_rows(left.shift, right.shift)
+          self.merge_key = lkey
+          merge_matching_rows
         when !rkey || lt(lkey, rkey)
-          left_row
+          left_row_missing_right
         else # !lkey || lt(rkey, lkey)
-          right_row
+          right_row_missing_left
         end
       end
 
-      def left_row
-        val = left.shift
+      def merge_matching_rows
+        if one_to_one_merge?
+          merge_rows(one_to_one_left_row, one_to_one_right_row)
+        elsif one_to_many_merge?
+          merge_rows(one_to_many_left_row, one_to_many_right_row)
+        else
+          result = cartesian_product.shift
+          end_cartesian_product if cartesian_product.empty?
+          result
+        end
+      end
+
+      def one_to_one_merge?
+        merge_key != next_left_key && merge_key != next_right_key
+      end
+
+      def one_to_many_merge?
+        !(merge_key == next_left_key && merge_key == next_right_key)
+      end
+
+      def one_to_one_left_row
+        left_key_values.shift
+        left.shift
+      end
+
+      def one_to_many_left_row
+        if next_right_key && first_right_key == next_right_key
+          left.first
+        else
+          left_key_values.shift
+          left.shift
+        end
+      end
+
+      def one_to_one_right_row
+        right_key_values.shift
+        right.shift
+      end
+
+      def one_to_many_right_row
+        if next_left_key && first_left_key == next_left_key
+          right.first
+        else
+          right_key_values.shift
+          right.shift
+        end
+      end
+
+      def left_row_missing_right
+        val = one_to_one_left_row
         expand_row(val, left_keys) if keep_left
       end
 
-      def right_row
-        val = right.shift
+      def right_row_missing_left
+        val = one_to_one_right_row
         expand_row(val, right_keys) if keep_right
       end
 
@@ -115,8 +193,45 @@ module Daru
           .merge(on.map { |col| [col, row[col]] }.to_h)
       end
 
-      def first_key(arr)
-        arr.empty? ? nil : arr.first.values_at(*on)
+      def first_right_key
+        right_key_values.empty? ? nil : right_key_values.first
+      end
+
+      def next_right_key
+        right_key_values.size <= 1 ? nil : right_key_values[1]
+      end
+
+      def first_left_key
+        left_key_values.empty? ? nil : left_key_values.first
+      end
+
+      def next_left_key
+        left_key_values.size <= 1 ? nil : left_key_values[1]
+      end
+
+      def left_rows_at_merge_key
+        left.take_while { |arr| sanitize_merge_keys(arr.values_at(*on)) == merge_key }
+      end
+
+      def right_rows_at_merge_key
+        right.take_while { |arr| sanitize_merge_keys(arr.values_at(*on)) == merge_key }
+      end
+
+      def cartesian_product
+        @cartesian_product ||= left_rows_at_merge_key.product(right_rows_at_merge_key).map do |left_row, right_row|
+          merge_rows(left_row, right_row)
+        end
+      end
+
+      def end_cartesian_product
+        left_size = left_rows_at_merge_key.size
+        left_key_values.shift(left_size)
+        left.shift(left_size)
+
+        right_size = right_rows_at_merge_key.size
+        right_key_values.shift(right_size)
+        right.shift(right_size)
+        @cartesian_product = nil
       end
 
       def validate_on!(left_df, right_df)
