@@ -2910,6 +2910,16 @@ describe Daru::DataFrame do
 
       expect(ds1.merge(ds3)).to eq(exp)
     end
+
+    context "preserves type of vector names" do
+      let(:df1) { Daru::DataFrame.new({'a'=> [1, 2, 3]}) }
+      let(:df2) { Daru::DataFrame.new({:b=> [4, 5, 6]}) }
+      subject { df1.merge df2 }
+      
+      it { is_expected.to be_a Daru::DataFrame }
+      it { expect(subject['a'].to_a).to eq [1, 2, 3] }
+      it { expect(subject[:b].to_a).to eq [4, 5, 6] }
+    end
   end
 
   context "#vector_by_calculation" do

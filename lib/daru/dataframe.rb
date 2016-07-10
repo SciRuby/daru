@@ -1474,7 +1474,7 @@ module Daru
         unless nrows == other_df.nrows
 
       new_fields = (@vectors.to_a + other_df.vectors.to_a)
-      new_fields = ArrayHelper.recode_repeated(new_fields).map(&:to_sym)
+      new_fields = ArrayHelper.recode_repeated(new_fields)
 
       DataFrame.new({}, order: new_fields).tap do |df_new|
         (0...nrows).each do |i|
