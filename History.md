@@ -1,7 +1,35 @@
+# 0.1.4 ()
+
+* Major Enhancements
+  - Added new dependency 'backports' to support #to_h in Ruby 2.0. (@lokeshh)
+  - Greatly improve code test coverage. (@zverok)
+  - Greatly refactor code and make some methods faster, smaller and more readable. (@zverok)
+  - Add support for categorical data with different coding schemes and several methods for in built categorical data support. Add a new index 'Daru::CategoricalIndex'. (@lokeshh)
+  - Removed runtime dependencies on 'spreadsheet' and 'reportbuilder'. They are now loaded if the libraries are already present in the system. (@v0dro)
+
+* Minor enhancements
+  - Update SqlDataSource to improve the performance of DataFrame.from_sql. (@dansbits)
+  - Remove default DataFrame name. Now DataFrames will no name by default. (@zverok)
+  - Better looking #inspect for Vector and DataFrame. (@zverok)
+  - Better looking #to_html for Vector and DataFrame. Also better #to_html for MultiIndex. (@zverok)
+  - Remove monkey patching on Array and add those methods to Daru::ArrayHelper. (@zverok)
+  - Add a rake task for running RSpec for every Ruby version with a single command. (@lokeshh)
+
+* Fixes
+  - DataFrame#clone preserves order and name. (@wlevine)
+  - Vector#where preserves name. (@v0dro)
+  - Fix bug in DataFrame#pivot_table that prevented anything other than Array or Symbol to be specified in the :values option. (@v0dro)
+  - Daru::Index#each returns an Enumerator if block is not specified. (@v0dro)
+  - Fixes bug where joins failed when nils were in join keys. (@gnilrets)
+  - DataFrame#merge now preserves the vector name type when merging. (@lokeshh)
+
+* Deprecations
+  - Remove methods DataFrame#vector and DataFrame#column. (@zverok)
+
 # 0.1.3.1 (12 May 2016)
 
 * Fixes
-    - Fixed small error with usage of newly introduced #each_with_object.
+    - Fixed small error with usage of newly introduced #each_with_object (@v0dro).
 
 # 0.1.3 (May 2016)
 
