@@ -1,6 +1,5 @@
 require 'rspec/core/rake_task'
 require 'bundler/gem_tasks'
-require 'open3'
 
 lib_folder = File.expand_path("../lib", __FILE__)
 
@@ -11,6 +10,16 @@ task :run_all do
     puts "\n  Using #{ruby_v}\n\n"
     command = "$rvm_path/wrappers/#{ruby_v}/rake summary"
     run command
+  end
+end
+
+task :setup do
+  RUBIES.each do |ruby_v|
+    puts "Installing #{ruby_v}..."
+    run "rvm install #{ruby_v}"
+    path = "$rvm_path/wrappers/#{ruby_v}"
+    run "#{path}/gem install bundler"
+    run "#{path}/bundle install"
   end
 end
 
@@ -41,3 +50,4 @@ end
 def run *cmd
   sh(cmd.join(" "))
 end
+
