@@ -1333,11 +1333,14 @@ module Daru
 
     def set_missing_positions forced=false # rubocop:disable Style/AccessorMethodName
       return if Daru.lazy_update && !forced
-
+      
       @missing_positions = []
-      each_with_index do |val, i|
-        @missing_positions << i if @missing_values.key?(val)
+      unless @index.empty?
+        @index.each do |e|
+          @missing_positions << e if @missing_values.key?(self[e])
+        end
       end
+
     end
 
     # Setup missing_values. The missing_values instance variable is set

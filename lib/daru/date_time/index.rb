@@ -70,7 +70,7 @@ module Daru
 
         if periods.nil? # use end
           loop do
-            break if new_date > en
+            break if new_date.nil? || new_date > en
             data << new_date
             new_date = offset + new_date
           end
@@ -92,6 +92,7 @@ module Daru
       end
 
       def infer_offset data
+        return nil if data.count < 2
         diffs = data.each_cons(2).map { |d1, d2| d2 - d1 }
 
         if diffs.uniq.count == 1
@@ -267,6 +268,7 @@ module Daru
       @data      = data.each_with_index.to_a.sort_by(&:first)
 
       @periods = data.size
+      super self
     end
 
     # Custom dup method for DateTimeIndex
@@ -406,7 +408,7 @@ module Daru
         @data
       else
         @data.sort_by(&:last)
-      end.transpose.first
+      end.transpose.first || []
     end
 
     # Size of index.
