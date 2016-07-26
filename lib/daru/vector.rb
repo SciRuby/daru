@@ -781,7 +781,7 @@ module Daru
     #   ts.lag   # => [nil, 0.69, 0.23, 0.44, ...]
     #   ts.lag(2) # => [nil, nil, 0.69, 0.23, ...]
     def lag k=1
-      return dup if k == 0
+      return dup if k.zero?
 
       dat = @data.to_a.dup
       (dat.size - 1).downto(k) { |i| dat[i] = dat[i - k] }
@@ -1043,7 +1043,7 @@ module Daru
     # == Reference:
     # * Sawyer, S. (2005). Resampling Data: Using a Statistical Jacknife.
     def jackknife(estimators, k=1) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
-      raise "n should be divisible by k:#{k}" unless size % k==0
+      raise "n should be divisible by k:#{k}" unless (size % k).zero?
 
       nb = (size / k).to_i
       h_est, es, ps = prepare_bootstrap(estimators)

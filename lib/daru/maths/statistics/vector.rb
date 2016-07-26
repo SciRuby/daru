@@ -294,7 +294,7 @@ module Daru
 
           recode do |x|
             if !x.nil?
-              if lambda == 0
+              if lambda.zero?
                 Math.log(x)
               else
                 (x ** lambda - 1).quo(lambda)
@@ -611,7 +611,7 @@ module Daru
           max_lags ||= (10 * Math.log10(size)).to_i
 
           (0..max_lags).map do |i|
-            if i == 0
+            if i.zero?
               1.0
             else
               m = mean
@@ -720,7 +720,7 @@ module Daru
           k = index.truncate
           d = index % 1
 
-          if k == 0
+          if k.zero?
             sorted[0]
           elsif k >= sorted.size
             sorted[-1]
