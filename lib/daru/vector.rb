@@ -1192,7 +1192,7 @@ module Daru
     end
 
     def respond_to_missing?(name, include_private=false)
-      (name =~ /(.+)\=/) || has_index?(name) || super
+      name.to_s.end_with?('=') || has_index?(name) || super
     end
 
     # Partition a numeric variable into categories.
