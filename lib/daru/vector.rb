@@ -1187,8 +1187,12 @@ module Daru
       elsif has_index?(name)
         self[name]
       else
-        super(name, *args, &block)
+        super
       end
+    end
+
+    def respond_to_missing?(name, include_private=false)
+      (name =~ /(.+)\=/) || has_index?(name) || super
     end
 
     # Partition a numeric variable into categories.

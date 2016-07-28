@@ -1817,8 +1817,12 @@ module Daru
       elsif has_vector? name
         self[name]
       else
-        super(name, *args, &block)
+        super
       end
+    end
+
+    def respond_to_missing?(name, include_private=false)
+      (name =~ /(.+)\=/) || has_vector?(name) || super
     end
 
     def interact_code vector_names, full
