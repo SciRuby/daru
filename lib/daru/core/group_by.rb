@@ -218,7 +218,7 @@ module Daru
       #   })
       #   df.group_by([:a]).reduce('') { |result, row| result += row[:c]; result }
       #   # =>
-      #   # #<Daru::Vector:70343147159900 @name = nil @metadata = {} @size = 2 >
+      #   # #<Daru::Vector:70343147159900 @name = nil @size = 2 >
       #   #     nil
       #   #   a ACE
       #   #   b BDF

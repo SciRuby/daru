@@ -852,9 +852,7 @@ module Daru
 
     # creates a new vector with the data of a given field which the block returns true
     def filter_vector vec, &block
-      d = each_row.select(&block).map { |row| row[vec] }
-
-      Daru::Vector.new(d, metadata: self[vec].metadata.dup)
+      Daru::Vector.new each_row.select(&block).map { |row| row[vec] }
     end
 
     # Iterates over each row and retains it in a new DataFrame if the block returns
@@ -2041,7 +2039,7 @@ module Daru
         # so that index-by-index assignment is avoided when possible.
         return vector.dup if vector.index == @index
 
-        Daru::Vector.new([], name: coerce_name(name), metadata: vector.metadata.dup, index: @index).tap { |v|
+        Daru::Vector.new([], name: coerce_name(name), index: @index).tap { |v|
           @index.each do |idx|
             v[idx] = vector.index.include?(idx) ? vector[idx] : nil
           end
@@ -2229,7 +2227,7 @@ module Daru
         if vectors_have_same_index
           source[vector].dup
         else
-          Daru::Vector.new([], name: vector, metadata: source[vector].metadata.dup, index: @index).tap do |v|
+          Daru::Vector.new([], name: vector, index: @index).tap do |v|
             @index.each do |idx|
               v[idx] = source[vector].index.include?(idx) ? source[vector][idx] : nil
             end
@@ -2242,8 +2240,7 @@ module Daru
       @index = Index.coerce(index || source.values[0].size)
 
       @vectors.each do |name|
-        meta_opt = source[name].respond_to?(:metadata) ? {metadata: source[name].metadata.dup} : {}
-        @data << Daru::Vector.new(source[name].dup, name: coerce_name(name), **meta_opt, index: @index)
+        @data << Daru::Vector.new(source[name].dup, name: coerce_name(name), index: @index)
       end
     end
 

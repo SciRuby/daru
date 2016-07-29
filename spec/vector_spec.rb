@@ -82,12 +82,6 @@ describe Daru::Vector do
           expect(dv.index.to_a).to eq(['a', 'b', :r, 0])
         end
 
-        it "accepts a metadata attribute" do
-          dv = Daru::Vector.new [1,2,3,4,5], metadata: { cdc_type: 2 }
-
-          expect(dv.metadata) .to eq({ cdc_type: 2 })
-        end
-
       end
 
       context ".new_with_size" do
@@ -127,7 +121,7 @@ describe Daru::Vector do
       context "#[]" do
         context Daru::Index do
           before :each do
-            @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, metadata: { cdc_type: 2 },
+            @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga,
               index: [:yoda, :anakin, :obi, :padme, :r2d2], dtype: dtype
           end
 
@@ -170,10 +164,6 @@ describe Daru::Vector do
           it "raises exception for invalid index" do
             expect { @dv[:foo] }.to raise_error(IndexError)
             expect { @dv[:obi, :foo] }.to raise_error(IndexError)
-          end
-
-          it "retains the original vector metadata" do
-            expect(@dv[:yoda, :anakin].metadata).to eq({ cdc_type: 2 })
           end
         end
 
@@ -341,56 +331,56 @@ describe Daru::Vector do
         context Daru::Index do
           let (:idx) { Daru::Index.new [1, 0, :c] }
           let (:dv) { Daru::Vector.new ['a', 'b', 'c'], index: idx }
-          
+
           context "single position" do
             it { expect(dv.at 1).to eq 'b' }
           end
-          
+
           context "multiple positions" do
             subject { dv.at 0, 2 }
-            
+
             it { is_expected.to be_a Daru::Vector }
             its(:size) { is_expected.to eq 2 }
             its(:to_a) { is_expected.to eq ['a', 'c'] }
             its(:'index.to_a') { is_expected.to eq [1, :c] }
           end
-          
+
           context "invalid position" do
             it { expect { dv.at 3 }.to raise_error IndexError }
           end
-          
+
           context "invalid positions" do
             it { expect { dv.at 2, 3 }.to raise_error IndexError }
           end
-          
+
           context "range" do
             subject { dv.at 0..1 }
-            
+
             it { is_expected.to be_a Daru::Vector }
             its(:size) { is_expected.to eq 2 }
             its(:to_a) { is_expected.to eq ['a', 'b'] }
-            its(:'index.to_a') { is_expected.to eq [1, 0] }            
+            its(:'index.to_a') { is_expected.to eq [1, 0] }
           end
-          
+
           context "range with negative end" do
             subject { dv.at 0..-2 }
-            
+
             it { is_expected.to be_a Daru::Vector }
             its(:size) { is_expected.to eq 2 }
             its(:to_a) { is_expected.to eq ['a', 'b'] }
-            its(:'index.to_a') { is_expected.to eq [1, 0] }              
+            its(:'index.to_a') { is_expected.to eq [1, 0] }
           end
-          
+
           context "range with single element" do
             subject { dv.at 0..0 }
-            
+
             it { is_expected.to be_a Daru::Vector }
             its(:size) { is_expected.to eq 1 }
             its(:to_a) { is_expected.to eq ['a'] }
             its(:'index.to_a') { is_expected.to eq [1] }
           end
         end
-        
+
         context Daru::MultiIndex do
           let (:idx) do
             Daru::MultiIndex.from_tuples [
@@ -401,56 +391,56 @@ describe Daru::Vector do
             ]
           end
           let (:dv) { Daru::Vector.new 1..4, index: idx }
-          
+
           context "single position" do
             it { expect(dv.at 1).to eq 2 }
           end
-          
+
           context "multiple positions" do
             subject { dv.at 2, 3 }
-            
+
             it { is_expected.to be_a Daru::Vector }
             its(:size) { is_expected.to eq 2 }
             its(:to_a) { is_expected.to eq [3, 4] }
-            its(:'index.to_a') { is_expected.to eq [[:b, :two, :bar], 
+            its(:'index.to_a') { is_expected.to eq [[:b, :two, :bar],
               [:a, :two, :baz]] }
           end
-          
+
           context "invalid position" do
             it { expect { dv.at 4 }.to raise_error IndexError }
           end
-          
+
           context "invalid positions" do
             it { expect { dv.at 2, 4 }.to raise_error IndexError }
           end
-          
+
           context "range" do
             subject { dv.at 2..3 }
-            
+
             it { is_expected.to be_a Daru::Vector }
             its(:size) { is_expected.to eq 2 }
             its(:to_a) { is_expected.to eq [3, 4] }
-            its(:'index.to_a') { is_expected.to eq [[:b, :two, :bar], 
-              [:a, :two, :baz]] }            
+            its(:'index.to_a') { is_expected.to eq [[:b, :two, :bar],
+              [:a, :two, :baz]] }
           end
-          
+
           context "range with negative end" do
             subject { dv.at 2..-1 }
-            
+
             it { is_expected.to be_a Daru::Vector }
             its(:size) { is_expected.to eq 2 }
             its(:to_a) { is_expected.to eq [3, 4] }
-            its(:'index.to_a') { is_expected.to eq [[:b, :two, :bar], 
-              [:a, :two, :baz]] }                 
+            its(:'index.to_a') { is_expected.to eq [[:b, :two, :bar],
+              [:a, :two, :baz]] }
           end
-          
+
           context "range with single element" do
             subject { dv.at 2..2 }
-            
+
             it { is_expected.to be_a Daru::Vector }
             its(:size) { is_expected.to eq 1 }
             its(:to_a) { is_expected.to eq [3] }
-            its(:'index.to_a') { is_expected.to eq [[:b, :two, :bar]] }   
+            its(:'index.to_a') { is_expected.to eq [[:b, :two, :bar]] }
           end
         end
 
@@ -473,15 +463,15 @@ describe Daru::Vector do
 
             it { is_expected.to eq 'b' }
           end
-          
+
           context "invalid position" do
             it { expect { dv.at 5 }.to raise_error IndexError }
           end
-          
+
           context "invalid positions" do
             it { expect { dv.at 2, 5 }.to raise_error IndexError }
           end
-          
+
           context "range" do
             subject { dv.at 0..2 }
 
@@ -489,9 +479,9 @@ describe Daru::Vector do
             its(:size) { is_expected.to eq 3 }
             its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
             its(:index) { is_expected.to eq(
-              Daru::CategoricalIndex.new([:a, 1, 1])) }            
+              Daru::CategoricalIndex.new([:a, 1, 1])) }
           end
-          
+
           context "range with negative end" do
             subject { dv.at 0..-3 }
 
@@ -499,9 +489,9 @@ describe Daru::Vector do
             its(:size) { is_expected.to eq 3 }
             its(:to_a) { is_expected.to eq ['a', 'b', 'c'] }
             its(:index) { is_expected.to eq(
-              Daru::CategoricalIndex.new([:a, 1, 1])) }            
+              Daru::CategoricalIndex.new([:a, 1, 1])) }
           end
-          
+
           context "range with single element" do
             subject { dv.at 0..0 }
 
@@ -509,7 +499,7 @@ describe Daru::Vector do
             its(:size) { is_expected.to eq 1 }
             its(:to_a) { is_expected.to eq ['a'] }
             its(:index) { is_expected.to eq(
-              Daru::CategoricalIndex.new([:a])) }            
+              Daru::CategoricalIndex.new([:a])) }
           end
         end
       end
@@ -604,7 +594,7 @@ describe Daru::Vector do
             expect { @vector[:b, :two, :test] = 69 }.to raise_error(IndexError)
           end
         end
-        
+
         context Daru::CategoricalIndex do
           context "non-numerical index" do
             let (:idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
@@ -678,14 +668,14 @@ describe Daru::Vector do
               its(:to_a) { is_expected.to eq ['x', 'x', 'c', 'd', 'e'] }
               its(:index) { is_expected.to eq idx }
             end
-            
+
             context "multiple categories" do
               subject { dv }
               before { dv[1, 2] = 'x' }
 
               its(:size) { is_expected.to eq 5 }
               its(:to_a) { is_expected.to eq ['x', 'x', 'x', 'x', 'e'] }
-              its(:index) { is_expected.to eq idx }              
+              its(:index) { is_expected.to eq idx }
             end
           end
         end
@@ -695,30 +685,30 @@ describe Daru::Vector do
         context Daru::Index do
           let (:idx) { Daru::Index.new [1, 0, :c] }
           let (:dv) { Daru::Vector.new ['a', 'b', 'c'], index: idx }
-          
+
           context "single position" do
             subject { dv }
             before { dv.set_at [1], 'x' }
 
             its(:to_a) { is_expected.to eq ['a', 'x', 'c'] }
           end
-          
+
           context "multiple positions" do
             subject { dv }
             before { dv.set_at [0, 2], 'x' }
-            
+
             its(:to_a) { is_expected.to eq ['x', 'b', 'x'] }
           end
-          
+
           context "invalid position" do
             it { expect { dv.set_at [3], 'x' }.to raise_error IndexError }
           end
-          
+
           context "invalid positions" do
             it { expect { dv.set_at [2, 3], 'x' }.to raise_error IndexError }
           end
         end
-        
+
         context Daru::MultiIndex do
           let(:idx) do
             Daru::MultiIndex.from_tuples [
@@ -729,28 +719,28 @@ describe Daru::Vector do
             ]
           end
           let(:dv) { Daru::Vector.new 1..4, index: idx }
-          
+
           context "single position" do
             subject { dv }
             before { dv.set_at [1], 'x' }
 
             its(:to_a) { is_expected.to eq [1, 'x', 3, 4] }
           end
-          
+
           context "multiple positions" do
             subject { dv }
             before { dv.set_at [2, 3], 'x' }
 
             its(:to_a) { is_expected.to eq [1, 2, 'x', 'x'] }
           end
-          
+
           context "invalid position" do
             it { expect { dv.set_at [4], 'x' }.to raise_error IndexError }
           end
-          
+
           context "invalid positions" do
             it { expect { dv.set_at [2, 4], 'x' }.to raise_error IndexError }
-          end          
+          end
         end
 
         context Daru::CategoricalIndex do
@@ -770,14 +760,14 @@ describe Daru::Vector do
 
             its(:to_a) { is_expected.to eq ['a', 'x', 'c', 'd', 'e'] }
           end
-          
+
           context "invalid position" do
             it { expect { dv.set_at [5], 'x' }.to raise_error IndexError }
           end
-          
+
           context "invalid positions" do
             it { expect { dv.set_at [2, 5], 'x' }.to raise_error IndexError }
-          end          
+          end
         end
       end
 
@@ -963,14 +953,10 @@ describe Daru::Vector do
 
       context "#uniq" do
         before do
-          @v = Daru::Vector.new [1, 2, 2, 2.0, 3, 3.0], index:[:a, :b, :c, :d, :e, :f], metadata: { cdc_type: 2 }
+          @v = Daru::Vector.new [1, 2, 2, 2.0, 3, 3.0], index:[:a, :b, :c, :d, :e, :f]
         end
         it "keeps only unique values" do
           expect(@v.uniq).to eq(Daru::Vector.new [1, 2, 2.0, 3, 3.0], index: [:a, :b, :d, :e, :f])
-        end
-
-        it "retains the original vector metadata" do
-          expect(@v.uniq.metadata).to eq({ cdc_type: 2 })
         end
       end
 
@@ -987,7 +973,7 @@ describe Daru::Vector do
       context "#sort" do
         context Daru::Index do
           before do
-            @dv = Daru::Vector.new [33,2,15,332,1], name: :dv, index: [:a, :b, :c, :d, :e], metadata: { cdc_type: 2 }
+            @dv = Daru::Vector.new [33,2,15,332,1], name: :dv, index: [:a, :b, :c, :d, :e]
           end
 
           it "sorts the vector with defaults and returns a new vector, preserving indexing" do
@@ -1030,10 +1016,6 @@ describe Daru::Vector do
 
             expect(non_numeric.sort(ascending: false)).to eq(
               Daru::Vector.new ['b','aa','a','1234',nil,nil], index: [1,3,0,4,5,2])
-          end
-
-          it "retains the original vector metadata" do
-            expect(@dv.sort.metadata).to eq({ cdc_type: 2 })
           end
         end
 
@@ -1086,77 +1068,77 @@ describe Daru::Vector do
               [0,22,44,-56,111], index: mi_abs, name: :sort_abs, dtype: dtype))
           end
         end
-        
+
         context Daru::CategoricalIndex do
           let(:idx) { Daru::CategoricalIndex.new [:a, 1, :a, 1, :c] }
           let(:dv_numeric) { Daru::Vector.new [4, 5, 3, 2, 1], index: idx }
           let(:dv_string) { Daru::Vector.new ['xxxx', 'zzzzz', 'ccc', 'bb', 'a'], index: idx }
           let(:dv_nil) { Daru::Vector.new [3, nil, 2, 1, -1], index: idx }
-          
+
           context "increasing order" do
             context "numeric" do
               subject { dv_numeric.sort }
-              
+
               its(:size) { is_expected.to eq 5 }
               its(:to_a) { is_expected.to eq [1, 2, 3, 4, 5] }
               its(:'index.to_a') { is_expected.to eq [:c, 1, :a, :a, 1] }
             end
-            
+
             context "non-numeric" do
               subject { dv_string.sort }
-              
+
               its(:size) { is_expected.to eq 5 }
               its(:to_a) { is_expected.to eq ['a', 'bb', 'ccc', 'xxxx', 'zzzzz'] }
               its(:'index.to_a') { is_expected.to eq [:c, 1, :a, :a, 1] }
             end
-            
+
             context "block" do
               subject { dv_string.sort { |a, b| a.length <=> b.length } }
-              
+
               its(:to_a) { is_expected.to eq ['a', 'bb', 'ccc', 'xxxx', 'zzzzz'] }
               its(:'index.to_a') { is_expected.to eq [:c, 1, :a, :a, 1] }
             end
-            
+
             context "nils" do
               subject { dv_nil.sort }
-              
+
               its(:to_a) { is_expected.to eq [nil, -1, 1, 2, 3] }
               its(:'index.to_a') { is_expected.to eq [1, :c, 1, :a, :a] }
             end
           end
-          
+
           context "decreasing order" do
             context "numeric" do
               subject { dv_numeric.sort(ascending: false) }
-              
+
               its(:size) { is_expected.to eq 5 }
               its(:to_a) { is_expected.to eq [5, 4, 3, 2, 1] }
               its(:'index.to_a') { is_expected.to eq [1, :a, :a, 1, :c] }
             end
-            
+
             context "non-numeric" do
               subject { dv_string.sort(ascending: false) }
-              
+
               its(:size) { is_expected.to eq 5 }
               its(:to_a) { is_expected.to eq ['zzzzz', 'xxxx', 'ccc', 'bb', 'a'] }
               its(:'index.to_a') { is_expected.to eq [1, :a, :a, 1, :c] }
             end
-            
+
             context "block" do
               subject do
                 dv_string.sort(ascending: false) { |a, b| a.length <=> b.length }
               end
-              
+
               its(:to_a) { is_expected.to eq ['zzzzz', 'xxxx', 'ccc', 'bb', 'a'] }
               its(:'index.to_a') { is_expected.to eq [1, :a, :a, 1, :c] }
             end
-            
+
             context "nils" do
               subject { dv_nil.sort(ascending: false) }
-              
+
               its(:to_a) { is_expected.to eq [3, 2, 1, -1, nil] }
               its(:'index.to_a') { is_expected.to eq [:a, :a, 1, :c, 1] }
-            end            
+            end
           end
         end
       end
@@ -1183,7 +1165,7 @@ describe Daru::Vector do
 
       context "#reindex!" do
         before do
-          @vector = Daru::Vector.new([1,2,3,4,5], metadata: { cdc_type: 2 })
+          @vector = Daru::Vector.new([1,2,3,4,5])
           @index = Daru::Index.new([3,4,1,0,6])
         end
         it "intelligently reindexes" do
@@ -1195,21 +1177,18 @@ describe Daru::Vector do
 
       context "#reindex" do
         before do
-          @vector = Daru::Vector.new([1,2,3,4,5], metadata: { cdc_type: 2 })
+          @vector = Daru::Vector.new([1,2,3,4,5])
           @index = Daru::Index.new([3,4,1,0,6])
         end
         it "intelligently reindexes" do
           expect(@vector.reindex(@index)).to eq(
             Daru::Vector.new([4,5,2,1,nil], index: @index))
         end
-        it "retains the original vector metadata" do
-          expect(@vector.reindex(@index).metadata).to eq({ cdc_type: 2 })
-        end
       end
 
       context "#dup" do
         before do
-          @dv = Daru::Vector.new [1,2], name: :yoda, metadata: { cdc_type: 2 }, index: [:happy, :lightsaber]
+          @dv = Daru::Vector.new [1,2], name: :yoda, index: [:happy, :lightsaber]
         end
 
         it "copies the original data" do
@@ -1222,14 +1201,6 @@ describe Daru::Vector do
 
         it "copies the name" do
           expect(@dv.dup.name).to eq(:yoda)
-        end
-
-        it "copies the original vector metadata" do
-          expect(@dv.dup.metadata).to eq({ cdc_type: 2 })
-        end
-
-        it "creates a new metadata object" do
-          expect(@dv.dup.metadata.object_id).not_to eq(@dv.metadata.object_id)
         end
 
         it "copies the original index" do
@@ -1421,15 +1392,11 @@ describe Daru::Vector do
   context "#clone_structure" do
     context Daru::Index do
       before do
-        @vec = Daru::Vector.new([1,2,3,4,5], metadata: { cdc_type: 2 }, index: [:a,:b,:c,:d,:e])
+        @vec = Daru::Vector.new([1,2,3,4,5], index: [:a,:b,:c,:d,:e])
       end
 
       it "clones a vector with its index and fills it with nils" do
         expect(@vec.clone_structure).to eq(Daru::Vector.new([nil,nil,nil,nil,nil], index: [:a,:b,:c,:d,:e]))
-      end
-
-      it "retains the original vector metadata" do
-        expect(@vec.clone_structure.metadata).to eq({ cdc_type: 2 })
       end
     end
 
@@ -1576,17 +1543,13 @@ describe Daru::Vector do
     [:array, :gsl].each do |dtype|
       describe dtype do
         before do
-          @vector = Daru::Vector.new [1,2,3,4,5,3,5], metadata: { cdc_type: 2 },
+          @vector = Daru::Vector.new [1,2,3,4,5,3,5],
             index: [:a, :b, :c, :d, :e, :f, :g], dtype: dtype, missing_values: [3, 5]
         end
 
         it "returns a Vector of only non-missing data" do
           expect(@vector.only_valid).to eq(Daru::Vector.new([1,2,4],
             index: [:a, :b, :d], dtype: dtype))
-        end
-
-        it "retains the original vector metadata" do
-          expect(@vector.only_valid.metadata).to eq({ cdc_type: 2 })
         end
       end
     end
@@ -1690,7 +1653,7 @@ describe Daru::Vector do
       @v.rename "This is a vector"
       expect(@v.name).to eq("This is a vector")
     end
-    
+
     it "returns vector" do
       expect(@v.rename 'hello').to be_a Daru::Vector
     end
@@ -1752,7 +1715,7 @@ describe Daru::Vector do
   context "#lag" do
     before do
       @xiu = Daru::Vector.new([17.28, 17.45, 17.84, 17.74, 17.82, 17.85, 17.36, 17.3, 17.56, 17.49, 17.46, 17.4, 17.03, 17.01,
-        16.86, 16.86, 16.56, 16.36, 16.66, 16.77], metadata: { cdc_type: 2 })
+        16.86, 16.86, 16.56, 16.36, 16.66, 16.77])
     end
 
     it "lags the vector by specified amount" do
@@ -1766,17 +1729,6 @@ describe Daru::Vector do
 
       expect(lag2[lag2.size - 1]).to be_within(0.001).of(16.36)
       expect(lag2[lag2.size - 2]).to be_within(0.001).of(16.56)
-    end
-
-    it "retains the original vector metadata" do
-      expect(@xiu.lag(1).metadata).to eq({ cdc_type: 2 })
-    end
-  end
-
-  context "#metadata" do
-    it "defaults to an empty hash for metadata" do
-      dv = Daru::Vector.new [1,2,3,4,5]
-      expect(dv.metadata).to eq({})
     end
   end
 
