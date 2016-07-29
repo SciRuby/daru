@@ -7,6 +7,7 @@ module Daru
     attr_reader :array, :cat_hash, :map_int_cat
 
     # Initializes a vector to store categorical data.
+    # @note Base category is set to the first category encountered in the vector.
     # @param [Array] data the categorical data
     # @param [Hash] opts the options
     # @option opts [Boolean] :ordered true if data is ordered, false otherwise
@@ -328,7 +329,6 @@ module Daru
       validate_categories(cat_with_order)
       add_extra_categories(cat_with_order - categories)
       order_with cat_with_order
-      self.base_category = cat_with_order.first
     end
 
     # Rename categories.
@@ -355,11 +355,25 @@ module Daru
       self
     end
 
+    # Removes the unused categories
+    # @note If base category is removed, then the first occuring category in the
+    #   data is taken as base category. Order of the undeleted categories
+    #   remains preserved.
+    # @return [Daru::Vector] Makes changes in the vector itself i.e. deletes
+    #   the unused categories and returns itself
+    # @example
+    #   dv = Daru::Vector.new [:one, :two, :one], type: :category,
+    #     categories: [:three, :two, :one]
+    #   dv.remove_unused_categories
+    #   dv.categories
+    #   # => [:two, :one]
     def remove_unused_categories
       old_categories = categories
 
       initialize_core_attributes to_a
       self.categories = old_categories & categories
+      self.base_category = @cat_hash.keys.first unless
+        categories.include? base_category
       self
     end
 
