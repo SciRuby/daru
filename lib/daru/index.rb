@@ -498,6 +498,7 @@ module Daru
     end
 
     def include? tuple
+      return false unless tuple.is_a? Enumerable
       tuple.flatten.each_with_index
            .all? { |tup, i| @levels[i][tup] }
     end
