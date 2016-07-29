@@ -321,7 +321,7 @@ describe Daru::Vector, "categorical" do
       its(:type) { is_expected.to eq :category }
       its(:categories) { is_expected.to eq [:c, :b, :a, 1] }
       its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
-      its(:base_category) { is_expected.to eq :c }
+      its(:base_category) { is_expected.to eq :a }
     end
     
     context "incomplete" do
