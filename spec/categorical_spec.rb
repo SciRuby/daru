@@ -314,13 +314,14 @@ describe Daru::Vector, "categorical" do
     context "extra categories" do
       let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c],
         type: :category }
-      before { dv.categories = [:a, :b, :c, 1] }
+      before { dv.categories = [:c, :b, :a, 1] }
       subject { dv }
       
       it { is_expected.to be_a Daru::Vector }
       its(:type) { is_expected.to eq :category }
-      its(:categories) { is_expected.to eq [:a, :b, :c, 1] }
+      its(:categories) { is_expected.to eq [:c, :b, :a, 1] }
       its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
+      its(:base_category) { is_expected.to eq :c }
     end
     
     context "incomplete" do
