@@ -229,14 +229,33 @@ describe Daru::Vector, "categorical" do
   end
   
   context '#remove_unused_categories' do
-    let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
-    before do
-      dv.categories = [:a, :b, :c, 1]
-      dv.remove_unused_categories
+    context 'base category not removed' do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+      before do
+        dv.categories = [:a, :b, :c, 1]
+        dv.base_category = 1
+        dv.remove_unused_categories
+      end
+      subject { dv }
+      
+      its(:categories) { is_expected.to eq [:a, :c, 1] }
+      its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
+      its(:base_category) { is_expected.to eq 1 }
     end
-    subject { dv }
-    
-    its(:categories) { is_expected.to eq [:a, :c, 1] }
+
+    context 'base category removed' do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+      before do
+        dv.categories = [:a, :b, :c, 1]
+        dv.base_category = :b
+        dv.remove_unused_categories
+      end
+      subject { dv }
+
+      its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
+      its(:categories) { is_expected.to eq [:a, :c, 1] }
+      its(:base_category) { is_expected.to eq :a }
+    end
   end
   
   context "count" do
