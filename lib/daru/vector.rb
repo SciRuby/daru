@@ -810,6 +810,11 @@ module Daru
       @index.include? index
     end
 
+    # @return [Daru::DataFrame] the vector as a single-vector dataframe
+    def to_df
+      Daru::DataFrame.new({@name => @data}, name: @name, index: @index)
+    end
+
     # Convert Vector to a horizontal or vertical Ruby Matrix.
     #
     # == Arguments

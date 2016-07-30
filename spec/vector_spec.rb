@@ -911,6 +911,27 @@ describe Daru::Vector do
         end
       end
 
+      context "#to_df" do
+        let(:dv) { Daru::Vector.new(['a','b','c'], name: :my_dv, index: ['alpha', 'beta', 'gamma']) }
+        let(:df) { dv.to_df }
+
+        it 'is a dataframe' do
+          expect(df).to be_a Daru::DataFrame
+        end
+
+        it 'converts the vector to a single-vector dataframe' do
+          expect(df[:my_dv]).to eq dv
+        end
+
+        it 'has the same index as the original vector' do
+          expect(df.index).to eq dv.index
+        end
+
+        it 'has the same name as the vector' do
+          expect(df.name).to eq :my_dv
+        end
+      end
+
       context "#to_h" do
         context Daru::Index do
           it "returns the vector as a hash" do

@@ -1595,6 +1595,13 @@ module Daru
       sql + fields.join(",\n ")+") CHARACTER SET=#{charset};"
     end
 
+    # Returns the dataframe.  This can be convenient when the user does not
+    # know whether the object is a vector or a dataframe.
+    # @return [self] the dataframe
+    def to_df
+      self
+    end
+
     # Convert all numeric vectors to GSL::Matrix
     def to_gsl
       numerics_as_arrays = numeric_vectors.map { |n| self[n].to_a }
