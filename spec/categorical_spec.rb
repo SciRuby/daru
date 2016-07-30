@@ -378,12 +378,26 @@ describe Daru::Vector, "categorical" do
   end
   
   context "#rename_categories" do
-    context 'rename' do
-      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category }
+    context 'rename base category' do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category,
+        categories: [:a, :x, :y, :c, :b, 1]}    
       subject { dv.rename_categories :a => 1, 1 => 2 }
   
       it { is_expected.to be_a Daru::Vector }
       its(:to_a) { is_expected.to eq [1, 2, 1, 2, :c] }
+      its(:categories) { is_expected.to eq [:x, :y, :c, :b, 1, 2] }
+      its(:base_category) { is_expected.to eq 1 }      
+    end
+
+    context 'rename non-base category' do
+      let(:dv) { Daru::Vector.new [:a, 1, :a, 1, :c], type: :category,
+        categories: [:a, :b, :c, 1] }
+      subject { dv.rename_categories 1 => 2 }
+
+      it { is_expected.to be_a Daru::Vector }
+      its(:to_a) { is_expected.to eq [:a, 2, :a, 2, :c] }
+      its(:categories) { is_expected.to eq [:a, :b, :c, 2] }
+      its(:base_category) { is_expected.to eq :a }
     end
     
     context 'merge' do
