@@ -326,6 +326,9 @@ module Daru
     end
 
     # Rename categories.
+    # @note The order of categories after renaming is preserved but new categories
+    #   are added at the end in the order. Also the base-category is reassigned
+    #   to new value if it is renamed
     # @param [Hash] old_to_new a hash mapping categories whose name to be changed
     #   to their new names
     # @example
@@ -346,6 +349,8 @@ module Daru
 
       initialize_core_attributes data
       self.categories = (old_categories - old_to_new.keys) | old_to_new.values
+      self.base_category = old_to_new[base_category] if
+        old_to_new.include? base_category
       self
     end
 
