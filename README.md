@@ -1,380 +1,197 @@
-daru
-====
+# daru - Data Analysis in RUby
 
-Data Analysis in RUby
+[![Join the chat at https://gitter.im/v0dro/daru](https://badges.gitter.im/v0dro/daru.svg)](https://gitter.im/v0dro/daru?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [![Gem Version](https://badge.fury.io/rb/daru.svg)](http://badge.fury.io/rb/daru)
+[![Build Status](https://travis-ci.org/v0dro/daru.svg)](https://travis-ci.org/v0dro/daru)
 
 ## Introduction
 
-daru (Data Analysis in RUby) is a library for storage, analysis and manipulation of data.
+daru (Data Analysis in RUby) is a library for storage, analysis, manipulation and visualization of data in Ruby.
 
-Development of daru was started to address the fragmentation of Dataframe-like classes which were created in many ruby gems as per their own needs. daru offers a uniform interface for all sorts of data analysis and manipulation operations and aims to be compatible with all ruby gems involved in any way with data.
-
-daru is inspired by `Statsample::Dataset` and pandas, a very mature solution in Python.
-
-daru works with CRuby (1.9.3+) and JRuby.
+daru makes it easy and intuitive to process data predominantly through 2 data structures: `Daru::DataFrame` and `Daru::Vector`. Written in pure Ruby works with all ruby implementations. Tested with MRI 2.0, 2.1, 2.2 and 2.3.
 
 ## Features
 
 * Data structures:
     - Vector - A basic 1-D vector.
-    - DataFrame - A 2-D matrix-like structure which is internally composed of named `Vector` classes.
-* Compatible with IRuby notebook.
-* Indexed and named data structures.
+    - DataFrame - A 2-D spreadsheet-like structure for manipulating and storing data sets. This is daru's primary data structure.
+* Compatible with [IRuby notebook](https://github.com/SciRuby/iruby), [statsample](https://github.com/SciRuby/statsample), [statsample-glm](https://github.com/SciRuby/statsample-glm) and [statsample-timeseries](https://github.com/SciRuby/statsample-timeseries).
+* Support for time series.
+* Singly and hierarchically indexed data structures.
 * Flexible and intuitive API for manipulation and analysis of data.
+* Easy plotting, statistics and arithmetic.
+* Plentiful iterators.
+* Optional speed and space optimization on MRI with [NMatrix](https://github.com/SciRuby/nmatrix) and GSL.
+* Easy splitting, aggregation and grouping of data.
+* Quickly reducing data with pivot tables for quick data summary.
+* Import and export data from and to Excel, CSV, SQL Databases, ActiveRecord and plain text files.
 
 ## Notebooks
 
-* [Analysis and plotting of a data set comprising of music listening habits of a last.fm user(iruby notebook)](http://nbviewer.ipython.org/github/v0dro/daru/blob/master/notebooks/intro_with_music_data_.ipynb)
+#### Notebooks on most use cases
+
+* [Overview of most daru functions](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Daru%20Demo.ipynb)
+* [Basic Creation of Vectors and DataFrame](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Creation%20of%20Vector%20and%20DataFrame.ipynb)
+* [Detailed Usage of Daru::Vector](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Usage%20of%20Vector.ipynb)
+* [Detailed Usage of Daru::DataFrame](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Usage%20of%20DataFrame.ipynb)
+* [Visualizing Data With Daru::DataFrame](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Visualization/Visualizing%20data%20with%20daru%20DataFrame.ipynb)
+* [Searching and combining data in daru](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Searching%20and%20Combining%20Data.ipynb)
+* [Grouping, Splitting and Pivoting Data](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Grouping%2C%20Splitting%20and%20Pivoting.ipynb)
+
+#### Notebooks on Time series
+
+* [Basic Time Series](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Basic%20Time%20Series.ipynb)
+* [Time Series Analysis and Plotting](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Time%20Series%20Functions.ipynb)
+
+### Case Studies
+
+* [Logistic Regression Analysis with daru and statsample-glm](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Logistic%20Regression%20with%20daru%20and%20statsample-glm.ipynb)
+* [Finding and Plotting most heard artists from a Last.fm dataset](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Finding%20and%20plotting%20the%20most%20heard%20artists%20on%20last%20fm.ipynb)
+* [Analyzing baby names with daru](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Analyzing%20baby%20names/Use%20Case%20-%20Daru%20for%20analyzing%20baby%20names%20data.ipynb)
 
 ## Blog Posts
 
 * [Data Analysis in RUby: Basic data manipulation and plotting](http://v0dro.github.io/blog/2014/11/25/data-analysis-in-ruby-basic-data-manipulation-and-plotting/)
+* [Data Analysis in RUby: Splitting, sorting, aggregating data and data types](http://v0dro.github.io/blog/2015/02/24/data-analysis-in-ruby-part-2/)
+* [Finding and Combining data in daru](http://v0dro.github.io/blog/2015/08/03/finding-and-combining-data-in-daru/)
+
+### Time series
+
+* [Analysis of Time Series in daru](http://v0dro.github.io/blog/2015/07/31/analysis-of-time-series-in-daru/)
+* [Date Offsets in Daru](http://v0dro.github.io/blog/2015/07/27/date-offsets-in-daru/)
+
+## Basic Usage
+
+daru exposes two major data structures: `DataFrame` and `Vector`. The Vector is a basic 1-D structure corresponding to a labelled Array, while the `DataFrame` - daru's primary data structure - is 2-D spreadsheet-like structure for manipulating and storing data sets.
+
+Basic DataFrame intitialization.
+
+``` ruby
+data_frame = Daru::DataFrame.new(
+  {
+    'Beer' => ['Kingfisher', 'Snow', 'Bud Light', 'Tiger Beer', 'Budweiser'],
+    'Gallons sold' => [500, 400, 450, 200, 250]
+  },
+  index: ['India', 'China', 'USA', 'Malaysia', 'Canada']
+)
+data_frame
+```
+![init0](images/init0.png)
+
+
+Load data from CSV files.
+``` ruby
+df = Daru::DataFrame.from_csv('TradeoffData.csv')
+```
+![init1](images/init1.png)
+
+*Basic Data Manipulation*
+
+Selecting rows.
+``` ruby
+data_frame.row['USA']
+```
+![man0](images/man0.png)
+
+Selecting columns.
+``` ruby
+data_frame['Beer']
+```
+![man1](images/man1.png)
+
+A range of rows.
+``` ruby
+data_frame.row['India'..'USA']
+```
+![man2](images/man2.png)
+
+The first 2 rows.
+``` ruby
+data_frame.first(2)
+```
+![man3](images/man3.png)
+
+The last 2 rows.
+``` ruby
+data_frame.last(2)
+```
+![man4](images/man4.png)
+
+Adding a new column.
+``` ruby
+data_frame['Gallons produced'] = [550, 500, 600, 210, 240]
+```
+![man5](images/man5.png)
+
+Creating a new column based on data in other columns.
+``` ruby
+data_frame['Demand supply gap'] = data_frame['Gallons produced'] - data_frame['Gallons sold']
+```
+![man6](images/man6.png)
+
+*Condition based selection*
+
+Selecting countries based on the number of gallons sold in each. We use a syntax similar to that defined by [Arel](https://github.com/rails/arel), i.e. by using the `where` clause.
+``` ruby
+data_frame.where(data_frame['Gallons sold'].lt(300))
+```
+![con0](images/con0.png)
+
+You can pass a combination of boolean operations into the `#where` method and it should work fine:
+``` ruby
+data_frame.where(
+  data_frame['Beer']
+  .in(['Snow', 'Kingfisher','Tiger Beer'])
+  .and(
+    data_frame['Gallons produced'].gt(520).or(data_frame['Gallons produced'].lt(250))
+  )
+)
+```
+![con1](images/con1.png)
+
+*Plotting* 
+
+Daru supports plotting of interactive graphs with [nyaplot](https://github.com/domitry/nyaplot). You can easily create a plot with the `#plot` method. Here we plot the gallons sold on the Y axis and name of the brand on the X axis in a bar graph.
+``` ruby
+data_frame.plot type: :bar, x: 'Beer', y: 'Gallons sold' do |plot, diagram|
+  plot.x_label "Beer"
+  plot.y_label "Gallons Sold"
+  plot.yrange [0,600]
+  plot.width 500
+  plot.height 400
+end
+```
+![plot0](images/plot0.png)
+
+In addition to nyaplot, daru also supports plotting out of the box with [gnuplotrb](https://github.com/SciRuby/gnuplotrb).
 
 ## Documentation
 
 Docs can be found [here](https://rubygems.org/gems/daru).
 
-## Basic Usage
-
-daru has been created with keeping extreme ease of use in mind.
-
-The gem consists of two data structures, Vector and DataFrame. Any data in a serial format is a Vector and a table is a DataFrame.
-
-#### Initialization of DataFrame
-
-The DataFrame constructor takes 4 arguments: source, vectors, indexes and name in that order. The last 3 are optional while the first is mandatory.
-
-A basic DataFrame can be initialized like this:
-
-```ruby
-
-    df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]}, order: [:a, :b], index: [:one, :two, :three, :four, :five])
-    df
-    # => 
-    # # <Daru::DataFrame:87274040 @name = 7308c587-4073-4e7d-b3ca-3679d1dcc946 # @size = 5>
-    #           a     b 
-    #   one     1    11 
-    #   two     2    12 
-    # three     3    13 
-    #  four     4    14 
-    #  five     5    15 
-
-```
-Daru will automatically align the vectors correctly according to the specified index and then create the DataFrame. Thus, elements having the same index will show up in the same row. The indexes will be arranged alphabetically if vectors with unaligned indexes are supplied.
-
-The vectors of the DataFrame will be arranged according to the array specified in the (optional) second argument. Otherwise the vectors are ordered alphabetically.
-
-```ruby
-
-    df = Daru::DataFrame.new({
-        b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
-        a:      [1,2,3,4,5].dv(:a, [:two,:one,:three, :four, :five])
-      }, 
-        order: [:a, :b]
-      )
-    df
-
-    # => 
-    # #<Daru::DataFrame:87363700 @name = 75ba0a14-8291-48ac-ac30-35017e4d6c5f # @size = 5>
-    #           a     b 
-    #  five     5    14 
-    #  four     4    13 
-    #   one     2    12 
-    # three     3    15 
-    #   two     1    11
-
-```
-
-If an index for the DataFrame is supplied (third argument), then the indexes of the individual vectors will be matched to the DataFrame index. If any of the indexes do not match, nils will be inserted instead:
-
-```ruby
-
-    df = Daru::DataFrame.new({
-        b: [11]                .dv(nil, [:one]), 
-        a: [1,2,3]             .dv(nil, [:one, :two, :three]), 
-        c: [11,22,33,44,55]    .dv(nil, [:one, :two, :three, :four, :five]),
-        d: [49,69,89,99,108,44].dv(nil, [:one, :two, :three, :four, :five, :six])
-      }, order: [:a, :b, :c, :d], index: [:one, :two, :three, :four, :five, :six])
-    df
-    # => 
-    # #<Daru::DataFrame:87523270 @name = bda4eb68-afdd-4404-9981-708edab14201  #@size = 6>
-    #           a     b     c     d 
-    #   one     1    11    11    49 
-    #   two     2   nil    22    69 
-    # three     3   nil    33    89 
-    #  four   nil   nil    44    99 
-    #  five   nil   nil    55   108 
-    #   six   nil   nil   nil    44 
-
-```
-
-If some of the supplied vectors do not contain certain indexes that are contained in other vectors, they are added to those vectors and the correspoding elements are set to `nil`.
-
-```ruby
-
-    df = Daru::DataFrame.new({
-             b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
-             a: [1,2,3]         .dv(:a, [:two,:one,:three])
-           }, 
-           order: [:a, :b]
-         )
-    df
-
-    #  => 
-    # #<Daru::DataFrame:87612510 @name = 1e904c15-e095-4dce-bfdf-c07ee4d6e4a4 # @size = 5>
-    #           a     b 
-    #  five   nil    14 
-    #  four   nil    13 
-    #   one     2    12 
-    # three     3    15 
-    #   two     1    11 
-
-```
-
-#### Initialization of Vector
-
-The `Vector` data structure is also named and indexed. It accepts arguments name, source, index (in that order).
-
-In the simplest case it can be constructed like this:
-
-```ruby
-
-    dv = Daru::Vector.new [1,2,3,4,5], name: ravan, index: [:ek, :don, :teen, :char, :pach]
-    dv
-
-    #  => 
-    # #<Daru::Vector:87630270 @name = ravan @size = 5 >
-    #     ravan
-    #   ek    1
-    #  don    2
-    # teen    3
-    # char    4
-    # pach    5 
-
-```
-
-Initializing a vector with indexes will insert nils in places where elements dont exist:
-
-```ruby
-
-    dv = Daru::Vector.new [1,2,3], name: yoga, index: [0,1,2,3,4]
-    dv
-    #  => 
-    # #<Daru::Vector:87890840 @name = yoga @size = 5 >
-    #   y
-    # 0 1
-    # 1 2
-    # 2 3
-    # 3 nil 
-    # 4 nil 
-
-
-```
-
-#### Basic Selection Operations
-
-Initialize a dataframe:
-
-```ruby
-
-    df = Daru::DataFrame.new({
-        b: [11,12,13,14,15].dv(:b, [:two, :one, :four, :five, :three]), 
-        a:      [1,2,3,4,5].dv(:a, [:two,:one,:three, :four, :five])
-      }, 
-        order: [:a, :b]
-      )
-
-    #  => 
-    # #<Daru::DataFrame:87455010 @name = b3d14e23-98c2-4741-a563-92e8f1fd0f13 # @size = 5>
-    #           a     b 
-    #  five     5    14 
-    #  four     4    13 
-    #   one     2    12 
-    # three     3    15 
-    #   two     1    11 
-
-```
-Select a row from a DataFrame:
-
-```ruby
-    
-    df.row[:one]
-
-    #  => 
-    # #<Daru::Vector:87432070 @name = one @size = 2 >
-    #    one
-    #  a  2
-    #  b 12 
-```
-A row or a vector is returned as a `Daru::Vector` object, so any manipulations supported by `Daru::Vector` can be performed on the chosen row as well.
-
-Select multiple rows with a Range and get a DataFrame in return:
-
-``` ruby
-
-df.row[1..3] # OR df.row[:four..:three]
-# => 
-#<Daru::DataFrame:85361520 @name = d6582f66-5a55-473e-ba57-cb2ba974da6a @size #= 3>
-#                    a          b 
-#      four          4         13 
-#       one          2         12 
-#     three          3         15 
-
-```
-
-Select a single vector:
-
-```ruby
-    
-    df.vector[:a] # or simply df.a
-
-    #  => 
-    # #<Daru::Vector:87454270 @name = a @size = 5 >
-    #           a
-    #  five     5
-    #  four     4
-    #   one     2
-    # three     3
-    #   two     1
-
-```
-
-Select multiple vectors and return a DataFrame in the specified order:
-
-```ruby
-
-    df.vector[:b, :a]
-    #  =>
-    # #<Daru::DataFrame:87835960 @name = e80902cc-cff9-4b23-9eca-5da36ebc88a8 #   @size = 5>
-    #           b     a 
-    #  five    14     5 
-    #  four    13     4 
-    #   one    12     2 
-    # three    15     3 
-    #   two    11     1 
-
-```
-
-Keep/remove row according to a specified condition:
-
-```ruby
-
-    df = df.filter_rows do |row|
-        row[:a] == 5
-    end
-
-    df
-    #  => 
-    # #<Daru::DataFrame:87455010 @name = b3d14e23-98c2-4741-a563-92e8f1fd0f13 # @size = 1>
-    #         a    b 
-    # five    5   14 
-
-```
-The same can be applied to vectors using `filter_vectors`.
-
-To iterate over a DataFrame and perform operations on rows or vectors, use `#each_row` or `#each_vector`.
-
-To change the values of a row/vector while iterating through the DataFrame, use `map_rows` or `map_vectors`:
-
-```ruby
-
-    df.map_rows do |row|
-        row = row * row
-    end
-
-    df
-
-    #  => 
-    # #<Daru::DataFrame:86826830 @name = b092ca5b-7b83-4dbe-a469-124f7f25a568 # @size = 5>
-    #           a     b 
-    #  five    25   196 
-    #  four    16   169 
-    #   one     4   144 
-    # three     9   225 
-    #   two     1   121 
-
-```
-
-Rows/vectors can be deleted using `delete_row` or `delete_vector`.
-
-#### Basic Maths Operations
-
-Performing a binary arithmetic operation on two `Daru::Vector` objects will return a `Vector` object in which the operation will be performed on elements of the same index.
-
-```ruby
-
-    dv1 = Daru::Vector.new [1,2,3,4], name: :boozy, index: [:a, :b, :c, :d]
-
-    dv2 = Daru::Vector.new [1,2,3,4], name: :mayer, index: [:e, :f, :b, :d]
-
-    dv1 * dv2
-
-    # #<Daru::Vector:80924700 @name = boozy @size = 2 >
-    #         boozy
-    #      b      6
-    #      d     16
- 
-```
-
-Arithmetic operators applied on a single Numeric will perform the operation with that number against the entire vector.
-
-#### Statistics Operations
-
-Daru::Vector has a whole lot of statistics operations to maintain compatibility with Statsample::Vector. Check the docs for details.
-
-#### Plotting
-
-daru uses [Nyaplot](https://github.com/domitry/nyaplot) for plotting and an example of this can be found in the [notebook](http://nbviewer.ipython.org/github/v0dro/daru/blob/master/notebooks/intro_with_music_data_.ipynb) or [blog post](http://v0dro.github.io/blog/2014/11/25/data-analysis-in-ruby-basic-data-manipulation-and-plotting/).
-
-Head over to the tutorials and notebooks listed above for more examples.
-
 ## Roadmap
 
-* Automate testing for both MRI and JRuby.
 * Enable creation of DataFrame by only specifying an NMatrix/MDArray in initialize. Vector naming happens automatically (alphabetic) or is specified in an Array.
-* Destructive map iterators for DataFrame.
-* Completely test all functionality for NMatrix and MDArray.
-* Basic Data manipulation and analysis operations: 
-    - Different kinds of join operations
-    - Dataframe/vector merge (left, right, inner, outer)
-    - Creation of correlation, covariance matrices
-    - Verification of data in a vector
-    - DF concat
-* Transpose a dataframe.
-* Option to express a DataFrame as an NMatrix or MDArray so as to use more efficient storage techniques.
 * Assignment of a column to a single number should set the entire column to that number.
-* == between daru_vector and string/number.
 * Multiple column assignment with []=
 * Multiple value assignment for vectors with []=.
-* Load DataFrame from multiple sources (excel, SQL, etc.).
-* Deletion of elements from Vector should only modify the index and leave the vector as it is so that compacting is not needed and things are faster.
-* Add a #sync method which will sync the modified index with the unmodified vector.
-* Ability to reorder the index of a dataframe.
 * #find\_max function which will evaluate a block and return the row for the value of the block is max.
-* Function to check if a value of a row/vector is within a specified range.
-* Create a new vector in map_rows if any of the already present rows dont match the one assigned in the block.
 * Sort by index.
-* Convert DF to matrix.
-* Convert DF to Nmatrix.
-* Init DF from array of arrays.
-* Statistics on DataFrame over rows and columns.
-* Produce multiple summary statistics in one shot.
-* Cumulative sum.
-* Time series support.
+* Statistics on DataFrame over rows.
 * Calculate percentage change.
-* Working with missing data - is\_null?, not\_null?, drop\_missing\_data, dropping rows with missing data, filling data in place of nils
 * Have some sample data sets for users to play around with. Should be able to load these from the code itself.
-* Sorting with missing data present.
 
 ## Contributing
 
-Pick a feature from the Roadmap above or think of your own and send me a Pull Request!
+Pick a feature from the Roadmap or the issue tracker or think of your own and send me a Pull Request!
+
+For details see [CONTRIBUTING](https://github.com/v0dro/daru/blob/master/CONTRIBUTING.md).
 
 ## Acknowledgements
 
+* Google and the Ruby Science Foundation for the Google Summer of Code 2015 grant for further developing daru and integrating it with other ruby gems.
 * Thank you [last.fm](http://www.last.fm/) for making user data accessible to the public.
 
-Copyright (c) 2014, Sameer Deshmukh
+Copyright (c) 2015, Sameer Deshmukh
 All rights reserved
