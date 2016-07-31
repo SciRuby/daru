@@ -73,7 +73,7 @@ module Daru
         h = Marshal.load(data)
         Daru::Vector.new(h[:data],
           index: h[:index],
-          name: h[:name], metadata: h[:metadata],
+          name: h[:name],
           dtype: h[:dtype], missing_values: h[:missing_values])
       end
 
@@ -137,8 +137,6 @@ module Daru
     attr_accessor :labels
     # Store vector data in an array
     attr_reader :data
-    # Attach arbitrary metadata to vector (usu a hash)
-    attr_accessor :metadata
     # Ploting library being used for this vector
     attr_reader :plotting_library
 
@@ -217,7 +215,7 @@ module Daru
       # Form a new Vector using positional indexes
       Daru::Vector.new(
         positions.map { |loc| @data[loc] },
-        name: @name, metadata: @metadata.dup,
+        name: @name,
         index: @index.subset(*input_indexes), dtype: @dtype
       )
     end
@@ -553,7 +551,7 @@ module Daru
       uniq_vector = @data.uniq
       new_index   = uniq_vector.map { |element| index_of(element) }
 
-      Daru::Vector.new uniq_vector, name: @name, metadata: @metadata.dup, index: new_index, dtype: @dtype
+      Daru::Vector.new uniq_vector, name: @name, index: new_index, dtype: @dtype
     end
 
     def any? &block
@@ -588,7 +586,7 @@ module Daru
 
       index = @index.reorder index
 
-      Daru::Vector.new(vector, index: index, name: @name, metadata: @metadata.dup, dtype: @dtype)
+      Daru::Vector.new(vector, index: index, name: @name, dtype: @dtype)
     end
 
     DEFAULT_SORTER = lambda { |(lv, li), (rv, ri)|
@@ -787,7 +785,7 @@ module Daru
       (dat.size - 1).downto(k) { |i| dat[i] = dat[i - k] }
       (0...k).each { |i| dat[i] = nil }
 
-      Daru::Vector.new(dat, index: @index, name: @name, metadata: @metadata.dup)
+      Daru::Vector.new(dat, index: @index, name: @name)
     end
 
     def detach_index
@@ -900,11 +898,10 @@ module Daru
     # :nocov:
 
     # Over rides original inspect for pretty printing in irb
-    # TODO: Solve Rubocop AbcSize offence
-    def inspect spacing=20, threshold=15 # rubocop:disable Metrics/AbcSize
+    def inspect spacing=20, threshold=15
       row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
 
-      "#<#{self.class}(#{size})#{':cataegory' if category?}#{metadata.inspect if metadata && !metadata.empty?}>\n" +
+      "#<#{self.class}(#{size})#{':cataegory' if category?}>\n" +
         Formatters::Table.format(
           to_a.lazy.map { |v| [v] },
           headers: @name && [@name],
@@ -989,7 +986,7 @@ module Daru
     # Duplicated a vector
     # @return [Daru::Vector] duplicated vector
     def dup
-      Daru::Vector.new @data.dup, name: @name, metadata: @metadata.dup, index: @index.dup
+      Daru::Vector.new @data.dup, name: @name, index: @index.dup
     end
 
     # == Bootstrap
@@ -1089,7 +1086,7 @@ module Daru
       new_vector = new_index.map { |idx| self[idx] }
 
       if as_a == :vector
-        Daru::Vector.new new_vector, index: new_index, name: @name, metadata: @metadata.dup, dtype: dtype
+        Daru::Vector.new new_vector, index: new_index, name: @name, dtype: dtype
       else
         new_vector
       end
@@ -1135,7 +1132,7 @@ module Daru
     # Copies the structure of the vector (i.e the index, size, etc.) and fills all
     # all values with nils.
     def clone_structure
-      Daru::Vector.new(([nil]*@size), name: @name, metadata: @metadata.dup, index: @index.dup)
+      Daru::Vector.new(([nil]*@size), name: @name, index: @index.dup)
     end
 
     # Save the vector to a file
@@ -1152,7 +1149,6 @@ module Daru
         data:           @data.to_a,
         dtype:          @dtype,
         name:           @name,
-        metadata:       @metadata,
         index:          @index,
         missing_values: @missing_values
       )
@@ -1237,8 +1233,6 @@ module Daru
     def initialize_vector source, opts
       index, source = parse_source(source, opts)
       set_name opts[:name]
-
-      @metadata = opts[:metadata] || {}
 
       @data  = cast_vector_to(opts[:dtype] || :array, source, opts[:nm_dtype])
       @index = Index.coerce(index || @data.size)

@@ -14,7 +14,6 @@ module Daru
     # @option opts [Array] :categories categories to associate with the vector.
     #   It add extra categories if specified and provides order of categories also.
     # @option opts [object] :index gives index to vector. By default its from 0 to size-1
-    # @option opts [Hash] :metadata metadata associated with the vector.
     # @return the categorical data created
     # @example
     #   dv = Daru::Vector.new [:a, 1, :a, 1, :c],
@@ -53,8 +52,6 @@ module Daru
       # Index of the vector
       @index = coerce_index opts[:index]
 
-      # Store metadata
-      @metadata = opts[:metadata] || {}
       self
     end
 
@@ -110,7 +107,6 @@ module Daru
     def dup
       Daru::Vector.new to_a.dup,
         name: @name,
-        metadata: @metadata.dup,
         index: @index.dup,
         type: :category,
         categories: categories,
@@ -194,7 +190,6 @@ module Daru
         name: @name,
         type: :category,
         ordered: @ordered,
-        metadata: @metadata,
         categories: categories
     end
 
@@ -221,7 +216,6 @@ module Daru
         name: @name,
         type: :category,
         ordered: @ordered,
-        metadata: @metadata,
         categories: categories
     end
 
