@@ -2850,6 +2850,12 @@ describe Daru::DataFrame do
     end
   end
 
+  context '#to_df' do
+    it 'returns the dataframe' do
+      @data_frame.to_df == @data_frame
+    end
+  end
+
   context "#to_gsl" do
     it "converts to GSL::Matrix" do
       rows = [[1,2,3,4,5],[11,12,13,14,15],[11,22,33,44,55]].transpose
