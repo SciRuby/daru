@@ -462,11 +462,16 @@ module Daru
       type == :object
     end
 
+    # TODO: Deprecate this - lokeshh
     # Reports whether missing data is present in the Vector.
     def has_missing_data?
       !missing_positions.empty?
     end
     alias :flawed? :has_missing_data?
+    
+    def include_values?(*values)
+      values.any? { |v| @data.include? v }
+    end
 
     # Append an element to the vector by specifying the element and index
     def concat element, index
@@ -800,9 +805,14 @@ module Daru
       dup.replace_nils!(replacement)
     end
 
+    # TODO: deprecate this - lokeshh
     # number of non-missing elements
     def n_valid
       @size - missing_positions.size
+    end
+
+    def count_values(*values)
+      values.map { |v| @data.count v }.inject(:+)
     end
 
     # Returns *true* if an index exists
@@ -1082,6 +1092,8 @@ module Daru
     # vector, setting this to false will return the same vector.
     # Otherwise, a duplicate will be returned irrespective of
     # presence of missing data.
+
+    # TODO: Deprecate this - lokeshh
     def only_valid as_a=:vector, _duplicate=true
       # FIXME: Now duplicate is just ignored.
       #   There are no spec that fail on this case, so I'll leave it
@@ -1095,6 +1107,17 @@ module Daru
       else
         new_vector
       end
+    end
+
+    def reject_values(*values)
+      positions = size.times.reject { |i| values.include? @data[i] }
+      positions.reject! { |i| @data[i].is_a?(Float) && @data[i].nan? } if
+        values.any? { |v| v.is_a?(Float) && v.nan? }
+      at(*positions)
+    end
+
+    def indexes(*values)
+      index.select { |i| values.include? @data[i] }
     end
 
     # Returns a Vector containing only missing data (preserves indexes).

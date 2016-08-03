@@ -1394,11 +1394,11 @@ describe Daru::Vector do
       
       subject { dv.indexes 1, 2, nil, Float::NAN }
       it { is_expected.to be_a Array }
-      it { is_expected.to eq [11, 12, 13, 14, 16, 17, 18, 19] }
+      it { is_expected.to eq [11, 12, 13, 14, 16, 17, 18] }
     end
     
     context Daru::MultiIndex do
-      let(:mi)
+      let(:mi) do
         Daru::MultiIndex.from_tuples([
           ['M', 2000],
           ['M', 2001],
@@ -1409,6 +1409,7 @@ describe Daru::Vector do
           ['F', 2002],
           ['F', 2003]
         ])
+      end
       let(:dv) { Daru::Vector.new [1, 2, 1, 2, 3, nil, nil, Float::NAN] }
       
       subject { dv.indexes 1, 2, Float::NAN }
@@ -1572,8 +1573,8 @@ describe Daru::Vector do
       subject { dv.reject_values 1, 3 }
       
       it { is_expected.to be_a Daru::Vector }
-      its(:to_a) { is_expected.to eq [nil, :a, Float::NAN, Float::NAN] }
-      its(:'index.to_a') { is_expected.to eq [12, 14, 15, 17] }
+      its(:to_a) { is_expected.to eq [nil, :a, Float::NAN, nil, Float::NAN] }
+      its(:'index.to_a') { is_expected.to eq [12, 14, 15, 16, 17] }
     end
   end
 
@@ -1593,24 +1594,24 @@ describe Daru::Vector do
     context 'only Float::NAN' do
       context 'true' do
         let(:dv) { Daru::Vector.new [1, nil, 2, 3, Float::NAN] }
-        it { expect(dv.has_missing_data?).to eq true }
+        it { expect(dv.include_values? Float::NAN).to eq true }
       end
 
       context 'false' do
         let(:dv) { Daru::Vector.new [1, nil, 2, 3] }
-        it { expect(dv.missing_values? Float::NAN).to eq false }
+        it { expect(dv.include_values? Float::NAN).to eq false }
       end
     end
 
     context 'both nil and Float::NAN' do
       context 'true with only nil' do
         let(:dv) { Daru::Vector.new [1, Float::NAN, 2, 3] }
-        it { expect(dv.has_missing_data?).to eq true }
+        it { expect(dv.include_values? nil, Float::NAN).to eq true }
       end
       
       context 'true with only Float::NAN' do
         let(:dv) { Daru::Vector.new [1, nil, 2, 3] }
-        it { expect(dv.missing_values? nil, Float::NAN).to eq true }
+        it { expect(dv.include_values? nil, Float::NAN).to eq true }
       end
       
       context 'false' do
@@ -1700,8 +1701,9 @@ describe Daru::Vector do
   context '#count_values' do
     let(:dv) { Daru::Vector.new [1, 2, 3, 1, 2, nil, nil] }
     it { expect(dv.count_values 1, 2).to eq 4 }
-    it { expect(dv.count_values nil).to 2 }
-    it { expect(dv.count_values 3, Float::NAN).to 1 }
+    it { expect(dv.count_values nil).to eq 2 }
+    it { expect(dv.count_values 3, Float::NAN).to eq 1 }
+    it { expect(dv.count_values 4).to eq 0 }
   end
 
   context "#reset_index!" do
