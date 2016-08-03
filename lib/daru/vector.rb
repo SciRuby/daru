@@ -400,6 +400,28 @@ module Daru
         end
       )
     end
+    
+    # Comparator for checking if any of the elements in *other* not exist in self.
+    #
+    # @param [Array, Daru::Vector] other A collection which has elements that
+    #   need to be checked for not in self.
+    # @example Usage of `not_in`.
+    #   vector = Daru::Vector.new([1,2,3,4,5])
+    #   vector.where(vector.not_in([3,5]))
+    #   #=>
+    #   ##<Daru::Vector:82215960 @name = nil @size = 3 >
+    #   #    nil
+    #   #  0   1
+    #   #  1   2
+    #   #  3   4
+    def not_in other
+      other = Hash[other.zip(Array.new(other.size, 0))]
+      Daru::Core::Query::BoolArray.new(
+        @data.each_with_object([]) do |d, memo|
+          memo << (other.key?(d) ? false : true)
+        end
+      )
+    end
 
     # Return a new vector based on the contents of a boolean array. Use with the
     # comparator methods to obtain meaningful results. See this notebook for
