@@ -490,6 +490,8 @@ module Daru
       end
     end
 
+    # Deprecate this - lokeshh
+
     # Creates a new duplicate dataframe containing only rows
     # without a single missing value.
     def dup_only_valid vecs=nil
@@ -497,6 +499,12 @@ module Daru
 
       row_indexes = @index.to_a
       (vecs.nil? ? self : dup(vecs)).row[*(row_indexes - rows_with_nil)]
+    end
+
+    def reject_values(*values)
+      positions = size.times.to_a -
+        @data.map { |vec| vec.indexes(*values) }.flatten
+      row_at(*positions)
     end
 
     # Iterate over each index of the DataFrame.
@@ -950,11 +958,16 @@ module Daru
     # TODO: remove next version
     alias :vector_missing_values :missing_values_rows
 
+    # TODO: deprecate this - lokeshh
     def has_missing_data?
       !!@data.any?(&:has_missing_data?)
     end
 
     alias :flawed? :has_missing_data?
+
+    def include_values?(*values)
+      @data.any? { |vec| vec.include_values?(*values) }
+    end
 
     # Return a nested hash using vector names as keys and an array constructed of
     # hashes with other values. If block provided, is used to provide the
