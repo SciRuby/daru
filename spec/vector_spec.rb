@@ -1410,7 +1410,8 @@ describe Daru::Vector do
           ['F', 2003]
         ])
       end
-      let(:dv) { Daru::Vector.new [1, 2, 1, 2, 3, nil, nil, Float::NAN] }
+      let(:dv) { Daru::Vector.new [1, 2, 1, 2, 3, nil, nil, Float::NAN],
+        index: mi }
       
       subject { dv.indexes 1, 2, Float::NAN }
       it { is_expected.to be_a Array }

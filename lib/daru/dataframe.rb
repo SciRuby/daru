@@ -11,6 +11,7 @@ module Daru
     include Daru::Maths::Statistics::DataFrame
     # TODO: Remove this line but its causing erros due to unkown reason
     include Daru::Plotting::DataFrame::NyaplotLibrary if Daru.has_nyaplot?
+    extend Gem::Deprecate
 
     class << self
       # Load data from a CSV file. Specify an optional block to grab the CSV
@@ -490,8 +491,6 @@ module Daru
       end
     end
 
-    # Deprecate this - lokeshh
-
     # Creates a new duplicate dataframe containing only rows
     # without a single missing value.
     def dup_only_valid vecs=nil
@@ -500,11 +499,13 @@ module Daru
       row_indexes = @index.to_a
       (vecs.nil? ? self : dup(vecs)).row[*(row_indexes - rows_with_nil)]
     end
+    deprecate :dup_only_valid, :reject_values, 2016, 10
 
     def reject_values(*values)
       positions = size.times.to_a -
         @data.map { |vec| vec.indexes(*values) }.flatten
       row_at(*positions)
+      # TODO: Retuns a vector when position has one value
     end
 
     # Iterate over each index of the DataFrame.
@@ -958,12 +959,12 @@ module Daru
     # TODO: remove next version
     alias :vector_missing_values :missing_values_rows
 
-    # TODO: deprecate this - lokeshh
     def has_missing_data?
       !!@data.any?(&:has_missing_data?)
     end
-
     alias :flawed? :has_missing_data?
+    deprecate :has_missing_data?, :include_values?, 2016, 10
+    deprecate :flawed?, :include_values?, 2016, 10
 
     def include_values?(*values)
       @data.any? { |vec| vec.include_values?(*values) }

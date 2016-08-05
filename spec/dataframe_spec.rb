@@ -1637,41 +1637,41 @@ describe Daru::DataFrame do
   context '#reject_values' do
     let(:df) do
       Daru::DataFrame.new({
-        a: [1,    2,          3,   nil,        Float::NAN, nil, 1],
-        b: [:a,  :b,          nil, Float::NAN, nil,        3,   5],
-        c: ['a',  Float::NAN, 3,   4,          3,          5,   nil]
+        a: [1,    2,          3,   nil,        Float::NAN, nil, 1,   7],
+        b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   8],
+        c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
       })
     end
     
     context 'remove nils only' do
-      subject { df.reject_values nil, Float::NAN }
+      subject { df.reject_values nil }
       it { is_expected.to be_a Daru::DataFrame }
-      its(:'a.to_a') { is_expected.to eq [1, 2] }
-      its(:'b.to_a') { is_expected.to eq [:a, :b] }
-      its(:'c.to_a') { is_expected.to eq ['a', Float::NAN] }
+      its(:'a.to_a') { is_expected.to eq [1, 2, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a, :b, 8] }
+      its(:'c.to_a') { is_expected.to eq ['a', Float::NAN, 7] }
     end
     
     context 'remove Float::NAN only' do
       subject { df.reject_values Float::NAN }
       it { is_expected.to be_a Daru::DataFrame }
-      its(:'a.to_a') { is_expected.to eq [1, 3, nil, 1] }
-      its(:'b.to_a') { is_expected.to eq [:a, nil, 3, 5] }
-      its(:'c.to_a') { is_expected.to eq ['a', 3, 5, nil] }
+      its(:'a.to_a') { is_expected.to eq [1, 3, nil, 1, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a, nil, 3, 5, 8] }
+      its(:'c.to_a') { is_expected.to eq ['a', 3, 5, nil, 7] }
     end
     context 'remove both nil and Float::NAN' do
-      subject { df.reject_values nil }
+      subject { df.reject_values nil, Float::NAN }
       it { is_expected.to be_a Daru::DataFrame }
-      its(:'a.to_a') { is_expected.to eq [1] }
-      its(:'b.to_a') { is_expected.to eq [:a] }
-      its(:'c.to_a') { is_expected.to eq ['a'] }      
+      its(:'a.to_a') { is_expected.to eq [1, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a, 8] }
+      its(:'c.to_a') { is_expected.to eq ['a', 7] }
     end
     
     context 'any other values' do
       subject { df.reject_values 1, 5 }
       it { is_expected.to be_a Daru::DataFrame }
-      its(:'a.to_a') { is_expected.to eq [2, 3, nil, Float::NAN] }
-      its(:'b.to_a') { is_expected.to eq [:b, nil, Float::NAN, nil] }
-      its(:'c.to_a') { is_expected.to eq [Float::NAN, 3, 4, 3] }
+      its(:'a.to_a') { is_expected.to eq [2, 3, nil, Float::NAN, 7] }
+      its(:'b.to_a') { is_expected.to eq [:b, nil, Float::NAN, nil, 8] }
+      its(:'c.to_a') { is_expected.to eq [Float::NAN, 3, 4, 3, 7] }
     end
   end
 
@@ -3004,7 +3004,8 @@ describe Daru::DataFrame do
       Daru::DataFrame.new({
         a: [1,   2,  3,   4,          Float::NAN, 6, 1],
         b: [:a,  :b, nil, Float::NAN, nil,        3, 5],
-        c: ['a', 6,  3,   4,          3,          5, 3]
+        c: ['a', 6,  3,   4,          3,          5, 3],
+        d: [1,   2,  3,   5,          1,          2, 5]
       })
     end
     
@@ -3016,9 +3017,9 @@ describe Daru::DataFrame do
     end
     
     context 'false' do
-      it { expect(df[:a, :b].include_values? nil).to eq false }
-      it { expect(df[:c].include_values? Float::NAN).to eq false }
-      it { expect(df[:c].includ_values? nil, Float::NAN).to eq false }
+      it { expect(df[:a, :c].include_values? nil).to eq false }
+      it { expect(df[:c, :d].include_values? Float::NAN).to eq false }
+      it { expect(df[:c, :d].include_values? nil, Float::NAN).to eq false }
       it { expect(df.include_values? 10, 20).to eq false }
     end
   end
