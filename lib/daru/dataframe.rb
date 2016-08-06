@@ -502,8 +502,8 @@ module Daru
     deprecate :dup_only_valid, :reject_values, 2016, 10
 
     def reject_values(*values)
-      positions = size.times.to_a -
-        @data.map { |vec| vec.indexes(*values) }.flatten
+      positions =
+        size.times.to_a - @data.map { |vec| vec.indexes(*values) }.flatten
       row_at(*positions)
       # TODO: Retuns a vector when position has one value
     end

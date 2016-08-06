@@ -471,7 +471,7 @@ module Daru
     alias :flawed? :has_missing_data?
     deprecate :has_missing_data?, :include_values?, 2016, 10
     deprecate :flawed?, :include_values?, 2016, 10
-    
+
     def include_values?(*values)
       values.any? { |v| include_with_nan? @data, v }
     end
@@ -812,7 +812,7 @@ module Daru
     def n_valid
       @size - missing_positions.size
     end
-    deprecate :n_valid, :count_values, 2016, 10    
+    deprecate :n_valid, :count_values, 2016, 10
 
     def count_values(*values)
       values.map { |v| @data.count v }.inject(:+)
