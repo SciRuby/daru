@@ -184,7 +184,7 @@ module Daru
 
     def key(value)
       return nil unless value.is_a?(Numeric)
-      @relation_hash.keys[value]
+      @keys[value]
     end
 
     def include? index
