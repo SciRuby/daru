@@ -72,7 +72,7 @@ module Daru
       end
 
       def compact
-        @data - @context.missing_values
+        @data - Daru::MISSING_VALUES
       end
 
       def mean

@@ -21,7 +21,7 @@ module Daru
             type: :scatter
           }.merge(opts)
 
-          x_axis  = options[:type] == :scatter ? Array.new(@size) { |i| i } : @index.to_a
+          x_axis  = options[:type] == :scatter ? Array.new(size) { |i| i } : @index.to_a
           plot    = Nyaplot::Plot.new
           diagram = create_diagram plot, options[:type], x_axis
 

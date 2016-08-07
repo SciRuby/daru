@@ -951,8 +951,7 @@ module Daru
     # treated as 'missing'. The default missing value is *nil*.
     def missing_values_rows missing_values=[nil]
       number_of_missing = each_row.map do |row|
-        row.missing_values = missing_values
-        row.indexes(*Daru::MISSING_VALUES).size
+        row.indexes(*missing_values).size
       end
 
       Daru::Vector.new number_of_missing, index: @index, name: "#{@name}_missing_rows"

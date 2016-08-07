@@ -167,20 +167,20 @@ module Daru
 
         # Sample covariance with denominator (N-1)
         def covariance_sample other
-          @size == other.size or raise ArgumentError, 'size of both the vectors must be equal'
+          size == other.size or raise ArgumentError, 'size of both the vectors must be equal'
           covariance_sum(other) / (size - count_values(*Daru::MISSING_VALUES) - 1)
         end
 
         # Population covariance with denominator (N)
         def covariance_population other
-          @size == other.size or raise ArgumentError, 'size of both the vectors must be equal'
+          size == other.size or raise ArgumentError, 'size of both the vectors must be equal'
           covariance_sum(other) / (size - count_values(*Daru::MISSING_VALUES))
         end
 
         def sum_of_squares(m=nil)
           m ||= mean
-          @data.inject(0) { |memo, val|
-            @missing_values.key?(val) ? memo : (memo + (val - m)**2)
+          reject_values(*Daru::MISSING_VALUES).data.inject(0) { |memo, val|
+            memo + (val - m)**2
           }
         end
 
@@ -209,7 +209,7 @@ module Daru
           else
             m ||= mean
             th  = @data.inject(0) { |memo, val| memo + ((val - m)**3) }
-            th.quo((@size - indexes(*Daru::MISSING_VALUES).size) * (standard_deviation_sample(m)**3))
+            th.quo((size - indexes(*Daru::MISSING_VALUES).size) * (standard_deviation_sample(m)**3))
           end
         end
 
@@ -219,15 +219,15 @@ module Daru
           else
             m ||= mean
             fo  = @data.inject(0) { |a, x| a + ((x - m) ** 4) }
-            fo.quo((@size - indexes(*Daru::MISSING_VALUES).size) * standard_deviation_sample(m) ** 4) - 3
+            fo.quo((size - indexes(*Daru::MISSING_VALUES).size) * standard_deviation_sample(m) ** 4) - 3
           end
         end
 
         def average_deviation_population m=nil
           must_be_numeric!
           m ||= mean
-          @data.inject(0) { |memo, val|
-            @missing_values.key?(val) ? memo : (val - m).abs + memo
+          reject_values(*Daru::MISSING_VALUES).data.inject(0) { |memo, val|
+            (val - m).abs + memo
           }.quo(size - count_values(*Daru::MISSING_VALUES))
         end
 
@@ -283,7 +283,7 @@ module Daru
         def standardize use_population=false
           m ||= mean
           sd = use_population ? sdp : sds
-          return Daru::Vector.new([nil]*@size) if m.nil? || sd == 0.0
+          return Daru::Vector.new([nil]*size) if m.nil? || sd == 0.0
 
           vector_standardized_compute m, sd
         end
@@ -369,7 +369,7 @@ module Daru
         #   vector = Daru::Vector.new([4,6,6,8,10],index: ['a','f','t','i','k'])
         #   vector.percent_change
         #   #=>
-        #   #   <Daru::Vector:28713060 @name = nil @size: 5 >
+        #   #   <Daru::Vector:28713060 @name = nil size: 5 >
         #   #              nil
         #   #   a
         #   #   f	   0.5
@@ -381,7 +381,9 @@ module Daru
 
           prev = nil
           arr = @data.each_with_index.map do |cur, i|
-            if i < periods || @missing_values.key?(cur) || @missing_values.key?(prev)
+            if i < periods ||
+              include_with_nan?(Daru::MISSING_VALUES, cur) ||
+              include_with_nan?(Daru::MISSING_VALUES, prev)
               nil
             else
               (cur - prev) / prev.to_f
@@ -660,7 +662,7 @@ module Daru
           result = []
           acc = 0
           @data.each do |d|
-            if @missing_values.key?(d)
+            if include_with_nan? Daru::MISSING_VALUES, d
               result << nil
             else
               acc += d

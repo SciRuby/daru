@@ -1426,24 +1426,6 @@ describe Daru::Vector do
     end
   end
 
-  context '#exists?' do
-    it 'shows if value exists with default missing_values' do
-      vec = Daru::Vector.new([1,2,nil,3,4,nil])
-      expect(vec.exists?(2)).to eq true
-      expect(vec.exists?(6)).to eq false
-      expect(vec.exists?(nil)).to eq false
-    end
-
-    it 'shows if value exists with custom default missing_values' do
-      vec = Daru::Vector.new([1,2,nil,3,4,nil])
-      vec.missing_values = [3]
-      expect(vec.exists?(2)).to eq true
-      expect(vec.exists?(6)).to eq false
-      expect(vec.exists?(3)).to eq false
-      # expect(vec.exists?(nil)).to eq true - FIXME: right behavior here?.. - zverok
-    end
-  end
-
   context "#replace_nils" do
     it "replaces all nils with the specified value" do
       vec = Daru::Vector.new([1,2,3,nil,nil,4])

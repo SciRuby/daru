@@ -90,6 +90,10 @@ module Daru
       end
     end
 
+    def size
+      @data.size
+    end
+
     def each(&block)
       return to_enum(:each) unless block_given?
 
@@ -115,7 +119,6 @@ module Daru
     def map!(&block)
       return to_enum(:map!) unless block_given?
       @data.map!(&block)
-      update
       self
     end
 
@@ -123,8 +126,6 @@ module Daru
     attr_reader :name
     # The row index. Can be either Daru::Index or Daru::MultiIndex.
     attr_reader :index
-    # The total number of elements of the vector.
-    attr_reader :size
     # The underlying dtype of the Vector. Can be either :array, :nmatrix or :gsl.
     attr_reader :dtype
     # If the dtype is :nmatrix, this attribute represents the data type of the
@@ -287,41 +288,12 @@ module Daru
       update_internal_state
     end
 
-    # The values to be treated as 'missing'. *nil* is the default missing
-    # type. To set missing values see the missing_values= method.
-    def missing_values
-      @missing_values.keys
-    end
-
-    # Assign an Array to treat certain values as 'missing'.
-    #
-    # == Usage
-    #
-    #   v = Daru::Vector.new [1,2,3,4,5]
-    #   v.missing_values = [3]
-    #   v.update
-    #   v.missing_positions
-    #   #=> [2]
-    def missing_values= values
-      set_missing_values values
-      set_missing_positions
-    end
-
-    # Method for updating the metadata (i.e. missing value positions) of the
-    # after assingment/deletion etc. are complete. This is provided so that
-    # time is not wasted in creating the metadata for the vector each time
-    # assignment/deletion of elements is done. Updating data this way is called
-    # lazy loading. To set or unset lazy loading, see the .lazy_update= method.
-    def update
-      Daru.lazy_update and set_missing_positions(true)
-    end
-
     # Two vectors are equal if the have the exact same index values corresponding
     # with the exact same elements. Name is ignored.
     def == other
       case other
       when Daru::Vector
-        @index == other.index && @size == other.size &&
+        @index == other.index && size == other.size &&
           @index.all? { |index| self[index] == other[index] }
       else
         super
@@ -448,8 +420,8 @@ module Daru
     end
 
     def tail q=10
-      start = [@size - q, 0].max
-      self[start..(@size-1)]
+      start = [size - q, 0].max
+      self[start..(size-1)]
     end
 
     def empty?
@@ -627,15 +599,6 @@ module Daru
     end
     # :nocov:
 
-    # Returns *true* if the value passed is actually exists or is not marked as
-    # a *missing value*.
-    def exists? value
-      # FIXME: I'm not sure how this method should really work,
-      # or whether it is needed at all. - zverok
-      idx = index_of(value)
-      !!idx && !@missing_values.key?(self[idx])
-    end
-
     # Like map, but returns a Daru::Vector with the returned values.
     def recode dt=nil, &block
       return to_enum(:recode) unless block_given?
@@ -810,7 +773,7 @@ module Daru
 
     # number of non-missing elements
     def n_valid
-      @size - indexes(*Daru::MISSING_VALUES).size
+      size - indexes(*Daru::MISSING_VALUES).size
     end
     deprecate :n_valid, :count_values, 2016, 10
 
@@ -1139,7 +1102,7 @@ module Daru
     def only_numerics
       numeric_indexes =
         each_with_index
-        .select { |v, _i| v.is_a?(Numeric) || @missing_values.key?(v) }
+        .select { |v, _i| v.is_a?(Numeric) || v.nil? }
         .map(&:last)
 
       self[*numeric_indexes]
@@ -1165,7 +1128,7 @@ module Daru
     # Copies the structure of the vector (i.e the index, size, etc.) and fills all
     # all values with nils.
     def clone_structure
-      Daru::Vector.new(([nil]*@size), name: @name, index: @index.dup)
+      Daru::Vector.new(([nil]*size), name: @name, index: @index.dup)
     end
 
     # Save the vector to a file
@@ -1183,7 +1146,6 @@ module Daru
         dtype:          @dtype,
         name:           @name,
         index:          @index,
-        missing_values: @missing_values
       )
     end
 
@@ -1273,9 +1235,6 @@ module Daru
       guard_sizes!
 
       @possibly_changed_type = true
-      set_missing_values opts[:missing_values]
-      set_missing_positions(true) unless @index.class == Daru::CategoricalIndex
-      set_size
       # Include plotting functionality
       self.plotting_library = Daru.plotting_library
     end
@@ -1348,10 +1307,6 @@ module Daru
       new_vector
     end
 
-    def set_size
-      @size = @data.size
-    end
-
     def set_name name # rubocop:disable Style/AccessorMethodName
       @name =
         if name.is_a?(Numeric)  then name
@@ -1360,34 +1315,6 @@ module Daru
         else
           nil
         end
-    end
-
-    def set_missing_positions forced=false # rubocop:disable Style/AccessorMethodName
-      return if Daru.lazy_update && !forced
-
-      @missing_positions = []
-      each_with_index do |val, i|
-        @missing_positions << i if @missing_values.key?(val)
-      end
-    end
-
-    # Setup missing_values. The missing_values instance variable is set
-    # as a Hash for faster lookup times.
-    def set_missing_values values_arry # rubocop:disable Style/AccessorMethodName
-      @missing_values = {}
-      @missing_values[nil] = 0
-      if values_arry
-        values_arry.each do |e|
-          # If dtype is :gsl then missing values have to be converted to float
-          e = e.to_f if dtype == :gsl && e.is_a?(Numeric)
-          @missing_values[e] = 0
-        end
-      end
-    end
-
-    def update_internal_state
-      set_size
-      set_missing_positions
     end
 
     # Raises IndexError when one of the positions is an invalid position
@@ -1488,6 +1415,10 @@ module Daru
       else
         array.include? value
       end
+    end
+
+    def update_internal_state
+      nil
     end
   end
 end
