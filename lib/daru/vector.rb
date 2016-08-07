@@ -142,6 +142,8 @@ module Daru
     attr_reader :data
     # Ploting library being used for this vector
     attr_reader :plotting_library
+    # TODO: Make private.
+    attr_reader :nil_positions, :nan_positions
 
     # Create a Vector object.
     #
@@ -778,7 +780,7 @@ module Daru
     deprecate :n_valid, :count_values, 2016, 10
 
     def count_values(*values)
-      values.map { |v| @data.count v }.inject(:+)
+      positions_of_values(*values).size
     end
 
     # Returns *true* if an index exists
@@ -1080,12 +1082,11 @@ module Daru
     deprecate :only_valid, :reject_values, 2016, 10
 
     def reject_values(*values)
-      positions = size.times.reject { |i| include_with_nan? values, @data[i] }
-      at(*positions)
+      at(*(size.times.to_a - positions_of_values(*values)))
     end
 
     def indexes(*values)
-      index.select { |i| include_with_nan? values, self[i] }
+      index.to_a.values_at(*positions_of_values(*values))
     end
 
     # Returns a Vector containing only missing data (preserves indexes).
@@ -1419,6 +1420,29 @@ module Daru
 
     def update_internal_state
       nil
+    end
+
+    def positions_of_values(*values)
+      # Returns the union of positions of input values
+      case values
+      when [nil]
+        @nil_positions ||
+        @nil_positions = size.times.select { |i| @data[i] == nil }
+      when [Float::NAN]
+        @nan_positions ||
+        @nan_positions = size.times.select do |i|
+          @data[i].respond_to?(:nan?) && @data[i].nan?
+        end
+      when [nil, Float::NAN], [Float::NAN, nil]
+        @nil_positions && @nan_positions ||
+        @nil_positions = size.times.select { |i| @data[i] == nil }
+        @nan_positions = size.times.select do |i|
+          @data[i].respond_to?(:nan?) && @data[i].nan?
+        end        
+        @nil_positions + @nan_positions
+      else
+        size.times.select { |i| include_with_nan? values, @data[i] }
+      end
     end
   end
 end
