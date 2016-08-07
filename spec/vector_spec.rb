@@ -1539,6 +1539,48 @@ describe Daru::Vector do
       its(:to_a) { is_expected.to eq [nil, :a, Float::NAN, nil, Float::NAN] }
       its(:'index.to_a') { is_expected.to eq [12, 14, 15, 16, 17] }
     end
+
+    context 'test caching' do
+      let(:dv) { Daru::Vector.new [nil]*8, index: 11..18 }
+      before do
+        dv.reject_values nil
+        [1, nil, 3, :a, Float::NAN, nil, Float::NAN, 1].each_with_index do |v, pos|
+          dv.set_at [pos], v
+        end
+      end
+
+      context 'reject only nils' do
+        subject { dv.reject_values nil }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:to_a) { is_expected.to eq [1, 3, :a, Float::NAN, Float::NAN, 1] }
+        its(:'index.to_a') { is_expected.to eq [11, 13, 14, 15, 17, 18] }
+      end
+  
+      context 'reject only float::NAN' do
+        subject { dv.reject_values Float::NAN }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:to_a) { is_expected.to eq [1, nil, 3, :a, nil, 1] }
+        its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 16, 18] }
+      end
+  
+      context 'reject both nil and float::NAN' do
+        subject { dv.reject_values nil, Float::NAN }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:to_a) { is_expected.to eq [1, 3, :a, 1] }
+        its(:'index.to_a') { is_expected.to eq [11, 13, 14, 18] }
+      end
+      
+      context 'reject any other value' do
+        subject { dv.reject_values 1, 3 }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:to_a) { is_expected.to eq [nil, :a, Float::NAN, nil, Float::NAN] }
+        its(:'index.to_a') { is_expected.to eq [12, 14, 15, 16, 17] }
+      end
+    end
   end
 
   context '#include_values?' do

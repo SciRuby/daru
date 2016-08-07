@@ -265,6 +265,7 @@ module Daru
     def set_at positions, val
       validate_positions(*positions)
       positions.map { |pos| @data[pos] = val }
+      update_position_cache
     end
 
     # Just like in Hashes, you can specify the index label of the Daru::Vector
@@ -287,7 +288,7 @@ module Daru
 
       modify_vector(indexes, val)
 
-      update_internal_state
+      update_position_cache
     end
 
     # Two vectors are equal if the have the exact same index values corresponding
@@ -457,7 +458,7 @@ module Daru
       @index |= [index]
       @data[@index[index]] = element
 
-      update_internal_state
+      update_position_cache
     end
     alias :push :concat
     alias :<< :concat
@@ -485,7 +486,7 @@ module Daru
       @data.delete_at @index[index]
       @index = Daru::Index.new(@index.to_a - [index])
 
-      update_internal_state
+      update_position_cache
     end
 
     # The type of data contained in the vector. Can be :object or :numeric. If
@@ -626,7 +627,7 @@ module Daru
       @data = cast_vector_to @dtype, keep_e
       @index = Daru::Index.new(keep_i)
 
-      update_internal_state
+      update_position_cache
 
       self
     end
@@ -914,7 +915,7 @@ module Daru
       @data = cast_vector_to @dtype, values
       @index = new_index
 
-      update_internal_state
+      update_position_cache
 
       self
     end
@@ -934,7 +935,7 @@ module Daru
     def reorder! order
       @index = @index.reorder order
       @data = order.map { |i| @data[i] }
-      update_internal_state
+      update_position_cache
       self
     end
 
@@ -1375,7 +1376,7 @@ module Daru
         insert_vector(indexes, val)
       end
 
-      update_internal_state
+      update_position_cache
     end
 
     def cut_find_category partitions, val, close_at
@@ -1418,8 +1419,9 @@ module Daru
       end
     end
 
-    def update_internal_state
-      nil
+    def update_position_cache
+      @nil_positions = nil
+      @nan_positions = nil
     end
 
     def positions_of_values(*values)
