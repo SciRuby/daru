@@ -1767,20 +1767,6 @@ describe Daru::Vector do
     end
   end
 
-  context "#only_missing" do
-    let(:v) { Daru::Vector.new([1,2,3,4,5,6,4,5,5,4,4,nil,nil,nil]) }
-    before { v.missing_values = [nil, 5] }
-
-    it "returns a vector (with proper index) of all the elements marked 'missing'" do
-      expect(v.only_missing).to eq(Daru::Vector.new([5,5,5,nil,nil,nil],
-        index: [4,7,8,11,12,13]))
-    end
-
-    it "returns an array if asked to" do
-      expect(v.only_missing(:array)).to eq [5,5,5,nil,nil,nil]
-    end
-  end
-
   context "#detach_index" do
     it "creates a DataFrame with first Vector as index and second as values of the Vector" do
       v = Daru::Vector.new([1,2,3,4,5,6],

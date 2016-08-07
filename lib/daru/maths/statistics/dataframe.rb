@@ -180,7 +180,7 @@ module Daru
         end
 
         def sum_of_squares v1, v2
-          v1a,v2a = v1.only_valid,v2.only_valid
+          v1a,v2a = v1.reject_values(*Daru::MISSING_VALUES),v2.reject_values(*Daru::MISSING_VALUES)
           v1a.reset_index!
           v2a.reset_index!
           m1 = v1a.mean

@@ -466,7 +466,7 @@ module Daru
 
     # Reports whether missing data is present in the Vector.
     def has_missing_data?
-      !missing_positions.empty?
+      !indexes(*Daru::MISSING_VALUES).empty?
     end
     alias :flawed? :has_missing_data?
     deprecate :has_missing_data?, :include_values?, 2016, 10
@@ -766,7 +766,7 @@ module Daru
     #
     # * +replacement+ - The value which should replace all nils
     def replace_nils! replacement
-      missing_positions.each do |idx|
+      indexes(*Daru::MISSING_VALUES).each do |idx|
         self[idx] = replacement
       end
 
@@ -810,7 +810,7 @@ module Daru
 
     # number of non-missing elements
     def n_valid
-      @size - missing_positions.size
+      @size - indexes(*Daru::MISSING_VALUES).size
     end
     deprecate :n_valid, :count_values, 2016, 10
 
@@ -847,7 +847,11 @@ module Daru
     # the stored GSL::Vector object.
     def to_gsl
       raise NoMethodError, 'Install gsl-nmatrix for access to this functionality.' unless Daru.has_gsl?
-      dtype == :gsl ? @data.data : GSL::Vector.alloc(only_valid(:array).to_a)
+      if dtype == :gsl
+        @data.data
+      else
+        GSL::Vector.alloc(reject_values(*Daru::MISSING_VALUES).to_a)
+      end
     end
 
     # Convert to hash (explicit). Hash keys are indexes and values are the correspoding elements
@@ -888,7 +892,7 @@ module Daru
     def report_building b # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
       b.section(name: name) do |s|
         s.text "n :#{size}"
-        s.text "n valid:#{n_valid}"
+        s.text "n valid:#{count_values(*Daru::MISSING_VALUES)}"
         if @type == :object
           s.text  "factors: #{factors.to_a.join(',')}"
           s.text  "mode: #{mode}"
@@ -896,7 +900,7 @@ module Daru
           s.table(name: 'Distribution') do |t|
             frequencies.sort_by(&:to_s).each do |k,v|
               key = @index.include?(k) ? @index[k] : k
-              t.row [key, v, ('%0.2f%%' % (v.quo(n_valid)*100))]
+              t.row [key, v, ('%0.2f%%' % (v.quo(count_values(*Daru::MISSING_VALUES))*100))]
             end
           end
         end
@@ -1101,7 +1105,7 @@ module Daru
       #   There are no spec that fail on this case, so I'll leave it
       #   this way for now - zverok, 2016-05-07
 
-      new_index = @index.to_a - missing_positions
+      new_index = @index.to_a - indexes(*Daru::MISSING_VALUES)
       new_vector = new_index.map { |idx| self[idx] }
 
       if as_a == :vector
@@ -1124,9 +1128,9 @@ module Daru
     # Returns a Vector containing only missing data (preserves indexes).
     def only_missing as_a=:vector
       if as_a == :vector
-        self[*missing_positions]
+        self[*indexes(*Daru::MISSING_VALUES)]
       elsif as_a == :array
-        self[*missing_positions].to_a
+        self[*indexes(*Daru::MISSING_VALUES)].to_a
       end
     end
 

@@ -484,7 +484,7 @@ module Daru
     # Returns a 'shallow' copy of DataFrame if missing data is not present,
     # or a full copy of only valid data if missing data is present.
     def clone_only_valid
-      if has_missing_data?
+      if include_values?(*Daru::MISSING_VALUES)
         dup_only_valid
       else
         clone
@@ -494,7 +494,9 @@ module Daru
     # Creates a new duplicate dataframe containing only rows
     # without a single missing value.
     def dup_only_valid vecs=nil
-      rows_with_nil = @data.map(&:missing_positions).inject(&:concat).uniq
+      rows_with_nil = @data.map { |vec| vec.indexes(*Daru::MISSING_VALUES) }
+                           .inject(&:concat)
+                           .uniq
 
       row_indexes = @index.to_a
       (vecs.nil? ? self : dup(vecs)).row[*(row_indexes - rows_with_nil)]
@@ -950,7 +952,7 @@ module Daru
     def missing_values_rows missing_values=[nil]
       number_of_missing = each_row.map do |row|
         row.missing_values = missing_values
-        row.missing_positions.size
+        row.indexes(*Daru::MISSING_VALUES).size
       end
 
       Daru::Vector.new number_of_missing, index: @index, name: "#{@name}_missing_rows"
@@ -960,7 +962,7 @@ module Daru
     alias :vector_missing_values :missing_values_rows
 
     def has_missing_data?
-      !!@data.any?(&:has_missing_data?)
+      !!@data.any? { |vec| vec.include_values?(*Daru::MISSING_VALUES) }
     end
     alias :flawed? :has_missing_data?
     deprecate :has_missing_data?, :include_values?, 2016, 10
@@ -1107,7 +1109,7 @@ module Daru
       mean_vec = Daru::Vector.new [0]*@size, index: @index, name: "mean_#{@name}"
 
       each_row_with_index.each_with_object(mean_vec) do |(row, i), memo|
-        memo[i] = row.missing_positions.size > max_missing ? nil : row.mean
+        memo[i] = row.indexes(*Daru::MISSING_VALUES).size > max_missing ? nil : row.mean
       end
     end
 
@@ -1638,7 +1640,7 @@ module Daru
     # Convert all vectors of type *:numeric* and not containing nils into an NMatrix.
     def to_nmatrix
       each_vector.select do |vector|
-        vector.numeric? && !vector.has_missing_data?
+        vector.numeric? && !vector.include_values?(*Daru::MISSING_VALUES)
       end.map(&:to_a).transpose.to_nm
     end
 
