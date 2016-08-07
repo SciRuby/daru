@@ -382,8 +382,8 @@ module Daru
           prev = nil
           arr = @data.each_with_index.map do |cur, i|
             if i < periods ||
-              include_with_nan?(Daru::MISSING_VALUES, cur) ||
-              include_with_nan?(Daru::MISSING_VALUES, prev)
+               include_with_nan?(Daru::MISSING_VALUES, cur) ||
+               include_with_nan?(Daru::MISSING_VALUES, prev)
               nil
             else
               (cur - prev) / prev.to_f

@@ -1145,7 +1145,7 @@ module Daru
         data:           @data.to_a,
         dtype:          @dtype,
         name:           @name,
-        index:          @index,
+        index:          @index
       )
     end
 
