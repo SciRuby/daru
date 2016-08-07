@@ -1522,26 +1522,6 @@ describe Daru::Vector do
     end
   end
 
-  # context "#only_valid" do
-  #   [:array, :gsl].each do |dtype|
-  #     describe dtype do
-  #       before do
-  #         @vector = Daru::Vector.new [1,2,3,4,5,3,5], metadata: { cdc_type: 2 },
-  #           index: [:a, :b, :c, :d, :e, :f, :g], dtype: dtype, missing_values: [3, 5]
-  #       end
-
-  #       it "returns a Vector of only non-missing data" do
-  #         expect(@vector.only_valid).to eq(Daru::Vector.new([1,2,4],
-  #           index: [:a, :b, :d], dtype: dtype))
-  #       end
-
-  #       it "retains the original vector metadata" do
-  #         expect(@vector.only_valid.metadata).to eq({ cdc_type: 2 })
-  #       end
-  #     end
-  #   end
-  # end
-  
   context '#reject_values' do
     # TODO: Also test it for :gsl
     let(:dv) { Daru::Vector.new [1, nil, 3, :a, Float::NAN, nil, Float::NAN, 1],
@@ -1710,7 +1690,7 @@ describe Daru::Vector do
   context "#reset_index!" do
     it "resets any index to a numerical serialized index" do
       v = Daru::Vector.new([1,2,3,4,5,nil,nil,4,nil])
-      r = v.only_valid.reset_index!
+      r = v.reject_values(*Daru::MISSING_VALUES).reset_index!
       expect(r).to eq(Daru::Vector.new([1,2,3,4,5,4]))
       expect(r.index).to eq(Daru::Index.new([0,1,2,3,4,5]))
 

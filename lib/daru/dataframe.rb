@@ -485,7 +485,7 @@ module Daru
     # or a full copy of only valid data if missing data is present.
     def clone_only_valid
       if include_values?(*Daru::MISSING_VALUES)
-        dup_only_valid
+        reject_values(*Daru::MISSING_VALUES)
       else
         clone
       end

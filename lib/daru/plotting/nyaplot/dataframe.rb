@@ -140,7 +140,7 @@ module Daru
         end
 
         def plot_box_diagram plot
-          numeric = only_numerics(clone: false).dup_only_valid
+          numeric = only_numerics(clone: false).reject_values(*Daru::MISSING_VALUES)
           plot.add_with_df(numeric.to_nyaplotdf, :box, *numeric.vectors.to_a)
         end
 

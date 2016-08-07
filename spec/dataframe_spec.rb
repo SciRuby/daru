@@ -1607,33 +1607,6 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#dup_only_valid" do
-    before do
-      @missing_data_df = Daru::DataFrame.new({
-        a: [1  , 2, 3, nil, 4, nil, 5],
-        b: [nil, 2, 3, nil, 4, nil, 5],
-        c: [1,   2, 3, 43 , 4, nil, 5]
-      })
-    end
-
-    it "dups rows with non-missing data only" do
-      df = Daru::DataFrame.new({
-        a: [2, 3, 4, 5],
-        b: [2, 3, 4, 5],
-        c: [2, 3, 4, 5]
-      }, index: [1,2,4,6])
-      expect(@missing_data_df.dup_only_valid).to eq(df)
-    end
-
-    it "dups only the specified vectors" do
-      df = Daru::DataFrame.new({
-        a: [2,3,4,5],
-        c: [2,3,4,5]
-      }, index: [1,2,4,6])
-      expect(@missing_data_df.dup_only_valid([:a, :c])).to eq(df)
-    end
-  end
-  
   context '#reject_values' do
     let(:df) do
       Daru::DataFrame.new({
@@ -1725,7 +1698,7 @@ describe Daru::DataFrame do
       })
     }
     it 'does the most reasonable thing' do
-      expect(df_with_missing.clone_only_valid).to eq(df_with_missing.dup_only_valid)
+      expect(df_with_missing.clone_only_valid).to eq(df_with_missing.reject_values(*Daru::MISSING_VALUES))
       expect(df_without_missing.clone_only_valid).to eq(df_without_missing.clone)
     end
   end

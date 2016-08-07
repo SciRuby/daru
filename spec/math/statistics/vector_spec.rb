@@ -356,14 +356,14 @@ describe Daru::Vector do
 
       srand(1)
       expect(vec.sample_without_replacement(17).sort).to eq(
-        vec.only_valid.to_a.sort)
+        vec.reject_values(*Daru::MISSING_VALUES).to_a.sort)
       expect {
         vec.sample_without_replacement(20)
       }.to raise_error(ArgumentError)
 
       srand(1)
       expect(vec.sample_without_replacement(17).sort).to eq(
-        vec.only_valid.to_a.sort)
+        vec.reject_values(*Daru::MISSING_VALUES).to_a.sort)
     end
   end
 
