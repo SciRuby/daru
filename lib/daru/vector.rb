@@ -1436,11 +1436,12 @@ module Daru
           @data[i].respond_to?(:nan?) && @data[i].nan?
         end
       when [nil, Float::NAN], [Float::NAN, nil]
-        @nil_positions && @nan_positions ||
-        @nil_positions = size.times.select { |i| @data[i] == nil }
-        @nan_positions = size.times.select do |i|
-          @data[i].respond_to?(:nan?) && @data[i].nan?
-        end        
+        unless !!@nil_positions && !!@nan_positions
+          @nil_positions = size.times.select { |i| @data[i] == nil }
+          @nan_positions = size.times.select do |i|
+            @data[i].respond_to?(:nan?) && @data[i].nan?
+          end
+        end
         @nil_positions + @nan_positions
       else
         size.times.select { |i| include_with_nan? values, @data[i] }
