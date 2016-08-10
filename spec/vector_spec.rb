@@ -1387,45 +1387,6 @@ describe Daru::Vector do
     end
   end
 
-  context '#indexes' do
-    context Daru::Index do
-      let(:dv) { Daru::Vector.new [1, 2, 1, 2, 3, nil, nil, Float::NAN],
-        index: 11..18 }
-      
-      subject { dv.indexes 1, 2, nil, Float::NAN }
-      it { is_expected.to be_a Array }
-      it { is_expected.to eq [11, 12, 13, 14, 16, 17, 18] }
-    end
-    
-    context Daru::MultiIndex do
-      let(:mi) do
-        Daru::MultiIndex.from_tuples([
-          ['M', 2000],
-          ['M', 2001],
-          ['M', 2002],
-          ['M', 2003],
-          ['F', 2000],
-          ['F', 2001],
-          ['F', 2002],
-          ['F', 2003]
-        ])
-      end
-      let(:dv) { Daru::Vector.new [1, 2, 1, 2, 3, nil, nil, Float::NAN],
-        index: mi }
-      
-      subject { dv.indexes 1, 2, Float::NAN }
-      it { is_expected.to be_a Array }
-      it { is_expected.to eq(
-        [
-          ['M', 2000],
-          ['M', 2001],
-          ['M', 2002],
-          ['M', 2003],
-          ['F', 2003]
-        ]) }
-    end
-  end
-
   context "#replace_nils" do
     it "replaces all nils with the specified value" do
       vec = Daru::Vector.new([1,2,3,nil,nil,4])
@@ -1504,140 +1465,6 @@ describe Daru::Vector do
     end
   end
 
-  context '#reject_values' do
-    # TODO: Also test it for :gsl
-    let(:dv) { Daru::Vector.new [1, nil, 3, :a, Float::NAN, nil, Float::NAN, 1],
-      index: 11..18 }
-    context 'reject only nils' do
-      subject { dv.reject_values nil }
-      
-      it { is_expected.to be_a Daru::Vector }
-      its(:to_a) { is_expected.to eq [1, 3, :a, Float::NAN, Float::NAN, 1] }
-      its(:'index.to_a') { is_expected.to eq [11, 13, 14, 15, 17, 18] }
-    end
-
-    context 'reject only float::NAN' do
-      subject { dv.reject_values Float::NAN }
-      
-      it { is_expected.to be_a Daru::Vector }
-      its(:to_a) { is_expected.to eq [1, nil, 3, :a, nil, 1] }
-      its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 16, 18] }
-    end
-
-    context 'reject both nil and float::NAN' do
-      subject { dv.reject_values nil, Float::NAN }
-      
-      it { is_expected.to be_a Daru::Vector }
-      its(:to_a) { is_expected.to eq [1, 3, :a, 1] }
-      its(:'index.to_a') { is_expected.to eq [11, 13, 14, 18] }
-    end
-    
-    context 'reject any other value' do
-      subject { dv.reject_values 1, 3 }
-      
-      it { is_expected.to be_a Daru::Vector }
-      its(:to_a) { is_expected.to eq [nil, :a, Float::NAN, nil, Float::NAN] }
-      its(:'index.to_a') { is_expected.to eq [12, 14, 15, 16, 17] }
-    end
-
-    context 'test caching' do
-      let(:dv) { Daru::Vector.new [nil]*8, index: 11..18 }
-      before do
-        dv.reject_values nil
-        [1, nil, 3, :a, Float::NAN, nil, Float::NAN, 1].each_with_index do |v, pos|
-          dv.set_at [pos], v
-        end
-      end
-
-      context 'reject only nils' do
-        subject { dv.reject_values nil }
-        
-        it { is_expected.to be_a Daru::Vector }
-        its(:to_a) { is_expected.to eq [1, 3, :a, Float::NAN, Float::NAN, 1] }
-        its(:'index.to_a') { is_expected.to eq [11, 13, 14, 15, 17, 18] }
-      end
-  
-      context 'reject only float::NAN' do
-        subject { dv.reject_values Float::NAN }
-        
-        it { is_expected.to be_a Daru::Vector }
-        its(:to_a) { is_expected.to eq [1, nil, 3, :a, nil, 1] }
-        its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 16, 18] }
-      end
-  
-      context 'reject both nil and float::NAN' do
-        subject { dv.reject_values nil, Float::NAN }
-        
-        it { is_expected.to be_a Daru::Vector }
-        its(:to_a) { is_expected.to eq [1, 3, :a, 1] }
-        its(:'index.to_a') { is_expected.to eq [11, 13, 14, 18] }
-      end
-      
-      context 'reject any other value' do
-        subject { dv.reject_values 1, 3 }
-        
-        it { is_expected.to be_a Daru::Vector }
-        its(:to_a) { is_expected.to eq [nil, :a, Float::NAN, nil, Float::NAN] }
-        its(:'index.to_a') { is_expected.to eq [12, 14, 15, 16, 17] }
-      end
-    end
-  end
-
-  context '#include_values?' do
-    context 'only nils' do
-      context 'true' do
-        let(:dv) { Daru::Vector.new [1, 2, 3, :a, 'Unknown', nil] }
-        it { expect(dv.include_values? nil).to eq true }
-      end
-
-      context 'false' do
-        let(:dv) { Daru::Vector.new [1, 2, 3, :a, 'Unknown'] }
-        it { expect(dv.include_values? nil).to eq false }
-      end
-    end
-
-    context 'only Float::NAN' do
-      context 'true' do
-        let(:dv) { Daru::Vector.new [1, nil, 2, 3, Float::NAN] }
-        it { expect(dv.include_values? Float::NAN).to eq true }
-      end
-
-      context 'false' do
-        let(:dv) { Daru::Vector.new [1, nil, 2, 3] }
-        it { expect(dv.include_values? Float::NAN).to eq false }
-      end
-    end
-
-    context 'both nil and Float::NAN' do
-      context 'true with only nil' do
-        let(:dv) { Daru::Vector.new [1, Float::NAN, 2, 3] }
-        it { expect(dv.include_values? nil, Float::NAN).to eq true }
-      end
-      
-      context 'true with only Float::NAN' do
-        let(:dv) { Daru::Vector.new [1, nil, 2, 3] }
-        it { expect(dv.include_values? nil, Float::NAN).to eq true }
-      end
-      
-      context 'false' do
-        let(:dv) { Daru::Vector.new [1, 2, 3] }
-        it { expect(dv.include_values? nil, Float::NAN).to eq false }
-      end
-    end
-    
-    context 'any other value' do
-      context 'true' do
-        let(:dv) { Daru::Vector.new [1, 2, 3, 4, nil] }
-        it { expect(dv.include_values? 1, 2, 3, 5).to eq true }
-      end
-      
-      context 'false' do
-        let(:dv) { Daru::Vector.new [1, 2, 3, 4, nil] }
-        it { expect(dv.include_values? 5, 6).to eq false }
-      end
-    end
-  end
-
   context "#only_numerics" do
     it "returns only numerical or missing data" do
       v = Daru::Vector.new([1,2,nil,3,4,'s','a',nil])
@@ -1701,14 +1528,6 @@ describe Daru::Vector do
       expect(a.split_by_separator_freq).to eq(
         { 'a' => 3, 'b' => 1, 'c' => 1, 'd' => 2, 10 => 1 })
     end
-  end
-
-  context '#count_values' do
-    let(:dv) { Daru::Vector.new [1, 2, 3, 1, 2, nil, nil] }
-    it { expect(dv.count_values 1, 2).to eq 4 }
-    it { expect(dv.count_values nil).to eq 2 }
-    it { expect(dv.count_values 3, Float::NAN).to eq 1 }
-    it { expect(dv.count_values 4).to eq 0 }
   end
 
   context "#reset_index!" do
