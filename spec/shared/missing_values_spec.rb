@@ -38,7 +38,7 @@
         end
     
         context 'test caching' do
-          let(:dv) { Daru::Vector.new [nil]*8, index: 11..18, type: type }
+          let(:dv) { Daru::Vector.new [nil]*8, index: 11..18}
           before do
             dv.reject_values nil
             [1, nil, 3, :a, Float::NAN, nil, Float::NAN, 1].each_with_index do |v, pos|

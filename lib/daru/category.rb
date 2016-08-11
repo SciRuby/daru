@@ -654,6 +654,25 @@ module Daru
       @index = coerce_index idx
     end
 
+    def include_values?(*values)
+      values.any? { |v| @cat_hash.include?(v) && !@cat_hash[v].empty? }
+    end
+
+    def reject_values(*values)
+      reject_pos = values.map { |v| @cat_hash[v] }.flatten
+      at(*(size.times.to_a - reject_pos))
+    end
+
+    def count_values(*values)
+      values.map { |v| @cat_hash[v].size if @cat_hash.include? v }
+            .compact
+            .inject(0, :+)
+    end
+
+    def indexes(*values)
+      index.to_a.values_at(*values.map { |v| @cat_hash[v] }.flatten.sort)
+    end
+
     private
 
     def validate_categories input_categories
