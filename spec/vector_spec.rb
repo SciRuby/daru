@@ -1698,6 +1698,68 @@ describe Daru::Vector do
     end
   end
 
+  context '#to_nmatrix' do
+    let(:dv) { Daru::Vector.new [1, 2, 3, 4, 5] }
+    
+    context 'horizontal axis' do
+      subject { dv.to_nmatrix }
+
+      it { is_expected.to be_a NMatrix }
+      its(:shape) { is_expected.to eq [1, 5] }
+      its(:to_a) { is_expected.to eq [1, 2, 3, 4, 5] }
+    end
+    
+    context 'vertical axis' do
+      subject { dv.to_nmatrix :vertical }
+      
+      it { is_expected.to be_a NMatrix }
+      its(:shape) { is_expected.to eq [5, 1] }
+      its(:to_a) { is_expected.to eq [1, 2, 3, 4, 5].map { |i| [i] } }
+    end
+    
+    context 'invalid axis' do
+      it { expect { dv.to_nmatrix :hello }.to raise_error ArgumentError }
+    end
+    
+    context 'vector contain non-numeric' do
+      let(:dv) { Daru::Vector.new [1, 2, nil, 4] }
+      it { expect { dv.to_nmatrix }.to raise_error ArgumentError }
+    end
+  end
+  
+  context '#is_numeric?' do
+    context 'reject non-numeric values' do
+      subject { Daru::Vector.new [1, 2, :a] }
+      its(:is_numeric?) { is_expected.to eq false }
+    end
+    
+    context 'accept numeric values' do
+      subject { Daru::Vector.new [1, 2, 3.0, Float::NAN] }
+      its(:is_numeric?) { is_expected.to eq true }
+    end
+    
+    context 'reject nil values' do
+      subject { Daru::Vector.new [1, 2, 3, nil] }
+      its(:is_numeric?) { is_expected.to eq false }
+    end
+  end
+
+  context "#only_valid" do
+    [:array, :gsl].each do |dtype|
+      describe dtype do
+        before do
+          @vector = Daru::Vector.new [1,2,3,4,5,3,5],
+            index: [:a, :b, :c, :d, :e, :f, :g], dtype: dtype, missing_values: [3, 5]
+        end
+
+        it "returns a Vector of only non-missing data" do
+          expect(@vector.only_valid).to eq(Daru::Vector.new([1,2,4],
+            index: [:a, :b, :d], dtype: dtype))
+        end
+      end
+    end
+  end
+
   context "#only_numerics" do
     it "returns only numerical or missing data" do
       v = Daru::Vector.new([1,2,nil,3,4,'s','a',nil])
