@@ -673,6 +673,12 @@ module Daru
       index.to_a.values_at(*values.map { |v| @cat_hash[v] }.flatten.sort)
     end
 
+    def replace old_values, new_value
+      old_values = [old_values] unless old_values.is_a? Array
+      rename_hash = old_values.map { |v| [v, new_value] }.to_h
+      rename_categories rename_hash
+    end
+
     private
 
     def validate_categories input_categories

@@ -1090,6 +1090,14 @@ module Daru
       index.to_a.values_at(*positions_of_values(*values))
     end
 
+    def replace(old_values, new_value)
+      old_values = [old_values] unless old_values.is_a? Array
+      size.times do |pos|
+        set_at([pos], new_value) if include_with_nan? old_values, at(pos)
+      end
+      self
+    end
+
     # Returns a Vector containing only missing data (preserves indexes).
     def only_missing as_a=:vector
       if as_a == :vector
@@ -1098,6 +1106,7 @@ module Daru
         self[*indexes(*Daru::MISSING_VALUES)].to_a
       end
     end
+    deprecate :only_missing, nil, 2016, 10
 
     # Returns a Vector with only numerical data. Missing data is included
     # but non-Numeric objects are excluded. Preserves index.

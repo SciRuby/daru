@@ -191,6 +191,33 @@
             ]) }
         end
       end
+      
+      context '#replace' do
+        subject do
+          Daru::Vector.new(
+            [1, 2, 1, 4, nil, Float::NAN, nil, Float::NAN],
+            index: 11..18,
+            type: type
+          )
+        end
+
+        context 'replace nils and NaNs' do
+          before { subject.replace [nil, Float::NAN], 10 }
+          its(:to_a) { is_expected.to eq [1, 2, 1, 4, 10, 10, 10, 10] }
+        end
+        
+        context 'replace arbitrary values' do
+          before { subject.replace [1, 2], 10 }
+          its(:to_a) { is_expected.to eq(
+            [10, 10, 10, 4, nil, Float::NAN, nil, Float::NAN]) }
+        end
+        
+        context 'works for single value' do
+          before { subject.replace nil, 10 }
+          its(:to_a) { is_expected.to eq(
+            [1, 2, 1, 4, 10, Float::NAN, 10, Float::NAN]) }
+        end
+      end
     end
   end
 end
