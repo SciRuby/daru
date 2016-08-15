@@ -781,7 +781,7 @@ module Daru
     deprecate :n_valid, :count_values, 2016, 10
 
     def count_values(*values)
-      positions_of_values(*values).size
+      positions(*values).size
     end
 
     # Returns *true* if an index exists
@@ -1083,11 +1083,11 @@ module Daru
     deprecate :only_valid, :reject_values, 2016, 10
 
     def reject_values(*values)
-      at(*(size.times.to_a - positions_of_values(*values)))
+      at(*(size.times.to_a - positions(*values)))
     end
 
     def indexes(*values)
-      index.to_a.values_at(*positions_of_values(*values))
+      index.to_a.values_at(*positions(*values))
     end
 
     def replace_values(old_values, new_value)
@@ -1231,6 +1231,30 @@ module Daru
         dv.rename_categories Hash[cats.zip(labels)]
       else
         dv
+      end
+    end
+
+    def positions(*values)
+      # Returns the union of positions of input values
+      case values
+      when [nil]
+        @nil_positions ||
+        @nil_positions = size.times.select { |i| @data[i] == nil }
+      when [Float::NAN]
+        @nan_positions ||
+        @nan_positions = size.times.select do |i|
+          @data[i].respond_to?(:nan?) && @data[i].nan?
+        end
+      when [nil, Float::NAN], [Float::NAN, nil]
+        unless !!@nil_positions && !!@nan_positions
+          @nil_positions = size.times.select { |i| @data[i] == nil }
+          @nan_positions = size.times.select do |i|
+            @data[i].respond_to?(:nan?) && @data[i].nan?
+          end
+        end
+        @nil_positions + @nan_positions
+      else
+        size.times.select { |i| include_with_nan? values, @data[i] }
       end
     end
 
@@ -1431,30 +1455,6 @@ module Daru
     def update_position_cache
       @nil_positions = nil
       @nan_positions = nil
-    end
-
-    def positions_of_values(*values)
-      # Returns the union of positions of input values
-      case values
-      when [nil]
-        @nil_positions ||
-        @nil_positions = size.times.select { |i| @data[i] == nil }
-      when [Float::NAN]
-        @nan_positions ||
-        @nan_positions = size.times.select do |i|
-          @data[i].respond_to?(:nan?) && @data[i].nan?
-        end
-      when [nil, Float::NAN], [Float::NAN, nil]
-        unless !!@nil_positions && !!@nan_positions
-          @nil_positions = size.times.select { |i| @data[i] == nil }
-          @nan_positions = size.times.select do |i|
-            @data[i].respond_to?(:nan?) && @data[i].nan?
-          end
-        end
-        @nil_positions + @nan_positions
-      else
-        size.times.select { |i| include_with_nan? values, @data[i] }
-      end
     end
   end
 end

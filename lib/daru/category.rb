@@ -671,13 +671,19 @@ module Daru
     end
 
     def indexes(*values)
-      index.to_a.values_at(*values.map { |v| @cat_hash[v] }.flatten.sort)
+      values = values & categories
+      index.to_a.values_at(*values.flat_map { |v| @cat_hash[v] }.sort)
     end
 
     def replace_values old_values, new_value
       old_values = [old_values] unless old_values.is_a? Array
       rename_hash = old_values.map { |v| [v, new_value] }.to_h
       rename_categories rename_hash
+    end
+
+    def positions(*values)
+      values = values & categories
+      values.flat_map { |v| @cat_hash[v] }.sort
     end
 
     private

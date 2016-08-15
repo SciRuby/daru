@@ -505,7 +505,7 @@ module Daru
 
     def reject_values(*values)
       positions =
-        size.times.to_a - @data.map { |vec| vec.indexes(*values) }.flatten
+        size.times.to_a - @data.flat_map { |vec| vec.positions(*values) }
       row_at(*positions)
       # TODO: Retuns a vector when position has one value
     end

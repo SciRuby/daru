@@ -1421,7 +1421,7 @@ describe Daru::Vector, "categorical" do
     end
     
     context 'reject any other value' do
-      subject { dv.reject_values 1, 3 }
+      subject { dv.reject_values 1, 3, 20 }
 
       it { is_expected.to be_a Daru::Vector }
       its(:type) { is_expected.to eq :category }
