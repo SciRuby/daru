@@ -1,5 +1,3 @@
-require 'shared/missing_values_spec.rb'
-
 describe Daru::Vector do
   ALL_DTYPES.each do |dtype|
     describe dtype.to_s do
@@ -1394,14 +1392,11 @@ describe Daru::Vector do
     let(:dv) { Daru::Vector.new [1, nil, 3, :a, Float::NAN, nil, Float::NAN, 1],
       index: 11..18 }
     context 'reject only nils' do
-      # subject { dv.reject_values nil }
+      subject { dv.reject_values nil }
       
-      # it { is_expected.to be_a Daru::Vector }
-      # its(:to_a) { is_expected.to eq [1, 3, :a, Float::NAN, Float::NAN, 1] }
-      # its(:'index.to_a') { is_expected.to eq [11, 13, 14, 15, 17, 18] }
-      include_context 'reject values checker',
-        [dv, [nil]] => [[1, 3, :a, Float::NAN, Float::NAN, 1],
-          [11, 13, 14, 15, 17, 18]]
+      it { is_expected.to be_a Daru::Vector }
+      its(:to_a) { is_expected.to eq [1, 3, :a, Float::NAN, Float::NAN, 1] }
+      its(:'index.to_a') { is_expected.to eq [11, 13, 14, 15, 17, 18] }
     end
 
     context 'reject only float::NAN' do
