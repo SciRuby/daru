@@ -671,7 +671,7 @@ module Daru
     end
 
     def indexes(*values)
-      values = values & categories
+      values &= categories
       index.to_a.values_at(*values.flat_map { |v| @cat_hash[v] }.sort)
     end
 
@@ -682,7 +682,7 @@ module Daru
     end
 
     def positions(*values)
-      values = values & categories
+      values &= categories
       values.flat_map { |v| @cat_hash[v] }.sort
     end
 

@@ -1235,30 +1235,31 @@ module Daru
     end
 
     def positions(*values)
-      # Returns the union of positions of input values
       case values
       when [nil]
-        @nil_positions ||
-        @nil_positions = size.times.select { |i| @data[i] == nil }
+        nil_positions
       when [Float::NAN]
-        @nan_positions ||
-        @nan_positions = size.times.select do |i|
-          @data[i].respond_to?(:nan?) && @data[i].nan?
-        end
+        nan_positions
       when [nil, Float::NAN], [Float::NAN, nil]
-        unless !!@nil_positions && !!@nan_positions
-          @nil_positions = size.times.select { |i| @data[i] == nil }
-          @nan_positions = size.times.select do |i|
-            @data[i].respond_to?(:nan?) && @data[i].nan?
-          end
-        end
-        @nil_positions + @nan_positions
+        nil_positions + nan_positions
       else
         size.times.select { |i| include_with_nan? values, @data[i] }
       end
     end
 
     private
+
+    def nil_positions
+      @nil_positions ||
+        @nil_positions = size.times.select { |i| @data[i].nil? }
+    end
+
+    def nan_positions
+      @nan_positions ||
+        @nan_positions = size.times.select do |i|
+          @data[i].respond_to?(:nan?) && @data[i].nan?
+        end
+    end
 
     def initialize_vector source, opts
       index, source = parse_source(source, opts)
