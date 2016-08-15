@@ -503,6 +503,22 @@ module Daru
     end
     deprecate :dup_only_valid, :reject_values, 2016, 10
 
+    # Returns a dataframe in which rows with any of the mentioned values
+    #   are ignored.
+    # @param [Array] *values values to reject to form the new dataframe
+    # @return [Daru::DataFrame] Data Frame with only rows which doesn't
+    #   contain the mentioned values
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1,    2,          3,   nil,        Float::NAN, nil, 1,   7],
+    #     b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   8],
+    #     c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
+    #   }, index: 11..18)
+    #   df.reject_values nil, Float::NAN
+    #   # => #<Daru::DataFrame(2x3)>
+    #   #       a   b   c
+    #   #   11   1   a   a
+    #   #   18   7   8   7
     def reject_values(*values)
       positions =
         size.times.to_a - @data.flat_map { |vec| vec.positions(*values) }
@@ -510,6 +526,28 @@ module Daru
       # TODO: Retuns a vector when position has one value
     end
 
+    # Replace specified values with given value
+    # @param [Array] old_values values to replace with new value
+    # @param [object] new_value new value to replace with
+    # @return [Daru::DataFrame] Data Frame itself with old values replace
+    #   with new value
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1,    2,          3,   nil,        Float::NAN, nil, 1,   7],
+    #     b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   8],
+    #     c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
+    #   }, index: 11..18)
+    #   df
+    #   # => #<Daru::DataFrame(8x3)>
+    #   #       a   b   c
+    #   #   11   1   a   a
+    #   #   12   2   b NaN
+    #   #   13   3 NaN   3
+    #   #   14 NaN NaN   4
+    #   #   15 NaN NaN   3
+    #   #   16 NaN   3   5
+    #   #   17   1   5 NaN
+    #   #   18   7   8   7
     def replace_values old_values, new_value
       @data.each { |vec| vec.replace_values old_values, new_value }
       self
@@ -972,6 +1010,18 @@ module Daru
     deprecate :has_missing_data?, :include_values?, 2016, 10
     deprecate :flawed?, :include_values?, 2016, 10
 
+    # Check if any of given values occur in the data frame
+    # @param [Array] *values values to check for
+    # @return [true, false] true if any of the given values occur in the
+    #   dataframe, false otherwise
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1,    2,          3,   nil,        Float::NAN, nil, 1,   7],
+    #     b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   8],
+    #     c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
+    #   }, index: 11..18)
+    #   df.include_values? nil
+    #   # => true
     def include_values?(*values)
       @data.any? { |vec| vec.include_values?(*values) }
     end
