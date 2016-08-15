@@ -510,6 +510,11 @@ module Daru
       # TODO: Retuns a vector when position has one value
     end
 
+    def replace_values old_values, new_value
+      @data.each { |vec| vec.replace_values old_values, new_value }
+      self
+    end
+
     # Iterate over each index of the DataFrame.
     def each_index &block
       return to_enum(:each_index) unless block_given?

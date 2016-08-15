@@ -1631,6 +1631,7 @@ describe Daru::DataFrame do
       its(:'b.to_a') { is_expected.to eq [:a, nil, 3, 5, 8] }
       its(:'c.to_a') { is_expected.to eq ['a', 3, 5, nil, 7] }
     end
+    
     context 'remove both nil and Float::NAN' do
       subject { df.reject_values nil, Float::NAN }
       it { is_expected.to be_a Daru::DataFrame }
@@ -1646,6 +1647,48 @@ describe Daru::DataFrame do
       its(:'b.to_a') { is_expected.to eq [:b, nil, Float::NAN, nil, 8] }
       its(:'c.to_a') { is_expected.to eq [Float::NAN, 3, 4, 3, 7] }
     end
+  end
+  
+  context '#replace_values' do
+    subject do
+      Daru::DataFrame.new({
+        a: [1,    2,          3,   nil,        Float::NAN, nil, 1,   7],
+        b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   8],
+        c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
+      })
+    end
+    
+    context 'replace nils only' do
+      before { subject.replace_values nil, 10 }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'a.to_a') { is_expected.to eq [1, 2, 3, 10, Float::NAN, 10, 1, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a,  :b, 10, Float::NAN, 10, 3, 5, 8] }
+      its(:'c.to_a') { is_expected.to eq ['a', Float::NAN, 3, 4, 3, 5, 10, 7] }
+    end
+    
+    context 'replace Float::NAN only' do
+      before { subject.replace_values Float::NAN, 10 }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'a.to_a') { is_expected.to eq [1, 2, 3, nil, 10, nil, 1, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a,  :b, nil, 10, nil, 3, 5, 8] }
+      its(:'c.to_a') { is_expected.to eq ['a', 10, 3, 4, 3, 5, nil, 7] }
+    end
+    
+    context 'replace both nil and Float::NAN' do
+      before { subject.replace_values [nil, Float::NAN], 10 }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'a.to_a') { is_expected.to eq [1, 2, 3, 10, 10, 10, 1, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a,  :b, 10, 10, 10, 3, 5, 8] }
+      its(:'c.to_a') { is_expected.to eq ['a', 10, 3, 4, 3, 5, 10, 7] }
+    end
+    
+    context 'replace other values' do
+      before { subject.replace_values [1, 5], 10 }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'a.to_a') { is_expected.to eq [10, 2, 3, nil, Float::NAN, nil, 10, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a,  :b, nil, Float::NAN, nil, 3, 10, 8] }
+      its(:'c.to_a') { is_expected.to eq ['a', Float::NAN, 3, 4, 3, 10, nil, 7] }
+    end    
   end
 
   context "#clone" do

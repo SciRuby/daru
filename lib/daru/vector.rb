@@ -1090,7 +1090,7 @@ module Daru
       index.to_a.values_at(*positions_of_values(*values))
     end
 
-    def replace(old_values, new_value)
+    def replace_values(old_values, new_value)
       old_values = [old_values] unless old_values.is_a? Array
       size.times do |pos|
         set_at([pos], new_value) if include_with_nan? old_values, at(pos)
