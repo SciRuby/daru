@@ -447,6 +447,14 @@ module Daru
     deprecate :has_missing_data?, :include_values?, 2016, 10
     deprecate :flawed?, :include_values?, 2016, 10
 
+    # Check if any one of mentioned values occur in the vector
+    # @param [Array] *values values to check for
+    # @return [true, false] returns true if any one of specified values
+    #   occur in the vector
+    # @example
+    #   dv = Daru::Vector.new [1, 2, 3, 4, nil]
+    #   dv.include_values? nil, Float::NAN
+    #   # => true
     def include_values?(*values)
       values.any? { |v| include_with_nan? @data, v }
     end
@@ -780,6 +788,13 @@ module Daru
     end
     deprecate :n_valid, :count_values, 2016, 10
 
+    # Count the number of values specified
+    # @param [Array] *values values to count for
+    # @return [Integer] the number of times the values mentioned occurs
+    # @example
+    #   dv = Daru::Vector.new [1, 2, 1, 2, 3, 4, nil, nil]
+    #   dv.count_values nil
+    #   # => 2
     def count_values(*values)
       positions(*values).size
     end
@@ -1082,14 +1097,47 @@ module Daru
     end
     deprecate :only_valid, :reject_values, 2016, 10
 
+    # Return a vector with specified values removed
+    # @param [Array] *values values to reject from resultant vector
+    # @return [Daru::Vector] vector with specified values removed
+    # @example
+    #   dv = Daru::Vector.new [1, 2, nil, Float::NAN]
+    #   dv.reject_values nil, Float::NAN
+    #   # => #<Daru::Vector(2)>
+    #   #   0   1
+    #   #   1   2
     def reject_values(*values)
       at(*(size.times.to_a - positions(*values)))
     end
 
+    # Return indexes of values specified
+    # @param [Array] *values values to find indexes for
+    # @return [Array] array of indexes of values specified
+    # @example
+    #   dv = Daru::Vector.new [1, 2, nil, Float::NAN], index: 11..14
+    #   dv.indexes nil, Float::NAN
+    #   # => [13, 14]
     def indexes(*values)
       index.to_a.values_at(*positions(*values))
     end
 
+    # Replaces specified values with a new value
+    # @param [Array] old_values array of values to replace
+    # @param [object] new_value new value to replace with
+    # @note It performs the replace in place.
+    # @return [Daru::Vector] Same vector itself with values
+    #   replaced with new value
+    # @example
+    #   dv = Daru::Vector.new [1, 2, :a, :b]
+    #   dv.replace_values [:a, :b], nil
+    #   dv
+    #   # =>
+    #   # #<Daru::Vector:19903200 @name = nil @metadata = {} @size = 4 >
+    #   #     nil
+    #   #   0   1
+    #   #   1   2
+    #   #   2 nil
+    #   #   3 nil
     def replace_values(old_values, new_value)
       old_values = [old_values] unless old_values.is_a? Array
       size.times do |pos|
