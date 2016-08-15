@@ -659,8 +659,9 @@ module Daru
     end
 
     def reject_values(*values)
-      reject_pos = values.map { |v| @cat_hash[v] }.flatten
-      at(*(size.times.to_a - reject_pos))
+      reject_pos = values.flat_map { |v| @cat_hash[v] }
+      dv = at(*(size.times.to_a - reject_pos))
+      dv.remove_unused_categories
     end
 
     def count_values(*values)
@@ -674,7 +675,8 @@ module Daru
     end
 
     def replace_values old_values, new_value
-      rename_hash = [*old_values].map { |v| [v, new_value] }.to_h
+      old_values = [old_values] unless old_values.is_a? Array
+      rename_hash = old_values.map { |v| [v, new_value] }.to_h
       rename_categories rename_hash
     end
 
