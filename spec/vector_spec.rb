@@ -1726,23 +1726,6 @@ describe Daru::Vector do
       it { expect { dv.to_nmatrix }.to raise_error ArgumentError }
     end
   end
-  
-  context '#is_numeric?' do
-    context 'reject non-numeric values' do
-      subject { Daru::Vector.new [1, 2, :a] }
-      its(:is_numeric?) { is_expected.to eq false }
-    end
-    
-    context 'accept numeric values' do
-      subject { Daru::Vector.new [1, 2, 3.0, Float::NAN] }
-      its(:is_numeric?) { is_expected.to eq true }
-    end
-    
-    context 'reject nil values' do
-      subject { Daru::Vector.new [1, 2, 3, nil] }
-      its(:is_numeric?) { is_expected.to eq false }
-    end
-  end
 
   context "#only_valid" do
     [:array, :gsl].each do |dtype|

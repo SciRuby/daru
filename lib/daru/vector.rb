@@ -824,22 +824,6 @@ module Daru
       end
     end
 
-    # See if a vector is numeric or not
-    # @return [Boolean] true if vector contain all numeric values
-    # @example
-    #   dv = Daru::Vector.new [1, 2, 3, nil]
-    #   dv.is_numeric?
-    #   # => false
-    #   dv = Daru::Vector.new [1, 2, 3.0, Float::NAN]
-    #   dv.is_numeric?
-    #   # => true
-    #   dv = Daru::Vector.new [1, 2, :a]
-    #   dv.is_numeric?
-    #   # => false
-    def is_numeric?
-      to_a.all? { |i| i.is_a? Numeric }
-    end
-
     # Convert vector to nmatrix object
     # @param [Symbol] axis :horizontal or :vertical
     # @return [NMatrix] NMatrix object containing all values of the vector
@@ -851,7 +835,7 @@ module Daru
     #   #   [1, 2, 3] ]
     def to_nmatrix axis=:horizontal
       raise ArgumentError, 'Can not convert to nmatrix'\
-        'because the vector is numeric' unless is_numeric?
+        'because the vector is numeric' unless numeric? && !include?(nil)
 
       case axis
       when :horizontal
