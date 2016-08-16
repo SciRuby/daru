@@ -1727,22 +1727,6 @@ describe Daru::Vector do
     end
   end
 
-  context "#only_valid" do
-    [:array, :gsl].each do |dtype|
-      describe dtype do
-        before do
-          @vector = Daru::Vector.new [1,2,3,4,5,3,5],
-            index: [:a, :b, :c, :d, :e, :f, :g], dtype: dtype, missing_values: [3, 5]
-        end
-
-        it "returns a Vector of only non-missing data" do
-          expect(@vector.only_valid).to eq(Daru::Vector.new([1,2,4],
-            index: [:a, :b, :d], dtype: dtype))
-        end
-      end
-    end
-  end
-
   context "#only_numerics" do
     it "returns only numerical or missing data" do
       v = Daru::Vector.new([1,2,nil,3,4,'s','a',nil])
