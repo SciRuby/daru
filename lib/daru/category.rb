@@ -676,8 +676,12 @@ module Daru
     #   #   0   1
     #   #   1   2
     def reject_values(*values)
-      reject_pos = values.flat_map { |v| @cat_hash[v] }
-      dv = at(*(size.times.to_a - reject_pos))
+      resultant_pos = size.times.to_a - values.flat_map { |v| @cat_hash[v] }
+      dv = at(*resultant_pos)
+      unless dv.is_a? Daru::Vector
+        pos = resultant_pos.first
+        dv = at(pos..pos)
+      end
       dv.remove_unused_categories
     end
 

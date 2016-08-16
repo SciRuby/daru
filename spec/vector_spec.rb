@@ -1423,6 +1423,22 @@ describe Daru::Vector do
       its(:'index.to_a') { is_expected.to eq [12, 14, 15, 16, 17] }
     end
 
+    context 'when resultant vector has only one value' do
+      subject { dv.reject_values 1, :a, nil, Float::NAN }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:to_a) { is_expected.to eq [3] }
+      its(:'index.to_a') { is_expected.to eq [13] }
+    end
+    
+    context 'when resultant vector has no value' do
+      subject { dv.reject_values 1, 3, :a, nil, Float::NAN, 5 }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:to_a) { is_expected.to eq [] }
+      its(:'index.to_a') { is_expected.to eq [] }
+    end
+
     context 'test caching' do
       let(:dv) { Daru::Vector.new [nil]*8, index: 11..18}
       before do

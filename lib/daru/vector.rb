@@ -1107,7 +1107,16 @@ module Daru
     #   #   0   1
     #   #   1   2
     def reject_values(*values)
-      at(*(size.times.to_a - positions(*values)))
+      resultant_pos = size.times.to_a - positions(*values)
+      dv = at(*resultant_pos)
+      # Handle the case when number of positions is 1
+      # and hence #at doesn't return a vector
+      if dv.is_a?(Daru::Vector)
+        dv
+      else
+        pos = resultant_pos.first
+        at(pos..pos)
+      end
     end
 
     # Return indexes of values specified
