@@ -245,7 +245,7 @@ module Daru
         @data[positions]
       else
         values = positions.map { |pos| @data[pos] }
-        Daru::Vector.new values, index: @index.at(*original_positions)
+        Daru::Vector.new values, index: @index.at(*original_positions), dtype: dtype
       end
     end
 

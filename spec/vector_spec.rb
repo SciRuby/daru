@@ -1388,7 +1388,6 @@ describe Daru::Vector do
   end
 
   context '#reject_values'do
-    # TODO: Also test it for :gsl
     let(:dv) { Daru::Vector.new [1, nil, 3, :a, Float::NAN, nil, Float::NAN, 1],
       index: 11..18 }
     context 'reject only nils' do
@@ -1437,6 +1436,17 @@ describe Daru::Vector do
       it { is_expected.to be_a Daru::Vector }
       its(:to_a) { is_expected.to eq [] }
       its(:'index.to_a') { is_expected.to eq [] }
+    end
+    
+    context 'works for gsl' do
+      let(:dv) { Daru::Vector.new [1, 2, 3, Float::NAN], dtype: :gsl,
+        index: 11..14 }
+      subject { dv.reject_values Float::NAN }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:dtype) { is_expected.to eq :gsl }
+      its(:to_a) { is_expected.to eq [1, 2, 3].map(&:to_f) }
+      its(:'index.to_a') { is_expected.to eq [11, 12, 13] }
     end
 
     context 'test caching' do
