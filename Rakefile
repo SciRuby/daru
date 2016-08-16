@@ -1,12 +1,11 @@
 require 'rspec/core/rake_task'
 require 'bundler/gem_tasks'
-require 'open3'
 
 lib_folder = File.expand_path("../lib", __FILE__)
 
 RUBIES = ['ruby-2.0.0-p643', 'ruby-2.1.5', 'ruby-2.2.1', 'ruby-2.3.0']
 
-task :run_all do
+def spec_run_all
   RUBIES.each do |ruby_v|
     puts "\n  Using #{ruby_v}\n\n"
     command = "$rvm_path/wrappers/#{ruby_v}/rake summary"
@@ -14,13 +13,39 @@ task :run_all do
   end
 end
 
-task all: [:cop, :run_all]
+task :spec do
+  case ARGV[1]
+  when 'setup'
+    spec_setup
+  when 'run'
+    spec_run_all if ARGV[2] == 'all'
+  when nil
+    run 'rspec spec'
+  end
+end
+
+# Stubs
+task :setup
+task :run
+task :all
+
+def spec_setup
+  RUBIES.each do |ruby_v|
+    puts "Installing #{ruby_v}..."
+    run "rvm install #{ruby_v}"
+    path = "$rvm_path/wrappers/#{ruby_v}"
+    run "#{path}/gem install bundler"
+    run "#{path}/bundle install"
+  end
+end
+
+#task all: [:cop, :run_all]
 
 task :summary do
   run 'rspec spec/ -r ./.rspec_formatter.rb -f SimpleFormatter' rescue nil
 end
 
-RSpec::Core::RakeTask.new(:spec)
+#RSpec::Core::RakeTask.new(:spec)
 
 task :default => :spec
 
@@ -41,3 +66,4 @@ end
 def run *cmd
   sh(cmd.join(" "))
 end
+
