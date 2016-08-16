@@ -1656,6 +1656,26 @@ describe Daru::DataFrame do
       its(:'c.to_a') { is_expected.to eq [Float::NAN, 3, 4, 3, 7] }
       its(:'index.to_a') { is_expected.to eq [12, 13, 14, 15, 18] }
     end
+
+    context 'when resultant dataframe has one row' do
+      subject { df.reject_values 1, 2, 3, 4, 5, nil, Float::NAN }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'b.type') { is_expected.to eq :category }
+      its(:'a.to_a') { is_expected.to eq [7] }
+      its(:'b.to_a') { is_expected.to eq [8] }
+      its(:'c.to_a') { is_expected.to eq [7] }
+      its(:'index.to_a') { is_expected.to eq [18] }      
+    end
+    
+    context 'when resultant dataframe is empty' do
+      subject { df.reject_values 1, 2, 3, 4, 5, 6, 7, nil, Float::NAN }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'b.type') { is_expected.to eq :category }
+      its(:'a.to_a') { is_expected.to eq [] }
+      its(:'b.to_a') { is_expected.to eq [] }
+      its(:'c.to_a') { is_expected.to eq [] }
+      its(:'index.to_a') { is_expected.to eq [] }          
+    end
   end
   
   context '#replace_values' do

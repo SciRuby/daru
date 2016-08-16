@@ -522,8 +522,13 @@ module Daru
     def reject_values(*values)
       positions =
         size.times.to_a - @data.flat_map { |vec| vec.positions(*values) }
-      row_at(*positions)
-      # TODO: Retuns a vector when position has one value
+      # Handle the case when positions size is 1 and #row_at wouldn't return a df
+      if positions.size == 1
+        pos = positions.first
+        row_at(pos..pos)
+      else
+        row_at(*positions)
+      end
     end
 
     # Replace specified values with given value
