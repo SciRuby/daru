@@ -4,15 +4,11 @@ describe Daru::Vector do
       before do
         @dv = Daru::Vector.new [323, 11, 555, 666, 234, 21, 666, 343, 1, 2], dtype: dtype
         @dv_with_nils = Daru::Vector.new [323, 11, 555, nil, 666, 234, 21, 666, 343, nil, 1, 2]
-        @dv_with_missing = Daru::Vector.new [1, 2, 3, 3], missing_values: [3], dtype: dtype
-        @dv_with_all_missing = Daru::Vector.new [3, 3], missing_values: [3], dtype: dtype
       end
 
       context "#mean" do
         it "calculates mean" do
           expect(@dv.mean).to eq(282.2)
-          expect(@dv_with_missing.mean).to eq(1.5)
-          expect(@dv_with_all_missing.mean).to eq(nil)
         end
       end
 
@@ -79,27 +75,11 @@ describe Daru::Vector do
         it "returns the max value" do
           expect(@dv.max).to eq(666)
         end
-
-        it "returns the max value without considering values set as missing" do
-          expect(@dv_with_missing.max).to eq(2)
-        end
-
-        it "returns nil when all values are set missing" do
-          expect(@dv_with_all_missing.max).to eq(nil)
-        end
       end
 
       context "#min" do
         it "returns the min value" do
           expect(@dv.min).to eq(1)
-        end
-
-        it "returns the min value without considering values set as missing" do
-          expect(@dv_with_missing.min).to eq(1)
-        end
-
-        it "returns nil when all values are set missing" do
-          expect(@dv_with_all_missing.min).to eq(nil)
         end
       end
 
@@ -107,28 +87,12 @@ describe Daru::Vector do
         it "returns the sum" do
           expect(@dv.sum).to eq(2822)
         end
-
-        it "returns the sum without considering values set as missing" do
-          expect(@dv_with_missing.sum).to eq(3)
-        end
-
-        it "returns nil when all values are set missing" do
-          expect(@dv_with_all_missing.sum).to eq(nil)
-        end
       end
 
       context "#product" do
         it "returns the product" do
           v = Daru::Vector.new [1, 2, 3, 4, 5], dtype: dtype
           expect(v.product).to eq(120)
-        end
-
-        it "returns the product without considering values set as missing" do
-          expect(@dv_with_missing.product).to eq(2)
-        end
-
-        it "returns nil when all values are set missing" do
-          expect(@dv_with_all_missing.product).to eq(nil)
         end
       end
 
@@ -392,14 +356,14 @@ describe Daru::Vector do
 
       srand(1)
       expect(vec.sample_without_replacement(17).sort).to eq(
-        vec.only_valid.to_a.sort)
+        vec.reject_values(*Daru::MISSING_VALUES).to_a.sort)
       expect {
         vec.sample_without_replacement(20)
       }.to raise_error(ArgumentError)
 
       srand(1)
       expect(vec.sample_without_replacement(17).sort).to eq(
-        vec.only_valid.to_a.sort)
+        vec.reject_values(*Daru::MISSING_VALUES).to_a.sort)
     end
   end
 

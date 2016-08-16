@@ -654,6 +654,90 @@ module Daru
       @index = coerce_index idx
     end
 
+    # Check if any one of mentioned values occur in the vector
+    # @param [Array] *values values to check for
+    # @return [true, false] returns true if any one of specified values
+    #   occur in the vector
+    # @example
+    #   dv = Daru::Vector.new [1, 2, 3, 4, nil]
+    #   dv.include_values? nil, Float::NAN
+    #   # => true
+    def include_values?(*values)
+      values.any? { |v| @cat_hash.include?(v) && !@cat_hash[v].empty? }
+    end
+
+    # Return a vector with specified values removed
+    # @param [Array] *values values to reject from resultant vector
+    # @return [Daru::Vector] vector with specified values removed
+    # @example
+    #   dv = Daru::Vector.new [1, 2, nil, Float::NAN], type: :category
+    #   dv.reject_values nil, Float::NAN
+    #   # => #<Daru::Vector(2)>
+    #   #   0   1
+    #   #   1   2
+    def reject_values(*values)
+      resultant_pos = size.times.to_a - values.flat_map { |v| @cat_hash[v] }
+      dv = at(*resultant_pos)
+      unless dv.is_a? Daru::Vector
+        pos = resultant_pos.first
+        dv = at(pos..pos)
+      end
+      dv.remove_unused_categories
+    end
+
+    # Count the number of values specified
+    # @param [Array] *values values to count for
+    # @return [Integer] the number of times the values mentioned occurs
+    # @example
+    #   dv = Daru::Vector.new [1, 2, 1, 2, 3, 4, nil, nil]
+    #   dv.count_values nil
+    #   # => 2
+    def count_values(*values)
+      values.map { |v| @cat_hash[v].size if @cat_hash.include? v }
+            .compact
+            .inject(0, :+)
+    end
+
+    # Return indexes of values specified
+    # @param [Array] *values values to find indexes for
+    # @return [Array] array of indexes of values specified
+    # @example
+    #   dv = Daru::Vector.new [1, 2, nil, Float::NAN], index: 11..14
+    #   dv.indexes nil, Float::NAN
+    #   # => [13, 14]
+    def indexes(*values)
+      values &= categories
+      index.to_a.values_at(*values.flat_map { |v| @cat_hash[v] }.sort)
+    end
+
+    # Replaces specified values with a new value
+    # @param [Array] old_values array of values to replace
+    # @param [object] new_value new value to replace with
+    # @note It performs the replace in place.
+    # @return [Daru::Vector] Same vector itself with values
+    #   replaced with new value
+    # @example
+    #   dv = Daru::Vector.new [1, 2, :a, :b]
+    #   dv.replace_values [:a, :b], nil
+    #   dv
+    #   # =>
+    #   # #<Daru::Vector:19903200 @name = nil @metadata = {} @size = 4 >
+    #   #     nil
+    #   #   0   1
+    #   #   1   2
+    #   #   2 nil
+    #   #   3 nil
+    def replace_values old_values, new_value
+      old_values = [old_values] unless old_values.is_a? Array
+      rename_hash = old_values.map { |v| [v, new_value] }.to_h
+      rename_categories rename_hash
+    end
+
+    def positions(*values)
+      values &= categories
+      values.flat_map { |v| @cat_hash[v] }.sort
+    end
+
     private
 
     def validate_categories input_categories

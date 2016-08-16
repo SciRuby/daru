@@ -11,6 +11,7 @@ module Daru
     include Daru::Maths::Statistics::DataFrame
     # TODO: Remove this line but its causing erros due to unkown reason
     include Daru::Plotting::DataFrame::NyaplotLibrary if Daru.has_nyaplot?
+    extend Gem::Deprecate
 
     class << self
       # Load data from a CSV file. Specify an optional block to grab the CSV
@@ -483,8 +484,8 @@ module Daru
     # Returns a 'shallow' copy of DataFrame if missing data is not present,
     # or a full copy of only valid data if missing data is present.
     def clone_only_valid
-      if has_missing_data?
-        dup_only_valid
+      if include_values?(*Daru::MISSING_VALUES)
+        reject_values(*Daru::MISSING_VALUES)
       else
         clone
       end
@@ -493,10 +494,68 @@ module Daru
     # Creates a new duplicate dataframe containing only rows
     # without a single missing value.
     def dup_only_valid vecs=nil
-      rows_with_nil = @data.map(&:missing_positions).inject(&:concat).uniq
+      rows_with_nil = @data.map { |vec| vec.indexes(*Daru::MISSING_VALUES) }
+                           .inject(&:concat)
+                           .uniq
 
       row_indexes = @index.to_a
       (vecs.nil? ? self : dup(vecs)).row[*(row_indexes - rows_with_nil)]
+    end
+    deprecate :dup_only_valid, :reject_values, 2016, 10
+
+    # Returns a dataframe in which rows with any of the mentioned values
+    #   are ignored.
+    # @param [Array] *values values to reject to form the new dataframe
+    # @return [Daru::DataFrame] Data Frame with only rows which doesn't
+    #   contain the mentioned values
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1,    2,          3,   nil,        Float::NAN, nil, 1,   7],
+    #     b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   8],
+    #     c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
+    #   }, index: 11..18)
+    #   df.reject_values nil, Float::NAN
+    #   # => #<Daru::DataFrame(2x3)>
+    #   #       a   b   c
+    #   #   11   1   a   a
+    #   #   18   7   8   7
+    def reject_values(*values)
+      positions =
+        size.times.to_a - @data.flat_map { |vec| vec.positions(*values) }
+      # Handle the case when positions size is 1 and #row_at wouldn't return a df
+      if positions.size == 1
+        pos = positions.first
+        row_at(pos..pos)
+      else
+        row_at(*positions)
+      end
+    end
+
+    # Replace specified values with given value
+    # @param [Array] old_values values to replace with new value
+    # @param [object] new_value new value to replace with
+    # @return [Daru::DataFrame] Data Frame itself with old values replace
+    #   with new value
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1,    2,          3,   nil,        Float::NAN, nil, 1,   7],
+    #     b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   8],
+    #     c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
+    #   }, index: 11..18)
+    #   df
+    #   # => #<Daru::DataFrame(8x3)>
+    #   #       a   b   c
+    #   #   11   1   a   a
+    #   #   12   2   b NaN
+    #   #   13   3 NaN   3
+    #   #   14 NaN NaN   4
+    #   #   15 NaN NaN   3
+    #   #   16 NaN   3   5
+    #   #   17   1   5 NaN
+    #   #   18   7   8   7
+    def replace_values old_values, new_value
+      @data.each { |vec| vec.replace_values old_values, new_value }
+      self
     end
 
     # Iterate over each index of the DataFrame.
@@ -940,8 +999,7 @@ module Daru
     # treated as 'missing'. The default missing value is *nil*.
     def missing_values_rows missing_values=[nil]
       number_of_missing = each_row.map do |row|
-        row.missing_values = missing_values
-        row.missing_positions.size
+        row.indexes(*missing_values).size
       end
 
       Daru::Vector.new number_of_missing, index: @index, name: "#{@name}_missing_rows"
@@ -951,10 +1009,27 @@ module Daru
     alias :vector_missing_values :missing_values_rows
 
     def has_missing_data?
-      !!@data.any?(&:has_missing_data?)
+      !!@data.any? { |vec| vec.include_values?(*Daru::MISSING_VALUES) }
     end
-
     alias :flawed? :has_missing_data?
+    deprecate :has_missing_data?, :include_values?, 2016, 10
+    deprecate :flawed?, :include_values?, 2016, 10
+
+    # Check if any of given values occur in the data frame
+    # @param [Array] *values values to check for
+    # @return [true, false] true if any of the given values occur in the
+    #   dataframe, false otherwise
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1,    2,          3,   nil,        Float::NAN, nil, 1,   7],
+    #     b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   8],
+    #     c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
+    #   }, index: 11..18)
+    #   df.include_values? nil
+    #   # => true
+    def include_values?(*values)
+      @data.any? { |vec| vec.include_values?(*values) }
+    end
 
     # Return a nested hash using vector names as keys and an array constructed of
     # hashes with other values. If block provided, is used to provide the
@@ -1093,7 +1168,7 @@ module Daru
       mean_vec = Daru::Vector.new [0]*@size, index: @index, name: "mean_#{@name}"
 
       each_row_with_index.each_with_object(mean_vec) do |(row, i), memo|
-        memo[i] = row.missing_positions.size > max_missing ? nil : row.mean
+        memo[i] = row.indexes(*Daru::MISSING_VALUES).size > max_missing ? nil : row.mean
       end
     end
 
@@ -1624,7 +1699,7 @@ module Daru
     # Convert all vectors of type *:numeric* and not containing nils into an NMatrix.
     def to_nmatrix
       each_vector.select do |vector|
-        vector.numeric? && !vector.has_missing_data?
+        vector.numeric? && !vector.include_values?(*Daru::MISSING_VALUES)
       end.map(&:to_a).transpose.to_nm
     end
 

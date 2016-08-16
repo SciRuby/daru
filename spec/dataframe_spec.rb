@@ -1607,31 +1607,122 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#dup_only_valid" do
-    before do
-      @missing_data_df = Daru::DataFrame.new({
-        a: [1  , 2, 3, nil, 4, nil, 5],
-        b: [nil, 2, 3, nil, 4, nil, 5],
-        c: [1,   2, 3, 43 , 4, nil, 5]
+  context '#reject_values' do
+    let(:df) do
+      Daru::DataFrame.new({
+        a: [1,    2,          3,   nil,        Float::NAN, nil, 1,   7],
+        b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   8],
+        c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
+      }, index: 11..18)
+    end
+    before { df.to_category :b }
+    
+    context 'remove nils only' do
+      subject { df.reject_values nil }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'b.type') { is_expected.to eq :category }
+      its(:'a.to_a') { is_expected.to eq [1, 2, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a, :b, 8] }
+      its(:'c.to_a') { is_expected.to eq ['a', Float::NAN, 7] }
+      its(:'index.to_a') { is_expected.to eq [11, 12, 18] }
+    end
+    
+    context 'remove Float::NAN only' do
+      subject { df.reject_values Float::NAN }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'b.type') { is_expected.to eq :category }
+      its(:'a.to_a') { is_expected.to eq [1, 3, nil, 1, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a, nil, 3, 5, 8] }
+      its(:'c.to_a') { is_expected.to eq ['a', 3, 5, nil, 7] }
+      its(:'index.to_a') { is_expected.to eq [11, 13, 16, 17, 18] }
+    end
+    
+    context 'remove both nil and Float::NAN' do
+      subject { df.reject_values nil, Float::NAN }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'b.type') { is_expected.to eq :category }
+      its(:'a.to_a') { is_expected.to eq [1, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a, 8] }
+      its(:'c.to_a') { is_expected.to eq ['a', 7] }
+      its(:'index.to_a') { is_expected.to eq [11, 18] }
+    end
+    
+    context 'any other values' do
+      subject { df.reject_values 1, 5 }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'b.type') { is_expected.to eq :category }
+      its(:'a.to_a') { is_expected.to eq [2, 3, nil, Float::NAN, 7] }
+      its(:'b.to_a') { is_expected.to eq [:b, nil, Float::NAN, nil, 8] }
+      its(:'c.to_a') { is_expected.to eq [Float::NAN, 3, 4, 3, 7] }
+      its(:'index.to_a') { is_expected.to eq [12, 13, 14, 15, 18] }
+    end
+
+    context 'when resultant dataframe has one row' do
+      subject { df.reject_values 1, 2, 3, 4, 5, nil, Float::NAN }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'b.type') { is_expected.to eq :category }
+      its(:'a.to_a') { is_expected.to eq [7] }
+      its(:'b.to_a') { is_expected.to eq [8] }
+      its(:'c.to_a') { is_expected.to eq [7] }
+      its(:'index.to_a') { is_expected.to eq [18] }      
+    end
+    
+    context 'when resultant dataframe is empty' do
+      subject { df.reject_values 1, 2, 3, 4, 5, 6, 7, nil, Float::NAN }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'b.type') { is_expected.to eq :category }
+      its(:'a.to_a') { is_expected.to eq [] }
+      its(:'b.to_a') { is_expected.to eq [] }
+      its(:'c.to_a') { is_expected.to eq [] }
+      its(:'index.to_a') { is_expected.to eq [] }          
+    end
+  end
+  
+  context '#replace_values' do
+    subject do
+      Daru::DataFrame.new({
+        a: [1,    2,          3,   nil,        Float::NAN, nil, 1,   7],
+        b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   8],
+        c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
       })
     end
-
-    it "dups rows with non-missing data only" do
-      df = Daru::DataFrame.new({
-        a: [2, 3, 4, 5],
-        b: [2, 3, 4, 5],
-        c: [2, 3, 4, 5]
-      }, index: [1,2,4,6])
-      expect(@missing_data_df.dup_only_valid).to eq(df)
+    before { subject.to_category :b }
+    
+    context 'replace nils only' do
+      before { subject.replace_values nil, 10 }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'b.type') { is_expected.to eq :category }
+      its(:'a.to_a') { is_expected.to eq [1, 2, 3, 10, Float::NAN, 10, 1, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a,  :b, 10, Float::NAN, 10, 3, 5, 8] }
+      its(:'c.to_a') { is_expected.to eq ['a', Float::NAN, 3, 4, 3, 5, 10, 7] }
     end
-
-    it "dups only the specified vectors" do
-      df = Daru::DataFrame.new({
-        a: [2,3,4,5],
-        c: [2,3,4,5]
-      }, index: [1,2,4,6])
-      expect(@missing_data_df.dup_only_valid([:a, :c])).to eq(df)
+    
+    context 'replace Float::NAN only' do
+      before { subject.replace_values Float::NAN, 10 }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'b.type') { is_expected.to eq :category }
+      its(:'a.to_a') { is_expected.to eq [1, 2, 3, nil, 10, nil, 1, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a,  :b, nil, 10, nil, 3, 5, 8] }
+      its(:'c.to_a') { is_expected.to eq ['a', 10, 3, 4, 3, 5, nil, 7] }
     end
+    
+    context 'replace both nil and Float::NAN' do
+      before { subject.replace_values [nil, Float::NAN], 10 }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'b.type') { is_expected.to eq :category }
+      its(:'a.to_a') { is_expected.to eq [1, 2, 3, 10, 10, 10, 1, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a,  :b, 10, 10, 10, 3, 5, 8] }
+      its(:'c.to_a') { is_expected.to eq ['a', 10, 3, 4, 3, 5, 10, 7] }
+    end
+    
+    context 'replace other values' do
+      before { subject.replace_values [1, 5], 10 }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'b.type') { is_expected.to eq :category }
+      its(:'a.to_a') { is_expected.to eq [10, 2, 3, nil, Float::NAN, nil, 10, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a,  :b, nil, Float::NAN, nil, 3, 10, 8] }
+      its(:'c.to_a') { is_expected.to eq ['a', Float::NAN, 3, 4, 3, 10, nil, 7] }
+    end    
   end
 
   context "#clone" do
@@ -1684,7 +1775,7 @@ describe Daru::DataFrame do
       })
     }
     it 'does the most reasonable thing' do
-      expect(df_with_missing.clone_only_valid).to eq(df_with_missing.dup_only_valid)
+      expect(df_with_missing.clone_only_valid).to eq(df_with_missing.reject_values(*Daru::MISSING_VALUES))
       expect(df_without_missing.clone_only_valid).to eq(df_without_missing.clone)
     end
   end
@@ -2958,23 +3049,29 @@ describe Daru::DataFrame do
     end
   end
 
-  context "has_missing_data?" do
-    before do
-      a1 = Daru::Vector.new [1, nil, 3, 4, 5, nil]
-      a2 = Daru::Vector.new [10, nil, 20, 20, 20, 30]
-      b1 = Daru::Vector.new [nil, nil, 1, 1, 1, 2]
-      b2 = Daru::Vector.new [2, 2, 2, nil, 2, 3]
-      c  = Daru::Vector.new [nil, 2, 4, 2, 2, 2]
-      @df = Daru::DataFrame.new({ :a1 => a1, :a2 => a2, :b1 => b1, :b2 => b2, :c => c })
+  context '#include_values?' do
+    let(:df) do
+      Daru::DataFrame.new({
+        a: [1,   2,  3,   4,          Float::NAN, 6, 1],
+        b: [:a,  :b, nil, Float::NAN, nil,        3, 5],
+        c: ['a', 6,  3,   4,          3,          5, 3],
+        d: [1,   2,  3,   5,          1,          2, 5]
+      })
     end
-
-    it "returns true when missing data present" do
-      expect(@df.has_missing_data?).to eq(true)
+    before { df.to_category :b }
+    
+    context 'true' do
+      it { expect(df.include_values? nil).to eq true }
+      it { expect(df.include_values? Float::NAN).to eq true }
+      it { expect(df.include_values? nil, Float::NAN).to eq true }
+      it { expect(df.include_values? 1, 30).to eq true }
     end
-
-    it "returns false when no missing data prensent" do
-      a = @df.dup_only_valid
-      expect(a.has_missing_data?).to eq(false)
+    
+    context 'false' do
+      it { expect(df[:a, :c].include_values? nil).to eq false }
+      it { expect(df[:c, :d].include_values? Float::NAN).to eq false }
+      it { expect(df[:c, :d].include_values? nil, Float::NAN).to eq false }
+      it { expect(df.include_values? 10, 20).to eq false }
     end
   end
 

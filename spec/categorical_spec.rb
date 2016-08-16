@@ -1389,6 +1389,202 @@ describe Daru::Vector, "categorical" do
       end
     end
   end
+
+  context '#reject_values'do
+    let(:dv) { Daru::Vector.new [1, nil, 3, :a, Float::NAN, nil, Float::NAN, 1],
+      index: 11..18, type: :category }
+    context 'reject only nils' do
+      subject { dv.reject_values nil }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:type) { is_expected.to eq :category }
+      its(:to_a) { is_expected.to eq [1, 3, :a, Float::NAN, Float::NAN, 1] }
+      its(:'index.to_a') { is_expected.to eq [11, 13, 14, 15, 17, 18] }
+    end
+
+    context 'reject only float::NAN' do
+      subject { dv.reject_values Float::NAN }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:type) { is_expected.to eq :category }
+      its(:to_a) { is_expected.to eq [1, nil, 3, :a, nil, 1] }
+      its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 16, 18] }
+    end
+
+    context 'reject both nil and float::NAN' do
+      subject { dv.reject_values nil, Float::NAN }
+
+      it { is_expected.to be_a Daru::Vector }
+      its(:type) { is_expected.to eq :category }
+      its(:to_a) { is_expected.to eq [1, 3, :a, 1] }
+      its(:'index.to_a') { is_expected.to eq [11, 13, 14, 18] }
+    end
+    
+    context 'reject any other value' do
+      subject { dv.reject_values 1, 3, 20 }
+
+      it { is_expected.to be_a Daru::Vector }
+      its(:type) { is_expected.to eq :category }
+      its(:to_a) { is_expected.to eq [nil, :a, Float::NAN, nil, Float::NAN] }
+      its(:'index.to_a') { is_expected.to eq [12, 14, 15, 16, 17] }
+    end
+
+    context 'when resultant vector has only one value' do
+      subject { dv.reject_values 1, :a, nil, Float::NAN }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:to_a) { is_expected.to eq [3] }
+      its(:'index.to_a') { is_expected.to eq [13] }
+    end
+    
+    context 'when resultant vector has no value' do
+      subject { dv.reject_values 1, 3, :a, nil, Float::NAN, 5 }
+      
+      it { is_expected.to be_a Daru::Vector }
+      its(:to_a) { is_expected.to eq [] }
+      its(:'index.to_a') { is_expected.to eq [] }
+    end    
+  end
+
+  context '#include_values?' do
+    context 'only nils' do
+      context 'true' do
+        let(:dv) { Daru::Vector.new [1, 2, 3, :a, 'Unknown', nil],
+          type: :category }
+        it { expect(dv.include_values? nil).to eq true }
+      end
+
+      context 'false' do
+        let(:dv) { Daru::Vector.new [1, 2, 3, :a, 'Unknown'],
+          type: :category }
+        it { expect(dv.include_values? nil).to eq false }
+      end
+    end
+
+    context 'only Float::NAN' do
+      context 'true' do
+        let(:dv) { Daru::Vector.new [1, nil, 2, 3, Float::NAN],
+          type: :category}
+        it { expect(dv.include_values? Float::NAN).to eq true }
+      end
+
+      context 'false' do
+        let(:dv) { Daru::Vector.new [1, nil, 2, 3],
+          type: :category }
+        it { expect(dv.include_values? Float::NAN).to eq false }
+      end
+    end
+
+    context 'both nil and Float::NAN' do
+      context 'true with only nil' do
+        let(:dv) { Daru::Vector.new [1, Float::NAN, 2, 3],
+          type: :category}
+        it { expect(dv.include_values? nil, Float::NAN).to eq true }
+      end
+      
+      context 'true with only Float::NAN' do
+        let(:dv) { Daru::Vector.new [1, nil, 2, 3],
+          type: :category}
+        it { expect(dv.include_values? nil, Float::NAN).to eq true }
+      end
+      
+      context 'false' do
+        let(:dv) { Daru::Vector.new [1, 2, 3],
+          type: :category}
+        it { expect(dv.include_values? nil, Float::NAN).to eq false }
+      end
+    end
+    
+    context 'any other value' do
+      context 'true' do
+        let(:dv) { Daru::Vector.new [1, 2, 3, 4, nil],
+          type: :category }
+        it { expect(dv.include_values? 1, 2, 3, 5).to eq true }
+      end
+      
+      context 'false' do
+        let(:dv) { Daru::Vector.new [1, 2, 3, 4, nil],
+          type: :category }
+        it { expect(dv.include_values? 5, 6).to eq false }
+      end
+    end
+  end
+
+  context '#count_values' do
+    let(:dv) { Daru::Vector.new [1, 2, 3, 1, 2, nil, nil], type: :category }
+    it { expect(dv.count_values 1, 2).to eq 4 }
+    it { expect(dv.count_values nil).to eq 2 }
+    it { expect(dv.count_values 3, Float::NAN).to eq 1 }
+    it { expect(dv.count_values 4).to eq 0 }
+  end
+
+  context '#indexes' do
+    context Daru::Index do
+      let(:dv) { Daru::Vector.new [1, 2, 1, 2, 3, nil, nil, Float::NAN],
+        index: 11..18, type: :category }
+      
+      subject { dv.indexes 1, 2, nil, Float::NAN }
+      it { is_expected.to be_a Array }
+      it { is_expected.to eq [11, 12, 13, 14, 16, 17, 18] }
+    end
+    
+    context Daru::MultiIndex do
+      let(:mi) do
+        Daru::MultiIndex.from_tuples([
+          ['M', 2000],
+          ['M', 2001],
+          ['M', 2002],
+          ['M', 2003],
+          ['F', 2000],
+          ['F', 2001],
+          ['F', 2002],
+          ['F', 2003]
+        ])
+      end
+      let(:dv) { Daru::Vector.new [1, 2, 1, 2, 3, nil, nil, Float::NAN],
+        index: mi, type: :category }
+      
+      subject { dv.indexes 1, 2, Float::NAN }
+      it { is_expected.to be_a Array }
+      it { is_expected.to eq(
+        [
+          ['M', 2000],
+          ['M', 2001],
+          ['M', 2002],
+          ['M', 2003],
+          ['F', 2003]
+        ]) }
+    end
+  end
+  
+  context '#replace_values' do
+    subject do
+      Daru::Vector.new(
+        [1, 2, 1, 4, nil, Float::NAN, nil, Float::NAN],
+        index: 11..18, type: :category
+      )
+    end
+
+    context 'replace nils and NaNs' do
+      before { subject.replace_values [nil, Float::NAN], 10 }
+      its(:type) { is_expected.to eq :category }
+      its(:to_a) { is_expected.to eq [1, 2, 1, 4, 10, 10, 10, 10] }
+    end
+    
+    context 'replace arbitrary values' do
+      before { subject.replace_values [1, 2], 10 }
+      its(:type) { is_expected.to eq :category }
+      its(:to_a) { is_expected.to eq(
+        [10, 10, 10, 4, nil, Float::NAN, nil, Float::NAN]) }
+    end
+    
+    context 'works for single value' do
+      before { subject.replace_values nil, 10 }
+      its(:type) { is_expected.to eq :category }
+      its(:to_a) { is_expected.to eq(
+        [1, 2, 1, 4, 10, Float::NAN, 10, Float::NAN]) }
+    end
+  end
 end
 
 describe Daru::DataFrame, "categorical" do

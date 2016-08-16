@@ -12,6 +12,7 @@ module Daru
     include Enumerable
     include Daru::Maths::Arithmetic::Vector
     include Daru::Maths::Statistics::Vector
+    extend Gem::Deprecate
 
     class << self
       # Create a new vector by specifying the size and an optional value
@@ -89,6 +90,10 @@ module Daru
       end
     end
 
+    def size
+      @data.size
+    end
+
     def each(&block)
       return to_enum(:each) unless block_given?
 
@@ -114,7 +119,6 @@ module Daru
     def map!(&block)
       return to_enum(:map!) unless block_given?
       @data.map!(&block)
-      update
       self
     end
 
@@ -122,8 +126,6 @@ module Daru
     attr_reader :name
     # The row index. Can be either Daru::Index or Daru::MultiIndex.
     attr_reader :index
-    # The total number of elements of the vector.
-    attr_reader :size
     # The underlying dtype of the Vector. Can be either :array, :nmatrix or :gsl.
     attr_reader :dtype
     # If the dtype is :nmatrix, this attribute represents the data type of the
@@ -132,6 +134,7 @@ module Daru
     attr_reader :nm_dtype
     # An Array or the positions in the vector that are being treated as 'missing'.
     attr_reader :missing_positions
+    deprecate :missing_positions, :indexes, 2016, 10
     # Store a hash of labels for values. Supplementary only. Recommend using index
     # for proper usage.
     attr_accessor :labels
@@ -139,6 +142,8 @@ module Daru
     attr_reader :data
     # Ploting library being used for this vector
     attr_reader :plotting_library
+    # TODO: Make private.
+    attr_reader :nil_positions, :nan_positions
 
     # Create a Vector object.
     #
@@ -240,7 +245,7 @@ module Daru
         @data[positions]
       else
         values = positions.map { |pos| @data[pos] }
-        Daru::Vector.new values, index: @index.at(*original_positions)
+        Daru::Vector.new values, index: @index.at(*original_positions), dtype: dtype
       end
     end
 
@@ -260,6 +265,7 @@ module Daru
     def set_at positions, val
       validate_positions(*positions)
       positions.map { |pos| @data[pos] = val }
+      update_position_cache
     end
 
     # Just like in Hashes, you can specify the index label of the Daru::Vector
@@ -282,36 +288,7 @@ module Daru
 
       modify_vector(indexes, val)
 
-      update_internal_state
-    end
-
-    # The values to be treated as 'missing'. *nil* is the default missing
-    # type. To set missing values see the missing_values= method.
-    def missing_values
-      @missing_values.keys
-    end
-
-    # Assign an Array to treat certain values as 'missing'.
-    #
-    # == Usage
-    #
-    #   v = Daru::Vector.new [1,2,3,4,5]
-    #   v.missing_values = [3]
-    #   v.update
-    #   v.missing_positions
-    #   #=> [2]
-    def missing_values= values
-      set_missing_values values
-      set_missing_positions
-    end
-
-    # Method for updating the metadata (i.e. missing value positions) of the
-    # after assingment/deletion etc. are complete. This is provided so that
-    # time is not wasted in creating the metadata for the vector each time
-    # assignment/deletion of elements is done. Updating data this way is called
-    # lazy loading. To set or unset lazy loading, see the .lazy_update= method.
-    def update
-      Daru.lazy_update and set_missing_positions(true)
+      update_position_cache
     end
 
     # Two vectors are equal if the have the exact same index values corresponding
@@ -319,7 +296,7 @@ module Daru
     def == other
       case other
       when Daru::Vector
-        @index == other.index && @size == other.size &&
+        @index == other.index && size == other.size &&
           @index.all? { |index| self[index] == other[index] }
       else
         super
@@ -446,8 +423,8 @@ module Daru
     end
 
     def tail q=10
-      start = [@size - q, 0].max
-      self[start..(@size-1)]
+      start = [size - q, 0].max
+      self[start..(size-1)]
     end
 
     def empty?
@@ -464,9 +441,23 @@ module Daru
 
     # Reports whether missing data is present in the Vector.
     def has_missing_data?
-      !missing_positions.empty?
+      !indexes(*Daru::MISSING_VALUES).empty?
     end
     alias :flawed? :has_missing_data?
+    deprecate :has_missing_data?, :include_values?, 2016, 10
+    deprecate :flawed?, :include_values?, 2016, 10
+
+    # Check if any one of mentioned values occur in the vector
+    # @param [Array] *values values to check for
+    # @return [true, false] returns true if any one of specified values
+    #   occur in the vector
+    # @example
+    #   dv = Daru::Vector.new [1, 2, 3, 4, nil]
+    #   dv.include_values? nil, Float::NAN
+    #   # => true
+    def include_values?(*values)
+      values.any? { |v| include_with_nan? @data, v }
+    end
 
     # Append an element to the vector by specifying the element and index
     def concat element, index
@@ -475,7 +466,7 @@ module Daru
       @index |= [index]
       @data[@index[index]] = element
 
-      update_internal_state
+      update_position_cache
     end
     alias :push :concat
     alias :<< :concat
@@ -503,7 +494,7 @@ module Daru
       @data.delete_at @index[index]
       @index = Daru::Index.new(@index.to_a - [index])
 
-      update_internal_state
+      update_position_cache
     end
 
     # The type of data contained in the vector. Can be :object or :numeric. If
@@ -619,15 +610,6 @@ module Daru
     end
     # :nocov:
 
-    # Returns *true* if the value passed is actually exists or is not marked as
-    # a *missing value*.
-    def exists? value
-      # FIXME: I'm not sure how this method should really work,
-      # or whether it is needed at all. - zverok
-      idx = index_of(value)
-      !!idx && !@missing_values.key?(self[idx])
-    end
-
     # Like map, but returns a Daru::Vector with the returned values.
     def recode dt=nil, &block
       return to_enum(:recode) unless block_given?
@@ -653,7 +635,7 @@ module Daru
       @data = cast_vector_to @dtype, keep_e
       @index = Daru::Index.new(keep_i)
 
-      update_internal_state
+      update_position_cache
 
       self
     end
@@ -758,7 +740,7 @@ module Daru
     #
     # * +replacement+ - The value which should replace all nils
     def replace_nils! replacement
-      missing_positions.each do |idx|
+      indexes(*Daru::MISSING_VALUES).each do |idx|
         self[idx] = replacement
       end
 
@@ -802,7 +784,19 @@ module Daru
 
     # number of non-missing elements
     def n_valid
-      @size - missing_positions.size
+      size - indexes(*Daru::MISSING_VALUES).size
+    end
+    deprecate :n_valid, :count_values, 2016, 10
+
+    # Count the number of values specified
+    # @param [Array] *values values to count for
+    # @return [Integer] the number of times the values mentioned occurs
+    # @example
+    #   dv = Daru::Vector.new [1, 2, 1, 2, 3, 4, nil, nil]
+    #   dv.count_values nil
+    #   # => 2
+    def count_values(*values)
+      positions(*values).size
     end
 
     # Returns *true* if an index exists
@@ -834,7 +828,11 @@ module Daru
     # the stored GSL::Vector object.
     def to_gsl
       raise NoMethodError, 'Install gsl-nmatrix for access to this functionality.' unless Daru.has_gsl?
-      dtype == :gsl ? @data.data : GSL::Vector.alloc(only_valid(:array).to_a)
+      if dtype == :gsl
+        @data.data
+      else
+        GSL::Vector.alloc(reject_values(*Daru::MISSING_VALUES).to_a)
+      end
     end
 
     # Convert to hash (explicit). Hash keys are indexes and values are the correspoding elements
@@ -875,7 +873,7 @@ module Daru
     def report_building b # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
       b.section(name: name) do |s|
         s.text "n :#{size}"
-        s.text "n valid:#{n_valid}"
+        s.text "n valid:#{count_values(*Daru::MISSING_VALUES)}"
         if @type == :object
           s.text  "factors: #{factors.to_a.join(',')}"
           s.text  "mode: #{mode}"
@@ -883,7 +881,7 @@ module Daru
           s.table(name: 'Distribution') do |t|
             frequencies.sort_by(&:to_s).each do |k,v|
               key = @index.include?(k) ? @index[k] : k
-              t.row [key, v, ('%0.2f%%' % (v.quo(n_valid)*100))]
+              t.row [key, v, ('%0.2f%%' % (v.quo(count_values(*Daru::MISSING_VALUES))*100))]
             end
           end
         end
@@ -932,7 +930,7 @@ module Daru
       @data = cast_vector_to @dtype, values
       @index = new_index
 
-      update_internal_state
+      update_position_cache
 
       self
     end
@@ -952,7 +950,7 @@ module Daru
     def reorder! order
       @index = @index.reorder order
       @data = order.map { |i| @data[i] }
-      update_internal_state
+      update_position_cache
       self
     end
 
@@ -1082,12 +1080,13 @@ module Daru
     # vector, setting this to false will return the same vector.
     # Otherwise, a duplicate will be returned irrespective of
     # presence of missing data.
+
     def only_valid as_a=:vector, _duplicate=true
       # FIXME: Now duplicate is just ignored.
       #   There are no spec that fail on this case, so I'll leave it
       #   this way for now - zverok, 2016-05-07
 
-      new_index = @index.to_a - missing_positions
+      new_index = @index.to_a - indexes(*Daru::MISSING_VALUES)
       new_vector = new_index.map { |idx| self[idx] }
 
       if as_a == :vector
@@ -1096,22 +1095,82 @@ module Daru
         new_vector
       end
     end
+    deprecate :only_valid, :reject_values, 2016, 10
+
+    # Return a vector with specified values removed
+    # @param [Array] *values values to reject from resultant vector
+    # @return [Daru::Vector] vector with specified values removed
+    # @example
+    #   dv = Daru::Vector.new [1, 2, nil, Float::NAN]
+    #   dv.reject_values nil, Float::NAN
+    #   # => #<Daru::Vector(2)>
+    #   #   0   1
+    #   #   1   2
+    def reject_values(*values)
+      resultant_pos = size.times.to_a - positions(*values)
+      dv = at(*resultant_pos)
+      # Handle the case when number of positions is 1
+      # and hence #at doesn't return a vector
+      if dv.is_a?(Daru::Vector)
+        dv
+      else
+        pos = resultant_pos.first
+        at(pos..pos)
+      end
+    end
+
+    # Return indexes of values specified
+    # @param [Array] *values values to find indexes for
+    # @return [Array] array of indexes of values specified
+    # @example
+    #   dv = Daru::Vector.new [1, 2, nil, Float::NAN], index: 11..14
+    #   dv.indexes nil, Float::NAN
+    #   # => [13, 14]
+    def indexes(*values)
+      index.to_a.values_at(*positions(*values))
+    end
+
+    # Replaces specified values with a new value
+    # @param [Array] old_values array of values to replace
+    # @param [object] new_value new value to replace with
+    # @note It performs the replace in place.
+    # @return [Daru::Vector] Same vector itself with values
+    #   replaced with new value
+    # @example
+    #   dv = Daru::Vector.new [1, 2, :a, :b]
+    #   dv.replace_values [:a, :b], nil
+    #   dv
+    #   # =>
+    #   # #<Daru::Vector:19903200 @name = nil @metadata = {} @size = 4 >
+    #   #     nil
+    #   #   0   1
+    #   #   1   2
+    #   #   2 nil
+    #   #   3 nil
+    def replace_values(old_values, new_value)
+      old_values = [old_values] unless old_values.is_a? Array
+      size.times do |pos|
+        set_at([pos], new_value) if include_with_nan? old_values, at(pos)
+      end
+      self
+    end
 
     # Returns a Vector containing only missing data (preserves indexes).
     def only_missing as_a=:vector
       if as_a == :vector
-        self[*missing_positions]
+        self[*indexes(*Daru::MISSING_VALUES)]
       elsif as_a == :array
-        self[*missing_positions].to_a
+        self[*indexes(*Daru::MISSING_VALUES)].to_a
       end
     end
+    deprecate :only_missing, nil, 2016, 10
 
     # Returns a Vector with only numerical data. Missing data is included
     # but non-Numeric objects are excluded. Preserves index.
     def only_numerics
       numeric_indexes =
         each_with_index
-        .select { |v, _i| v.is_a?(Numeric) || @missing_values.key?(v) }
+        .select { |v, _i| v.is_a?(Numeric) || v.nil? }
         .map(&:last)
 
       self[*numeric_indexes]
@@ -1137,7 +1196,7 @@ module Daru
     # Copies the structure of the vector (i.e the index, size, etc.) and fills all
     # all values with nils.
     def clone_structure
-      Daru::Vector.new(([nil]*@size), name: @name, index: @index.dup)
+      Daru::Vector.new(([nil]*size), name: @name, index: @index.dup)
     end
 
     # Save the vector to a file
@@ -1154,8 +1213,7 @@ module Daru
         data:           @data.to_a,
         dtype:          @dtype,
         name:           @name,
-        index:          @index,
-        missing_values: @missing_values
+        index:          @index
       )
     end
 
@@ -1233,7 +1291,32 @@ module Daru
       end
     end
 
+    def positions(*values)
+      case values
+      when [nil]
+        nil_positions
+      when [Float::NAN]
+        nan_positions
+      when [nil, Float::NAN], [Float::NAN, nil]
+        nil_positions + nan_positions
+      else
+        size.times.select { |i| include_with_nan? values, @data[i] }
+      end
+    end
+
     private
+
+    def nil_positions
+      @nil_positions ||
+        @nil_positions = size.times.select { |i| @data[i].nil? }
+    end
+
+    def nan_positions
+      @nan_positions ||
+        @nan_positions = size.times.select do |i|
+          @data[i].respond_to?(:nan?) && @data[i].nan?
+        end
+    end
 
     def initialize_vector source, opts
       index, source = parse_source(source, opts)
@@ -1245,9 +1328,6 @@ module Daru
       guard_sizes!
 
       @possibly_changed_type = true
-      set_missing_values opts[:missing_values]
-      set_missing_positions(true) unless @index.class == Daru::CategoricalIndex
-      set_size
       # Include plotting functionality
       self.plotting_library = Daru.plotting_library
     end
@@ -1320,10 +1400,6 @@ module Daru
       new_vector
     end
 
-    def set_size
-      @size = @data.size
-    end
-
     def set_name name # rubocop:disable Style/AccessorMethodName
       @name =
         if name.is_a?(Numeric)  then name
@@ -1332,34 +1408,6 @@ module Daru
         else
           nil
         end
-    end
-
-    def set_missing_positions forced=false # rubocop:disable Style/AccessorMethodName
-      return if Daru.lazy_update && !forced
-
-      @missing_positions = []
-      each_with_index do |val, i|
-        @missing_positions << i if @missing_values.key?(val)
-      end
-    end
-
-    # Setup missing_values. The missing_values instance variable is set
-    # as a Hash for faster lookup times.
-    def set_missing_values values_arry # rubocop:disable Style/AccessorMethodName
-      @missing_values = {}
-      @missing_values[nil] = 0
-      if values_arry
-        values_arry.each do |e|
-          # If dtype is :gsl then missing values have to be converted to float
-          e = e.to_f if dtype == :gsl && e.is_a?(Numeric)
-          @missing_values[e] = 0
-        end
-      end
-    end
-
-    def update_internal_state
-      set_size
-      set_missing_positions
     end
 
     # Raises IndexError when one of the positions is an invalid position
@@ -1419,7 +1467,7 @@ module Daru
         insert_vector(indexes, val)
       end
 
-      update_internal_state
+      update_position_cache
     end
 
     def cut_find_category partitions, val, close_at
@@ -1450,6 +1498,21 @@ module Daru
           "#{partitions[left_index]+1}-#{partitions[left_index+1]}"
         end
       end
+    end
+
+    def include_with_nan? array, value
+      # Returns true if value is included in array.
+      # Similar to include? but also works if value is Float::NAN
+      if value.respond_to?(:nan?) && value.nan?
+        array.any? { |i| i.respond_to?(:nan?) && i.nan? }
+      else
+        array.include? value
+      end
+    end
+
+    def update_position_cache
+      @nil_positions = nil
+      @nan_positions = nil
     end
   end
 end

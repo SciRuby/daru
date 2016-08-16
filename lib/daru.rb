@@ -30,6 +30,8 @@ module Daru
     12 => 31
   }.freeze
 
+  MISSING_VALUES = [nil, Float::NAN].freeze
+
   @lazy_update = false
 
   SPLIT_TOKEN = ','.freeze

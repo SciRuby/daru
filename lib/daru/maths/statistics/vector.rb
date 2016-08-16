@@ -55,16 +55,16 @@ module Daru
         alias :mad :median_absolute_deviation
 
         def standard_error
-          standard_deviation_sample/Math.sqrt(n_valid)
+          standard_deviation_sample/Math.sqrt(size - count_values(*Daru::MISSING_VALUES))
         end
 
         def sum_of_squared_deviation
-          (@data.inject(0) { |a,x| x**2 + a } - (sum**2).quo(n_valid).to_f).to_f
+          (@data.inject(0) { |a,x| x**2 + a } - (sum**2).quo(size - count_values(*Daru::MISSING_VALUES)).to_f).to_f
         end
 
         # Retrieve unique values of non-nil data
         def factors
-          only_valid.uniq.reset_index!
+          reject_values(*Daru::MISSING_VALUES).uniq.reset_index!
         end
 
         # Maximum element of the vector.
@@ -98,7 +98,7 @@ module Daru
         end
 
         def proportions
-          len = n_valid
+          len = size - count_values(*Daru::MISSING_VALUES)
           frequencies.each_with_object({}) do |(el, count), hash|
             hash[el] = count / len
           end
@@ -128,7 +128,7 @@ module Daru
           elsif value
             count { |val| val == value }
           else
-            size - @missing_positions.size
+            size - indexes(*Daru::MISSING_VALUES).size
           end
         end
 
@@ -142,7 +142,7 @@ module Daru
         end
 
         def proportion value=1
-          frequencies[value].quo(n_valid).to_f
+          frequencies[value].quo(size - count_values(*Daru::MISSING_VALUES)).to_f
         end
 
         # Sample variance with denominator (N-1)
@@ -151,7 +151,7 @@ module Daru
           if @data.respond_to? :variance_sample
             @data.variance_sample m
           else
-            sum_of_squares(m).quo(n_valid - 1)
+            sum_of_squares(m).quo(size - count_values(*Daru::MISSING_VALUES) - 1)
           end
         end
 
@@ -161,26 +161,26 @@ module Daru
           if @data.respond_to? :variance_population
             @data.variance_population m
           else
-            sum_of_squares(m).quo(n_valid).to_f
+            sum_of_squares(m).quo(size - count_values(*Daru::MISSING_VALUES)).to_f
           end
         end
 
         # Sample covariance with denominator (N-1)
         def covariance_sample other
-          @size == other.size or raise ArgumentError, 'size of both the vectors must be equal'
-          covariance_sum(other) / (n_valid - 1)
+          size == other.size or raise ArgumentError, 'size of both the vectors must be equal'
+          covariance_sum(other) / (size - count_values(*Daru::MISSING_VALUES) - 1)
         end
 
         # Population covariance with denominator (N)
         def covariance_population other
-          @size == other.size or raise ArgumentError, 'size of both the vectors must be equal'
-          covariance_sum(other) / n_valid
+          size == other.size or raise ArgumentError, 'size of both the vectors must be equal'
+          covariance_sum(other) / (size - count_values(*Daru::MISSING_VALUES))
         end
 
         def sum_of_squares(m=nil)
           m ||= mean
-          @data.inject(0) { |memo, val|
-            @missing_values.key?(val) ? memo : (memo + (val - m)**2)
+          reject_values(*Daru::MISSING_VALUES).data.inject(0) { |memo, val|
+            memo + (val - m)**2
           }
         end
 
@@ -209,7 +209,7 @@ module Daru
           else
             m ||= mean
             th  = @data.inject(0) { |memo, val| memo + ((val - m)**3) }
-            th.quo((@size - @missing_positions.size) * (standard_deviation_sample(m)**3))
+            th.quo((size - indexes(*Daru::MISSING_VALUES).size) * (standard_deviation_sample(m)**3))
           end
         end
 
@@ -219,16 +219,16 @@ module Daru
           else
             m ||= mean
             fo  = @data.inject(0) { |a, x| a + ((x - m) ** 4) }
-            fo.quo((@size - @missing_positions.size) * standard_deviation_sample(m) ** 4) - 3
+            fo.quo((size - indexes(*Daru::MISSING_VALUES).size) * standard_deviation_sample(m) ** 4) - 3
           end
         end
 
         def average_deviation_population m=nil
           must_be_numeric!
           m ||= mean
-          @data.inject(0) { |memo, val|
-            @missing_values.key?(val) ? memo : (val - m).abs + memo
-          }.quo(n_valid)
+          reject_values(*Daru::MISSING_VALUES).data.inject(0) { |memo, val|
+            (val - m).abs + memo
+          }.quo(size - count_values(*Daru::MISSING_VALUES))
         end
 
         # Returns the value of the percentile q
@@ -283,7 +283,7 @@ module Daru
         def standardize use_population=false
           m ||= mean
           sd = use_population ? sdp : sds
-          return Daru::Vector.new([nil]*@size) if m.nil? || sd == 0.0
+          return Daru::Vector.new([nil]*size) if m.nil? || sd == 0.0
 
           vector_standardized_compute m, sd
         end
@@ -308,7 +308,7 @@ module Daru
 
         # Replace each non-nil value in the vector with its percentile.
         def vector_percentile
-          c = size - missing_positions.size
+          c = size - indexes(*Daru::MISSING_VALUES).size
           ranked.recode! { |i| i.nil? ? nil : (i.quo(c)*100).to_f }
         end
 
@@ -339,7 +339,7 @@ module Daru
           if @data.respond_to? :sample_with_replacement
             @data.sample_with_replacement sample
           else
-            valid = missing_positions.empty? ? self : only_valid
+            valid = indexes(*Daru::MISSING_VALUES).empty? ? self : reject_values(*Daru::MISSING_VALUES)
             vds = valid.size
             (0...sample).collect { valid[rand(vds)] }
           end
@@ -369,7 +369,7 @@ module Daru
         #   vector = Daru::Vector.new([4,6,6,8,10],index: ['a','f','t','i','k'])
         #   vector.percent_change
         #   #=>
-        #   #   <Daru::Vector:28713060 @name = nil @size: 5 >
+        #   #   <Daru::Vector:28713060 @name = nil size: 5 >
         #   #              nil
         #   #   a
         #   #   f	   0.5
@@ -381,7 +381,9 @@ module Daru
 
           prev = nil
           arr = @data.each_with_index.map do |cur, i|
-            if i < periods || @missing_values.key?(cur) || @missing_values.key?(prev)
+            if i < periods ||
+               include_with_nan?(Daru::MISSING_VALUES, cur) ||
+               include_with_nan?(Daru::MISSING_VALUES, prev)
               nil
             else
               (cur - prev) / prev.to_f
@@ -660,7 +662,7 @@ module Daru
           result = []
           acc = 0
           @data.each do |d|
-            if @missing_values.key?(d)
+            if include_with_nan? Daru::MISSING_VALUES, d
               result << nil
             else
               acc += d
@@ -702,10 +704,10 @@ module Daru
             end
         end
 
-        def midpoint_percentile(q)
-          sorted = only_valid(:array).sort
+        def midpoint_percentile(q) # rubocop:disable Metrics/AbcSize
+          sorted = reject_values(*Daru::MISSING_VALUES).to_a.sort
 
-          v = (n_valid * q).quo(100)
+          v = ((size - count_values(*Daru::MISSING_VALUES)) * q).quo(100)
           if v.to_i!=v
             sorted[v.to_i]
           else
@@ -714,8 +716,8 @@ module Daru
         end
 
         def linear_percentile(q) # rubocop:disable Metrics/AbcSize
-          sorted = only_valid(:array).sort
-          index = (q / 100.0) * (n_valid + 1)
+          sorted = reject_values(*Daru::MISSING_VALUES).to_a.sort
+          index = (q / 100.0) * ((size - count_values(*Daru::MISSING_VALUES)) + 1)
 
           k = index.truncate
           d = index % 1
@@ -730,7 +732,7 @@ module Daru
         end
 
         def raw_sample_without_replacement sample
-          valid = missing_positions.empty? ? self : only_valid
+          valid = indexes(*Daru::MISSING_VALUES).empty? ? self : reject_values(*Daru::MISSING_VALUES)
           raise ArgumentError, "Sample size couldn't be greater than n" if
             sample > valid.size
           out  = []

@@ -61,9 +61,7 @@ module Daru
       attr_reader :data
 
       def compact
-        # set missing to [] incase @context is not Daru::Vector
-        missing = @context.missing_values rescue []
-        ::GSL::Vector.alloc(@data.to_a - missing.map(&:to_f))
+        ::GSL::Vector.alloc(@data.to_a - [Float::NAN])
       end
 
       [:mean, :min, :max, :prod, :sum].each do |method|
