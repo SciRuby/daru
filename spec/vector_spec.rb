@@ -1698,6 +1698,35 @@ describe Daru::Vector do
     end
   end
 
+  context '#to_nmatrix' do
+    let(:dv) { Daru::Vector.new [1, 2, 3, 4, 5] }
+    
+    context 'horizontal axis' do
+      subject { dv.to_nmatrix }
+
+      it { is_expected.to be_a NMatrix }
+      its(:shape) { is_expected.to eq [1, 5] }
+      its(:to_a) { is_expected.to eq [1, 2, 3, 4, 5] }
+    end
+    
+    context 'vertical axis' do
+      subject { dv.to_nmatrix :vertical }
+      
+      it { is_expected.to be_a NMatrix }
+      its(:shape) { is_expected.to eq [5, 1] }
+      its(:to_a) { is_expected.to eq [1, 2, 3, 4, 5].map { |i| [i] } }
+    end
+    
+    context 'invalid axis' do
+      it { expect { dv.to_nmatrix :hello }.to raise_error ArgumentError }
+    end
+    
+    context 'vector contain non-numeric' do
+      let(:dv) { Daru::Vector.new [1, 2, nil, 4] }
+      it { expect { dv.to_nmatrix }.to raise_error ArgumentError }
+    end
+  end
+
   context "#only_numerics" do
     it "returns only numerical or missing data" do
       v = Daru::Vector.new([1,2,nil,3,4,'s','a',nil])

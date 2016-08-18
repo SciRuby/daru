@@ -824,6 +824,30 @@ module Daru
       end
     end
 
+    # Convert vector to nmatrix object
+    # @param [Symbol] axis :horizontal or :vertical
+    # @return [NMatrix] NMatrix object containing all values of the vector
+    # @example
+    #   dv = Daru::Vector.new [1, 2, 3]
+    #   dv.to_nmatrix
+    #   # =>
+    #   # [
+    #   #   [1, 2, 3] ]
+    def to_nmatrix axis=:horizontal
+      raise ArgumentError, 'Can not convert to nmatrix'\
+        'because the vector is numeric' unless numeric? && !include?(nil)
+
+      case axis
+      when :horizontal
+        NMatrix.new [1, size], to_a
+      when :vertical
+        NMatrix.new [size, 1], to_a
+      else
+        raise ArgumentError, 'Invalid axis specified. '\
+          'Valid axis are :horizontal and :vertical'
+      end
+    end
+
     # If dtype != gsl, will convert data to GSL::Vector with to_a. Otherwise returns
     # the stored GSL::Vector object.
     def to_gsl
