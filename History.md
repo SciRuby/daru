@@ -1,4 +1,4 @@
-# 0.1.4 ()
+# 0.1.4 (19 August 2016)
 
 * Major Enhancements
   - Added new dependency 'backports' to support #to_h in Ruby 2.0. (@lokeshh)
