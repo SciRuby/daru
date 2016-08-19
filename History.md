@@ -14,6 +14,10 @@
   - Better looking #to_html for Vector and DataFrame. Also better #to_html for MultiIndex. (@zverok)
   - Remove monkey patching on Array and add those methods to Daru::ArrayHelper. (@zverok)
   - Add a rake task for running RSpec for every Ruby version with a single command. (@lokeshh)
+  - Add rake tasks for easily setting up and testing test harness. (@lokeshh)
+  - Added `Daru::Vector#to_nmatrix`.
+  - Remove the 'metadata' feature introduced in v0.1.3. (@gnilrets)
+  - Added `DataFrame#to_df` and `Vector#to_df`. (@gnilrets)
 
 * Fixes
   - DataFrame#clone preserves order and name. (@wlevine)
@@ -25,6 +29,7 @@
 
 * Deprecations
   - Remove methods DataFrame#vector and DataFrame#column. (@zverok)
+  - Remove the missing_values feature of daru. The only values that are now treated as 'missing' are `nil` and `Float::NAN`. (@lokeshh)
 
 # 0.1.3.1 (12 May 2016)
 

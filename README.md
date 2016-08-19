@@ -188,18 +188,6 @@ In addition to nyaplot, daru also supports plotting out of the box with [gnuplot
 
 Docs can be found [here](https://rubygems.org/gems/daru).
 
-## Roadmap
-
-* Enable creation of DataFrame by only specifying an NMatrix/MDArray in initialize. Vector naming happens automatically (alphabetic) or is specified in an Array.
-* Assignment of a column to a single number should set the entire column to that number.
-* Multiple column assignment with []=
-* Multiple value assignment for vectors with []=.
-* #find\_max function which will evaluate a block and return the row for the value of the block is max.
-* Sort by index.
-* Statistics on DataFrame over rows.
-* Calculate percentage change.
-* Have some sample data sets for users to play around with. Should be able to load these from the code itself.
-
 ## Contributing
 
 Pick a feature from the Roadmap or the issue tracker or think of your own and send me a Pull Request!
@@ -208,6 +196,7 @@ For details see [CONTRIBUTING](https://github.com/v0dro/daru/blob/master/CONTRIB
 
 ## Acknowledgements
 
+* Google and the Ruby Science Foundation for the Google Summer of Code 2016 grant for speed enhancements and implementation of support for categorical data. Special thanks to [@lokeshh](https://github.com/lokeshh), [@zverok](https://github.com/zverok) and [@agisga](https://github.com/agisga) for their efforts. 
 * Google and the Ruby Science Foundation for the Google Summer of Code 2015 grant for further developing daru and integrating it with other ruby gems.
 * Thank you [last.fm](http://www.last.fm/) for making user data accessible to the public.
 
