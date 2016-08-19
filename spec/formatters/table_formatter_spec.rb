@@ -74,6 +74,15 @@ describe Daru::Formatters::Table do
     }.unindent}
   end
 
+  context 'with empty data' do
+    let(:data) { [] }
+    let(:headers) { [] }
+    let(:row_headers) { [] }
+
+    it { is_expected.to eq '' }
+  end
+
+
   context '<more> threshold' do
     let(:options) { {threshold: threshold} }
     context 'lower than data size' do
