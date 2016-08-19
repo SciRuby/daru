@@ -3,7 +3,7 @@ module Daru
     # Internal class for wrapping ruby array
     class ArrayWrapper
       include Enumerable
-      extend Forwardable
+      extend ::Forwardable
 
       def_delegators :@data, :slice!
 

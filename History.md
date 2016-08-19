@@ -1,3 +1,7 @@
+# 0.1.4.1 (20 August 2016)
+* Fixes
+  - Turns out that removing the dependencies did not load a few libraries from the Ruby standard library when daru is deployed on a fresh system. This release fixes that by adding extra require calls.
+
 # 0.1.4 (19 August 2016)
 
 * Major Enhancements

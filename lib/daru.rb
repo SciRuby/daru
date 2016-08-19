@@ -92,6 +92,9 @@ end
 
 autoload :CSV, 'csv'
 require 'matrix'
+require 'forwardable'
+require 'erb'
+require 'date'
 
 require 'daru/version.rb'
 

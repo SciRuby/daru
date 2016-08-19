@@ -216,7 +216,7 @@ module Daru
     Helper = DateTimeIndexHelper
 
     def self.try_create(source)
-      if source && ArrayHelper.array_of?(source, DateTime)
+      if source && ArrayHelper.array_of?(source, ::DateTime)
         new(source, freq: :infer)
       else
         nil
