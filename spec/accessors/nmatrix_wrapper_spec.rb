@@ -1,3 +1,5 @@
+require 'spec_helper.rb'
+
 describe Daru::Accessors::NMatrixWrapper do
   before :each do
     stub_context = Object.new
