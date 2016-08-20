@@ -39,11 +39,11 @@ module Daru
       end
 
       def construct_formatter rows, spacing
-        width = rows.flatten.map(&:size).max
+        width = rows.flatten.map(&:size).max || 0
         width = [3, width].max # not less than 'nil'
         width = [width, spacing].min # not more than max width
 
-        " %#{width}.#{width}s" * rows.first.size
+        " %#{width}.#{width}s" * rows.first.size if rows.first
       end
 
       def pretty_to_s(val)
