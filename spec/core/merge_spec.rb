@@ -37,6 +37,18 @@ describe Daru::DataFrame do
       expect(@left.join(@right_many, how: :inner, on: [:id])).to eq(answer)
     end
 
+    it "performs an inner join of two dataframes that has many to one mapping" do
+      left_many = @right_many
+      right = @left
+
+      answer = Daru::DataFrame.new({
+        :name_2 => ['Pirate', 'Pirate', 'Pirate', 'Pirate'],
+        :id => [1,1,1,1],
+        :name_1 => ['Rutabaga', 'Pirate', 'Darth Vader', 'Ninja']
+      }, order: [:name_1, :id, :name_2])
+      expect(left_many.join(right, how: :inner, on: [:id])).to eq(answer)
+    end
+
     it "performs an inner join of two dataframes that has many to many mapping" do
       @left[:id].recode! { |v| v == 2 ? 1 : v }
       answer = Daru::DataFrame.new({

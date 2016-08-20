@@ -122,12 +122,21 @@ module Daru
         if one_to_one_merge?
           merge_rows(one_to_one_left_row, one_to_one_right_row)
         elsif one_to_many_merge?
-          merge_rows(one_to_many_left_row, one_to_many_right_row)
+          result = merge_rows(left.first, right.first)
+          one_to_many_shift
+          result
         else
           result = cartesian_product.shift
           end_cartesian_product if cartesian_product.empty?
           result
         end
+      end
+
+      def one_to_many_shift
+        shift_left = first_right_key != next_right_key
+        shift_right = first_left_key != next_left_key
+        one_to_one_left_row if shift_left
+        one_to_one_right_row if shift_right
       end
 
       def one_to_one_merge?
@@ -143,27 +152,9 @@ module Daru
         left.shift
       end
 
-      def one_to_many_left_row
-        if next_right_key && first_right_key == next_right_key
-          left.first
-        else
-          left_key_values.shift
-          left.shift
-        end
-      end
-
       def one_to_one_right_row
         right_key_values.shift
         right.shift
-      end
-
-      def one_to_many_right_row
-        if next_left_key && first_left_key == next_left_key
-          right.first
-        else
-          right_key_values.shift
-          right.shift
-        end
       end
 
       def left_row_missing_right
@@ -198,7 +189,7 @@ module Daru
       end
 
       def next_right_key
-        right_key_values.size <= 1 ? nil : right_key_values[1]
+        right_key_values[1]
       end
 
       def first_left_key
@@ -206,7 +197,7 @@ module Daru
       end
 
       def next_left_key
-        left_key_values.size <= 1 ? nil : left_key_values[1]
+        left_key_values[1]
       end
 
       def left_rows_at_merge_key
