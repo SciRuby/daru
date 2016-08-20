@@ -25,6 +25,15 @@ While preparing your pull requests, don't forget to check your code with Rubocop
 
   `bundle exec rubocop`
 
+
+## Testing
+
+Daru has automatic testing with Guard. Just execute the following code before you start editting a file and any change you make will trigger the appropriate tests-
+
+```
+guard rspec
+```
+
 ## Daru internals
 
 To get an overview of certain internals of daru and their implementation, go over [this blog post](http://v0dro.github.io/blog/2015/08/16/elaboration-on-certain-internals-of-daru/).
