@@ -1249,10 +1249,6 @@ module Daru
 
     alias :dv :daru_vector
 
-    def to_df
-      DataFrame.new([self], order: [name])
-    end
-
     def group_by *args
       to_df.group_by(*args)
     end

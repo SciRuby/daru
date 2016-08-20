@@ -1936,16 +1936,6 @@ describe Daru::Vector do
     end
   end
 
-  context "#to_df" do
-    it "converts vector to DataFrame containing that vector" do
-      dv = Daru::Vector.new 1..10, name: :a
-      df = Daru::DataFrame.new({
-        a: 1..10
-      })
-      expect(dv.to_df).to eq(df)
-    end
-  end
-
   context "#group_by" do
     it "redirects to DataFrame::group_by" do
       dv = Daru::Vector.new [1, 1, 2, 2, 3], name: :a
