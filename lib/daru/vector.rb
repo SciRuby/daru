@@ -1249,10 +1249,6 @@ module Daru
 
     alias :dv :daru_vector
 
-    def group_by *args
-      to_df.group_by(*args)
-    end
-
     # Converts a non category type vector to category type vector.
     # @param [Hash] opts options to convert to category
     # @option opts [true, false] :ordered Specify if vector is ordered or not.
