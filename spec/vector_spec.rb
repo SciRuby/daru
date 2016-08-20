@@ -1936,11 +1936,4 @@ describe Daru::Vector do
     end
   end
 
-  context "#group_by" do
-    it "redirects to DataFrame::group_by" do
-      dv = Daru::Vector.new [1, 1, 2, 2, 3], name: :a
-      expect(dv.group_by([:a]).groups).to eq(dv.to_df.group_by([:a]).groups)
-    end
-  end
-
 end if mri?
