@@ -1,3 +1,5 @@
+require 'spec_helper.rb'
+
 describe Daru::Vector do
   ALL_DTYPES.each do |dtype|
     describe dtype.to_s do

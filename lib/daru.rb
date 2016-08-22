@@ -98,8 +98,11 @@ require 'date'
 
 require 'daru/version.rb'
 
+require 'daru/index/index.rb'
+require 'daru/index/multi_index.rb'
+require 'daru/index/categorical_index.rb'
+
 require 'daru/helpers/array.rb'
-require 'daru/index.rb'
 require 'daru/vector.rb'
 require 'daru/dataframe.rb'
 require 'daru/monkeys.rb'

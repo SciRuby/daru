@@ -142,12 +142,14 @@ describe Daru::CategoricalIndex do
       subject { idx.add :c }
       
       its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
+      its(:categories) { is_expected.to eq [:a, 1, :c] }
     end
     
     context "multiple indexes" do
       subject { idx.add :c, :d }
       
       its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c, :d] }
+      its(:categories) { is_expected.to eq [:a, 1, :c, :d] }
     end
   end
   
