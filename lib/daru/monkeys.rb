@@ -62,11 +62,4 @@ class Object
     end
   end
 end
-
-module Daru
-  class DataFrame
-    # NOTE: This alias will soon be removed. Use to_h in all future work.
-    alias :to_hash :to_h
-  end
-end
 # :nocov:
