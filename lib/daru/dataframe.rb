@@ -1204,6 +1204,8 @@ module Daru
         raise(ArgumentError, "Vector #{v} does not exist") unless has_vector?(v)
       }
 
+      vectors = [@vectors.first] if vectors.empty?
+
       Daru::Core::GroupBy.new(self, vectors)
     end
 

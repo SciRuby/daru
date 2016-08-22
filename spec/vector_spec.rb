@@ -1884,6 +1884,32 @@ describe Daru::Vector do
       expect(lag2[lag2.size - 2]).to be_within(0.001).of(16.56)
     end
   end
+  
+  context "#group_by" do
+    let(:dv) { Daru::Vector.new [:a, :b, :a, :b, :c] }
+    
+    context 'vector not specified' do
+      subject { dv.group_by }  
+          
+      it { is_expected.to be_a Daru::Core::GroupBy }
+      its(:'groups.size') { is_expected.to eq 3 }
+      its(:groups) { is_expected.to eq({[:a]=>[0, 2], [:b]=>[1, 3], [:c]=>[4]}) }
+    end
+    
+    context 'vector name specified' do
+      before { dv.name = :hello }
+      subject { dv.group_by :hello }
+      
+      it { is_expected.to be_a Daru::Core::GroupBy }
+      its(:'groups.size') { is_expected.to eq 3 }
+      its(:groups) { is_expected.to eq({[:a]=>[0, 2], [:b]=>[1, 3], [:c]=>[4]}) }            
+    end
+    
+    context 'vector name invalid' do
+      before { dv.name = :hello }
+      it { expect { dv.group_by :abc }.to raise_error }
+    end
+  end
 
   context '#method_missing' do
     context 'getting' do
