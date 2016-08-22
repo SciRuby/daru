@@ -1328,6 +1328,10 @@ module Daru
       end
     end
 
+    def group_by(*args)
+      to_df.group_by(*args)
+    end
+
     private
 
     def nil_positions

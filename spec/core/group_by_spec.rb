@@ -5,7 +5,7 @@ describe Daru::Core::GroupBy do
       b: %w{one one two three two two one three},
       c:   [1  ,2   ,3  ,1     ,3   ,6  ,3  ,8],
       d:   [11 ,22 ,33 ,44   ,55 ,66 ,77 ,88]
-    })
+    }, order: [:a, :b, :c, :d])
 
     @sl_group = @df.group_by(:a)
     @dl_group = @df.group_by([:a, :b])
@@ -401,5 +401,13 @@ describe Daru::Core::GroupBy do
       expect(@dl_group.reduce('', &string_concat)).to eq \
         Daru::Vector.new(['one', 'three', 'two', 'oneone', 'three', 'twotwo'], index: @dl_multi_index)
     end
+  end
+
+  context 'groups by first vector if no vector mentioned' do
+    subject { @df.group_by }
+    
+    it { is_expected.to be_a Daru::Core::GroupBy }
+    its(:groups) { is_expected.to eq @sl_group.groups }
+    its(:size) { is_expected.to eq @sl_group.size }
   end
 end
