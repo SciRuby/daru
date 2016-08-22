@@ -31,7 +31,7 @@ While preparing your pull requests, don't forget to check your code with Rubocop
 Daru has automatic testing with Guard. Just execute the following code before you start editting a file and any change you make will trigger the appropriate tests-
 
 ```
-guard rspec
+guard
 ```
 
 **NOTE**: Please make sure that you place test for your file at the same level and with same itermediatary directories. For example if code file lies in `lib/xyz/abc.rb` then its corresponding test should lie in `spec/xyz/abc_spec.rb`. This is to ensure correct working of Guard.

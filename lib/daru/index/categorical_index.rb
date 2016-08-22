@@ -1,5 +1,3 @@
-require 'spec_helper.rb'
-
 module Daru
   class CategoricalIndex < Index
     # Create a categorical index object.
