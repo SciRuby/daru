@@ -702,31 +702,6 @@ module Daru
       self
     end
 
-    # Returns a vector which has *true* in the position where the element in self
-    # is nil, and false otherwise.
-    #
-    # == Usage
-    #
-    #   v = Daru::Vector.new([1,2,4,nil])
-    #   v.is_nil?
-    #   # =>
-    #   #<Daru::Vector:89421000 @name = nil @size = 4 >
-    #   #      nil
-    #   #  0  false
-    #   #  1  false
-    #   #  2  false
-    #   #  3  true
-    #
-    def is_nil?
-      # FIXME: EXTREMELY bad name for method not returning boolean - zverok, 2016-05-18
-      recode(&:nil?)
-    end
-
-    # Opposite of #is_nil?
-    def not_nil?
-      recode { |v| !v.nil? }
-    end
-
     # Replace all nils in the vector with the value passed as an argument. Destructive.
     # See #replace_nils for non-destructive version
     #

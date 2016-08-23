@@ -1388,30 +1388,6 @@ describe Daru::Vector do
     end
   end
 
-  context "#is_nil?" do
-    before(:each) do
-      @with_md    = Daru::Vector.new([1,2,nil,3,4,nil])
-      @without_md = Daru::Vector.new([1,2,3,4,5,6])
-    end
-
-    it "verifies missing data presence" do
-      expect(@with_md.is_nil?)   .to eq(Daru::Vector.new([false,false,true,false,false,true]))
-      expect(@without_md.is_nil?).to eq(Daru::Vector.new([false,false,false,false,false,false]))
-    end
-  end
-
-  context "#not_nil?" do
-    before(:each) do
-      @with_md    = Daru::Vector.new([1,2,nil,3,4,nil])
-      @without_md = Daru::Vector.new([1,2,3,4,5,6])
-    end
-
-    it "verifies missing data presence" do
-      expect(@with_md.not_nil?)   .to eq(Daru::Vector.new([true,true,false,true,true,false]))
-      expect(@without_md.not_nil?).to eq(Daru::Vector.new([true,true,true,true,true,true]))
-    end
-  end
-
   context "#clone_structure" do
     context Daru::Index do
       before do
