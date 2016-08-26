@@ -612,48 +612,63 @@ describe Daru::DataFrame do
   end
 
   context '#method_missing' do
-    subject(:data_frame) {
-      Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
-        c: [11,22,33,44,55]}, order: [:a, :b, :c],
-        index: [:one, :two, :three, :four, :five])
-    }
+    let(:df) { Daru::DataFrame.new({
+      :a  => [1, 2, 3, 4, 5],
+      'b' => [5, 4, 3, 2, 1]
+    }, index: 11..15)}
 
-    context 'getting the vector' do
-      subject{
-        data_frame.a
-      }
-      it { is_expected.to eq [1,2,3,4,5].dv(:a, [:one, :two, :three, :four, :five]) }
-    end
-
-    context 'setting existing vector' do
-      before{
-        data_frame.a = [100,200,300,400,500]
-      }
-      it { is_expected.to eq(Daru::DataFrame.new({
-            b: [11,12,13,14,15],
-            a: [100,200,300,400,500],
-            c: [11,22,33,44,55]}, order: [:a, :b, :c],
-            index: [:one, :two, :three, :four, :five]))
-      }
-    end
-
-    context 'setting new vector' do
-      before{
-        data_frame.d = [100,200,300,400,500]
-      }
-      it { is_expected.to eq(Daru::DataFrame.new({
-            b: [11,12,13,14,15],
-            a: [1,2,3,4,5],
-            d: [100,200,300,400,500],
-            c: [11,22,33,44,55]}, order: [:a, :b, :c, :d],
-            index: [:one, :two, :three, :four, :five]))
-      }
-    end
-
-    context 'no vector found' do
-      it 'should raise' do
-        expect { data_frame.e }.to raise_error(NoMethodError)
+    context 'get vector' do
+      context 'by string' do
+        subject { df.b }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:to_a) { is_expected.to eq [5, 4, 3, 2, 1] }
+        its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 15] }
       end
+      
+      context 'by symbol' do
+        subject { df.a }
+        
+        it { is_expected.to be_a Daru::Vector }
+        its(:to_a) { is_expected.to eq [1, 2, 3, 4, 5] }
+        its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 15] }        
+      end
+    end
+    
+    context 'set existing vector' do
+      context 'by string' do
+        before { df.b = [:a, :b, :c, :d, :e] }
+        subject { df }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:'vectors.to_a') { is_expected.to eq [:a, 'b'] }
+        its(:'b.to_a') { is_expected.to eq [:a, :b, :c, :d, :e] }
+        its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 15] }
+      end
+      
+      context 'by symbol' do
+        before { df.a = [:a, :b, :c, :d, :e] }
+        subject { df }
+        
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:'vectors.to_a') { is_expected.to eq [:a, 'b'] }
+        its(:'a.to_a') { is_expected.to eq [:a, :b, :c, :d, :e] }
+        its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 15] }      
+      end
+    end
+    
+    context 'set new vector' do
+      before { df.c = [5, 5, 5, 5, 5] }
+      subject { df }
+      
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'vectors.to_a') { is_expected.to eq [:a, 'b', :c] }
+      its(:'c.to_a') { is_expected.to eq [5, 5, 5, 5, 5] }
+      its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 15] }
+    end
+    
+    context 'reference invalid vector' do
+      it { expect { df.d }.to raise_error NoMethodError }
     end
   end
 

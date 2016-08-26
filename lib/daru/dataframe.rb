@@ -1894,10 +1894,15 @@ module Daru
     end
 
     def method_missing(name, *args, &block)
-      if name =~ /(.+)\=/
-        insert_or_modify_vector [name[/(.+)\=/].delete('=').to_sym], args[0]
-      elsif has_vector? name
+      case
+      when name =~ /(.+)\=/
+        name = name[/(.+)\=/].delete('=')
+        name = name.to_sym unless has_vector?(name)
+        insert_or_modify_vector [name], args[0]
+      when has_vector?(name)
         self[name]
+      when has_vector?(name.to_s)
+        self[name.to_s]
       else
         super
       end
