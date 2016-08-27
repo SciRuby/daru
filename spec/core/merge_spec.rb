@@ -59,7 +59,7 @@ describe Daru::DataFrame do
       expect(@left.join(@right_many, how: :inner, on: [:id])).to eq(answer)
     end
 
-    it "performs a full outer join" do
+    it "performs a full outer join", wip2: true do
       answer = Daru::DataFrame.new({
         :id_1 => [nil,2,3,1,nil,4],
         :name => ["Darth Vader", "Monkey", "Ninja", "Pirate", "Rutabaga", "Spaghetti"],
@@ -67,6 +67,18 @@ describe Daru::DataFrame do
       }, order: [:id_1, :name, :id_2])
       expect(@left.join(@right, how: :outer, on: [:name])).to eq(answer)
     end
+
+    it "adds a left/right indicator", wip: true do
+      answer = Daru::DataFrame.new({
+        :id_1 => [nil,2,3,1,nil,4],
+        :name => ["Darth Vader", "Monkey", "Ninja", "Pirate", "Rutabaga", "Spaghetti"],
+        :id_2 => [3,nil,4,2,1,nil]
+      }, order: [:id_1, :name, :id_2])
+
+      outer = @left.join(@right, how: :outer, on: [:name], indicator: :my_indicator)
+      expect(outer[:my_indicator].to_a).to eq [:right_only, :left_only, :both, :both, :right_only, :left_only]
+    end
+
 
     it "performs a full outer join when the right join keys have nils" do
       @right[:name].recode! { |v| v == 'Rutabaga' ? nil : v }

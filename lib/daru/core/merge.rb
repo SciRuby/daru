@@ -18,11 +18,8 @@ module Daru
       end
 
       def initialize left_df, right_df, opts={}
-        @on = opts[:on]
-        @keep_left, @keep_right = extract_left_right(opts[:how])
-
+        init_opts(opts)
         validate_on!(left_df, right_df)
-
         key_sanitizer = ->(h) { sanitize_merge_keys(h.values_at(*on)) }
 
         @left = df_to_a(left_df)
@@ -46,12 +43,12 @@ module Daru
           row(lkey, rkey).tap { |r| res << r if r }
         end
 
-        Daru::DataFrame.new(res, order: left_keys.values + on + right_keys.values)
+        Daru::DataFrame.new(res, order: dataframe_vector_names)
       end
 
       private
 
-      attr_reader :on,
+      attr_reader :on, :indicator,
         :left, :left_key_values, :keep_left, :left_keys,
         :right, :right_key_values, :keep_right, :right_keys
 
@@ -64,6 +61,16 @@ module Daru
         right: [false, true],
         outer: [true, true]
       }.freeze
+
+      def init_opts(opts)
+        @on = opts[:on]
+        @keep_left, @keep_right = extract_left_right(opts[:how])
+        @indicator = opts[:indicator]
+      end
+
+      def dataframe_vector_names
+        left_keys.values + on + right_keys.values + Array(indicator)
+      end
 
       def extract_left_right(how)
         LEFT_RIGHT_COMBINATIONS[how] or
@@ -110,12 +117,18 @@ module Daru
           # :nocov:
         when lkey == rkey
           self.merge_key = lkey
-          merge_matching_rows
+          add_indicator(merge_matching_rows, :both)
         when !rkey || lt(lkey, rkey)
-          left_row_missing_right
+          add_indicator(left_row_missing_right, :left_only)
         else # !lkey || lt(rkey, lkey)
-          right_row_missing_left
+          add_indicator(right_row_missing_left, :right_only)
         end
+      end
+
+      def add_indicator(row, indicator_value)
+        return row unless indicator
+        row[indicator] = indicator_value
+        row
       end
 
       def merge_matching_rows
@@ -175,6 +188,7 @@ module Daru
         left_keys
           .map { |from, to| [to, lrow[from]] }.to_h
           .merge(on.map { |col| [col, lrow[col]] }.to_h)
+          .merge(indicator ? {indicator => nil} : {})
           .merge(right_keys.map { |from, to| [to, rrow[from]] }.to_h)
       end
 
@@ -182,6 +196,7 @@ module Daru
         renamings
           .map { |from, to| [to, row[from]] }.to_h
           .merge(on.map { |col| [col, row[col]] }.to_h)
+          .merge(indicator ? {indicator => nil} : {})
       end
 
       def first_right_key
