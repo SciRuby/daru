@@ -38,6 +38,7 @@ module Daru
         def category_sidebar_plot size, method
           plot = Gruff::SideBar.new size
           plot.labels = {0 => (name.to_s || 'vector')}
+          method ||= :count
           frequencies(method).each_with_index do |data, index|
             plot.data index, data
           end

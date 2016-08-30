@@ -305,6 +305,9 @@ describe Daru::Vector, "categorical" do
       its(:'index.to_a') { is_expected.to eq [:a, :b, :c, :d, 1] }
       its(:to_a) { is_expected.to eq [0.4, 0, 0.2, 0, 0.4] }
     end
+    context "invalid argument" do
+      it { expect { dv.frequencies :hash }.to raise_error ArgumentError  }
+    end
   end
 
   context "#to_category" do
