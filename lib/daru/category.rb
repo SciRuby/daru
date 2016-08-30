@@ -3,9 +3,6 @@ module Daru
     attr_accessor :base_category
     attr_reader :index, :coding_scheme, :name
 
-    # For debuggin. To be removed
-    attr_reader :array, :cat_hash, :map_int_cat
-
     # Initializes a vector to store categorical data.
     # @note Base category is set to the first category encountered in the vector.
     # @param [Array] data the categorical data
