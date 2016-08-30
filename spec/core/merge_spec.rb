@@ -59,7 +59,7 @@ describe Daru::DataFrame do
       expect(@left.join(@right_many, how: :inner, on: [:id])).to eq(answer)
     end
 
-    it "performs a full outer join", do
+    it "performs a full outer join" do
       answer = Daru::DataFrame.new({
         :id_1 => [nil,2,3,1,nil,4],
         :name => ["Darth Vader", "Monkey", "Ninja", "Pirate", "Rutabaga", "Spaghetti"],
