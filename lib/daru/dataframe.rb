@@ -1569,6 +1569,9 @@ module Daru
     # @option :how [Symbol] Can be one of :inner, :left, :right or :outer.
     # @option :on [Array] The columns on which the join is to be performed.
     #   Column names specified here must be common to both DataFrames.
+    # @option :indicator [Symbol] The name of a vector to add to the resultant
+    #   dataframe that indicates whether the record was in the left (:left_only),
+    #   right (:right_only), or both (:both) joining dataframes.
     # @return [Daru::DataFrame]
     # @example Inner Join
     #   left = Daru::DataFrame.new({
