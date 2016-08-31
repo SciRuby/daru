@@ -75,8 +75,16 @@ module Daru
         def fetch_new_data_and_index dv, bool_array
           barry = bool_array.to_a
           positions = dv.size.times.select { |i| barry[i] }
-          new_data = dv.to_a.values_at(*positions)
-          new_index = dv.index.to_a.values_at(*positions)
+          # FIXME: The below 4 lines should be replaced with values_at when the
+          # stack error is fixed in Ruby.
+          # eg - new_data = dv.data.data.values_at(*positions)
+
+          data = dv.type == :category ? dv.to_a : dv.data.data # non-cat optimize
+          new_data = positions.map { |i| data[i] }
+
+          idx = dv.index.to_a
+          new_index = positions.map { |i| idx[i] }
+
           [new_data, new_index]
         end
       end
