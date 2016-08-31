@@ -266,6 +266,11 @@ describe "Arel-like syntax" do
           @df.where (@df[:names].eq('james') | @df[:sym].eq(:four))
           ).to eq(answer)
       end
+
+      it "does not give SystemStackError" do
+        v = Daru::Vector.new [1]*300_000
+        expect { v.where v.eq(1) }.not_to raise_error
+      end
     end
 
     context Daru::Vector do
