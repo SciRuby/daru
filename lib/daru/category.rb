@@ -463,8 +463,8 @@ module Daru
 
     # Contrast code the vector acording to the coding scheme set.
     # @note To set the coding scheme use #coding_scheme=
-    # @param [true, false] full true if you want k variables for k categories,
-    #   false if you want k-1 variables for k categories
+    # @option opts [Boolean] :full true if you want k variables for k categories,
+    #   false if you want k-1 variables for k categories. By default its false.
     # @return [Daru::DataFrame] dataframe containing all coded variables
     # @example
     #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
