@@ -54,7 +54,7 @@ describe Daru::Index do
     end
   end
 
-  context '#keys' do
+  context '#key' do
     subject(:idx) { Daru::Index.new ['speaker', 'mic', 'guitar', 'amp'] }
 
     it 'returns key by position' do
