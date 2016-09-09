@@ -280,4 +280,19 @@ describe Daru::Index do
       it { expect { idx.at 2, 3 }.to raise_error IndexError }
     end
   end
+
+  # This context validate Daru::Index is like an enumerable.
+  # #map and #select are samples and we do not need tests all
+  # enumerable methods.
+  context "Enumerable" do
+    let(:idx) { Daru::Index.new ['speaker', 'mic', 'guitar', 'amp'] }
+
+    context "#map" do
+      it { expect(idx.map(&:upcase)).to eq(['SPEAKER', 'MIC', 'GUITAR', 'AMP']) }
+    end
+
+    context "select" do
+      it { expect(idx.select {|w| w[0] == 'g' }).to eq(['guitar']) }
+    end
+  end
 end
