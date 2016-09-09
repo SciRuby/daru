@@ -82,6 +82,11 @@ module Daru
 
   module Offsets
     class DateOffsetType < DateOffset
+      # @method initialize
+      # Initialize one of the subclasses of DateOffsetType with the number of the times
+      # the offset should be applied, which is the supplied as the argument.
+      #
+      # @param n [Integer] The number of times an offset should be applied.
       def initialize n=1
         @n = n
       end
@@ -95,12 +100,6 @@ module Daru
     # @abstract
     # @private
     class Tick < DateOffsetType
-      # @method initialize
-      # Initialize one of the subclasses of Tick with the number of the times
-      # the offset should be applied, which is the supplied as the argument.
-      #
-      # @param n [Integer] The number of times an offset should be applied.
-
       def + date_time
         date_time + @n*multiplier
       end
