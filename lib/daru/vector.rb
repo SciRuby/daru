@@ -291,7 +291,7 @@ module Daru
       update_position_cache
     end
 
-    # Two vectors are equal if the have the exact same index values corresponding
+    # Two vectors are equal if they have the exact same index values corresponding
     # with the exact same elements. Name is ignored.
     def == other
       case other
