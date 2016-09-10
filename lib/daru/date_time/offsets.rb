@@ -124,7 +124,7 @@ module Daru
       FREQ = 'S'.freeze
 
       def multiplier
-        1.1574074074074073e-05
+        1.to_r / 24 / 60 / 60
       end
     end
 
@@ -139,7 +139,7 @@ module Daru
       FREQ = 'M'.freeze
 
       def multiplier
-        0.0006944444444444445
+        1.to_r / 24 / 60
       end
     end
 
@@ -154,7 +154,7 @@ module Daru
       FREQ = 'H'.freeze
 
       def multiplier
-        0.041666666666666664
+        1.to_r / 24
       end
     end
 
@@ -169,7 +169,7 @@ module Daru
       FREQ = 'D'.freeze
 
       def multiplier
-        1.0
+        1
       end
     end
 
