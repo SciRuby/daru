@@ -68,9 +68,6 @@ describe Offsets do
       end
     end
 
-    context "#on_offset?" do
-    end
-
     context "#-" do
       it "reduces by seconds" do
         expect(@offset - DateTime.new(2012,2,3,12,4,23)).to eq(
