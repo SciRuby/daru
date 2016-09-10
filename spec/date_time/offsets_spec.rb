@@ -209,6 +209,10 @@ describe Offsets do
       it "returns true if date is on the offset" do
         expect(@offset.on_offset?(DateTime.new(2012,4,1))).to eq(true)
       end
+
+      it "returns false if date is not on the offset" do
+        expect(@offset.on_offset?(DateTime.new(2012,4,30))).to eq(false)
+      end
     end
 
     context "#-" do
@@ -263,6 +267,16 @@ describe Offsets do
           DateTime.new(2015,1,31))
       end
     end
+
+    context "#on_offset?" do
+      it "returns true if date is on the offset" do
+        expect(@offset.on_offset?(DateTime.new(2012,4,30))).to eq(true)
+      end
+
+      it "returns false if date is not on the offset" do
+        expect(@offset.on_offset?(DateTime.new(2012,4,1))).to eq(false)
+      end
+    end
   end
 
   describe Year do
@@ -302,6 +316,9 @@ describe Offsets do
       it "checks if date is on the offset" do
         expect(@offset.on_offset?(DateTime.new(2012,1,1))).to eq(
           true)
+
+        expect(@offset.on_offset?(DateTime.new(2012,12,31))).to eq(
+          false)
       end
     end
 
@@ -361,6 +378,7 @@ describe Offsets do
     context "#on_offset?" do
       it "reports whether on offset or not" do
         expect(@offset.on_offset?(DateTime.new(2012,12,31))).to eq(true)
+        expect(@offset.on_offset?(DateTime.new(2012,1,1))).to eq(false)
       end
     end
   end
