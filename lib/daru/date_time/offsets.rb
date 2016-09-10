@@ -78,6 +78,10 @@ module Daru
     def - date_time
       @offset + date_time
     end
+
+    def -@
+      @offset
+    end
   end
 
   module Offsets
