@@ -620,53 +620,53 @@ describe Daru::DataFrame do
     context 'get vector' do
       context 'by string' do
         subject { df.b }
-        
+
         it { is_expected.to be_a Daru::Vector }
         its(:to_a) { is_expected.to eq [5, 4, 3, 2, 1] }
         its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 15] }
       end
-      
+
       context 'by symbol' do
         subject { df.a }
-        
+
         it { is_expected.to be_a Daru::Vector }
         its(:to_a) { is_expected.to eq [1, 2, 3, 4, 5] }
-        its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 15] }        
+        its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 15] }
       end
     end
-    
+
     context 'set existing vector' do
       context 'by string' do
         before { df.b = [:a, :b, :c, :d, :e] }
         subject { df }
-        
+
         it { is_expected.to be_a Daru::DataFrame }
         its(:'vectors.to_a') { is_expected.to eq [:a, 'b'] }
         its(:'b.to_a') { is_expected.to eq [:a, :b, :c, :d, :e] }
         its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 15] }
       end
-      
+
       context 'by symbol' do
         before { df.a = [:a, :b, :c, :d, :e] }
         subject { df }
-        
+
         it { is_expected.to be_a Daru::DataFrame }
         its(:'vectors.to_a') { is_expected.to eq [:a, 'b'] }
         its(:'a.to_a') { is_expected.to eq [:a, :b, :c, :d, :e] }
-        its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 15] }      
+        its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 15] }
       end
     end
-    
+
     context 'set new vector' do
       before { df.c = [5, 5, 5, 5, 5] }
       subject { df }
-      
+
       it { is_expected.to be_a Daru::DataFrame }
       its(:'vectors.to_a') { is_expected.to eq [:a, 'b', :c] }
       its(:'c.to_a') { is_expected.to eq [5, 5, 5, 5, 5] }
       its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 15] }
     end
-    
+
     context 'reference invalid vector' do
       it { expect { df.d }.to raise_error NoMethodError }
     end
@@ -1631,7 +1631,7 @@ describe Daru::DataFrame do
       }, index: 11..18)
     end
     before { df.to_category :b }
-    
+
     context 'remove nils only' do
       subject { df.reject_values nil }
       it { is_expected.to be_a Daru::DataFrame }
@@ -1641,7 +1641,7 @@ describe Daru::DataFrame do
       its(:'c.to_a') { is_expected.to eq ['a', Float::NAN, 7] }
       its(:'index.to_a') { is_expected.to eq [11, 12, 18] }
     end
-    
+
     context 'remove Float::NAN only' do
       subject { df.reject_values Float::NAN }
       it { is_expected.to be_a Daru::DataFrame }
@@ -1651,7 +1651,7 @@ describe Daru::DataFrame do
       its(:'c.to_a') { is_expected.to eq ['a', 3, 5, nil, 7] }
       its(:'index.to_a') { is_expected.to eq [11, 13, 16, 17, 18] }
     end
-    
+
     context 'remove both nil and Float::NAN' do
       subject { df.reject_values nil, Float::NAN }
       it { is_expected.to be_a Daru::DataFrame }
@@ -1661,7 +1661,7 @@ describe Daru::DataFrame do
       its(:'c.to_a') { is_expected.to eq ['a', 7] }
       its(:'index.to_a') { is_expected.to eq [11, 18] }
     end
-    
+
     context 'any other values' do
       subject { df.reject_values 1, 5 }
       it { is_expected.to be_a Daru::DataFrame }
@@ -1679,9 +1679,9 @@ describe Daru::DataFrame do
       its(:'a.to_a') { is_expected.to eq [7] }
       its(:'b.to_a') { is_expected.to eq [8] }
       its(:'c.to_a') { is_expected.to eq [7] }
-      its(:'index.to_a') { is_expected.to eq [18] }      
+      its(:'index.to_a') { is_expected.to eq [18] }
     end
-    
+
     context 'when resultant dataframe is empty' do
       subject { df.reject_values 1, 2, 3, 4, 5, 6, 7, nil, Float::NAN }
       it { is_expected.to be_a Daru::DataFrame }
@@ -1689,10 +1689,10 @@ describe Daru::DataFrame do
       its(:'a.to_a') { is_expected.to eq [] }
       its(:'b.to_a') { is_expected.to eq [] }
       its(:'c.to_a') { is_expected.to eq [] }
-      its(:'index.to_a') { is_expected.to eq [] }          
+      its(:'index.to_a') { is_expected.to eq [] }
     end
   end
-  
+
   context '#replace_values' do
     subject do
       Daru::DataFrame.new({
@@ -1702,7 +1702,7 @@ describe Daru::DataFrame do
       })
     end
     before { subject.to_category :b }
-    
+
     context 'replace nils only' do
       before { subject.replace_values nil, 10 }
       it { is_expected.to be_a Daru::DataFrame }
@@ -1711,7 +1711,7 @@ describe Daru::DataFrame do
       its(:'b.to_a') { is_expected.to eq [:a,  :b, 10, Float::NAN, 10, 3, 5, 8] }
       its(:'c.to_a') { is_expected.to eq ['a', Float::NAN, 3, 4, 3, 5, 10, 7] }
     end
-    
+
     context 'replace Float::NAN only' do
       before { subject.replace_values Float::NAN, 10 }
       it { is_expected.to be_a Daru::DataFrame }
@@ -1720,7 +1720,7 @@ describe Daru::DataFrame do
       its(:'b.to_a') { is_expected.to eq [:a,  :b, nil, 10, nil, 3, 5, 8] }
       its(:'c.to_a') { is_expected.to eq ['a', 10, 3, 4, 3, 5, nil, 7] }
     end
-    
+
     context 'replace both nil and Float::NAN' do
       before { subject.replace_values [nil, Float::NAN], 10 }
       it { is_expected.to be_a Daru::DataFrame }
@@ -1729,7 +1729,7 @@ describe Daru::DataFrame do
       its(:'b.to_a') { is_expected.to eq [:a,  :b, 10, 10, 10, 3, 5, 8] }
       its(:'c.to_a') { is_expected.to eq ['a', 10, 3, 4, 3, 5, 10, 7] }
     end
-    
+
     context 'replace other values' do
       before { subject.replace_values [1, 5], 10 }
       it { is_expected.to be_a Daru::DataFrame }
@@ -1737,7 +1737,7 @@ describe Daru::DataFrame do
       its(:'a.to_a') { is_expected.to eq [10, 2, 3, nil, Float::NAN, nil, 10, 7] }
       its(:'b.to_a') { is_expected.to eq [:a,  :b, nil, Float::NAN, nil, 3, 10, 8] }
       its(:'c.to_a') { is_expected.to eq ['a', Float::NAN, 3, 4, 3, 10, nil, 7] }
-    end    
+    end
   end
 
   context "#clone" do
@@ -2927,6 +2927,19 @@ describe Daru::DataFrame do
         )
       )
     end
+
+    it 'works' do
+      categories = %i[jan feb mar apr may jun jul aug sep oct nov dec]
+      df = Daru::DataFrame.rows([
+        [2014, 2, 1600.0, 20.0],
+        [2014, 3, 1680.0, 21.0],
+        [2016, 2, 1600.0, 20.0],
+        [2016, 4, 1520.0, 19.0],
+      ], order: [:year, :month, :visitors, :days])
+      df[:averages] = df[:visitors] / df[:days]
+      df[:month] = df[:month].map{|i| categories[i - 1]}
+      df.pivot_table index: :month, vectors: [:year], values: :averages
+    end
   end
 
   context "#shape" do
@@ -3074,14 +3087,14 @@ describe Daru::DataFrame do
       })
     end
     before { df.to_category :b }
-    
+
     context 'true' do
       it { expect(df.include_values? nil).to eq true }
       it { expect(df.include_values? Float::NAN).to eq true }
       it { expect(df.include_values? nil, Float::NAN).to eq true }
       it { expect(df.include_values? 1, 30).to eq true }
     end
-    
+
     context 'false' do
       it { expect(df[:a, :c].include_values? nil).to eq false }
       it { expect(df[:c, :d].include_values? Float::NAN).to eq false }

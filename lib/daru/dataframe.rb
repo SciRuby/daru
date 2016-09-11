@@ -1523,7 +1523,7 @@ module Daru
     #   #     [:bar]         18         26
     #   #     [:foo]         10         12
     def pivot_table opts={}
-      raise ArgumentError, 'Specify grouping index' if opts[:index].to_a.empty?
+      raise ArgumentError, 'Specify grouping index' if Array(opts[:index]).empty?
 
       index               = opts[:index]
       vectors             = opts[:vectors] || []
