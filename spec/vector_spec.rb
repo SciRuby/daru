@@ -1179,6 +1179,20 @@ describe Daru::Vector do
           expect(@vector['2012-1-1']).to eq(1)
         end
 
+        it "accepts an array as index" do
+          @vector.index = [5,4,3,2,1]
+
+          expect(@vector.index.class).to eq(Daru::Index)
+          expect(@vector[5]).to eq(1)
+        end
+
+        it "accepts an range as index" do
+          @vector.index = 'a'..'e'
+
+          expect(@vector.index.class).to eq(Daru::Index)
+          expect(@vector['a']).to eq(1)
+        end
+
         it "raises error for index size != vector size" do
           expect {
             @vector.index = Daru::Index.new([4,2,6])
