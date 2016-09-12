@@ -593,15 +593,6 @@ module Daru
       end
     }
 
-    def resort_index vector_index, opts
-      if block_given?
-        vector_index.sort { |(lv, _li), (rv, _ri)| yield(lv, rv) }
-      else
-        vector_index.sort(&DEFAULT_SORTER)
-      end
-        .tap { |res| res.reverse! unless opts[:ascending] }
-    end
-
     # Just sort the data and get an Array in return using Enumerable#sort.
     # Non-destructive.
     # :nocov:
@@ -1543,6 +1534,15 @@ module Daru
     def update_position_cache
       @nil_positions = nil
       @nan_positions = nil
+    end
+
+    def resort_index vector_index, opts
+      if block_given?
+        vector_index.sort { |(lv, _li), (rv, _ri)| yield(lv, rv) }
+      else
+        vector_index.sort(&DEFAULT_SORTER)
+      end
+        .tap { |res| res.reverse! unless opts[:ascending] }
     end
   end
 end
