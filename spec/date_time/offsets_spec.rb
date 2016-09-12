@@ -54,6 +54,60 @@ describe DateOffset do
   end
 end
 
+describe NegativeDateOffset do
+  context "#initialize, #+, #-" do
+    it "creates a seconds offset" do
+      offset = -DateOffset.new(secs: 5)
+      expect(offset + DateTime.new(2012,3,4,23,4,05)).to eq(
+        DateTime.new(2012,3,4,23,4,00))
+      expect(offset - DateTime.new(2012,4,2,22,4,18)).to eq(
+        DateTime.new(2012,4,2,22,4,23))
+    end
+
+    it "creates a minutes offset"  do
+      offset = -DateOffset.new(mins: 2)
+      expect(offset + DateTime.new(2013,4,5,12,47,44)).to eq(
+        DateTime.new(2013,4,5,12,45,44))
+    end
+
+    it "creates an hours offset" do
+      offset = -DateOffset.new(hours: 3)
+      expect(offset + DateTime.new(2024,3,2,3)).to eq(
+        DateTime.new(2024,3,2,0))
+    end
+
+    it "creates a days offset" do
+      offset = -DateOffset.new(days: 12)
+      expect(offset + DateTime.new(2012,5,16)).to eq(
+        DateTime.new(2012,5,4))
+    end
+
+    it "creates a weeks offset" do
+      offset = -DateOffset.new(weeks: 2)
+      expect(offset + DateTime.new(2012,3,15)).to eq(
+        DateTime.new(2012,3,1))
+    end
+
+    it "creates a months offset" do
+      offset = -DateOffset.new(months: 1)
+      expect(offset + DateTime.new(2012,4,1)).to eq(
+        DateTime.new(2012,3,1))
+    end
+
+    it "creates a years offset" do
+      offset = -DateOffset.new(years: 2)
+      expect(offset + DateTime.new(2014,5,30)).to eq(
+        DateTime.new(2012,5,30))
+    end
+
+    it "supports 'n' option to apply same offset multiple times" do
+      offset = -DateOffset.new(days: 3, n: 4)
+      expect(offset + DateTime.new(2012,3,13)).to eq(
+        DateTime.new(2012,3,1))
+    end
+  end
+end
+
 include Daru::Offsets
 describe Offsets do
   describe Second do
