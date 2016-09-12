@@ -990,6 +990,8 @@ module Daru
     end
 
     def index= idx
+      idx = Index.coerce idx
+
       raise ArgumentError,
         "Size of supplied index #{index.size} does not match size of DataFrame" if
         idx.size != size
