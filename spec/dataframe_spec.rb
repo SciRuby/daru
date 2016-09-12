@@ -2928,7 +2928,7 @@ describe Daru::DataFrame do
       )
     end
 
-    it 'works' do
+    it 'performs date pivoting' do
       categories = %i[jan feb mar apr may jun jul aug sep oct nov dec]
       df = Daru::DataFrame.rows([
         [2014, 2, 1600.0, 20.0],
@@ -2939,6 +2939,17 @@ describe Daru::DataFrame do
       df[:averages] = df[:visitors] / df[:days]
       df[:month] = df[:month].map{|i| categories[i - 1]}
       actual = df.pivot_table(index: :month, vectors: [:year], values: :averages)
+
+      # NB: As you can see, there are some "illogical" parts:
+      #     months are sorted lexicographically, then made into multi-index
+      #     with one-element-per-tuple, then order of columns is dependent
+      #     on which month is lexicographically first (its apr, so, apr-2016
+      #     is first row to gather, so 2016 is first column).
+      #
+      #     All of it is descendance of our group_by implementation (which
+      #     always sorts results & always make array keys). I hope that fixing
+      #     group_by, even to the extend described at https://github.com/v0dro/daru/issues/152,
+      #     will be fix this case also.
       expected =
         Daru::DataFrame.new(
           [

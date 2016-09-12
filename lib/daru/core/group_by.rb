@@ -25,6 +25,13 @@ module Daru
         @context = context
         vectors = names.map { |vec| context[vec].to_a }
         tuples  = vectors[0].zip(*vectors[1..-1])
+        # FIXME: It feels like we don't want to sort here. Ruby's #group_by
+        # never sorts:
+        #
+        #   ['test', 'me', 'please'].group_by(&:size)
+        #   #  => {4=>["test"], 2=>["me"], 6=>["please"]}
+        #
+        # - zverok, 2016-09-12
         keys    = tuples.uniq.sort(&TUPLE_SORTER)
 
         keys.each do |key|
