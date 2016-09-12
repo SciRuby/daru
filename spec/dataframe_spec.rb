@@ -2938,7 +2938,20 @@ describe Daru::DataFrame do
       ], order: [:year, :month, :visitors, :days])
       df[:averages] = df[:visitors] / df[:days]
       df[:month] = df[:month].map{|i| categories[i - 1]}
-      df.pivot_table index: :month, vectors: [:year], values: :averages
+      actual = df.pivot_table(index: :month, vectors: [:year], values: :averages)
+      expected =
+        Daru::DataFrame.new(
+          [
+            [80.0, 80.0, nil],
+            [nil, 80.0, 80.0],
+          ], index: Daru::MultiIndex.from_tuples([[:apr], [:feb], [:mar]]),
+          order: Daru::MultiIndex.from_tuples([[:averages, 2016], [:averages, 2014]])
+        )
+      # Comparing their parts previous to full comparison allows to
+      # find complicated differences.
+      expect(actual.vectors).to eq expected.vectors
+      expect(actual.index).to eq expected.index
+      expect(actual).to eq expected
     end
   end
 
