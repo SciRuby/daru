@@ -1523,7 +1523,7 @@ module Daru
     #   #     [:bar]         18         26
     #   #     [:foo]         10         12
     def pivot_table opts={}
-      raise ArgumentError, 'Specify grouping index' if opts[:index].to_a.empty?
+      raise ArgumentError, 'Specify grouping index' if Array(opts[:index]).empty?
 
       index               = opts[:index]
       vectors             = opts[:vectors] || []
@@ -2238,8 +2238,8 @@ module Daru
     end
 
     def initialize_from_array_of_arrays source, vectors, index, _opts
-      raise ArgumentError, "Number of vectors (#{vectors.size}) should \
-        equal order size (#{source.size})" if source.size != vectors.size
+      raise ArgumentError, "Number of vectors (#{vectors.size}) should " \
+        "equal order size (#{source.size})" if source.size != vectors.size
 
       @index   = Index.coerce(index || source[0].size)
       @vectors = Index.coerce(vectors)
