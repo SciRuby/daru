@@ -300,7 +300,7 @@ module Daru
 
       def multi_indexed_grouping?
         return false unless @groups.keys[0]
-        @groups.keys[0].size > 1 ? true : false
+        @groups.keys[0].size > 1
       end
     end
   end
