@@ -2514,6 +2514,32 @@ describe Daru::DataFrame do
       expect(@df.index).to eq Daru::Index.new (1..5).to_a
     end
   end
+  
+  context '#order=' do
+    let(:df) do
+      Daru::DataFrame.new({
+        a: [1, 2, 3],
+        b: [4, 5, 6]
+      }, order: [:a, :b])
+    end
+    
+    context 'correct order' do
+      before { df.order = [:b, :a] }
+      subject { df }
+      
+      its(:'vectors.to_a') { is_expected.to eq [:b, :a] }
+      its(:'b.to_a') { is_expected.to eq [4, 5, 6] }
+      its(:'a.to_a') { is_expected.to eq [1, 2, 3] }
+    end
+    
+    context 'insufficient vectors' do
+      it { expect { df.order = [:a] }.to raise_error }
+    end
+    
+    context 'wrong vectors' do
+      it { expect { df.order = [:a, :b, 'b'] }.to raise_error }
+    end
+  end
 
   context "#vectors=" do
     before :each do

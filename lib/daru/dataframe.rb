@@ -973,6 +973,12 @@ module Daru
 
       Daru::Vector.new a, index: @index
     end
+    
+    def order=(order_array)
+      raise ArgumentError, 'Invalid order' unless
+        order_array.sort == vectors.to_a.sort
+      initialize(to_h, order: order_array)
+    end
 
     # Returns a vector, based on a string with a calculation based
     # on vector.
