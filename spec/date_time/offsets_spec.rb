@@ -106,6 +106,18 @@ describe NegativeDateOffset do
         DateTime.new(2012,3,1))
     end
   end
+
+  context "#-@" do
+    it "creates a date offset" do
+      negative_offset = -DateOffset.new(secs: 5)
+      offset = -negative_offset
+
+      expect(offset + DateTime.new(2012,3,4,23,4,0)).to eq(
+        DateTime.new(2012,3,4,23,4,5))
+      expect(offset - DateTime.new(2012,4,2,22,4,23)).to eq(
+        DateTime.new(2012,4,2,22,4,18))
+    end
+  end
 end
 
 include Daru::Offsets
