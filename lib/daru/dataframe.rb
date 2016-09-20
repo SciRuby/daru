@@ -974,6 +974,26 @@ module Daru
       Daru::Vector.new a, index: @index
     end
 
+    # Reorder the vectors in a dataframe
+    # @param [Array] order_array new order of the vectors
+    # @example
+    #   df = Daru::DataFrame({
+    #     a: [1, 2, 3],
+    #     b: [4, 5, 6]
+    #   }, order: [:a, :b])
+    #   df.order = [:b, :a]
+    #   df
+    #   # => #<Daru::DataFrame(3x2)>
+    #   #       b   a
+    #   #   0   4   1
+    #   #   1   5   2
+    #   #   2   6   3
+    def order=(order_array)
+      raise ArgumentError, 'Invalid order' unless
+        order_array.sort == vectors.to_a.sort
+      initialize(to_h, order: order_array)
+    end
+
     # Returns a vector, based on a string with a calculation based
     # on vector.
     #
