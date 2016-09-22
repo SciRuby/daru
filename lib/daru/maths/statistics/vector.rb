@@ -97,9 +97,7 @@ module Daru
           )
         end
 
-        def freqs
-          frequencies
-        end
+        alias_method :freqs, :frequencies
         deprecate :freqs, :frequencies, 2016, 10
 
         def proportions
