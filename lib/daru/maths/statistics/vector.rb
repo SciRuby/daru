@@ -5,6 +5,8 @@ module Daru
     # the computationally intensive tasks.
     module Statistics
       module Vector # rubocop:disable Metrics/ModuleLength
+        extend Gem::Deprecate
+
         def mean
           @data.mean
         end
@@ -30,7 +32,7 @@ module Daru
         end
 
         def mode
-          frequencies.max { |a,b| a[1]<=>b[1] }.first
+          frequencies.to_h.max { |a,b| a[1]<=>b[1] }.first
         end
 
         # Create a summary of count, mean, standard deviation, min and max of
@@ -88,25 +90,28 @@ module Daru
         end
 
         def frequencies
-          @data.each_with_object(Hash.new(0)) do |element, hash|
-            hash[element] += 1 unless element.nil?
-          end
+          Daru::Vector.new(
+            @data.each_with_object(Hash.new(0)) do |element, hash|
+              hash[element] += 1 unless element.nil?
+            end
+          )
         end
 
         def freqs
-          Daru::Vector.new(frequencies)
+          frequencies
         end
+        deprecate :freqs, :frequencies, 2016, 10
 
         def proportions
           len = size - count_values(*Daru::MISSING_VALUES)
-          frequencies.each_with_object({}) do |(el, count), hash|
+          frequencies.to_h.each_with_object({}) do |(el, count), hash|
             hash[el] = count / len
           end
         end
 
         def ranked
           sum = 0
-          r = frequencies.sort.each_with_object({}) do |(el, count), memo|
+          r = frequencies.to_h.sort.each_with_object({}) do |(el, count), memo|
             memo[el] = ((sum + 1) + (sum + count)).quo(2)
             sum += count
           end
