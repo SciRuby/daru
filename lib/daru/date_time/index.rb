@@ -285,7 +285,7 @@ module Daru
     # @option opts [String, Daru::DateOffset, Daru::Offsets::*] :freq ('D') The interval
     #   between each date in the index. This can either be a string specifying
     #   the frequency (i.e. one of the frequency aliases) or an offset object.
-    # @option opts [Fixnum] :periods The number of periods that should go into
+    # @option opts [Integer] :periods The number of periods that should go into
     #   this index. Takes precedence over `:end`.
     # @return [DateTimeIndex] DateTimeIndex object of the specified parameters.
     #
@@ -389,7 +389,7 @@ module Daru
     # @param [String, DateTime] first Start of the slice as a string or DateTime.
     # @param [String, DateTime] last End of the slice as a string or DateTime.
     def slice first, last
-      if first.is_a?(Fixnum) && last.is_a?(Fixnum)
+      if first.is_a?(Integer) && last.is_a?(Integer)
         DateTimeIndex.new(to_a[first..last], freq: @offset)
       else
         first = Helper.find_date_string_bounds(first)[0] if first.is_a?(String)
@@ -427,7 +427,7 @@ module Daru
     # Shift all dates in the index by a positive number in the future. The dates
     # are shifted by the same amount as that specified in the offset.
     #
-    # @param [Fixnum, Daru::DateOffset, Daru::Offsets::*] distance Distance by
+    # @param [Integer, Daru::DateOffset, Daru::Offsets::*] distance Distance by
     #   which each date should be shifted. Passing an offset object to #shift
     #   will offset each data point by the offset value. Passing a positive
     #   integer will offset each data point by the same offset that it was
@@ -445,7 +445,7 @@ module Daru
     #   index.shift(4)
     #   #=>#<DateTimeIndex:83979630 offset=YEAR periods=10 data=[2016-01-01T00:00:00+00:00...2025-01-01T00:00:00+00:00]>
     def shift distance
-      distance.is_a?(Fixnum) && distance < 0 and
+      distance.is_a?(Integer) && distance < 0 and
         raise IndexError, "Distance #{distance} cannot be negative"
 
       _shift(distance)
@@ -454,14 +454,14 @@ module Daru
     # Shift all dates in the index to the past. The dates are shifted by the same
     # amount as that specified in the offset.
     #
-    # @param [Fixnum, Daru::DateOffset, Daru::Offsets::*] distance Fixnum or
+    # @param [Integer, Daru::DateOffset, Daru::Offsets::*] distance Integer or
     #   Daru::DateOffset. Distance by which each date should be shifted. Passing
     #   an offset object to #lag will offset each data point by the offset value.
     #   Passing a positive integer will offset each data point by the same offset
     #   that it was created with.
     # @return [DateTimeIndex] A new lagged DateTimeIndex object.
     def lag distance
-      distance.is_a?(Fixnum) && distance < 0 and
+      distance.is_a?(Integer) && distance < 0 and
         raise IndexError, "Distance #{distance} cannot be negative"
 
       _shift(-distance)
@@ -480,17 +480,17 @@ module Daru
     # :nocov:
 
     # @!method year
-    #   @return [Array<Fixnum>] Array containing year of each index.
+    #   @return [Array<Integer>] Array containing year of each index.
     # @!method month
-    #   @return [Array<Fixnum>] Array containing month of each index.
+    #   @return [Array<Integer>] Array containing month of each index.
     # @!method day
-    #   @return [Array<Fixnum>] Array containing day of each index.
+    #   @return [Array<Integer>] Array containing day of each index.
     # @!method hour
-    #   @return [Array<Fixnum>] Array containing hour of each index.
+    #   @return [Array<Integer>] Array containing hour of each index.
     # @!method min
-    #   @return [Array<Fixnum>] Array containing minutes of each index.
+    #   @return [Array<Integer>] Array containing minutes of each index.
     # @!method sec
-    #   @return [Array<Fixnum>] Array containing seconds of each index.
+    #   @return [Array<Integer>] Array containing seconds of each index.
     [:year, :month, :day, :hour, :min, :sec].each do |meth|
       define_method(meth) do
         each_with_object([]) do |d, arr|
@@ -521,7 +521,7 @@ module Daru
     private
 
     def get_by_range first, last
-      return slice(first, last) if first.is_a?(Fixnum) && last.is_a?(Fixnum)
+      return slice(first, last) if first.is_a?(Integer) && last.is_a?(Integer)
 
       raise ArgumentError, "Keys #{first} and #{last} are out of bounds" if
         Helper.key_out_of_bounds?(first, @data) && Helper.key_out_of_bounds?(last, @data)
@@ -548,7 +548,7 @@ module Daru
     end
 
     def _shift distance
-      if distance.is_a?(Fixnum)
+      if distance.is_a?(Integer)
         raise IndexError, 'To lag non-freq date time index pass an offset.' unless @offset
 
         start = @data[0][0]
