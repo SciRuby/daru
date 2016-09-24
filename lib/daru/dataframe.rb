@@ -120,7 +120,7 @@ module Daru
 
         opts[:order] ||= guess_order(source)
 
-        if ArrayHelper.array_of?(source, Array)
+        if ArrayHelper.array_of?(source, Array) || source.empty?
           DataFrame.new(source.transpose, opts)
         elsif ArrayHelper.array_of?(source, Vector)
           from_vector_rows(source, opts)

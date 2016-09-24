@@ -55,6 +55,13 @@ describe Daru::DataFrame do
         expect(df[:a]) .to eq(Daru::Vector.new [1,1,1,1])
       end
 
+      it "creates empty dataframe" do
+        df = Daru::DataFrame.rows [], order: [:a, :b, :c]
+
+        expect(df.vectors).to eq(Daru::Index.new [:a,:b,:c])
+        expect(df.index).to be_empty
+      end
+
       it "creates a DataFrame from Vector rows" do
         rows = @rows.map { |r| Daru::Vector.new r, index: [:a,:b,:c,:d,:e] }
 
@@ -2514,7 +2521,7 @@ describe Daru::DataFrame do
       expect(@df.index).to eq Daru::Index.new (1..5).to_a
     end
   end
-  
+
   context '#order=' do
     let(:df) do
       Daru::DataFrame.new({
@@ -2522,20 +2529,20 @@ describe Daru::DataFrame do
         b: [4, 5, 6]
       }, order: [:a, :b])
     end
-    
+
     context 'correct order' do
       before { df.order = [:b, :a] }
       subject { df }
-      
+
       its(:'vectors.to_a') { is_expected.to eq [:b, :a] }
       its(:'b.to_a') { is_expected.to eq [4, 5, 6] }
       its(:'a.to_a') { is_expected.to eq [1, 2, 3] }
     end
-    
+
     context 'insufficient vectors' do
       it { expect { df.order = [:a] }.to raise_error }
     end
-    
+
     context 'wrong vectors' do
       it { expect { df.order = [:a, :b, 'b'] }.to raise_error }
     end
