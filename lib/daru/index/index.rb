@@ -43,10 +43,6 @@ module Daru
       self
     end
 
-    def map(&block)
-      to_a.map(&block)
-    end
-
     attr_reader :relation_hash, :size
 
     def initialize index
