@@ -141,6 +141,19 @@ describe Daru::DataFrame do
       expect(@left.join(@right, how: :right, on: [:name])).to eq(answer)
     end
 
+    it "doesn't convert false into nil when joining boolean values" do
+      left = Daru::DataFrame.new({ key: [1,2,3], left_value: [true, false, true] })
+      right = Daru::DataFrame.new({ key: [1,2,3], right_value: [true, false, true] })
+
+      answer = Daru::DataFrame.new({
+        left_value: [true, false, true],
+        key: [1,2,3],
+        right_value: [true, false, true]
+      }, order: [:left_value, :key, :right_value] )
+
+      expect(left.join(right, on: [:key], how: :inner)).to eq answer
+    end
+
     it "raises if :on field are absent in one of dataframes" do
       @right.vectors = [:id, :other_name]
       expect { @left.join(@right, how: :right, on: [:name]) }.to \

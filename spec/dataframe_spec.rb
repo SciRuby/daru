@@ -177,14 +177,14 @@ describe Daru::DataFrame do
       end
 
       it "initializes from an Array of Hashes" do
-        df = Daru::DataFrame.new([{a: 1, b: 11}, {a: 2, b: 12}, {a: 3, b: 13},
+        df = Daru::DataFrame.new([{a: 1, b: 11}, {a: false, b: 12}, {a: 3, b: 13},
           {a: 4, b: 14}, {a: 5, b: 15}], order: [:b, :a],
           index: [:one, :two, :three, :four, :five])
 
         expect(df.index)  .to eq(Daru::Index.new [:one, :two, :three, :four, :five])
         expect(df.vectors).to eq(Daru::Index.new [:b, :a])
         expect(df.a.class).to eq(Daru::Vector)
-        expect(df.a)      .to eq([1,2,3,4,5].dv(:a,[:one, :two, :three, :four, :five]))
+        expect(df.a)      .to eq([1,false,3,4,5].dv(:a,[:one, :two, :three, :four, :five]))
       end
 
       it "initializes from Array of Arrays" do
