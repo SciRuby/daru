@@ -1196,7 +1196,8 @@ describe Daru::Vector do
         it "raises error for index size != vector size" do
           expect {
             @vector.index = Daru::Index.new([4,2,6])
-          }.to raise_error(ArgumentError, "Size of supplied index 3 does not match size of DataFrame")
+          }.to raise_error(ArgumentError, 'Size of supplied index 3 '\
+            'does not match size of Vector')
         end
       end
 

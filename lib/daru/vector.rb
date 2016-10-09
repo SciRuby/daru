@@ -984,7 +984,7 @@ module Daru
       idx = Index.coerce idx
 
       raise ArgumentError,
-        "Size of supplied index #{idx.size} does not match size of DataFrame" if
+        "Size of supplied index #{idx.size} does not match size of Vector" if
         idx.size != size
       raise ArgumentError, 'Can only assign type Index and its subclasses.' unless
         idx.is_a?(Daru::Index)
