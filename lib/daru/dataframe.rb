@@ -2288,7 +2288,7 @@ module Daru
       @index = Daru::Index.new(index || source.size)
 
       @data = @vectors.map do |name|
-        v = source.map { |h| h[name] || h[name.to_s] }
+        v = source.map { |h| h.fetch(name) { h[name.to_s] } }
         Daru::Vector.new(v, name: coerce_name(name), index: @index)
       end
     end

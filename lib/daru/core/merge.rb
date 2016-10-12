@@ -78,7 +78,7 @@ module Daru
       end
 
       def sanitize_merge_keys(merge_keys)
-        merge_keys.map { |v| v || NilSorter.new }
+        merge_keys.map { |v| v.nil? ? NilSorter.new : v }
       end
 
       def df_to_a df
