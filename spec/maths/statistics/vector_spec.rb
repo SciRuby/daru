@@ -230,18 +230,8 @@ describe Daru::Vector do
   end
 
   context "#frequencies" do
-    it "calculates frequencies" do
-      vector = Daru::Vector.new([5,5,5,5,5,6,6,7,8,9,10,1,2,3,4,nil,-99,-99])
-      expect(vector.frequencies).to eq({
-        1=>1, 2=>1, 3=>1, 4=>1, 5=>5,
-        6=>2, 7=>1, 8=>1, 9=>1,10=>1, -99=>2
-      })
-    end
-  end
-
-  context "#freqs" do
     let(:vector) { Daru::Vector.new([5,5,5,5,5,6,6,7,8,9,10,1,2,3,4,nil,-99,-99]) }
-    subject { vector.freqs }
+    subject { vector.frequencies }
     it { is_expected.to eq Daru::Vector.new(
       [5,2,1,1,1,1,1,1,1,1,2],
       index: [5,6,7,8,9,10,1,2,3,4,-99]

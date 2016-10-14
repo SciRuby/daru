@@ -1123,7 +1123,7 @@ module Daru
         each_row do |row|
           return true if yield(row)
         end
-        return false
+        false
       else
         raise ArgumentError, "Unidentified axis #{axis}"
       end
@@ -2090,7 +2090,7 @@ module Daru
     end
 
     def populate_row_for pos
-      @data.map { |vector| vector[pos] }
+      @data.map { |vector| vector.at(*pos) }
     end
 
     def insert_or_modify_vector name, vector
