@@ -109,6 +109,17 @@ module Daru
         writer.close
       end
 
+      # Functions for loading/writing TSV files
+      def from_tsv path, opts={}
+        opts = { col_sep: "\t" }.merge(opts)
+        from_csv path, opts
+      end
+
+      def dataframe_write_tsv dataframe, path, opts={}
+        opts = { col_sep: "\t" }.merge(opts)
+        dataframe_write_csv dataframe, path, opts
+      end
+
       # Execute a query and create a data frame from the result
       #
       # @param dbh [DBI::DatabaseHandle] A DBI connection to be used to run the query

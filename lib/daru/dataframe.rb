@@ -48,6 +48,14 @@ module Daru
         Daru::IO.from_csv path, opts, &block
       end
 
+      # Load data from a TSV file.
+      # This method is equivalent to the following use of +from_csv+.
+      #
+      #   Daru::DataFrame.from_csv(filename, col_sep: "\t")
+      def from_tsv path, opts={}, &block
+        Daru::IO.from_tsv path, opts, &block
+      end
+
       # Read data from an Excel file into a DataFrame.
       #
       # == Arguments
@@ -1800,6 +1808,20 @@ module Daru
     # function.
     def write_csv filename, opts={}
       Daru::IO.dataframe_write_csv self, filename, opts
+    end
+
+    # Write this DataFrame to a TSV file.
+    #
+    # == Arguements
+    #
+    # * filename - Path of TSV file where the DataFrame is to be saved.
+    #
+    # == Options
+    #
+    # All the options accepted by +write_csv+ can also be passed into this
+    # function.
+    def write_tsv filename, opts={}
+      Daru::IO.dataframe_write_tsv self, filename, opts
     end
 
     # Write this dataframe to an Excel Spreadsheet

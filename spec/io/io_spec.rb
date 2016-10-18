@@ -64,6 +64,46 @@ describe Daru::IO do
 
     end
 
+    describe '.from_tsv' do
+      it 'loads from a TSV file' do
+        df = Daru::DataFrame.from_tsv('spec/fixtures/matrix_test.tsv', headers: true)
+
+        df.vectors = [:image_resolution, :mls, :true_transform].to_index
+        expect(df.vectors).to eq([:image_resolution, :mls, :true_transform].to_index)
+        expect(df[:image_resolution].first).to eq(6.55779)
+        expect(df[:true_transform].first).to eq("-0.2362347,0.6308649,0.7390552,0,0.6523478,-0.4607318,0.6018043,0,0.7201635,0.6242881,-0.3027024,4262.65,0,0,0,1")
+      end
+    end
+
+    describe '#write_tsv' do
+      let!(:df) do
+        Daru::DataFrame.new({
+          'a' => [1,2,3,4,5],
+          'b' => [11,22,33,44,55],
+          'c' => ['a', 'g', 4, 5,'addadf'],
+          'd' => [nil, 23, 4,'a','ff']})
+      end
+
+      let!(:tempfile) { Tempfile.new('data.tsv') }
+
+      it 'writes DataFrame to a TSV file' do
+        df.write_tsv tempfile.path
+        expect(Daru::DataFrame.from_tsv(tempfile.path)).to eq(df)
+      end
+
+      it 'will write headers unless headers=false' do
+        df.write_tsv tempfile.path
+        first_line = File.open(tempfile.path, &:readline).chomp.split("\t", -1)
+        expect(first_line).to eq(df.vectors.to_a)
+      end
+
+      it 'will not write headers when headers=false' do
+        df.write_tsv tempfile.path, { headers: false }
+        first_line = File.open(tempfile.path, &:readline).chomp.split("\t", -1)
+        expect(first_line).to eq(df.head(1).map { |v| (v.first || '').to_s })
+      end
+    end
+
     context ".from_excel" do
       before do
         id   = Daru::Vector.new([1, 2, 3, 4, 5, 6])
