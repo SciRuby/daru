@@ -31,7 +31,7 @@ module Daru
         private
 
         def plot_without_category opts
-          options = {type:  :scatter}.merge(opts)
+          options = {type: :scatter}.merge(opts)
 
           plot = Nyaplot::Plot.new
           types = extract_option :type, options

@@ -1123,7 +1123,7 @@ module Daru
         each_row do |row|
           return true if yield(row)
         end
-        return false
+        false
       else
         raise ArgumentError, "Unidentified axis #{axis}"
       end
