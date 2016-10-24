@@ -964,7 +964,7 @@ module Daru
     #   #   c   3
     def reorder! order
       @index = @index.reorder order
-      @data = order.map { |i| @data[i] }
+      @data = Accessors::ArrayWrapper.new(order.map { |i| @data[i] }, self)
       update_position_cache
       self
     end
