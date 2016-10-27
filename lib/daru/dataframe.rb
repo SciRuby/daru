@@ -2090,7 +2090,7 @@ module Daru
     end
 
     def populate_row_for pos
-      @data.map { |vector| vector.at *pos }
+      @data.map { |vector| vector.at(*pos) }
     end
 
     def insert_or_modify_vector name, vector
