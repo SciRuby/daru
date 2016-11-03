@@ -86,6 +86,30 @@ describe Daru::Vector do
 
       end
 
+      context "#reorder!" do
+        let(:vector_with_dtype) do
+          Daru::Vector.new(
+            [1, 2, 3, 4],
+            index: [:a, :b, :c, :d],
+            dtype: dtype)
+        end
+        let(:arranged_vector) do
+          Daru::Vector.new([4,3,2,1], index: [:d, :c, :b, :a], dtype: dtype)
+        end
+
+        before do
+          vector_with_dtype.reorder! [3, 2, 1, 0]
+        end
+
+        it "rearranges with passed order" do
+          expect(vector_with_dtype).to eq arranged_vector
+        end
+
+        it "doesn't change dtype" do
+          expect(vector_with_dtype.data.class).to eq arranged_vector.data.class
+        end
+      end
+
       context ".new_with_size" do
         it "creates new vector from only size" do
           v1 = Daru::Vector.new 10.times.map { nil }, dtype: dtype
