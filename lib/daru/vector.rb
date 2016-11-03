@@ -964,7 +964,8 @@ module Daru
     #   #   c   3
     def reorder! order
       @index = @index.reorder order
-      @data = Accessors::ArrayWrapper.new(order.map { |i| @data[i] }, self)
+      data_array = order.map { |i| @data[i] }
+      @data = cast_vector_to @dtype, data_array, @nm_dtype
       update_position_cache
       self
     end
