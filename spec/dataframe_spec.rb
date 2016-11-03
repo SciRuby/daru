@@ -1392,6 +1392,15 @@ describe Daru::DataFrame do
           c: [11,22,33,44,55]}, order: [:a, :b, :c])
 
         expect(df.row[0]).to eq([1,11,11].dv(nil, [:a, :b, :c]))
+        expect(df.row[3]).to eq([4,14,44].dv(nil, [:a, :b, :c]))
+      end
+
+      it "returns a row with given Integer index for numerical index DataFrame" do
+        df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
+          c: [11,22,33,44,55]}, order: [:a, :b, :c], index: [1,2,3,4,5])
+
+        expect(df.row[0]).to eq([1,11,11].dv(nil, [:a, :b, :c]))
+        expect(df.row[3]).to eq([3,13,33].dv(nil, [:a, :b, :c]))
       end
     end
 
@@ -2146,14 +2155,28 @@ describe Daru::DataFrame do
 
   context "#filter_rows" do
     context Daru::Index do
-      it "filters rows" do
-        df = Daru::DataFrame.new({a: [1,2,3], b: [2,3,4]})
+      context "when specified no index" do
+        it "filters rows" do
+          df = Daru::DataFrame.new({a: [1,2,3], b: [2,3,4]})
 
-        a = df.filter_rows do |row|
-          row[:a] % 2 == 0
+          a = df.filter_rows do |row|
+            row[:a] % 2 == 0
+          end
+
+          expect(a).to eq(Daru::DataFrame.new({a: [2], b: [3]}, order: [:a, :b], index: [1]))
         end
+      end
 
-        expect(a).to eq(Daru::DataFrame.new({a: [2], b: [3]}, order: [:a, :b], index: [1]))
+      context "when specified numerical index" do
+        it "filters rows" do
+          df = Daru::DataFrame.new({a: [1,2,3], b: [2,3,4]}, index: [1,2,3])
+
+          a = df.filter_rows do |row|
+            row[:a] % 2 == 0
+          end
+
+          expect(a).to eq(Daru::DataFrame.new({a: [2], b: [3]}, order: [:a, :b], index: [2]))
+        end
       end
 
       it "preserves names of vectors" do
