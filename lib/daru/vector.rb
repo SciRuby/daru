@@ -190,9 +190,11 @@ module Daru
       case lib
       when :gruff, :nyaplot
         @plotting_library = lib
-        extend Module.const_get(
-          "Daru::Plotting::Vector::#{lib.to_s.capitalize}Library"
-        ) if Daru.send("has_#{lib}?".to_sym)
+        if Daru.send("has_#{lib}?".to_sym)
+          extend Module.const_get(
+            "Daru::Plotting::Vector::#{lib.to_s.capitalize}Library"
+          )
+        end
       else
         raise ArguementError, "Plotting library #{lib} not supported. "\
           'Supported libraries are :nyaplot and :gruff'
@@ -825,8 +827,10 @@ module Daru
     #   # [
     #   #   [1, 2, 3] ]
     def to_nmatrix axis=:horizontal
-      raise ArgumentError, 'Can not convert to nmatrix'\
-        'because the vector is numeric' unless numeric? && !include?(nil)
+      unless numeric? && !include?(nil)
+        raise ArgumentError, 'Can not convert to nmatrix'\
+          'because the vector is numeric'
+      end
 
       case axis
       when :horizontal
@@ -984,11 +988,14 @@ module Daru
     def index= idx
       idx = Index.coerce idx
 
-      raise ArgumentError,
-        "Size of supplied index #{idx.size} does not match size of Vector" if
-        idx.size != size
-      raise ArgumentError, 'Can only assign type Index and its subclasses.' unless
-        idx.is_a?(Daru::Index)
+      if idx.size != size
+        raise ArgumentError,
+          "Size of supplied index #{idx.size} does not match size of Vector"
+      end
+
+      unless idx.is_a?(Daru::Index)
+        raise ArgumentError, 'Can only assign type Index and its subclasses.'
+      end
 
       @index = idx
       self

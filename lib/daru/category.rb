@@ -61,9 +61,11 @@ module Daru
       case lib
       when :gruff, :nyaplot
         @plotting_library = lib
-        extend Module.const_get(
-          "Daru::Plotting::Category::#{lib.to_s.capitalize}Library"
-        ) if Daru.send("has_#{lib}?".to_sym)
+        if Daru.send("has_#{lib}?".to_sym)
+          extend Module.const_get(
+            "Daru::Plotting::Category::#{lib.to_s.capitalize}Library"
+          )
+        end
       else
         raise ArgumentError, "Plotting library #{lib} not supported. "\
           'Supported libraries are :nyaplot and :gruff'
@@ -772,9 +774,10 @@ module Daru
 
     def assert_ordered operation
       # TODO: Change ArgumentError to something more expressive
+      return if ordered?
+
       raise ArgumentError, "Can not apply #{operation} when vector is unordered. "\
         'To make the categorical data ordered, use #ordered = true'\
-        unless ordered?
     end
 
     def dummy_coding full
@@ -897,14 +900,17 @@ module Daru
 
     def validate_index index
       # Change to SizeError
+      return unless size != index.size
+
       raise ArgumentError, "Size of index (#{index.size}) does not matches"\
-        "size of vector (#{size})" if size != index.size
+        "size of vector (#{size})"
     end
 
     def modify_category_at pos, category
-      raise ArgumentError, "Invalid category #{category}, "\
-        'to add a new category use #add_category' unless
-        categories.include? category
+      unless categories.include? category
+        raise ArgumentError, "Invalid category #{category}, "\
+          'to add a new category use #add_category'
+      end
       old_category = category_from_position pos
       @array[pos] = int_from_cat category
       @cat_hash[old_category].delete pos
