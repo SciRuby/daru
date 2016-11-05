@@ -3624,8 +3624,9 @@ describe Daru::DataFrame do
       expect(df_union[:c].to_a).to eq [nil] * @df1.size + df2_c
     end
 
-    it 'raises an error, if the index elements are not mutually exclusive' do
-      expect { @df1.union @df3 }.to raise_error
+    it 'overwrites part of the first dataframe if there are double indices' do
+      vec = Daru::Vector.new({a: 4, b: nil, c: 4})
+      expect(@df1.union(@df3).row[5]).to eq vec
     end
 
     it 'concats the indices' do

@@ -1257,13 +1257,13 @@ module Daru
 
     # Concatenates another DataFrame as #concat.
     # Additionally it tries to preserve the index. If the indices contain
-    # common elements, #union raises an error.
+    # common elements, #union will overwrite the according rows in the
+    # first dataframe.
     def union other_df
-      index = @index.to_a + other_df.index.to_a
-      if index.length != index.uniq.length
-        raise 'The indices of the data frames contain common elements. Union not possible'
-      end
-      df = concat(other_df)
+      index = (@index.to_a + other_df.index.to_a).uniq
+      df = row[*(@index.to_a - other_df.index.to_a)]
+
+      df = df.concat(other_df)
       df.index = Daru::Index.new(index)
       df
     end
