@@ -17,12 +17,10 @@ module Daru
     def initialize opts={}
       labels = opts[:labels]
       levels = opts[:levels]
-      raise ArgumentError,
-        'Must specify both labels and levels' unless labels && levels
-      raise ArgumentError,
-        'Labels and levels should be same size' if labels.size != levels.size
-      raise ArgumentError,
-        'Incorrect labels and levels' if incorrect_fields?(labels, levels)
+
+      raise ArgumentError, 'Must specify both labels and levels' unless labels && levels
+      raise ArgumentError, 'Labels and levels should be same size' if labels.size != levels.size
+      raise ArgumentError, 'Incorrect labels and levels' if incorrect_fields?(labels, levels)
 
       @labels = labels
       @levels = levels.map { |e| e.map.with_index.to_h }
@@ -177,8 +175,7 @@ module Daru
       :retrieve_from_range, :retrieve_from_tuples
 
     def key index
-      raise ArgumentError,
-        "Key #{index} is too large" if index >= @labels[0].size
+      raise ArgumentError, "Key #{index} is too large" if index >= @labels[0].size
 
       @labels
         .each_with_index
