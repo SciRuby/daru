@@ -265,9 +265,11 @@ module Daru
       case lib
       when :gruff, :nyaplot
         @plotting_library = lib
-        extend Module.const_get(
-          "Daru::Plotting::DataFrame::#{lib.to_s.capitalize}Library"
-        ) if Daru.send("has_#{lib}?".to_sym)
+        if Daru.send("has_#{lib}?".to_sym)
+          extend Module.const_get(
+            "Daru::Plotting::DataFrame::#{lib.to_s.capitalize}Library"
+          )
+        end
       else
         raise ArguementError, "Plotting library #{lib} not supported. "\
           'Supported libraries are :nyaplot and :gruff'
@@ -1230,8 +1232,10 @@ module Daru
     end
 
     def reindex_vectors new_vectors
-      raise ArgumentError, 'Must pass the new index of type Index or its '\
-        "subclasses, not #{new_index.class}" unless new_vectors.is_a?(Daru::Index)
+      unless new_vectors.is_a?(Daru::Index)
+        raise ArgumentError, 'Must pass the new index of type Index or its '\
+          "subclasses, not #{new_index.class}"
+      end
 
       cl = Daru::DataFrame.new({}, order: new_vectors, index: @index, name: @name)
       new_vectors.each_with_object(cl) do |vec, memo|
@@ -1302,8 +1306,10 @@ module Daru
     #   #         a          1         11
     #   #         g        nil        nil
     def reindex new_index
-      raise ArgumentError, 'Must pass the new index of type Index or its '\
-        "subclasses, not #{new_index.class}" unless new_index.is_a?(Daru::Index)
+      unless new_index.is_a?(Daru::Index)
+        raise ArgumentError, 'Must pass the new index of type Index or its '\
+          "subclasses, not #{new_index.class}"
+      end
 
       cl = Daru::DataFrame.new({}, order: @vectors, index: new_index, name: @name)
       new_index.each_with_object(cl) do |idx, memo|
@@ -1340,10 +1346,14 @@ module Daru
     #   df.vectors = Daru::Index.new([:foo, :bar, :baz])
     #   df.vectors.to_a #=> [:foo, :bar, :baz]
     def vectors= idx
-      raise ArgumentError, 'Can only reindex with Index and its subclasses' unless
-        index.is_a?(Daru::Index)
-      raise ArgumentError, "Specified index length #{idx.size} not equal to"\
-        "dataframe size #{ncols}" if idx.size != ncols
+      unless index.is_a?(Daru::Index)
+        raise ArgumentError, 'Can only reindex with Index and its subclasses'
+      end
+
+      if idx.size != ncols
+        raise ArgumentError, "Specified index length #{idx.size} not equal to"\
+          "dataframe size #{ncols}"
+      end
 
       @vectors = idx
       self
@@ -1577,9 +1587,10 @@ module Daru
     #
     # @return {Daru::DataFrame}
     def merge other_df # rubocop:disable Metrics/AbcSize
-      raise ArgumentError,
-        "Number of rows must be equal in this: #{nrows} and other: #{other_df.nrows}" \
-        unless nrows == other_df.nrows
+      unless nrows == other_df.nrows
+        raise ArgumentError,
+          "Number of rows must be equal in this: #{nrows} and other: #{other_df.nrows}"
+      end
 
       new_fields = (@vectors.to_a + other_df.vectors.to_a)
       new_fields = ArrayHelper.recode_repeated(new_fields)
@@ -2171,9 +2182,10 @@ module Daru
         }
       else
         # FIXME: No spec checks this case... And SizeError is not a thing - zverok, 2016-05-08
-        raise SizeError,
-          "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}" if
-          @size != vector.size
+        if @size != vector.size
+          raise SizeError,
+            "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}"
+        end
 
         Daru::Vector.new(vector, name: coerce_name(name), index: @index)
       end
@@ -2200,12 +2212,13 @@ module Daru
     end
 
     def validate_labels
-      raise IndexError, "Expected equal number of vector names (#{@vectors.size}) " \
-        "for number of vectors (#{@data.size})." if
-        @vectors && @vectors.size != @data.size
+      if @vectors && @vectors.size != @data.size
+        raise IndexError, "Expected equal number of vector names (#{@vectors.size}) " \
+          "for number of vectors (#{@data.size})."
+      end
 
-      raise IndexError, 'Expected number of indexes same as number of rows' if
-        @index && @data[0] && @index.size != @data[0].size
+      return unless @index && @data[0] && @index.size != @data[0].size
+      raise IndexError, 'Expected number of indexes same as number of rows'
     end
 
     def validate_vector_sizes
@@ -2271,8 +2284,10 @@ module Daru
     end
 
     def initialize_from_array_of_arrays source, vectors, index, _opts
-      raise ArgumentError, "Number of vectors (#{vectors.size}) should " \
-        "equal order size (#{source.size})" if source.size != vectors.size
+      if source.size != vectors.size
+        raise ArgumentError, "Number of vectors (#{vectors.size}) should " \
+          "equal order size (#{source.size})"
+      end
 
       @index   = Index.coerce(index || source[0].size)
       @vectors = Index.coerce(vectors)

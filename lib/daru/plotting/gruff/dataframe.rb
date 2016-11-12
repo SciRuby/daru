@@ -7,9 +7,9 @@ module Daru
           size = opts[:size] || 500
           x = extract_x_vector opts[:x]
           y = extract_y_vectors opts[:y]
-          return plot_with_category(
-            size, type, x, y, opts[:categorized]
-          ) if opts[:categorized]
+          if opts[:categorized]
+            return plot_with_category(size, type, x, y, opts[:categorized])
+          end
           case type
           when :line, :bar, :scatter
             plot = send("#{type}_plot", size, x, y)
