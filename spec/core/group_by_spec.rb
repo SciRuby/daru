@@ -405,9 +405,17 @@ describe Daru::Core::GroupBy do
 
   context 'groups by first vector if no vector mentioned' do
     subject { @df.group_by }
-    
+
     it { is_expected.to be_a Daru::Core::GroupBy }
     its(:groups) { is_expected.to eq @sl_group.groups }
     its(:size) { is_expected.to eq @sl_group.size }
+  end
+
+  context 'group and sum with numeric indices' do
+    let(:df) { Daru::DataFrame.new({ g: ['a','a','a'], num: [1,2,3]}, index: [2,12,23]) }
+
+    subject { df.group_by([:g]).sum }
+
+    it { is_expected.to eq Daru::DataFrame.new({num: [6]}, index: ['a']) }
   end
 end

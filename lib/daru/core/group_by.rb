@@ -302,7 +302,11 @@ module Daru
             indexes << index
           end
         end
-        indexes
+        if indexes.count == 1
+          [@context.index.at(*indexes)]
+        else
+          @context.index.at(*indexes).to_a
+        end
       end
 
       def multi_indexed_grouping?
