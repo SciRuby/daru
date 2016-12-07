@@ -36,7 +36,7 @@ daru makes it easy and intuitive to process data predominantly through 2 data st
 * [Detailed Usage of Daru::DataFrame](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Usage%20of%20DataFrame.ipynb)
 * [Searching and combining data in daru](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Searching%20and%20Combining%20Data.ipynb)
 * [Grouping, Splitting and Pivoting Data](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Grouping%2C%20Splitting%20and%20Pivoting.ipynb)
-* [Usage of Catgorical Data](http://nbviewer.jupyter.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Categorical%20Data/Categorical%20Data.ipynb)
+* [Usage of Categorical Data](http://nbviewer.jupyter.org/github/SciRuby/sciruby-notebooks/blob/master/Data%20Analysis/Categorical%20Data/Categorical%20Data.ipynb)
 
 #### Visualization
 * [Visualizing Data With Daru::DataFrame](http://nbviewer.ipython.org/github/SciRuby/sciruby-notebooks/blob/master/Visualization/Visualizing%20data%20with%20daru%20DataFrame.ipynb)
