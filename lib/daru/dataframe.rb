@@ -1407,7 +1407,10 @@ module Daru
 
     # Generate a summary of this DataFrame with ReportBuilder.
     def summary(method=:to_text)
-      ReportBuilder.new(no_title: true).add(self).send(method)
+      #uncomment this line to use ReportBuilder gem to generate data frame summary
+      #ReportBuilder.new(no_title: true).add(self).send(method)
+      #comment below line when using Reportbuilder gem
+      g_summary()
     end
 
     def report_building(b) # :nodoc: #
@@ -1419,6 +1422,29 @@ module Daru
         end
       end
     end
+    #custom function for dataframe summary
+    def g_summary()
+       frame_summary = "= \t\n"
+       frame_summary << "\tNumber of rows: #{nrows}\n"
+       @raw = self
+       #no_of_vect = self.vectors.count
+       
+       @raw.each do |v|
+        frame_summary << "\tElement:[#{v.name}]\n"
+        frame_summary << "\t== #{v.name}\n"
+        count = v.size
+        valid_count = 0
+        v.to_a.each do |val_n|
+           if (val_n!=nil && !(val_n.is_a?(Float) && val_n.nan?))
+              valid_count = valid_count + 1 
+           end
+        end
+       
+        frame_summary << "\t  n : #{count}\n"
+        frame_summary << "\t  n valid : #{valid_count}\n"
+       end
+       frame_summary
+     end
 
     # Sorts a dataframe (ascending/descending) in the given pripority sequence of
     # vectors, with or without a block.
