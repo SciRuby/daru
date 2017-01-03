@@ -353,6 +353,7 @@ module Daru
           mod.apply_scalar_operator operator, @data,other
         end
       end
+      alias_method operator, method if operator != :== && operator != :!=
     end
     alias :gt :mt
     alias :gteq :mteq
