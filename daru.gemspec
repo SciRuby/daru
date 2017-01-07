@@ -73,8 +73,12 @@ EOF
   spec.add_development_dependency 'rubocop', '>= 0.40.0'
   spec.add_development_dependency 'ruby-prof'
   spec.add_development_dependency 'simplecov'
-  spec.add_development_dependency 'nokogiri'
   spec.add_development_dependency 'gruff'
+  if RUBY_VERSION < '2.1.0'
+    spec.add_development_dependency 'nokogiri', '<= 1.6.8.1'
+  else
+    spec.add_development_dependency 'nokogiri'
+  end
   if RUBY_VERSION >= '2.2.5'
     spec.add_development_dependency 'guard-rspec'
   end
