@@ -1345,17 +1345,17 @@ module Daru
     #
     #   df.vectors = Daru::Index.new([:foo, :bar, :baz])
     #   df.vectors.to_a #=> [:foo, :bar, :baz]
-    def vectors= idx
-      unless idx.is_a?(Daru::Index)
+    def vectors= new_index
+      unless new_index.is_a?(Daru::Index)
         raise ArgumentError, 'Can only reindex with Index and its subclasses'
       end
 
-      if idx.size != ncols
-        raise ArgumentError, "Specified index length #{idx.size} not equal to"\
+      if new_index.size != ncols
+        raise ArgumentError, "Specified index length #{new_index.size} not equal to"\
           "dataframe size #{ncols}"
       end
 
-      @vectors = idx
+      @vectors = new_index
       self
     end
 
