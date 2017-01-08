@@ -1346,7 +1346,7 @@ module Daru
     #   df.vectors = Daru::Index.new([:foo, :bar, :baz])
     #   df.vectors.to_a #=> [:foo, :bar, :baz]
     def vectors= idx
-      unless index.is_a?(Daru::Index)
+      unless idx.is_a?(Daru::Index)
         raise ArgumentError, 'Can only reindex with Index and its subclasses'
       end
 

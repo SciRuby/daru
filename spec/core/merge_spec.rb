@@ -155,7 +155,7 @@ describe Daru::DataFrame do
     end
 
     it "raises if :on field are absent in one of dataframes" do
-      @right.vectors = [:id, :other_name]
+      @right.vectors = Daru::Index.new [:id, :other_name]
       expect { @left.join(@right, how: :right, on: [:name]) }.to \
         raise_error(ArgumentError, /Both dataframes expected .* :name/)
 
