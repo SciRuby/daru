@@ -884,41 +884,38 @@ module Daru
     end
 
     # Create a summary of the Vector using Report Builder.
-    def summary(method=:to_text)
-      #ReportBuilder.new(no_title: true).add(self).send(method)
+    def summary()
       summary_building
     end
 
     # :nocov:
     def summary_building level=0 # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
       
-        v_summary = ""
-        v_summary << "  "*2*level+"n :#{size}\n"
-        valid_count = 0
-        self.to_a.each do |val_n|
-            if (val_n!=nil && !(val_n.is_a?(Float) && val_n.nan?))
-               valid_count = valid_count + 1 
-            end
+      v_summary = ""
+      v_summary << '  '*2*level+"n :#{size}\n"
+      valid_count = 0
+      self.to_a.each do |val_n|
+        if !val_n.nil && !(val_n.is_a?(Float) && val_n.nan?)
+           valid_count+=1 
         end
-        v_summary << "  "*2*level+"n valid:#{valid_count}\n"
-        if @type == :object
-          v_summary  << "  "*2*level+"factors: #{factors.to_a.join(',')}\n"
-          v_summary  << "  "*2*level+"mode: #{mode}\n"
-
+      end
+      v_summary << '  '*2*level+"n valid:#{valid_count}\n"
+      if @type == :object
+        v_summary  << '  '*2*level+"factors: #{factors.to_a.join(',')}\n"
+        v_summary  << '  '*2*level+"mode: #{mode}\n"
+      end
+      if @type==:numeric || @type==:numeric
+        v_summary << '  '*2*level+"median: #{median}\n"
+      end
+      if @type==:numeric
+        v_summary << '  '*2*level+"mean: %0.4f\n" % mean
+        if sd
+          v_summary << '  '*2*level+"std.dev.: %0.4f\n" % sd
+          v_summary << '  '*2*level+"std.err.: %0.4f\n" % se
+          v_summary << '  '*2*level+"skew: %0.4f\n" % skew
+          v_summary << '  '*2*level+"kurtosis: %0.4f\n" % kurtosis
         end
-        if @type==:numeric || @type==:numeric
-          v_summary << "  "*2*level+"median: #{median}\n"
-        end 
-        if @type==:numeric
-          v_summary << "  "*2*level+"mean: %0.4f\n" % mean
-          if sd
-            v_summary << "  "*2*level+"std.dev.: %0.4f\n" % sd
-            v_summary << "  "*2*level+"std.err.: %0.4f\n" % se
-            v_summary << "  "*2*level+"skew: %0.4f\n" % skew
-            v_summary << "  "*2*level+"kurtosis: %0.4f\n" % kurtosis
-          end
-        end
-      
+      end
       v_summary
     end
     # :nocov:

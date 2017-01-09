@@ -1406,18 +1406,17 @@ module Daru
     end
 
     # Generate a summary of this DataFrame .
-    def summary(method=:to_text)
-      summary_building()
+    def summary()
+      summary_building
     end
 
     def summary_building # :nodoc: #
       df_summary = "=\n"
-        df_summary << "  Number of rows: #{nrows}\n"
-        @vectors.each do |v|
-          df_summary << "  Element:[#{v}]\n"
-          df_summary << self[v].summary_building(2) 
-        
-        end
+      df_summary << "  Number of rows: #{nrows}\n"
+      @vectors.each do |v|
+        df_summary << "  Element:[#{v}]\n"
+        df_summary << self[v].summary_building(2)
+      end
       df_summary
     end
 
