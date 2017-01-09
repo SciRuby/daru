@@ -885,37 +885,35 @@ module Daru
 
     # Create a summary of the Vector using Report Builder.
     def summary(method=:to_text)
-      ReportBuilder.new(no_title: true).add(self).send(method)
+      #ReportBuilder.new(no_title: true).add(self).send(method)
+      summary_building
     end
 
     # :nocov:
-    def report_building b # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
-      b.section(name: name) do |s|
-        s.text "n :#{size}"
-        s.text "n valid:#{count_values(*Daru::MISSING_VALUES)}"
+    def summary_building level=0 # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
+      
+        v_summary = ""
+        v_summary << "  "*2*level+"n :#{size}\n"
+        v_summary << "  "*2*level+"n valid:#{count_values(*Daru::MISSING_VALUES)}\n"
         if @type == :object
-          s.text  "factors: #{factors.to_a.join(',')}"
-          s.text  "mode: #{mode}"
+          v_summary  << "  "*2*level+"factors: #{factors.to_a.join(',')}\n"
+          v_summary  << "  "*2*level+"mode: #{mode}\n"
 
-          s.table(name: 'Distribution') do |t|
-            frequencies.sort_by(&:to_s).each do |k,v|
-              key = @index.include?(k) ? @index[k] : k
-              t.row [key, v, ('%0.2f%%' % (v.quo(count_values(*Daru::MISSING_VALUES))*100))]
-            end
-          end
         end
-
-        s.text "median: #{median}" if @type==:numeric || @type==:numeric
+        if @type==:numeric || @type==:numeric
+          v_summary << "  "*2*level+"median: #{median}\n"
+        end 
         if @type==:numeric
-          s.text 'mean: %0.4f' % mean
+          v_summary << "  "*2*level+"mean: %0.4f\n" % mean
           if sd
-            s.text 'std.dev.: %0.4f' % sd
-            s.text 'std.err.: %0.4f' % se
-            s.text 'skew: %0.4f' % skew
-            s.text 'kurtosis: %0.4f' % kurtosis
+            v_summary << "  "*2*level+"std.dev.: %0.4f\n" % sd
+            v_summary << "  "*2*level+"std.err.: %0.4f\n" % se
+            v_summary << "  "*2*level+"skew: %0.4f\n" % skew
+            v_summary << "  "*2*level+"kurtosis: %0.4f\n" % kurtosis
           end
         end
-      end
+      
+      v_summary
     end
     # :nocov:
 
