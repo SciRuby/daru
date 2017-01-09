@@ -894,7 +894,13 @@ module Daru
       
         v_summary = ""
         v_summary << "  "*2*level+"n :#{size}\n"
-        v_summary << "  "*2*level+"n valid:#{count_values(*Daru::MISSING_VALUES)}\n"
+        valid_count = 0
+        self.to_a.each do |val_n|
+            if (val_n!=nil && !(val_n.is_a?(Float) && val_n.nan?))
+               valid_count = valid_count + 1 
+            end
+        end
+        v_summary << "  "*2*level+"n valid:#{valid_count}\n"
         if @type == :object
           v_summary  << "  "*2*level+"factors: #{factors.to_a.join(',')}\n"
           v_summary  << "  "*2*level+"mode: #{mode}\n"
