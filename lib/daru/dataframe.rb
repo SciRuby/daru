@@ -1406,20 +1406,15 @@ module Daru
     end
 
     # Generate a summary of this DataFrame .
-    def summary()
-      summary_building
-    end
-
-    def summary_building # :nodoc: #
+    def summary
       df_summary = "=\n"
       df_summary << "  Number of rows: #{nrows}\n"
       @vectors.each do |v|
         df_summary << "  Element:[#{v}]\n"
-        df_summary << self[v].summary_building(2)
+        df_summary << self[v].summary(2)
       end
       df_summary
     end
-
     # Sorts a dataframe (ascending/descending) in the given pripority sequence of
     # vectors, with or without a block.
     #

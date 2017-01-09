@@ -884,41 +884,22 @@ module Daru
     end
 
     # Create a summary of the Vector using Report Builder.
-    def summary()
-      summary_building
-    end
-
-    # :nocov:
-    def summary_building level=0 # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
-      
-      v_summary = ""
-      v_summary << '  '*2*level+"n :#{size}\n"
-      valid_count = 0
-      self.to_a.each do |val_n|
-        if !val_n.nil && !(val_n.is_a?(Float) && val_n.nan?)
-           valid_count+=1 
-        end
-      end
-      v_summary << '  '*2*level+"n valid:#{valid_count}\n"
+    def summary l=0
+      v_summary = ''
+      v_indent = '  '*2*l
+      v_n_valid = size - indexes(*Daru::MISSING_VALUES).size
+      v_summary << v_indent +"n :#{size}\n"+v_indent +"n valid:#{v_n_valid}\n"
       if @type == :object
-        v_summary  << '  '*2*level+"factors: #{factors.to_a.join(',')}\n"
-        v_summary  << '  '*2*level+"mode: #{mode}\n"
-      end
-      if @type==:numeric || @type==:numeric
-        v_summary << '  '*2*level+"median: #{median}\n"
-      end
-      if @type==:numeric
-        v_summary << '  '*2*level+"mean: %0.4f\n" % mean
+        v_summary  << v_indent +"factors: #{factors.to_a.join(',')}\n"+v_indent +"mode: #{mode}\n"
+      elsif @type==:numeric && v_n_valid == size
+        v_summary << v_indent +"median: #{median}\n"+v_indent +"mean: %0.4f\n" % mean
         if sd
-          v_summary << '  '*2*level+"std.dev.: %0.4f\n" % sd
-          v_summary << '  '*2*level+"std.err.: %0.4f\n" % se
-          v_summary << '  '*2*level+"skew: %0.4f\n" % skew
-          v_summary << '  '*2*level+"kurtosis: %0.4f\n" % kurtosis
+          v_summary << v_indent +"std.dev.: %0.4f\n" % sd + v_indent +"std.err.: %0.4f\n" % se
+          v_summary << v_indent +"skew: %0.4f\n" % skew + v_indent +"kurtosis: %0.4f\n" % kurtosis
         end
       end
       v_summary
     end
-    # :nocov:
 
     # Over rides original inspect for pretty printing in irb
     def inspect spacing=20, threshold=15
