@@ -1405,46 +1405,21 @@ module Daru
       Daru::DataFrame.new(arry, clone: cln, order: order, index: @index)
     end
 
-    # Generate a summary of this DataFrame with ReportBuilder.
+    # Generate a summary of this DataFrame .
     def summary(method=:to_text)
-      #uncomment this line to use ReportBuilder gem to generate data frame summary
-      #ReportBuilder.new(no_title: true).add(self).send(method)
-      #comment below line when using Reportbuilder gem
-      g_summary()
+      summary_building()
     end
 
-    def report_building(b) # :nodoc: #
-      b.section(name: @name) do |g|
-        g.text "Number of rows: #{nrows}"
+    def summary_building # :nodoc: #
+      df_summary = "=\n"
+        df_summary << "  Number of rows: #{nrows}\n"
         @vectors.each do |v|
-          g.text "Element:[#{v}]"
-          g.parse_element(self[v])
+          df_summary << "  Element:[#{v}]\n"
+          df_summary << self[v].summary_building(2) 
+        
         end
-      end
+      df_summary
     end
-    #custom function for dataframe summary
-    def g_summary()
-       frame_summary = "= \t\n"
-       frame_summary << "\tNumber of rows: #{nrows}\n"
-       @raw = self
-       #no_of_vect = self.vectors.count
-       
-       @raw.each do |v|
-        frame_summary << "\tElement:[#{v.name}]\n"
-        frame_summary << "\t== #{v.name}\n"
-        count = v.size
-        valid_count = 0
-        v.to_a.each do |val_n|
-           if (val_n!=nil && !(val_n.is_a?(Float) && val_n.nan?))
-              valid_count = valid_count + 1 
-           end
-        end
-       
-        frame_summary << "\t  n : #{count}\n"
-        frame_summary << "\t  n valid : #{valid_count}\n"
-       end
-       frame_summary
-     end
 
     # Sorts a dataframe (ascending/descending) in the given pripority sequence of
     # vectors, with or without a block.
