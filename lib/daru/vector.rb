@@ -907,6 +907,7 @@ module Daru
       summary = ' '*level + "== #{name}\n" + summary
       summary
     end
+    # :nocov:
 
     # Over rides original inspect for pretty printing in irb
     def inspect spacing=20, threshold=15
