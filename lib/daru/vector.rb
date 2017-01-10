@@ -884,21 +884,28 @@ module Daru
     end
 
     # Create a summary of the Vector using Report Builder.
-    def summary l=0
-      v_summary = ''
-      v_indent = '  '*2*l
-      v_n_valid = size - indexes(*Daru::MISSING_VALUES).size
-      v_summary << v_indent +"n :#{size}\n"+v_indent +"n valid:#{v_n_valid}\n"
+    def summary level=0 # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
+      summary = ''
+      indent = '  '+' '*level
+      valid_n = size - indexes(*Daru::MISSING_VALUES).size
+      summary << "n :#{size}\n" \
+                 "n valid:#{valid_n}\n"
       if @type == :object
-        v_summary  << v_indent +"factors: #{factors.to_a.join(',')}\n"+v_indent +"mode: #{mode}\n"
-      elsif @type==:numeric && v_n_valid == size
-        v_summary << v_indent +"median: #{median}\n"+v_indent +"mean: %0.4f\n" % mean
+        summary  << "factors: #{factors.to_a.join(',')}\n" \
+                    "mode: #{mode}\n"
+      elsif @type==:numeric && valid_n == size
+        summary <<"median: #{median}\n" \
+                  "mean: %0.4f\n" % mean
         if sd
-          v_summary << v_indent +"std.dev.: %0.4f\n" % sd + v_indent +"std.err.: %0.4f\n" % se
-          v_summary << v_indent +"skew: %0.4f\n" % skew + v_indent +"kurtosis: %0.4f\n" % kurtosis
+          summary <<"std.dev.: %0.4f\n" % sd
+          summary <<"std.err.: %0.4f\n" % se
+          summary <<"skew: %0.4f\n" % skew
+          summary <<"kurtosis: %0.4f\n" % kurtosis
         end
       end
-      v_summary
+      summary = summary.split("\n").map! { |line| indent + line }.join("\n") + "\n"
+      summary = ' '*level + "== #{name}\n" + summary
+      summary
     end
 
     # Over rides original inspect for pretty printing in irb
