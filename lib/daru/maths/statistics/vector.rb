@@ -32,7 +32,8 @@ module Daru
         end
 
         def mode
-          frequencies.to_h.max { |a,b| a[1]<=>b[1] }.first
+          mode = frequencies.to_h.select { |_,v| v == frequencies.max }.keys
+          mode.size > 1 ? Daru::Vector.new(mode) : mode.first
         end
 
         # Create a summary of count, mean, standard deviation, min and max of

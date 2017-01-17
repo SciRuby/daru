@@ -103,9 +103,14 @@ describe Daru::Vector do
       end
 
       context "#mode" do
-        it "returns the mode" do
+        it "returns the single modal value as a numeric" do
           mode_test_example = Daru::Vector.new [1,2,3,2,4,4,4,4], dtype: dtype
           expect(mode_test_example.mode).to eq(4)
+        end
+
+        it "returns multiple modal values as a vector" do
+          mode_test_example = Daru::Vector.new [1,2,2,2,3,2,4,4,4,4], dtype: dtype
+          expect(mode_test_example.mode).to eq(Daru::Vector.new [2,4], dtype: dtype)
         end
       end
 
