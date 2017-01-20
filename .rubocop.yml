@@ -121,3 +121,6 @@ Style/PredicateName:
     - 'lib/daru/dataframe.rb'
     - 'lib/daru/monkeys.rb'
     - 'lib/daru/vector.rb'
+
+Security/MarshalLoad:
+  Enabled: false

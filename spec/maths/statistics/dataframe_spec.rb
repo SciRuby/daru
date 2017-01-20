@@ -48,7 +48,7 @@ describe Daru::DataFrame do
 
   context "#mode" do
     it "calculates mode of single level numeric only vectors and returns values in a Vector" do
-      expect(@df.mode).to eq(Daru::Vector.new([2, 4, 20], index: [:d, :e, :f]))
+      expect(@df.mode).to eq(Daru::Vector.new([Daru::Vector.new([2,3]), Daru::Vector.new([4,6]), Daru::Vector.new([20,30])], index: [:d, :e, :f]))
     end
   end
 
