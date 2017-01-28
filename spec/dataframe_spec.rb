@@ -2594,6 +2594,13 @@ describe Daru::DataFrame do
         @df.vectors = Daru::Index.new([1,2,'3',4,'5'])
       }.to raise_error(ArgumentError)
     end
+
+    it "change name of vectors in @data" do
+      new_index_array = [:k, :l, :m]
+      @df.vectors = Daru::Index.new(new_index_array)
+
+      expect(@df.data.map { |vector| vector.name }).to eq(new_index_array)
+    end
   end
 
   context "#rename_vectors" do

@@ -1356,6 +1356,9 @@ module Daru
       end
 
       @vectors = new_index
+      @data.zip(new_index.to_a).each do |vect, name|
+        vect.name = name
+      end
       self
     end
 
