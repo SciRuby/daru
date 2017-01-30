@@ -1,3 +1,39 @@
+# 0.1.5 (30 January 2017)
+* Major Enhancements
+  - Add Daru::Vector#group_by (@lokeshh).
+  - Add rspec-guard to run tests automatically (@lokeshh).
+  - Remove Daru::DataFrame implicit Hash method since Dataframes are not implicit hashes and having an implicit converter can introduce unwanted side effects. (@gnilrets)
+  - Add `Daru::DataFrame#union`. (Tim)
+* Minor Enhancements
+  - Added a join indicator. (@gnilrets)
+  - Support an enumerable value as an index of a vector. (Yuichiro Kaneko)
+  - Add test case for `NegativeDateOffset`. (Yuichiro Kaneko)
+  - Add test case for `#on_offset?`. (Yuichiro Kaneko)
+  - `NegativeDateOffset#-` returns `DateOffset`. (Yuichiro Kaneko)
+  - Make `Vector#resort_index` private because its only use was for internal usage in `Vector#sort`. (Yuichiro Kaneko)
+  - Add `DataFrame#order=` method to reorder vectors in a dataframe. (@lokeshh)
+  - Use `Integer` instead of `Fixnum` throughout the gem. (Yuichiro Kaneko)
+  - Improve error message of `Daru::Vector#index=`. (@lokeshh)
+  - Deprecate `freqs` and make `frequencies` return a `Daru::Vector`. (@lokeshh)
+  - `DataFrame#access_row` with integer index. (Yusuke Sangenya)
+  - Add method alias for comparison operator. (Yusuke Sangenya)
+  - Update Nokogiri version. (Yusuke Sangenya)
+  - Return `Daru::Vector` for multiple modal values for `Daru::Vector#mode`. (baarkerlounger)
+* Fixes
+  - Fix many to one joins. The prior version was shifting values in the left dataframe before checking whether values in the right dataframe should be shifted.  They both need to be checked at the same time before shifting either. (@gnilrets)
+  - Support formatting empty dataframes. They were returning an error before. (@gnilrets)
+  - method_missing in Daru::DataFrame would not detect the correct vector if it was a String. Fixed that. (@lokeshh)
+  - Fix docs of contrast_code to specify that the default value is false. (@v0dro)
+  - Fix occurence of SystemStackError due to faulty arguement passing to Array#values_at. (@v0dro)
+  - Fix `DataFrame#pivot_table` regression that raised an ArgumentError if the `:index` option was not specified. (@zverok)
+  - Fix `DateFrame.rows` to accept empty argument. (@zverok)
+  - Fix bug with false values on dataframe create. DataFrame from an Array of hashes wasn't being created properly when some of the values were `false`. (@gnilrets)
+  - Fix `Vector#reorder!` method. (Yusuke Sangenya)
+  - Fix `DataFrame#group_by` for numeric indexes. (@zverok)
+  - Make `DataFrame#index=` accept only `Daru::Index`. (Yusuke Sangenya)
+  - `DataFrame#vectors=` now changes the name of vectors contained in the internal `@data` variable. (Yusuke Sangenya)
+
+
 # 0.1.4.1 (20 August 2016)
 * Fixes
   - Turns out that removing the dependencies did not load a few libraries from the Ruby standard library when daru is deployed on a fresh system. This release fixes that by adding extra require calls.
@@ -235,7 +271,7 @@
 * Added statistics methods #mean, #std, #max, #min, #count, #product, #sum to DataFrame.
 * Added #describe to DataFrame for producing multiple statistics data of numerical vectors in one shot.
 * Monkey patched Ruby Matrix to include #elementwise_division.
-* Added #covariance to calculate the covariance between numbers of a DataFrame and #correlation to calculate correlation. 
+* Added #covariance to calculate the covariance between numbers of a DataFrame and #correlation to calculate correlation.
 * Enumerators return Enumerator objects if there is no block.
 
 # 0.0.4
