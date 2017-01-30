@@ -4,6 +4,7 @@
   - Add rspec-guard to run tests automatically (@lokeshh).
   - Remove Daru::DataFrame implicit Hash method since Dataframes are not implicit hashes and having an implicit converter can introduce unwanted side effects. (@gnilrets)
   - Add `Daru::DataFrame#union`. (Tim)
+
 * Minor Enhancements
   - Added a join indicator. (@gnilrets)
   - Support an enumerable value as an index of a vector. (Yuichiro Kaneko)
@@ -19,6 +20,7 @@
   - Add method alias for comparison operator. (Yusuke Sangenya)
   - Update Nokogiri version. (Yusuke Sangenya)
   - Return `Daru::Vector` for multiple modal values for `Daru::Vector#mode`. (baarkerlounger)
+
 * Fixes
   - Fix many to one joins. The prior version was shifting values in the left dataframe before checking whether values in the right dataframe should be shifted.  They both need to be checked at the same time before shifting either. (@gnilrets)
   - Support formatting empty dataframes. They were returning an error before. (@gnilrets)
