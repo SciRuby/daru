@@ -19,6 +19,7 @@ script:
 install:
   - gem install bundler
   - bundle install
+  - gem install rainbow -v '2.2.1'
 
 before_install:
   - sudo apt-get update -qq
