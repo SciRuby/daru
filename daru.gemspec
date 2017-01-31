@@ -65,7 +65,7 @@ EOF
   spec.add_development_dependency 'nyaplot', '~> 0.1.5'
   spec.add_development_dependency 'nmatrix', '~> 0.2.1'
   spec.add_development_dependency 'distribution', '~> 0.7'
-  spec.add_development_dependency 'rb-gsl', '~>1.16'
+  spec.add_development_dependency 'gsl', '~>2.1.0.2'
   spec.add_development_dependency 'dbd-sqlite3'
   spec.add_development_dependency 'dbi'
   spec.add_development_dependency 'activerecord', '~> 4.0'
