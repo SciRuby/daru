@@ -98,8 +98,6 @@ require 'date'
 
 require 'open-uri'
 
-require 'csv'
-
 require 'daru/version.rb'
 
 require 'daru/index/index.rb'

@@ -114,7 +114,7 @@ module Daru
         str = str.split("\n");
         str.each do |s|
           data = s.to_s.split(",")
-          CSV.open(Dir.pwd+"/temp123.csv", "a") do |csv|
+          ::CSV.open(Dir.pwd+"/temp123.csv", "a") do |csv|
             csv << data
           end
         end                        
