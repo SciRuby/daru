@@ -90,6 +90,38 @@ module Daru
         Daru::DataFrame.new(hsh,daru_options)
       end
 
+      def from_csv_url url, opts = {}
+        daru_options, opts = from_csv_prepare_opts opts
+        hsh =
+          if opts[:headers]
+            create_csv_url url
+            from_csv_hash_with_headers(Dir.pwd + "/temp123.csv", opts)
+          else
+            create_csv_url url
+            from_csv_hash(Dir.pwd + "/temp123.csv", opts)
+              .tap { |hash| daru_options[:order] = hash.keys }
+          end
+
+        File.delete(Dir.pwd + "/temp123.csv")
+
+        Daru::DataFrame.new(hsh,daru_options)
+      end
+
+      
+      def create_csv_url u
+        uri = URI.parse(u)
+        str = uri.read
+        str = str.split("\n");
+        str.each do |s|
+          data = s.to_s.split(",")
+          CSV.open(Dir.pwd+"/temp123.csv", "a") do |csv|
+            csv << data
+          end
+        end                        
+      end
+
+      
+        
       def dataframe_write_csv dataframe, path, opts={}
         options = {
           converters: :numeric

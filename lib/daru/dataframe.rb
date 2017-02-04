@@ -48,6 +48,11 @@ module Daru
         Daru::IO.from_csv path, opts, &block
       end
 
+
+      def from_csv_url url, opts={}, &block
+        Daru::IO.from_csv_url url, opts, &block
+      end
+      
       # Read data from an Excel file into a DataFrame.
       #
       # == Arguments
