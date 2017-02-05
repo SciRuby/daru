@@ -76,7 +76,6 @@ module Daru
       # Functions for loading/writing CSV files
       def from_csv path, opts={}
         daru_options, opts = from_csv_prepare_opts opts
-        
         # Preprocess headers for detecting and correcting repetition in
         # case the :headers option is not specified.
         hsh =
@@ -86,12 +85,11 @@ module Daru
             from_csv_hash(path, opts)
               .tap { |hash| daru_options[:order] = hash.keys }
           end
-        
         Daru::DataFrame.new(hsh,daru_options)
       end
 
       def from_csv_url url, opts={}
-        opts[:col_sep]           ||= ','
+        opts[:col_sep]||= ','
         URI.parse(url).read.split("\n").each { |s|
           data = s.to_s.split(opts[:col_sep])
           ::CSV.open(Dir.pwd+'/temp123.csv', 'a') { |csv|
