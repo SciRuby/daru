@@ -52,8 +52,27 @@ module Daru
         end
       end
 
+      # Private adapter class for connections of Sqlite3Databse files
+      # @private
+      class Sqlite3Adapter < Adapter
+        private
+
+        def column_names
+          result.first
+        end
+
+        def rows
+          result[1, result.length - 1]
+        end
+
+        def result
+          @result ||= @conn.execute(@query)
+        end
+      end
+
       private_constant :DbiAdapter
       private_constant :ActiveRecordConnectionAdapter
+      private_constant :Sqlite3Adapter
 
       def self.make_dataframe(db, query)
         new(db, query).make_dataframe
@@ -78,9 +97,18 @@ module Daru
           DbiAdapter.new(db, query)
         when ActiveRecord::ConnectionAdapters::AbstractAdapter
           ActiveRecordConnectionAdapter.new(db, query)
+        when String
+          Sqlite3Adapter.new(ensure_databasse_file(db), query)
         else
           raise ArgumentError, "Unknown database adapter type #{db.class}"
         end
+      end
+
+      def ensure_databasse_file(filepath)
+        db = SQLite3::Database.new filepath
+        db if db.database_list
+      rescue SQLite3::NotADatabaseException
+        raise ArgumentError, "Could not read #{filepath} as database"
       end
     end
   end

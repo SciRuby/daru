@@ -9,6 +9,10 @@ RSpec.describe Daru::IO::SqlDataSource do
     DBI.connect("DBI:SQLite3:#{db_name}")
   end
 
+  let(:db_file) do
+    'spec/fixtures/names.db'
+  end
+
   let(:active_record_connection) do
     ActiveRecord::Base.establish_connection("sqlite3:#{db_name}")
     ActiveRecord::Base.connection
@@ -59,6 +63,20 @@ RSpec.describe Daru::IO::SqlDataSource do
       it 'raises ArgumentError' do
         expect {
           Daru::IO::SqlDataSource.make_dataframe(Object.new, query)
+        }.to raise_error(ArgumentError)
+      end
+    end
+
+    context 'with database file path' do
+      it 'returns a dataframe' do
+        result = Daru::IO::SqlDataSource.make_dataframe(db_file, query)
+        expect(result).to be_a(Daru::DataFrame)
+        expect(result.row[0][:id]).to eq(1)
+        expect(result.row[0][:name]).to eq('Alex')
+      end
+      it 'raises ArgumentError' do
+        expect {
+          Daru::IO::SqlDataSource.make_dataframe("spec/fixtures/bank2.dat", query)
         }.to raise_error(ArgumentError)
       end
     end
