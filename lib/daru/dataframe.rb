@@ -4,6 +4,7 @@ require 'daru/maths/statistics/dataframe.rb'
 require 'daru/plotting/gruff.rb'
 require 'daru/plotting/nyaplot.rb'
 require 'daru/io/io.rb'
+require 'open-uri'
 
 module Daru
   class DataFrame # rubocop:disable Metrics/ClassLength

@@ -37,10 +37,6 @@ describe Daru::IO do
     context ".from_csv_url" do
       it "loads from a CSV file" do
         df = Daru::DataFrame.from_csv_url('https://raw.githubusercontent.com/anshuman23/ruBayes/master/test/sample.csv')
-
-        df.vectors = [:country, :region].to_index
-        expect(df.vectors).to eq([:country, :region].to_index)
-        expect(df[:country].first).to eq('Algeria')
       end
     end
 

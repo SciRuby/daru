@@ -89,16 +89,11 @@ module Daru
       end
 
       def from_csv_url url, opts={}
-        opts[:col_sep]||= ','
-        URI.parse(url).read.split("\n").each { |s|
-          data = s.to_s.split(opts[:col_sep])
-          ::CSV.open(Dir.pwd+'/temp123.csv', 'a') { |csv|
-            csv << data
-          }
-        }
-        df = from_csv Dir.pwd+'/temp123.csv',opts
-        File.delete(Dir.pwd + '/temp123.csv')
-        df
+        daru_options, opts = from_csv_prepare_opts opts
+        hsh =
+          from_csv_hash_url(url, opts)
+          .tap { |hash| daru_options[:order] = hash.keys }
+        Daru::DataFrame.new(hsh,daru_options)
       end
 
       def dataframe_write_csv dataframe, path, opts={}
@@ -218,6 +213,13 @@ module Daru
           .read(path, 'rb',opts)
           .tap { |c| yield c if block_given? }
           .by_col.map { |col_name, values| [col_name, values] }.to_h
+      end
+
+      def from_csv_hash_url(url,opts)
+        csv_as_arrays = ::CSV.parse(open(url), opts)
+        headers = ArrayHelper.recode_repeated(csv_as_arrays.shift)
+        csv_as_arrays = csv_as_arrays.transpose
+        headers.each_with_index.map { |h, i| [h, csv_as_arrays[i]] }.to_h
       end
 
       def from_csv_hash(path, opts)

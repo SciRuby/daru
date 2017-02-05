@@ -96,8 +96,6 @@ require 'forwardable'
 require 'erb'
 require 'date'
 
-require 'open-uri'
-
 require 'daru/version.rb'
 
 require 'daru/index/index.rb'
