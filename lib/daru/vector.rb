@@ -540,6 +540,15 @@ module Daru
       end
     end
 
+    def index_of_max
+      @data.index(@data.max)
+    end
+
+    def index_of_min
+      @data.index(@data.min)
+    end
+
+
     # Keep only unique elements of the vector alongwith their indexes.
     def uniq
       uniq_vector = @data.uniq
