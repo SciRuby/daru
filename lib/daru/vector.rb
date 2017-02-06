@@ -540,14 +540,15 @@ module Daru
       end
     end
 
+    # Get index of maximum element
     def index_of_max
       @data.index(@data.max)
     end
 
+    # Get index of minimum element
     def index_of_min
       @data.index(@data.min)
     end
-
 
     # Keep only unique elements of the vector alongwith their indexes.
     def uniq
