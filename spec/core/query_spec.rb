@@ -240,9 +240,9 @@ describe "Arel-like syntax" do
     context Daru::DataFrame do
       before do
         @df = Daru::DataFrame.new({
-          number: [1,2,3,4,5,6],
-          sym: [:one, :two, :three, :four, :five, :six],
-          names: ['sameer', 'john', 'james', 'omisha', 'priyanka', 'shravan']
+          number: [1,2,3,4,5,6,nil],
+          sym: [:one, :two, :three, :four, :five, :six, :seven],
+          names: ['sameer', 'john', 'james', 'omisha', 'priyanka', 'shravan', Float::NAN.to_s]
         })
       end
 
@@ -267,6 +267,16 @@ describe "Arel-like syntax" do
           ).to eq(answer)
       end
 
+      it "handles empty data" do
+        answer = Daru::DataFrame.new({
+          number: [nil],
+          sym: [:seven],
+          names: [Float::NAN.to_s]
+          }, index: Daru::Index.new([6])
+        )
+        expect(@df.where(@df[:sym].eq(:seven))).to eq(answer)
+      end
+
       it "does not give SystemStackError" do
         v = Daru::Vector.new [1]*300_000
         expect { v.where v.eq(1) }.not_to raise_error
@@ -276,7 +286,7 @@ describe "Arel-like syntax" do
     context Daru::Vector do
       context "non-categorical type" do
         before do
-          @vector = Daru::Vector.new([2,5,1,22,51,4])
+          @vector = Daru::Vector.new([2,5,1,22,51,4,nil,Float::NAN])
         end
   
         it "accepts a simple single statement" do
