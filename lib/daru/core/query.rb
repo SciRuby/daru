@@ -39,7 +39,7 @@ module Daru
 
       class << self
         def apply_scalar_operator operator, data, other
-          BoolArray.new data.map { |d| !!d.send(operator, other) unless d.nil? }
+          BoolArray.new data.map { |d| !!d.send(operator, other) unless MISSING_VALUES.include? d }
         end
 
         def apply_vector_operator operator, vector, other
