@@ -29,14 +29,6 @@ describe Daru::Vector do
           expect(dv.index).to eq(Daru::Index.new [:ek, :don, :teen, :char, :pach])
         end
 
-        it "accepts Index object" do
-          idx = Daru::Index.new [:yoda, :anakin, :obi, :padme, :r2d2]
-          dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, index: idx, dtype: dtype
-
-          expect(dv.name) .to eq(:yoga)
-          expect(dv.index).to eq(idx)
-        end
-
         it "accepts a MultiIndex object" do
           dv = Daru::Vector.new [1,2,3,4], name: :mi, index: @multi_index, dtype: dtype
 
@@ -84,6 +76,21 @@ describe Daru::Vector do
           expect(dv.index.to_a).to eq(['a', 'b', :r, 0])
         end
 
+        it "returns index of max of a vector" do
+          idx = Daru::Index.new [:jon, :tyrion, :dany, :cersei, :jamie]
+          dv1 = Daru::Vector.new [3,7,0,1,5], index: idx
+          dv2 = Daru::Vector.new [3,7,0,1,5]
+          expect(dv1.index_of_max).to eq(:tyrion)
+          expect(dv2.index_of_max).to eq(1)
+        end
+
+        it "returns index of min of a vector" do
+          idx = Daru::Index.new [:jon, :tyrion, :dany, :cersei, :jamie]
+          dv1 = Daru::Vector.new [3,7,0,1,5], index: idx
+          dv2 = Daru::Vector.new [3,7,0,1,5]
+          expect(dv1.index_of_min).to eq(:dany)
+          expect(dv2.index_of_min).to eq(2)
+        end
       end
 
       context "#reorder!" do
