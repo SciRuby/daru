@@ -1388,6 +1388,22 @@ describe Daru::Vector do
     end
   end
 
+  context '#is_values' do
+    let(:dv) { Daru::Vector.new [10, 11, 10, nil, nil] }
+    
+    context 'single value' do
+      subject { dv.is_values 10 }
+      it { is_expected.to be_a Daru::Vector }
+      its(:to_a) { is_expected.to eq [true, false, true, false, false] }
+    end
+    
+    context 'multiple values' do
+      subject { dv.is_values 10, nil, Float::NAN }
+      it { is_expected.to be_a Daru::Vector }
+      its(:to_a) { is_expected.to eq [true, false, true, true, true] }      
+    end
+  end
+
   context "#clone_structure" do
     context Daru::Index do
       before do

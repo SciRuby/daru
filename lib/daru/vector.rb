@@ -461,6 +461,10 @@ module Daru
     def include_values?(*values)
       values.any? { |v| include_with_nan? @data, v }
     end
+    
+    def is_values(*values)
+      Daru::Vector.new values.map { |v| eq(v) }.inject(:|)
+    end
 
     # Append an element to the vector by specifying the element and index
     def concat element, index
