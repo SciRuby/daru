@@ -461,7 +461,22 @@ module Daru
     def include_values?(*values)
       values.any? { |v| include_with_nan? @data, v }
     end
-    
+
+    # @note Do not use it to check for Float::NAN as
+    #   Float::NAN == Float::NAN is false
+    # Return vector of booleans with value at ith position is either
+    # true or false depending upon whether value at position i is equal to
+    # any of the values passed in the argument or not
+    # @param [Array] *values values to equate with
+    # @return [Daru::Vector] vector of boolean values
+    # @example
+    #   dv = Daru::Vector.new [1, 2, 3, 2, 1]
+    #   dv.is_values 1, 2
+    #   # => #<Daru::Vector(4)>
+    #   #     0  true
+    #   #     1  true
+    #   #     2 false
+    #   #     3 false
     def is_values(*values)
       Daru::Vector.new values.map { |v| eq(v) }.inject(:|)
     end

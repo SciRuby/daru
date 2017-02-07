@@ -1398,7 +1398,7 @@ describe Daru::Vector do
     end
     
     context 'multiple values' do
-      subject { dv.is_values 10, nil, Float::NAN }
+      subject { dv.is_values 10, nil }
       it { is_expected.to be_a Daru::Vector }
       its(:to_a) { is_expected.to eq [true, false, true, true, true] }      
     end
