@@ -31,7 +31,7 @@ While preparing your pull requests, don't forget to check your code with Rubocop
 ## Basic Development Flow
 
 1. Create a new branch with `git checkout -b <branch_name>`.
-2. Make your changes.
+2. Make your changes. Write tests covering every case how your feature will be used. If creating new files for tests, refer to the 'Testing' section [below](#Testing).
 3. Try out these changes with `rake pry`.
 4. Run the test suite with `rake spec`. (Alternatively you can use `guard` as described [here](https://github.com/SciRuby/daru/blob/master/CONTRIBUTING.md#testing). Also run Rubocop coding style guidelines with `rake cop`.
 5. Commit the changes with `git commit -am "briefly describe what you did"` and submit pull request.
