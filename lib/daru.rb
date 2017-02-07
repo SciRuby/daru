@@ -98,6 +98,8 @@ require 'date'
 
 require 'daru/version.rb'
 
+require 'open-uri'
+
 require 'daru/index/index.rb'
 require 'daru/index/multi_index.rb'
 require 'daru/index/categorical_index.rb'
