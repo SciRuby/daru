@@ -472,11 +472,12 @@ module Daru
     # @example
     #   dv = Daru::Vector.new [1, 2, 3, 2, 1]
     #   dv.is_values 1, 2
-    #   # => #<Daru::Vector(4)>
+    #   # => #<Daru::Vector(5)>
     #   #     0  true
     #   #     1  true
     #   #     2 false
-    #   #     3 false
+    #   #     3  true
+    #   #     4  true
     def is_values(*values)
       Daru::Vector.new values.map { |v| eq(v) }.inject(:|)
     end
