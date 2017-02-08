@@ -344,36 +344,6 @@ describe Daru::Vector do
         end
       end
 
-      context "minima and maxima" do 
-        it "gives the index of max of a vector" do
-          idx = Daru::Index.new [:jon, :tyrion, :dany, :cersei, :jamie]
-          dv1 = Daru::Vector.new [3,7,0,1,5], index: idx
-          dv2 = Daru::Vector.new [3,7,0,1,5]
-          expect(dv1.index_of_max).to eq(:tyrion)
-          expect(dv2.index_of_max {|i| -i}).to eq(2)
-        end
-
-        it "gives the index of min of a vector" do
-          idx = Daru::Index.new [:jon, :tyrion, :dany, :cersei, :jamie]
-          dv1 = Daru::Vector.new [3,7,0,1,5], index: idx
-          dv2 = Daru::Vector.new [3,7,0,1,5]
-          expect(dv1.index_of_min).to eq(:dany)
-          expect(dv2.index_of_min {|i| -i}).to eq(1)
-        end
-
-        it "gives the max of a vector" do
-          dv = Daru::Vector.new ["tyrion lannister", "arya stark", "dany", "cersei", "jamie"]
-          expect(dv.max).to eq("tyrion lannister")
-          expect(dv.max {|i| i.size}).to eq("tyrion lannister")
-        end
-
-        it "gives the min of a vector" do
-          dv = Daru::Vector.new ["tyrion lannister", "arya stark", "dany", "cersei", "jamie"]
-          expect(dv.min).to eq("arya stark")
-          expect(dv.min {|i| i.size}).to eq("dany")
-        end
-      end
-
       context "#at" do
         context Daru::Index do
           let (:idx) { Daru::Index.new [1, 0, :c] }

@@ -19,10 +19,6 @@ module Daru
           @data.product
         end
 
-        def min
-          @data.min
-        end
-
         def range
           max - min
         end
@@ -75,19 +71,70 @@ module Daru
         # @param return_type [Symbol] Data type of the returned value. Defaults
         #   to returning only the maximum number but passing *:vector* will return
         #   a Daru::Vector with the index of the corresponding maximum value.
-        def max return_type=:stored_type
-          max_value = @data.max
-          if return_type == :vector
-            Daru::Vector.new({index_of(max_value) => max_value}, name: @name, dtype: @dtype)
+        def max
+          if block_given?
+            arr = []
+            @data.data.each do |d|
+              arr.push(yield(d))
+            end
           else
-            max_value
+            arr = @data.data
           end
+          @data.data[arr.index(arr.max)]
+        rescue
+          @data.to_a.max
+        end
+
+        # Get index of the above maximum element
+        def index_of_max
+          if block_given?
+            arr = []
+            @data.data.each do |d|
+              arr.push(yield(d))
+            end
+          else
+            arr = @data.data
+          end
+          @index.to_a[arr.index(arr.max)]
+        end
+
+        # Minimum element of the vector.
+        #
+        # @param return_type [Symbol] Data type of the returned value. Defaults
+        #   to returning only the minimum number but passing *:vector* will return
+        #   a Daru::Vector with the index of the corresponding minimum value.
+        def min
+          if block_given?
+            arr = []
+            @data.data.each do |d|
+              arr.push(yield(d))
+            end
+          else
+            arr = @data.data
+          end
+          @data.data[arr.index(arr.min)]
+        rescue
+          @data.to_a.min
+        end
+
+        # Get index of the above minimum element
+        def index_of_min
+          if block_given?
+            arr = []
+            @data.data.each do |d|
+              arr.push(yield(d))
+            end
+          else
+            arr = @data.data
+          end
+          @index.to_a[arr.index(arr.min)]
         end
 
         # Return a Vector with the max element and its index.
         # @return [Daru::Vector]
         def max_index
-          max :vector
+          max_value = @data.max
+          Daru::Vector.new({index_of(max_value) => max_value}, name: @name, dtype: @dtype)
         end
 
         def frequencies

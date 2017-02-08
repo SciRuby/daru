@@ -540,66 +540,6 @@ module Daru
       end
     end
 
-    # Get index of maximum element
-    def index_of_max
-      if block_given?
-        arr, i = [], 0
-        while i < @data.data.length
-          arr.push(yield(@data.data[i]))
-          i+=1
-        end
-      else
-        arr = @data.data
-      end
-      @index.to_a[arr.index(arr.max)]
-    end
-
-    # Get index of minimum element
-    def index_of_min
-      if block_given?
-        arr, i = [], 0
-        while i < @data.data.length
-          arr.push(yield(@data.data[i]))
-          i+=1
-        end
-      else
-        arr = @data.data
-      end
-      @index.to_a[arr.index(arr.min)]
-    end
-
-    # Get maximum element
-    def max
-      if block_given?
-        arr, i = [], 0
-        while i < @data.data.length
-          arr.push(yield(@data.data[i]))
-          i+=1
-        end
-      else
-        arr = @data.data
-      end
-      @data.data[arr.index(arr.max)]
-    rescue
-      @data.to_a.max
-    end
-
-    # Get minimum element
-    def min
-      if block_given?
-        arr, i = [], 0
-        while i < @data.data.length
-          arr.push(yield(@data.data[i]))
-          i+=1
-        end
-      else
-        arr = @data.data
-      end
-      @data.data[arr.index(arr.min)]
-    rescue
-      @data.to_a.min
-    end
-
     # Keep only unique elements of the vector alongwith their indexes.
     def uniq
       uniq_vector = @data.uniq
