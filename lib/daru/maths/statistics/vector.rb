@@ -71,16 +71,16 @@ module Daru
         # @param return_type [Symbol] Data type of the returned value. Defaults
         #   to returning only the maximum number but passing *:vector* will return
         #   a Daru::Vector with the index of the corresponding maximum value.
-        def max
-          arr = block_given? ? @data.data.map { |d| yield(d) } : @data.data
+        def max(&block)
+          arr = block_given? ? @data.data.map(&block) : @data.data
           @data.data[arr.index(arr.max)]
         rescue
           @data.to_a.max
         end
 
         # Get index of the above maximum element
-        def index_of_max
-          arr = block_given? ? @data.data.map { |d| yield(d) } : @data.data
+        def index_of_max(&block)
+          arr = block_given? ? @data.data.map(&block) : @data.data
           @index.to_a[arr.index(arr.max)]
         end
 
@@ -89,16 +89,16 @@ module Daru
         # @param return_type [Symbol] Data type of the returned value. Defaults
         #   to returning only the minimum number but passing *:vector* will return
         #   a Daru::Vector with the index of the corresponding minimum value.
-        def min
-          arr = block_given? ? @data.data.map { |d| yield(d) } : @data.data
+        def min(&block)
+          arr = block_given? ? @data.data.map(&block) : @data.data
           @data.data[arr.index(arr.min)]
         rescue
           @data.to_a.min
         end
 
         # Get index of the above minimum element
-        def index_of_min
-          arr = block_given? ? @data.data.map { |d| yield(d) } : @data.data
+        def index_of_min(&block)
+          arr = block_given? ? @data.data.map(&block) : @data.data
           @index.to_a[arr.index(arr.min)]
         end
 
