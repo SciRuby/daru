@@ -542,12 +542,58 @@ module Daru
 
     # Get index of maximum element
     def index_of_max
-      @index.to_a[@data.index(@data.max)]
+      if block_given?
+        arr, i = [], 0
+        while i < @data.data.length
+          arr.push(yield(@data.data[i]))
+          i+=1
+        end
+      else
+        arr = @data.data
+      end
+      @index.to_a[arr.index(arr.max)]
     end
 
     # Get index of minimum element
     def index_of_min
-      @index.to_a[@data.index(@data.min)]
+      if block_given?
+        arr, i = [], 0
+        while i < @data.data.length
+          arr.push(yield(@data.data[i]))
+          i+=1
+        end
+      else
+        arr = @data.data
+      end
+      @index.to_a[arr.index(arr.min)]
+    end
+
+    # Get maximum element
+    def max
+      if block_given?
+        arr, i = [], 0
+        while i < @data.data.length
+          arr.push(yield(@data.data[i]))
+          i+=1
+        end
+      else
+        arr = @data.data
+      end
+      @data.data[arr.index(arr.max)]
+    end
+
+    # Get minimum element
+    def min
+      if block_given?
+        arr, i = [], 0
+        while i < @data.data.length
+          arr.push(yield(@data.data[i]))
+          i+=1
+        end
+      else
+        arr = @data.data
+      end
+      @data.data[arr.index(arr.min)]
     end
 
     # Keep only unique elements of the vector alongwith their indexes.
