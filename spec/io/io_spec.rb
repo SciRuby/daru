@@ -34,8 +34,11 @@ describe Daru::IO do
       end
 
       it "works for urls (header comparison for mock data)" do
-        df = Daru::DataFrame.from_csv('https://raw.githubusercontent.com/anshuman23/ruBayes/master/test/sample.csv', col_sep:',', headers: true)
-        expect(df.vectors).to eq([:a, :b, :c, :d, :e].to_index)
+        WebMock.stub_request(:get,'https://raw.githubusercontent.com/anshuman23/ruBayes/master/test/sample2.csv').
+          to_return(status: 200, body: File.read('spec/fixtures/url_test.txt'))
+          
+        df = Daru::DataFrame.from_csv('https://raw.githubusercontent.com/anshuman23/ruBayes/master/test/sample2.csv', col_sep:',', headers: true)
+        expect(df.vectors).to eq([:country, :region].to_index)
       end
     
     end
