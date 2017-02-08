@@ -240,9 +240,9 @@ describe "Arel-like syntax" do
     context Daru::DataFrame do
       before do
         @df = Daru::DataFrame.new({
-          number: [1,2,3,4,5,6,nil],
+          number: [1,2,3,4,5,6,Float::NAN],
           sym: [:one, :two, :three, :four, :five, :six, :seven],
-          names: ['sameer', 'john', 'james', 'omisha', 'priyanka', 'shravan', Float::NAN.to_s]
+          names: ['sameer', 'john', 'james', 'omisha', 'priyanka', 'shravan',nil]
         })
       end
 
@@ -267,14 +267,10 @@ describe "Arel-like syntax" do
           ).to eq(answer)
       end
 
+      let(:dv1) { Daru::Vector.new([1,11,32,Float::NAN,nil]) }
+      let(:dv2) { Daru::Vector.new([1,11]) }
       it "handles empty data" do
-        answer = Daru::DataFrame.new({
-          number: [nil],
-          sym: [:seven],
-          names: [Float::NAN.to_s]
-          }, index: Daru::Index.new([6])
-        )
-        expect(@df.where(@df[:sym].eq(:seven))).to eq(answer)
+        expect(dv1.where(dv1.lt(14))).to eq(dv2)
       end
 
       it "does not give SystemStackError" do
