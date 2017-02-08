@@ -71,17 +71,17 @@ describe Daru::Vector do
         end
       end
 
-      # context "#max" do
-      #   it "returns the max value" do
-      #     expect(@dv.max).to eq(666)
-      #   end
-      # end
+      context "#max" do
+        it "returns the max value" do
+          expect(@dv.max).to eq(666)
+        end
+      end
 
-      # context "#min" do
-      #   it "returns the min value" do
-      #     expect(@dv.min).to eq(1)
-      #   end
-      # end
+      context "#min" do
+        it "returns the min value" do
+          expect(@dv.min).to eq(1)
+        end
+      end
 
       context "#sum" do
         it "returns the sum" do
@@ -114,14 +114,14 @@ describe Daru::Vector do
         end
       end
 
-      # context "#describe" do
-      #   it "generates count, mean, std, min and max of vectors in one shot" do
-      #     expect(@dv.describe.round(2)).to eq(Daru::Vector.new([10.00, 282.20, 274.08, 1.00, 666.00],
-      #       index: [:count, :mean, :std, :min, :max],
-      #       name:  :statistics
-      #     ))
-      #   end
-      # end
+      context "#describe" do
+        it "generates count, mean, std, min and max of vectors in one shot" do
+          expect(@dv.describe.round(2)).to eq(Daru::Vector.new([10.00, 282.20, 274.08, 1.00, 666.00],
+            index: [:count, :mean, :std, :min, :max],
+            name:  :statistics
+          ))
+        end
+      end
 
       context "#kurtosis" do
         it "calculates kurtosis" do

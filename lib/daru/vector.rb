@@ -580,6 +580,8 @@ module Daru
         arr = @data.data
       end
       @data.data[arr.index(arr.max)]
+    rescue
+      @data.to_a.max
     end
 
     # Get minimum element
@@ -594,6 +596,8 @@ module Daru
         arr = @data.data
       end
       @data.data[arr.index(arr.min)]
+    rescue
+      @data.to_a.min
     end
 
     # Keep only unique elements of the vector alongwith their indexes.
