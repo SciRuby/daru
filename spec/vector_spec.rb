@@ -1824,18 +1824,6 @@ describe Daru::Vector do
     end
   end
 
-  context "#reset_index!" do
-    it "resets any index to a numerical serialized index" do
-      v = Daru::Vector.new([1,2,3,4,5,nil,nil,4,nil])
-      r = v.reject_values(*Daru::MISSING_VALUES).reset_index!
-      expect(r).to eq(Daru::Vector.new([1,2,3,4,5,4]))
-      expect(r.index).to eq(Daru::Index.new([0,1,2,3,4,5]))
-
-      indexed = Daru::Vector.new([1,2,3,4,5], index: [:a, :b, :c, :d, :e])
-      expect(indexed.reset_index!.index).to eq(Daru::Index.new([0,1,2,3,4]))
-    end
-  end
-
   context "#rename" do
     before :each do
       @v = Daru::Vector.new [1,2,3,4,5,5], name: :this_vector

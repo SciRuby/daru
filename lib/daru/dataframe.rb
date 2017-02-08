@@ -560,11 +560,6 @@ module Daru
       self
     end
 
-    def reset_index!
-      @index = Daru::Index.new(Array.new(size) { |i| i })
-      self
-    end
-
     # Iterate over each index of the DataFrame.
     def each_index &block
       return to_enum(:each_index) unless block_given?

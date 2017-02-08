@@ -3028,18 +3028,7 @@ describe Daru::DataFrame do
       expect(actual).to eq expected
     end
   end
-
-  context "#reset_index!" do
-    it "resets index array of dataframe" do
-      data = {x: [5,1,-6], y: [2,7,0], z: [4,3,8]}
-      idx = ["u","v","w"]
-      df1 = Daru::DataFrame.new(data, index: idx)     
-      df2 = Daru::DataFrame.new(data, index: Daru::Index.new(3))     
-      df1.reset_index!
-      expect(df1.index.to_a).to eq(df2.index.to_a)
-    end
-  end
-  
+ 
   context "#shape" do
     it "returns an array containing number of rows and columns" do
       expect(@data_frame.shape).to eq([5,3])
