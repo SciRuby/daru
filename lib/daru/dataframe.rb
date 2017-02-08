@@ -1,3 +1,4 @@
+require 'daru/platform.rb'
 require 'daru/accessors/dataframe_by_row.rb'
 require 'daru/maths/arithmetic/dataframe.rb'
 require 'daru/maths/statistics/dataframe.rb'
@@ -9,7 +10,6 @@ module Daru
   class DataFrame # rubocop:disable Metrics/ClassLength
     include Daru::Maths::Arithmetic::DataFrame
     include Daru::Maths::Statistics::DataFrame
-    # TODO: Remove this line but its causing erros due to unkown reason
     include Daru::Plotting::DataFrame::NyaplotLibrary if Daru.has_nyaplot?
     extend Gem::Deprecate
 

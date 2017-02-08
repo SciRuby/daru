@@ -1,3 +1,5 @@
+require 'daru/platform'
+
 if Daru.has_gsl?
   module Daru
     module Accessors
