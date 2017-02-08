@@ -28,6 +28,7 @@ require 'simplecov'
 SimpleCov.start do
   add_filter 'vendor'
   add_filter 'spec'
+  add_filter 'lib/daru/platform'   # full covg not possible on single platform
   minimum_coverage_by_file 95
 end
 
