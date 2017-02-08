@@ -9,10 +9,6 @@ RSpec.describe Daru::IO::SqlDataSource do
     DBI.connect("DBI:SQLite3:#{db_name}")
   end
 
-  let(:sqlite3_file) do
-    'spec/fixtures/names.db'
-  end
-
   let(:active_record_connection) do
     ActiveRecord::Base.establish_connection("sqlite3:#{db_name}")
     ActiveRecord::Base.connection
