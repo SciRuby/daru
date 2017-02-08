@@ -73,7 +73,7 @@ module Daru
         query = String.try_convert(query) or
           raise ArgumentError, "Query must be a string, #{query.class} received"
 
-        db = file_based_db_strategy(db) if db.is_a?(String) && Pathname(db).exist?
+        db = attempt_sqlite3_connection(db) if db.is_a?(String) && Pathname(db).exist?
 
         case db
         when DBI::DatabaseHandle
@@ -85,19 +85,13 @@ module Daru
         end
       end
 
-      def file_based_db_strategy(db)
-        attempt_sqlite3_connection(db) or
-          raise ArgumentError, "Expected #{db} to point to a database file. For SQLite3 please require 'dbi'"
-      end
-
       def attempt_sqlite3_connection(db)
-        conn = DBI.connect("DBI:SQLite3:#{db}")
+        DBI.connect("DBI:SQLite3:#{db}")
       rescue SQLite3::NotADatabaseException
-        return false
+        raise ArgumentError, "Expected #{db} to point to a SQLite3 database"
       rescue NameError
-        return false
+        raise NameError, "In order to establish a connection to #{db}, please require 'dbi'"
       end
-
     end
   end
 end
