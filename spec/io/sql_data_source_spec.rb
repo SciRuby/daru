@@ -9,7 +9,7 @@ RSpec.describe Daru::IO::SqlDataSource do
     DBI.connect("DBI:SQLite3:#{db_name}")
   end
 
-  let(:db_file) do
+  let(:sqlite3_file) do
     'spec/fixtures/names.db'
   end
 
@@ -67,18 +67,23 @@ RSpec.describe Daru::IO::SqlDataSource do
       end
     end
 
-    context 'with database file path' do
+    context 'with path to sqlite3 file' do
       it 'returns a dataframe' do
-        result = Daru::IO::SqlDataSource.make_dataframe(db_file, query)
+        result = Daru::IO::SqlDataSource.make_dataframe(db_name, query)
         expect(result).to be_a(Daru::DataFrame)
+        expect(result.nrows).to eq(2)
         expect(result.row[0][:id]).to eq(1)
-        expect(result.row[0][:name]).to eq('Alex')
+        expect(result.row[0][:name]).to eq('Homer')
       end
+    end
+
+    context 'with path to unsupported db file' do
       it 'raises ArgumentError' do
         expect {
           Daru::IO::SqlDataSource.make_dataframe("spec/fixtures/bank2.dat", query)
         }.to raise_error(ArgumentError)
       end
     end
+
   end
 end
