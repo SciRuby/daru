@@ -86,11 +86,11 @@ module Daru
       end
 
       def file_based_db_strategy(db)
-        sqlite3_adapter(db) or
+        attempt_sqlite3_connection(db) or
           raise ArgumentError, "Expected #{db} to point to a database file. For SQLite3 please require 'dbi'"
       end
 
-      def sqlite3_adapter(db)
+      def attempt_sqlite3_connection(db)
         conn = DBI.connect("DBI:SQLite3:#{db}")
       rescue SQLite3::NotADatabaseException
         return false
