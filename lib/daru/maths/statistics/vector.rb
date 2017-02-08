@@ -72,14 +72,7 @@ module Daru
         #   to returning only the maximum number but passing *:vector* will return
         #   a Daru::Vector with the index of the corresponding maximum value.
         def max
-          if block_given?
-            arr = []
-            @data.data.each do |d|
-              arr.push(yield(d))
-            end
-          else
-            arr = @data.data
-          end
+          arr = block_given? ? @data.data.map { |d| yield(d) } : @data.data
           @data.data[arr.index(arr.max)]
         rescue
           @data.to_a.max
@@ -87,14 +80,7 @@ module Daru
 
         # Get index of the above maximum element
         def index_of_max
-          if block_given?
-            arr = []
-            @data.data.each do |d|
-              arr.push(yield(d))
-            end
-          else
-            arr = @data.data
-          end
+          arr = block_given? ? @data.data.map { |d| yield(d) } : @data.data
           @index.to_a[arr.index(arr.max)]
         end
 
@@ -104,14 +90,7 @@ module Daru
         #   to returning only the minimum number but passing *:vector* will return
         #   a Daru::Vector with the index of the corresponding minimum value.
         def min
-          if block_given?
-            arr = []
-            @data.data.each do |d|
-              arr.push(yield(d))
-            end
-          else
-            arr = @data.data
-          end
+          arr = block_given? ? @data.data.map { |d| yield(d) } : @data.data
           @data.data[arr.index(arr.min)]
         rescue
           @data.to_a.min
@@ -119,14 +98,7 @@ module Daru
 
         # Get index of the above minimum element
         def index_of_min
-          if block_given?
-            arr = []
-            @data.data.each do |d|
-              arr.push(yield(d))
-            end
-          else
-            arr = @data.data
-          end
+          arr = block_given? ? @data.data.map { |d| yield(d) } : @data.data
           @index.to_a[arr.index(arr.min)]
         end
 
