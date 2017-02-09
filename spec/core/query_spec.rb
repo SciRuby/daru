@@ -267,10 +267,9 @@ describe "Arel-like syntax" do
           ).to eq(answer)
       end
 
-      let(:dv1) { Daru::Vector.new([1,11,32,Float::NAN,nil]) }
-      let(:dv2) { Daru::Vector.new([1,11]) }
+      let(:dv) { Daru::Vector.new([1,11,32,Float::NAN,nil]) }
       it "handles empty data" do
-        expect(dv1.where(dv1.lt(14))).to eq(dv2)
+        expect(dv.where(dv.lt(14))).to eq(Daru::Vector.new([1,11]))
       end
 
       it "does not give SystemStackError" do
