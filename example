@@ -1,5 +1,0 @@
-require 'daru'
-dv = Daru::Vector.new ['c', 'bb', 'aaa']
-dv.max { |i| i.length }
-dv = Daru::Vector.new ['a', 'bb', 'ccc'], index: [:a, :b, :c]
-dv.index_of_max { |i| i.size }

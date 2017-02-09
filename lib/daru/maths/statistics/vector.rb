@@ -66,11 +66,22 @@ module Daru
           reject_values(*Daru::MISSING_VALUES).uniq.reset_index!
         end
 
-        # Maximum element of the vector.
+        # Returns the maximum value present in the vector.
         #
-        # @param return_type [Symbol] Data type of the returned value. Defaults
-        #   to returning only the maximum number but passing *:vector* will return
-        #   a Daru::Vector with the index of the corresponding maximum value.
+        # @example
+        #
+        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j]) }
+        #   #=>
+        #   #   #<Daru::Vector(3)>
+        #   #       t   Tyrion
+        #   #       d   Daenerys
+        #   #       j   Jon Starkgaryen
+        #
+        #   dv.max
+        #   #=> "Tyrion"
+        #
+        #   dv.max { |i| i.size }
+        #   #=> "Jon Starkgaryen"
         def max(&block)
           arr = block_given? ? @data.data.map(&block) : @data.data
           @data.data[arr.index(arr.max)]
@@ -78,17 +89,43 @@ module Daru
           @data.to_a.max
         end
 
-        # Get index of the above maximum element
+        # Returns the index of the maximum value present in the vector.
+        #
+        # @example
+        #
+        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j]) }
+        #   #=>
+        #   #   #<Daru::Vector(3)>
+        #   #       t   Tyrion
+        #   #       d   Daenerys
+        #   #       j   Jon Starkgaryen
+        #
+        #   dv.index_of_max
+        #   #=> :t
+        #
+        #   dv.index_of_max { |i| i.size }
+        #   #=> :j
         def index_of_max(&block)
           arr = block_given? ? @data.data.map(&block) : @data.data
           @index.to_a[arr.index(arr.max)]
         end
 
-        # Minimum element of the vector.
+        # Returns the minimum value present in the vector.
         #
-        # @param return_type [Symbol] Data type of the returned value. Defaults
-        #   to returning only the minimum number but passing *:vector* will return
-        #   a Daru::Vector with the index of the corresponding minimum value.
+        # @example
+        #
+        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j]) }
+        #   #=>
+        #   #   #<Daru::Vector(3)>
+        #   #       t   Tyrion
+        #   #       d   Daenerys
+        #   #       j   Jon Starkgaryen
+        #
+        #   dv.min
+        #   #=> "Daenerys"
+        #
+        #   dv.min { |i| i.size }
+        #   #=> "Tyrion"
         def min(&block)
           arr = block_given? ? @data.data.map(&block) : @data.data
           @data.data[arr.index(arr.min)]
@@ -96,13 +133,28 @@ module Daru
           @data.to_a.min
         end
 
-        # Get index of the above minimum element
+        # Returns the index of the minimum value present in the vector.
+        #
+        # @example
+        #
+        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j]) }
+        #   #=>
+        #   #   #<Daru::Vector(3)>
+        #   #       t   Tyrion
+        #   #       d   Daenerys
+        #   #       j   Jon Starkgaryen
+        #
+        #   dv.index_of_min
+        #   #=> :d
+        #
+        #   dv.max { |i| i.size }
+        #   #=> :t
         def index_of_min(&block)
           arr = block_given? ? @data.data.map(&block) : @data.data
           @index.to_a[arr.index(arr.min)]
         end
 
-        # Return a Vector with the max element and its index.
+        # Return the maximum element present in the Vector, as a Vector.
         # @return [Daru::Vector]
         def max_index
           max_value = @data.max

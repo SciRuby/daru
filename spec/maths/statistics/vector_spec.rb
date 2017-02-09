@@ -6,43 +6,47 @@ describe Daru::Vector do
         @dv_with_nils = Daru::Vector.new [323, 11, 555, nil, 666, 234, 21, 666, 343, nil, 1, 2]
       end
 
-      let(:idx) { Daru::Index.new [:jon, :tyrion, :dany, :cersei, :jamie] }
-      let(:dv2) { Daru::Vector.new ["tyrion lannister", "arya stark", "dany", "cersei", "jamie"] }
-      let(:dv3) { Daru::Vector.new [3,7,0,1,5], index: idx }
-      let(:dv4) { Daru::Vector.new [3,7,0,1,5] }
-
       context "#mean" do
         it "calculates mean" do
           expect(@dv.mean).to eq(282.2)
         end
       end
 
+      let(:dv) { dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j]) }
 
       context "#max" do
-        it "gives the max of a vector" do
-          expect(dv2.max).to eq("tyrion lannister")
-          expect(dv2.max {|i| i.size}).to eq("tyrion lannister")
+        it "tests function with default input" do
+          expect(dv.max).to eq("Tyrion")
+        end
+        it "tests function with block input" do
+          expect(dv.max {|i| i.size}).to eq("Jon Starkgaryen")
         end
       end
 
       context "#index_of_max" do
-        it "gives the index of max of a vector" do
-          expect(dv3.index_of_max).to eq(:tyrion)
-          expect(dv4.index_of_max {|i| -i}).to eq(2)
+        it "tests function with default input" do
+          expect(dv.index_of_max).to eq(:t)
+        end
+        it "tests function with block input" do
+          expect(dv.index_of_max {|i| i.size }).to eq(:j)
         end
       end
 
       context "#min" do
-        it "gives the min of a vector" do
-          expect(dv2.min).to eq("arya stark")
-          expect(dv2.min {|i| i.size}).to eq("dany")
+        it "tests function with default input" do
+          expect(dv.min).to eq("Daenerys")
+        end
+        it "tests function with block input" do
+          expect(dv.min {|i| i.size}).to eq("Tyrion")
         end
       end
 
       context "#index_of_min" do
-        it "gives the index of min of a vector" do
-          expect(dv3.index_of_min).to eq(:dany)
-          expect(dv4.index_of_min {|i| -i}).to eq(1)
+        it "tests function with default input" do
+          expect(dv.index_of_min).to eq(:d)
+        end
+        it "tests function with block input" do
+          expect(dv.index_of_min {|i| i.size}).to eq(:t)
         end
       end
 
