@@ -479,7 +479,7 @@ module Daru
     #   #     3  true
     #   #     4  true
     def is_values(*values)
-      Daru::Vector.new values.map { |v| eq(v) }.inject(:|)
+      Daru::Vector.new @data.data.map { |x| values.include?(x) ? true : false }
     end
 
     # Append an element to the vector by specifying the element and index
