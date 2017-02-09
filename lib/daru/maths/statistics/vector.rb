@@ -70,7 +70,7 @@ module Daru
         #
         # @example
         #
-        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j]) }
+        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j])
         #   #=>
         #   #   #<Daru::Vector(3)>
         #   #       t   Tyrion
@@ -93,7 +93,7 @@ module Daru
         #
         # @example
         #
-        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j]) }
+        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j])
         #   #=>
         #   #   #<Daru::Vector(3)>
         #   #       t   Tyrion
@@ -114,7 +114,7 @@ module Daru
         #
         # @example
         #
-        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j]) }
+        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j])
         #   #=>
         #   #   #<Daru::Vector(3)>
         #   #       t   Tyrion
@@ -137,7 +137,7 @@ module Daru
         #
         # @example
         #
-        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j]) }
+        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j])
         #   #=>
         #   #   #<Daru::Vector(3)>
         #   #       t   Tyrion
