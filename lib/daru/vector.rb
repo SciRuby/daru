@@ -462,6 +462,26 @@ module Daru
       values.any? { |v| include_with_nan? @data, v }
     end
 
+    # @note Do not use it to check for Float::NAN as
+    #   Float::NAN == Float::NAN is false
+    # Return vector of booleans with value at ith position is either
+    # true or false depending upon whether value at position i is equal to
+    # any of the values passed in the argument or not
+    # @param [Array] *values values to equate with
+    # @return [Daru::Vector] vector of boolean values
+    # @example
+    #   dv = Daru::Vector.new [1, 2, 3, 2, 1]
+    #   dv.is_values 1, 2
+    #   # => #<Daru::Vector(5)>
+    #   #     0  true
+    #   #     1  true
+    #   #     2 false
+    #   #     3  true
+    #   #     4  true
+    def is_values(*values)
+      Daru::Vector.new values.map { |v| eq(v) }.inject(:|)
+    end
+
     # Append an element to the vector by specifying the element and index
     def concat element, index
       raise IndexError, 'Expected new unique index' if @index.include? index
@@ -700,31 +720,6 @@ module Daru
     def reset_index!
       @index = Daru::Index.new(Array.new(size) { |i| i })
       self
-    end
-
-    # Returns a vector which has *true* in the position where the element in self
-    # is nil, and false otherwise.
-    #
-    # == Usage
-    #
-    #   v = Daru::Vector.new([1,2,4,nil])
-    #   v.is_nil?
-    #   # =>
-    #   #<Daru::Vector:89421000 @name = nil @size = 4 >
-    #   #      nil
-    #   #  0  false
-    #   #  1  false
-    #   #  2  false
-    #   #  3  true
-    #
-    def is_nil?
-      # FIXME: EXTREMELY bad name for method not returning boolean - zverok, 2016-05-18
-      recode(&:nil?)
-    end
-
-    # Opposite of #is_nil?
-    def not_nil?
-      recode { |v| !v.nil? }
     end
 
     # Replace all nils in the vector with the value passed as an argument. Destructive.

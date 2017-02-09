@@ -1388,27 +1388,19 @@ describe Daru::Vector do
     end
   end
 
-  context "#is_nil?" do
-    before(:each) do
-      @with_md    = Daru::Vector.new([1,2,nil,3,4,nil])
-      @without_md = Daru::Vector.new([1,2,3,4,5,6])
+  context '#is_values' do
+    let(:dv) { Daru::Vector.new [10, 11, 10, nil, nil] }
+    
+    context 'single value' do
+      subject { dv.is_values 10 }
+      it { is_expected.to be_a Daru::Vector }
+      its(:to_a) { is_expected.to eq [true, false, true, false, false] }
     end
-
-    it "verifies missing data presence" do
-      expect(@with_md.is_nil?)   .to eq(Daru::Vector.new([false,false,true,false,false,true]))
-      expect(@without_md.is_nil?).to eq(Daru::Vector.new([false,false,false,false,false,false]))
-    end
-  end
-
-  context "#not_nil?" do
-    before(:each) do
-      @with_md    = Daru::Vector.new([1,2,nil,3,4,nil])
-      @without_md = Daru::Vector.new([1,2,3,4,5,6])
-    end
-
-    it "verifies missing data presence" do
-      expect(@with_md.not_nil?)   .to eq(Daru::Vector.new([true,true,false,true,true,false]))
-      expect(@without_md.not_nil?).to eq(Daru::Vector.new([true,true,true,true,true,true]))
+    
+    context 'multiple values' do
+      subject { dv.is_values 10, nil }
+      it { is_expected.to be_a Daru::Vector }
+      its(:to_a) { is_expected.to eq [true, false, true, true, true] }      
     end
   end
 
