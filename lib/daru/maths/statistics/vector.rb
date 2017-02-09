@@ -83,10 +83,8 @@ module Daru
         #   dv.max { |i| i.size }
         #   #=> "Jon Starkgaryen"
         def max(&block)
-          arr = block_given? ? @data.data.map(&block) : @data.data
-          @data.data[arr.index(arr.max)]
-        rescue
-          @data.to_a.max
+          data = @data.data
+          block_given? ? data[data.map(&block).to_a.each_with_index.max.last] : @data.max
         end
 
         # Returns the index of the maximum value present in the vector.
@@ -106,8 +104,7 @@ module Daru
         #   dv.index_of_max { |i| i.size }
         #   #=> :j
         def index_of_max(&block)
-          arr = block_given? ? @data.data.map(&block) : @data.data
-          @index.to_a[arr.index(arr.max)]
+          block_given? ? @index.to_a[@data.data.map(&block).to_a.each_with_index.max.last] : @index.max
         end
 
         # Returns the minimum value present in the vector.
@@ -127,10 +124,8 @@ module Daru
         #   dv.min { |i| i.size }
         #   #=> "Tyrion"
         def min(&block)
-          arr = block_given? ? @data.data.map(&block) : @data.data
-          @data.data[arr.index(arr.min)]
-        rescue
-          @data.to_a.min
+          data = @data.data
+          block_given? ? data[data.map(&block).to_a.each_with_index.min.last] : @data.min
         end
 
         # Returns the index of the minimum value present in the vector.
@@ -147,11 +142,10 @@ module Daru
         #   dv.index_of_min
         #   #=> :d
         #
-        #   dv.max { |i| i.size }
+        #   dv.index_of_min { |i| i.size }
         #   #=> :t
         def index_of_min(&block)
-          arr = block_given? ? @data.data.map(&block) : @data.data
-          @index.to_a[arr.index(arr.min)]
+          block_given? ? @index.to_a[@data.data.map(&block).to_a.each_with_index.min.last] : @index.min
         end
 
         # Return the maximum element present in the Vector, as a Vector.
