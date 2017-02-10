@@ -66,6 +66,7 @@ RSpec.describe Daru::IO::SqlDataSource do
     context 'with path to sqlite3 file' do
       it 'returns a dataframe' do
         result = Daru::IO::SqlDataSource.make_dataframe(db_name, query)
+        # result = Daru::DataFrame.from_sql(db_name, query)
         expect(result).to be_a(Daru::DataFrame)
         expect(result.nrows).to eq(2)
         expect(result.row[0][:id]).to eq(1)

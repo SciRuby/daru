@@ -64,6 +64,7 @@ module Daru
       # Read a database query and returns a Dataset
       #
       # @param dbh [DBI::DatabaseHandle] A DBI connection to be used to run the query
+      # @param dbh [String] Path to a SQLite3 database
       # @param query [String] The query to be executed
       #
       # @return A dataframe containing the data resulting from the query
@@ -72,6 +73,11 @@ module Daru
       #
       #  dbh = DBI.connect("DBI:Mysql:database:localhost", "user", "password")
       #  Daru::DataFrame.from_sql(dbh, "SELECT * FROM test")
+      #
+      #  #Alternatively
+      #
+      #  require 'dbi'
+      #  Daru::DataFrame.from_sql("path/to/sqlite.db", "SELECT * FROM test")
       def from_sql dbh, query
         Daru::IO.from_sql dbh, query
       end
