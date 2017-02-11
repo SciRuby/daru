@@ -63,8 +63,7 @@ module Daru
 
       # Read a database query and returns a Dataset
       #
-      # @param dbh [DBI::DatabaseHandle] A DBI connection to be used to run the query
-      # @param dbh [String] Path to a SQLite3 database
+      # @param dbh [DBI::DatabaseHandle, String] A DBI connection to be used to run the query OR Path to a SQlite3 database.
       # @param query [String] The query to be executed
       #
       # @return A dataframe containing the data resulting from the query
