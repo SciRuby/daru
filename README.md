@@ -1,7 +1,7 @@
 # daru - Data Analysis in RUby
 
 [![Gem Version](https://badge.fury.io/rb/daru.svg)](http://badge.fury.io/rb/daru)
-[![Build Status](https://travis-ci.org/v0dro/daru.svg)](https://travis-ci.org/v0dro/daru)
+[![Build Status](https://travis-ci.org/v0dro/daru.svg)](https://travis-ci.org/SciRuby/daru.svg?branch=master)
 [![Gitter](https://badges.gitter.im/v0dro/daru.svg)](https://gitter.im/v0dro/daru?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 ## Introduction
