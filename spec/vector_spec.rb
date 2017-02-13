@@ -1398,9 +1398,9 @@ describe Daru::Vector do
     end
     
     context 'multiple values' do
-      subject { dv.is_values 10, nil }
+      subject { dv.is_values 10, 11 }
       it { is_expected.to be_a Daru::Vector }
-      its(:to_a) { is_expected.to eq [true, false, true, true, true] }      
+      its(:to_a) { is_expected.to eq [true, true, true, false, false] }      
     end
   end
 
