@@ -44,7 +44,9 @@ module Daru
       when :gruff, :nyaplot
         @plotting_library = lib
       else
+        # :nocov:
         raise ArgumentError, "Unsupported library #{lib}"
+        # :nocov:
       end
     end
   end
@@ -55,12 +57,13 @@ module Daru
   create_has_library :gruff
 end
 
-[['reportbuilder', '~>1.4'], ['spreadsheet', '~>1.1.1']].each do |lib|
+[['reportbuilder', '~>1.4'], ['spreadsheet', '~>1.1.1']].each do |(lib,version)|
   begin
-    gem lib[0], lib[1]
-    require lib[0]
+    gem lib, version
+    require lib
   rescue LoadError
-    STDERR.puts "\nInstall the #{lib[0]} gem version #{lib[1]} for using"\
-    " #{lib[0]} functions."
+    # :nocov:
+    $stderr.puts "\nInstall #{lib} #{version} to use #{lib} functions."
+    # :nocov:
   end
 end
