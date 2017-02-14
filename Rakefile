@@ -67,35 +67,28 @@ def run *cmd
   sh(cmd.join(" "))
 end
 
-# return error string or false
-def require_error?(filename)
+task :modular_require do
   require 'open3'
 
-  lib_dir = File.expand_path("../lib", __FILE__)
-  cmd = ['ruby', '-I', lib_dir, "#{lib_dir}/#{filename}"]
-  # does this behave differently?
-  # cmd = ['ruby', '-I', lib_dir, '-r', filename, '-e', "':ok'"]
-
-  _in, out, wait_thr = Open3.popen2e(*cmd)
-  if wait_thr.value.exitstatus == 0
-    false
-  else
-    out.gets.to_s.chomp
-  end
-end
-
-task :modular_require do
   errors = []
   Dir.chdir lib_folder
-  Dir['**/*.rb'].each { |lib_file|
-    error = require_error?(lib_file)
-    if error
-      result = 'ERROR'
-      errors << error
-    else
+
+  # kick off several ruby processes that require a single file
+  Dir['**/*.rb'].map { |lib_file|
+    # does this behave differently?
+    # cmd = ['ruby', '-I', lib_folder, '-r', lib_fil, '-e', "':ok'"]
+    cmd = ['ruby', '-I', lib_folder, "#{lib_folder}/#{lib_file}"]
+    _in, out, wait_thr = Open3.popen2e(*cmd)
+
+    [lib_file, wait_thr, out]
+  }.each { |(file, thr, out)|
+    if thr.value.exitstatus == 0
       result = '   OK'
+    else
+      result = 'ERROR'
+      errors << out.gets.to_s.chomp
     end
-    puts [result, lib_file].join(' ')
+    puts [result, file].join(' ')
   }
   unless errors.empty?
     puts
