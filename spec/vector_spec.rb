@@ -29,6 +29,14 @@ describe Daru::Vector do
           expect(dv.index).to eq(Daru::Index.new [:ek, :don, :teen, :char, :pach])
         end
 
+        it "accepts Index object" do
+          idx = Daru::Index.new [:yoda, :anakin, :obi, :padme, :r2d2]
+          dv = Daru::Vector.new [1,2,3,4,5], name: :yoga, index: idx, dtype: dtype
+
+          expect(dv.name) .to eq(:yoga)
+          expect(dv.index).to eq(idx)
+        end
+
         it "accepts a MultiIndex object" do
           dv = Daru::Vector.new [1,2,3,4], name: :mi, index: @multi_index, dtype: dtype
 
@@ -74,7 +82,8 @@ describe Daru::Vector do
           dv = Daru::Vector.new [1,2,3,4], index: ['a', 'b', :r, 0]
           expect(dv.to_a).to eq([1,2,3,4])
           expect(dv.index.to_a).to eq(['a', 'b', :r, 0])
-        end      
+        end
+
       end
 
       context "#reorder!" do
@@ -1821,6 +1830,18 @@ describe Daru::Vector do
       a = Daru::Vector.new ['a', 'a,b', 'c,d', 'a,d', 10, nil]
       expect(a.split_by_separator_freq).to eq(
         { 'a' => 3, 'b' => 1, 'c' => 1, 'd' => 2, 10 => 1 })
+    end
+  end
+
+  context "#reset_index!" do
+    it "resets any index to a numerical serialized index" do
+      v = Daru::Vector.new([1,2,3,4,5,nil,nil,4,nil])
+      r = v.reject_values(*Daru::MISSING_VALUES).reset_index!
+      expect(r).to eq(Daru::Vector.new([1,2,3,4,5,4]))
+      expect(r.index).to eq(Daru::Index.new([0,1,2,3,4,5]))
+
+      indexed = Daru::Vector.new([1,2,3,4,5], index: [:a, :b, :c, :d, :e])
+      expect(indexed.reset_index!.index).to eq(Daru::Index.new([0,1,2,3,4]))
     end
   end
 
