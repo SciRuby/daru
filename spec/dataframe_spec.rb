@@ -3050,9 +3050,34 @@ describe Daru::DataFrame do
   end
 
   context "#summary" do
-    it "produces a summary of data frame" do
-      expect(@data_frame.summary.match("#{@data_frame.name}")).to_not eq(nil)
-      expect(@df_mi.summary.match("#{@df_mi.name}")).to_not eq(nil)
+    subject { df.summary }
+
+    context "DataFrame" do
+      let(:df) { Daru::DataFrame.new({a: [1,2,5], b: [1,2,"string"]}, order: [:a, :b], index: [:one, :two, :three], name: 'frame') }
+      it { is_expected.to eq %Q{
+            |= frame
+            |  Number of rows: 3
+            |  Element:[a]
+            |  == a
+            |    n :3
+            |    non-missing:3
+            |    median: 2
+            |    mean: 2.6667
+            |    std.dev.: 2.0817
+            |    std.err.: 1.2019
+            |    skew: 0.2874
+            |    kurtosis: -2.3333
+            |  Element:[b]
+            |  == b
+            |    n :3
+            |    non-missing:3
+            |    factors: 1,2,string
+            |    mode: 1,2,string
+            |    Distribution                                
+            |                 1       1 100.00%
+            |                 2       1 100.00%
+            |            string       1 100.00%
+        }.unindent }
     end
   end
 

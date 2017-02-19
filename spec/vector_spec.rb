@@ -1359,8 +1359,60 @@ describe Daru::Vector do
       end
 
       context "#summary" do
-        it "has name in the summary" do
-          expect(@common_all_dtypes.summary.match("#{@common_all_dtypes.name}")).to_not eq(nil)
+        subject { dv.summary }
+
+        context 'all types' do
+          let(:dv) { Daru::Vector.new([1,2,3,4,5], name: 'vector') }
+
+          it { is_expected.to include dv.name }
+
+          it { is_expected.to include "n :#{dv.size}" }
+
+          it { is_expected.to include "non-missing:#{dv.size - dv.count_values(*Daru::MISSING_VALUES)}" }
+        end
+
+        unless dtype == :nmatrix
+          context "numeric type" do
+            let(:dv) { Daru::Vector.new([1,2,5], name: 'numeric') }
+
+            it { is_expected. to eq %Q{
+                |= numeric
+                |  n :3
+                |  non-missing:3
+                |  median: 2
+                |  mean: 2.6667
+                |  std.dev.: 2.0817
+                |  std.err.: 1.2019
+                |  skew: 0.2874
+                |  kurtosis: -2.3333
+              }.unindent }
+          end
+
+          context "numeric type with missing values" do
+            let(:dv) { Daru::Vector.new([1,2,5,nil,Float::NAN], name: 'numeric') }
+
+            it { is_expected.not_to include 'skew' }
+            it { is_expected.not_to include 'kurtosis' }
+          end
+        end
+
+        if dtype == :array
+          context "object type" do
+            let(:dv) { Daru::Vector.new([1,1,2,2,"string",nil,Float::NAN], name: 'object') }
+
+            it { is_expected.to eq %Q{
+                |= object
+                |  n :7
+                |  non-missing:5
+                |  factors: 1,2,string
+                |  mode: 1,2
+                |  Distribution                                
+                |          string       1  50.00%
+                |             NaN       1  50.00%
+                |               1       2 100.00%
+                |               2       2 100.00%
+              }.unindent }
+          end
         end
       end
 
@@ -2004,5 +2056,4 @@ describe Daru::Vector do
       expect(v.where(v.lt(2))).to eq(Daru::Vector.new([1]))
     end
   end
-
 end if mri?

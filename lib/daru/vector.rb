@@ -888,7 +888,7 @@ module Daru
     #
     #   =
     #     n :3
-    #     n valid:0
+    #     non-missing:3
     #     median: 2
     #     mean: 2.0000
     #     std.dev.: 1.0000
@@ -915,14 +915,14 @@ module Daru
     def object_summary
       nval = count_values(*Daru::MISSING_VALUES)
       summary = "\n  factors: #{factors.to_a.join(',')}" \
-                "\n  mode: #{mode}" \
+                "\n  mode: #{mode.to_a.join(',')}" \
                 "\n  Distribution"
 
       data = frequencies.sort.each_with_index.map do |v, k|
         [k, v, '%0.2f%%' % ((nval.zero? ? 1 : v.quo(nval))*100)]
       end
 
-      summary << Daru::Formatters::Table.format(data, {headers: ['']*3, row_headers: ['']*frequencies.size})
+      summary << Daru::Formatters::Table.format(data, headers: ['']*3, row_headers: ['']*frequencies.size)
       summary
     end
 
@@ -933,8 +933,11 @@ module Daru
                 "\n  mean: %0.4f" % mean
       if sd
         summary << "\n  std.dev.: %0.4f" % sd +
-                   "\n  std.err.: %0.4f" % se +
-                   "\n  skew: %0.4f" % skew +
+                   "\n  std.err.: %0.4f" % se
+      end
+
+      if count_values(*Daru::MISSING_VALUES).zero?
+        summary << "\n  skew: %0.4f" % skew +
                    "\n  kurtosis: %0.4f" % kurtosis
       end
       summary
