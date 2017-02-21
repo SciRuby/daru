@@ -82,10 +82,18 @@ module Daru
         #
         #   dv.max { |i| i.size }
         #   #=> "Jon Starkgaryen"
-        def max(&block)
-          data = @data.data
-          block_given? ? data[data.map(&block).to_a.each_with_index.max.last] : @data.max
+        #
+        #   dv.max(2) { |i| i.size }
+        #   #=> ["Jon Starkgaryen","Daenerys"]
+        def max size = 1
+          data = @data.data.to_a
+          data = block_given? ? (data.values_at *data.map{|d| yield(d)}.to_a.each_with_index.max(size).map{|s| s.last}) : data.max(size)
+          (size==1) ? data[0] : data
         end
+
+        # def max(n=1)
+        #   @data.data.max(n)
+        # end
 
         # Returns the index of the maximum value present in the vector.
         #

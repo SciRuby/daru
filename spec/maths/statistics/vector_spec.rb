@@ -18,8 +18,14 @@ describe Daru::Vector do
         it "tests function with default input" do
           expect(dv.max).to eq("Tyrion")
         end
+        it "tests function with output as list of size n" do
+          expect(dv.max(2)).to eq(["Tyrion","Jon Starkgaryen"])
+        end
         it "tests function with block input" do
           expect(dv.max {|i| i.size}).to eq("Jon Starkgaryen")
+        end
+        it "tests function with output as list of size n, and block" do
+          expect(dv.max(2) {|i| i.size}).to eq(["Jon Starkgaryen","Daenerys"])
         end
       end
 
