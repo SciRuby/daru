@@ -112,18 +112,16 @@ module Daru
         Daru::IO.from_plaintext path, fields
       end
 
-      # Read the database from a plaintext file. For this method to work,
-      # the data should be present in a plain text file in columns. See
-      # spec/fixtures/bank2.dat for an example.
+      # Read the table data from a remote html file. For this method to work,
+      # the data should be present in a html file with proper combination of <table>, <th> and <td> tags.
       #
       # == Arguments
       #
-      # * path - Path of the file to be read.
-      # * fields - Vector names of the resulting database.
+      # * path - Path / URL of the html file to be read.
       #
       # == Usage
       #
-      #   df = Daru::DataFrame.from_plaintext 'spec/fixtures/bank2.dat', [:v1,:v2,:v3,:v4,:v5,:v6]
+      #   df = Daru::DataFrame.from_html("https://en.wikipedia.org/wiki/Table_(information)")[0]
       def from_html path
         Daru::IO.from_html path
       end
