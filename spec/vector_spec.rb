@@ -1400,18 +1400,33 @@ describe Daru::Vector do
           context "object type" do
             let(:dv) { Daru::Vector.new([1,1,2,2,"string",nil,Float::NAN], name: 'object') }
 
-            it { is_expected.to eq %Q{
+            if RUBY_VERSION >= '2.2'
+              it { is_expected.to eq %Q{
+                  |= object
+                  |  n :7
+                  |  non-missing:5
+                  |  factors: 1,2,string
+                  |  mode: 1,2
+                  |  Distribution                                
+                  |          string       1  50.00%
+                  |             NaN       1  50.00%
+                  |               1       2 100.00%
+                  |               2       2 100.00%
+                }.unindent }
+            else
+              it { is_expected.to eq %Q{
                 |= object
                 |  n :7
                 |  non-missing:5
                 |  factors: 1,2,string
                 |  mode: 1,2
                 |  Distribution                                
-                |          string       1  50.00%
                 |             NaN       1  50.00%
-                |               1       2 100.00%
+                |          string       1  50.00%
                 |               2       2 100.00%
+                |               1       2 100.00%
               }.unindent }
+            end
           end
         end
       end

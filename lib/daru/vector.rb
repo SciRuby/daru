@@ -906,8 +906,7 @@ module Daru
       when :numeric
         summary << numeric_summary
       end
-      summary = summary.split("\n").join("\n" + '  ' * indent_level)
-      summary
+      summary.split("\n").join("\n" + '  ' * indent_level)
     end
 
     # Displays summary for an object type Vector
@@ -922,8 +921,7 @@ module Daru
         [k, v, '%0.2f%%' % ((nval.zero? ? 1 : v.quo(nval))*100)]
       end
 
-      summary << Daru::Formatters::Table.format(data, headers: ['']*3, row_headers: ['']*frequencies.size)
-      summary
+      summary + table(data)
     end
 
     # Displays summary for an numeric type Vector
@@ -1575,6 +1573,14 @@ module Daru
         vector_index.sort(&DEFAULT_SORTER)
       end
         .tap { |res| res.reverse! unless opts[:ascending] }
+    end
+
+    def table data
+      Formatters::Table.format(
+        data,
+        headers: ['']*3,
+        row_headers: ['']*frequencies.size
+      )
     end
   end
 end
