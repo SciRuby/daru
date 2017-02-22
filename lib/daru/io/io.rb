@@ -90,6 +90,12 @@ module Daru
         Daru::DataFrame.new(hsh,daru_options)
       end
 
+      def from_html path
+        page = Mechanize.new.get(path)
+        list = from_html_get_list(page)
+        from_html_get_df_list(list)
+      end
+
       def dataframe_write_csv dataframe, path, opts={}
         options = {
           converters: :numeric
@@ -219,6 +225,25 @@ module Daru
         csv_as_arrays = csv_as_arrays.transpose
 
         headers.each_with_index.map { |h, i| [h, csv_as_arrays[i]] }.to_h
+      end
+
+      def from_html_get_list(page)
+        page.search('table').map { |table|
+          index = table.search('th').map { |header| header.text.strip }
+          data = table.search('tr').map { |row| row.search('td').map { |val| val.text.strip } }.keep_if { |a| a!=[] }
+          {'index' => index, 'data' => data}
+        }.keep_if { |a| a['index'] != [] }
+      end
+
+      def from_html_get_df_list(list)
+        list.map { |ele|
+          begin
+            indexes, data = ele['index'], ele['data'].transpose
+            hash = Hash[indexes.map { |index| [index,data[indexes.index(index)]] }]
+            Daru::DataFrame.new(hash)
+          rescue # rubocop:disable Lint/HandleExceptions
+          end
+        }
       end
     end
   end

@@ -93,6 +93,7 @@ require 'matrix'
 require 'forwardable'
 require 'erb'
 require 'date'
+require 'mechanize'
 
 require 'daru/version.rb'
 
