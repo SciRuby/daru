@@ -352,7 +352,10 @@ module Daru
         if other.is_a?(Daru::Vector)
           mod.apply_vector_operator operator, self, other
         else
-          mod.apply_scalar_operator operator, @data,other
+          data_dup = @data.dup
+          missing_undefined_indexes = nil_positions + nan_positions
+          missing_undefined_indexes.each { |i| data_dup.delete_at(i) }
+          mod.apply_scalar_operator operator, data_dup, other
         end
       end
       alias_method operator, method if operator != :== && operator != :!=
