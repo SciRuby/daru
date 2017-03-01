@@ -2000,9 +2000,9 @@ describe Daru::Vector do
         @v = Daru::Vector.new([1,2,3,Float::NAN, nil])
     end
     it 'missing/undefined data in Vector/DataFrame' do
-      expect { @v.where(v.lt(4)) }.to eq(Daru::Vector.new([1,2,3]))
-      expect { @v.where(v.lt(3)) }.to eq(Daru::Vector.new([1,2]))
-      expect { @v.where(v.lt(2)) }.to eq(Daru::Vector.new([1]))
+      expect(@v.where(@v.lt(4))).to eq(Daru::Vector.new([1,2,3]))
+      expect(@v.where(@v.lt(3))).to eq(Daru::Vector.new([1,2]))
+      expect(@v.where(@v.lt(2))).to eq(Daru::Vector.new([1]))
     end
   end
 
