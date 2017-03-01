@@ -46,7 +46,7 @@ begin
         end
       end
     end
-  end  
+  end
 rescue LoadError => e
   puts "Requires rserve extension"
 end

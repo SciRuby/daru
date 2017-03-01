@@ -121,13 +121,13 @@ describe Daru::DataFrame, 'category plotting' do
     end
     let(:plot) { instance_double('Nyaplot::Plot') }
     let(:diagram) { instance_double('Nyaplot::Diagram::Scatter') }
-  
+
     before do
       df.to_category :c
       allow(Nyaplot::Plot).to receive(:new).and_return(plot)
       allow(plot).to receive(:add_with_df).and_return(diagram)
     end
-    
+
     it 'plots scatter plot categoried by color with a block' do
       expect(plot).to receive :add_with_df
       expect(diagram).to receive(:title).exactly(3).times
@@ -226,13 +226,13 @@ describe Daru::DataFrame, 'category plotting' do
     end
     let(:plot) { instance_double('Nyaplot::Plot') }
     let(:diagram) { instance_double('Nyaplot::Diagram::Scatter') }
-  
+
     before do
       df.to_category :c
       allow(Nyaplot::Plot).to receive(:new).and_return(plot)
       allow(plot).to receive(:add_with_df).and_return(diagram)
     end
-    
+
     it 'plots line plot categoried by color with a block' do
       expect(plot).to receive :add_with_df
       expect(diagram).to receive(:title).exactly(3).times

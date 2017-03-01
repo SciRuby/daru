@@ -405,7 +405,7 @@ describe Daru::Core::GroupBy do
 
   context 'groups by first vector if no vector mentioned' do
     subject { @df.group_by }
-    
+
     it { is_expected.to be_a Daru::Core::GroupBy }
     its(:groups) { is_expected.to eq @sl_group.groups }
     its(:size) { is_expected.to eq @sl_group.size }

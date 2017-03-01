@@ -1408,7 +1408,7 @@ describe Daru::Vector do
       index: 11..18 }
     context 'reject only nils' do
       subject { dv.reject_values nil }
-      
+
       it { is_expected.to be_a Daru::Vector }
       its(:to_a) { is_expected.to eq [1, 3, :a, Float::NAN, Float::NAN, 1] }
       its(:'index.to_a') { is_expected.to eq [11, 13, 14, 15, 17, 18] }
@@ -1416,7 +1416,7 @@ describe Daru::Vector do
 
     context 'reject only float::NAN' do
       subject { dv.reject_values Float::NAN }
-      
+
       it { is_expected.to be_a Daru::Vector }
       its(:to_a) { is_expected.to eq [1, nil, 3, :a, nil, 1] }
       its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 16, 18] }
@@ -1424,15 +1424,15 @@ describe Daru::Vector do
 
     context 'reject both nil and float::NAN' do
       subject { dv.reject_values nil, Float::NAN }
-      
+
       it { is_expected.to be_a Daru::Vector }
       its(:to_a) { is_expected.to eq [1, 3, :a, 1] }
       its(:'index.to_a') { is_expected.to eq [11, 13, 14, 18] }
     end
-    
+
     context 'reject any other value' do
       subject { dv.reject_values 1, 3 }
-      
+
       it { is_expected.to be_a Daru::Vector }
       its(:to_a) { is_expected.to eq [nil, :a, Float::NAN, nil, Float::NAN] }
       its(:'index.to_a') { is_expected.to eq [12, 14, 15, 16, 17] }
@@ -1440,25 +1440,25 @@ describe Daru::Vector do
 
     context 'when resultant vector has only one value' do
       subject { dv.reject_values 1, :a, nil, Float::NAN }
-      
+
       it { is_expected.to be_a Daru::Vector }
       its(:to_a) { is_expected.to eq [3] }
       its(:'index.to_a') { is_expected.to eq [13] }
     end
-    
+
     context 'when resultant vector has no value' do
       subject { dv.reject_values 1, 3, :a, nil, Float::NAN, 5 }
-      
+
       it { is_expected.to be_a Daru::Vector }
       its(:to_a) { is_expected.to eq [] }
       its(:'index.to_a') { is_expected.to eq [] }
     end
-    
+
     context 'works for gsl' do
       let(:dv) { Daru::Vector.new [1, 2, 3, Float::NAN], dtype: :gsl,
         index: 11..14 }
       subject { dv.reject_values Float::NAN }
-      
+
       it { is_expected.to be_a Daru::Vector }
       its(:dtype) { is_expected.to eq :gsl }
       its(:to_a) { is_expected.to eq [1, 2, 3].map(&:to_f) }
@@ -1476,31 +1476,31 @@ describe Daru::Vector do
 
       context 'reject only nils' do
         subject { dv.reject_values nil }
-        
+
         it { is_expected.to be_a Daru::Vector }
         its(:to_a) { is_expected.to eq [1, 3, :a, Float::NAN, Float::NAN, 1] }
         its(:'index.to_a') { is_expected.to eq [11, 13, 14, 15, 17, 18] }
       end
-  
+
       context 'reject only float::NAN' do
         subject { dv.reject_values Float::NAN }
-        
+
         it { is_expected.to be_a Daru::Vector }
         its(:to_a) { is_expected.to eq [1, nil, 3, :a, nil, 1] }
         its(:'index.to_a') { is_expected.to eq [11, 12, 13, 14, 16, 18] }
       end
-  
+
       context 'reject both nil and float::NAN' do
         subject { dv.reject_values nil, Float::NAN }
-        
+
         it { is_expected.to be_a Daru::Vector }
         its(:to_a) { is_expected.to eq [1, 3, :a, 1] }
         its(:'index.to_a') { is_expected.to eq [11, 13, 14, 18] }
       end
-      
+
       context 'reject any other value' do
         subject { dv.reject_values 1, 3 }
-        
+
         it { is_expected.to be_a Daru::Vector }
         its(:to_a) { is_expected.to eq [nil, :a, Float::NAN, nil, Float::NAN] }
         its(:'index.to_a') { is_expected.to eq [12, 14, 15, 16, 17] }
@@ -1538,24 +1538,24 @@ describe Daru::Vector do
         let(:dv) { Daru::Vector.new [1, Float::NAN, 2, 3] }
         it { expect(dv.include_values? nil, Float::NAN).to eq true }
       end
-      
+
       context 'true with only Float::NAN' do
         let(:dv) { Daru::Vector.new [1, nil, 2, 3] }
         it { expect(dv.include_values? nil, Float::NAN).to eq true }
       end
-      
+
       context 'false' do
         let(:dv) { Daru::Vector.new [1, 2, 3] }
         it { expect(dv.include_values? nil, Float::NAN).to eq false }
       end
     end
-    
+
     context 'any other value' do
       context 'true' do
         let(:dv) { Daru::Vector.new [1, 2, 3, 4, nil] }
         it { expect(dv.include_values? 1, 2, 3, 5).to eq true }
       end
-      
+
       context 'false' do
         let(:dv) { Daru::Vector.new [1, 2, 3, 4, nil] }
         it { expect(dv.include_values? 5, 6).to eq false }
@@ -1575,12 +1575,12 @@ describe Daru::Vector do
     context Daru::Index do
       let(:dv) { Daru::Vector.new [1, 2, 1, 2, 3, nil, nil, Float::NAN],
         index: 11..18 }
-      
+
       subject { dv.indexes 1, 2, nil, Float::NAN }
       it { is_expected.to be_a Array }
       it { is_expected.to eq [11, 12, 13, 14, 16, 17, 18] }
     end
-    
+
     context Daru::MultiIndex do
       let(:mi) do
         Daru::MultiIndex.from_tuples([
@@ -1596,7 +1596,7 @@ describe Daru::Vector do
       end
       let(:dv) { Daru::Vector.new [1, 2, 1, 2, 3, nil, nil, Float::NAN],
         index: mi }
-      
+
       subject { dv.indexes 1, 2, Float::NAN }
       it { is_expected.to be_a Array }
       it { is_expected.to eq(
@@ -1609,7 +1609,7 @@ describe Daru::Vector do
         ]) }
     end
   end
-  
+
   context '#replace_values' do
     subject do
       Daru::Vector.new(
@@ -1622,13 +1622,13 @@ describe Daru::Vector do
       before { subject.replace_values [nil, Float::NAN], 10 }
       its(:to_a) { is_expected.to eq [1, 2, 1, 4, 10, 10, 10, 10] }
     end
-    
+
     context 'replace arbitrary values' do
       before { subject.replace_values [1, 2], 10 }
       its(:to_a) { is_expected.to eq(
         [10, 10, 10, 4, nil, Float::NAN, nil, Float::NAN]) }
     end
-    
+
     context 'works for single value' do
       before { subject.replace_values nil, 10 }
       its(:to_a) { is_expected.to eq(
@@ -1716,7 +1716,7 @@ describe Daru::Vector do
 
   context '#to_nmatrix' do
     let(:dv) { Daru::Vector.new [1, 2, 3, 4, 5] }
-    
+
     context 'horizontal axis' do
       subject { dv.to_nmatrix }
 
@@ -1724,19 +1724,19 @@ describe Daru::Vector do
       its(:shape) { is_expected.to eq [1, 5] }
       its(:to_a) { is_expected.to eq [1, 2, 3, 4, 5] }
     end
-    
+
     context 'vertical axis' do
       subject { dv.to_nmatrix :vertical }
-      
+
       it { is_expected.to be_a NMatrix }
       its(:shape) { is_expected.to eq [5, 1] }
       its(:to_a) { is_expected.to eq [1, 2, 3, 4, 5].map { |i| [i] } }
     end
-    
+
     context 'invalid axis' do
       it { expect { dv.to_nmatrix :hello }.to raise_error ArgumentError }
     end
-    
+
     context 'vector contain non-numeric' do
       let(:dv) { Daru::Vector.new [1, 2, nil, 4] }
       it { expect { dv.to_nmatrix }.to raise_error ArgumentError }
@@ -1898,27 +1898,27 @@ describe Daru::Vector do
       expect(lag2[lag2.size - 2]).to be_within(0.001).of(16.56)
     end
   end
-  
+
   context "#group_by" do
     let(:dv) { Daru::Vector.new [:a, :b, :a, :b, :c] }
-    
+
     context 'vector not specified' do
-      subject { dv.group_by }  
-          
+      subject { dv.group_by }
+
       it { is_expected.to be_a Daru::Core::GroupBy }
       its(:'groups.size') { is_expected.to eq 3 }
       its(:groups) { is_expected.to eq({[:a]=>[0, 2], [:b]=>[1, 3], [:c]=>[4]}) }
     end
-    
+
     context 'vector name specified' do
       before { dv.name = :hello }
       subject { dv.group_by :hello }
-      
+
       it { is_expected.to be_a Daru::Core::GroupBy }
       its(:'groups.size') { is_expected.to eq 3 }
-      its(:groups) { is_expected.to eq({[:a]=>[0, 2], [:b]=>[1, 3], [:c]=>[4]}) }            
+      its(:groups) { is_expected.to eq({[:a]=>[0, 2], [:b]=>[1, 3], [:c]=>[4]}) }
     end
-    
+
     context 'vector name invalid' do
       before { dv.name = :hello }
       it { expect { dv.group_by :abc }.to raise_error }

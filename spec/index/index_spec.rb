@@ -77,15 +77,15 @@ describe Daru::Index do
       expect(idx.size).to eq(4)
     end
   end
-  
+
   context "#valid?" do
     let(:idx) { Daru::Index.new [:a, :b, :c] }
-    
+
     context "single index" do
       it { expect(idx.valid? 2).to eq true }
       it { expect(idx.valid? :d).to eq false }
     end
-    
+
     context "multiple indexes" do
       it { expect(idx.valid? :a, 1).to eq true }
       it { expect(idx.valid? :a, 3).to eq false }
@@ -171,14 +171,14 @@ describe Daru::Index do
 
   context "#pos" do
     let(:idx) { described_class.new [:a, :b, 1, 2] }
-    
+
     context "single index" do
       it { expect(idx.pos :a).to eq 0 }
     end
-    
+
     context "multiple indexes" do
       subject { idx.pos :a, 1 }
-      
+
       it { is_expected.to be_a Array }
       its(:size) { is_expected.to eq 2 }
       it { is_expected.to eq [0, 2] }
@@ -187,10 +187,10 @@ describe Daru::Index do
     context "single positional index" do
       it { expect(idx.pos 0).to eq 0 }
     end
-    
+
     context "multiple positional index" do
       subject { idx.pos 0, 3 }
-      
+
       it { is_expected.to be_a Array }
       its(:size) { is_expected.to eq 2 }
       it { is_expected.to eq [0, 3] }
@@ -204,78 +204,78 @@ describe Daru::Index do
       it { is_expected.to eq [1, 2, 3] }
     end
   end
-  
+
   context "#subset" do
     let(:idx) { described_class.new [:a, :b, 1, 2] }
-    
+
     context "multiple indexes" do
       subject { idx.subset :a, 1 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
       its(:to_a) { is_expected.to eq [:a, 1] }
     end
-    
+
     context "multiple positional indexes" do
       subject { idx.subset 0, 3 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
       its(:to_a) { is_expected.to eq [:a, 2] }
     end
-    
+
     context "range" do
       subject { idx.subset 1..3 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 3 }
       its(:to_a) { is_expected.to eq [:b, 1, 2] }
     end
   end
-  
+
   context "#at" do
     let(:idx) { described_class.new [:a, :b, 1 ] }
-    
+
     context "single position" do
       it { expect(idx.at 1).to eq :b }
     end
-    
+
     context "multiple positions" do
       subject { idx.at 1, 2 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
       its(:to_a) { is_expected.to eq [:b, 1] }
     end
-    
+
     context "range" do
       subject { idx.at 1..2 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
-      its(:to_a) { is_expected.to eq [:b, 1] }      
+      its(:to_a) { is_expected.to eq [:b, 1] }
     end
-    
+
     context "range with negative integer" do
       subject { idx.at 1..-1 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
-      its(:to_a) { is_expected.to eq [:b, 1] }      
-    end    
-    
+      its(:to_a) { is_expected.to eq [:b, 1] }
+    end
+
     context "rangle with single element" do
       subject { idx.at 1..1 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 1 }
-      its(:to_a) { is_expected.to eq [:b] }      
+      its(:to_a) { is_expected.to eq [:b] }
     end
-    
+
     context "invalid position" do
       it { expect { idx.at 3 }.to raise_error IndexError }
     end
-    
+
     context "invalid positions" do
       it { expect { idx.at 2, 3 }.to raise_error IndexError }
     end

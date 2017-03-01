@@ -5,26 +5,26 @@ vector = Daru::Vector.new(
   (10**6).times.map.to_a.shuffle,
   missing_values: 100.times.map.to_a.shuffle
   )
-  
+
 vector_gsl = Daru::Vector.new(
   10000.times.map.to_a.shuffle,
   missing_values: 100.times.map.to_a.shuffle,
   dtype: :gsl
-  )  
-  
+  )
+
 Benchmark.bm do |x|
   x.report("Mean of a vector") do
     vector.mean
   end
-  
+
   x.report("Minimum of a vector") do
     vector.min
   end
-  
+
   x.report("Mean of a vector with data type gsl") do
     vector_gsl.mean
   end
-  
+
   x.report "Minimum of a vector with data type gsl" do
     vector_gsl.min
   end

@@ -410,31 +410,31 @@ describe Daru::MultiIndex do
         [:b,:one,:foo]
       ])
     end
-    
+
     context "single index" do
       it { expect(idx.pos :b, :one, :bar).to eq 0 }
     end
-    
+
     context "multiple indexes" do
       subject { idx.pos :b, :one }
-      
+
       it { is_expected.to be_a Array }
       its(:size) { is_expected.to eq 2 }
       it { is_expected.to eq [0, 3] }
     end
-    
+
     context "single positional index" do
       it { expect(idx.pos 0).to eq 0 }
     end
-    
+
     context "multiple positional indexes" do
       subject { idx.pos 0, 1 }
-      
+
       it { is_expected.to be_a Array }
       its(:size) { is_expected.to eq 2 }
       it { is_expected.to eq [0, 1] }
     end
-    
+
     # TODO: Add specs for IndexError
   end
 
@@ -447,23 +447,23 @@ describe Daru::MultiIndex do
         [:b, :one, :foo]
       ])
     end
-    
+
     context "multiple indexes" do
       subject { idx.subset :b, :one }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
       its(:to_a) { is_expected.to eq [[:bar], [:foo]] }
     end
-    
+
     context "multiple positional indexes" do
       subject { idx.subset 0, 1 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
       its(:to_a) { is_expected.to eq [[:b, :one, :bar], [:b, :two, :bar]] }
     end
-    
+
     # TODO: Checks for invalid indexes
   end
 
@@ -476,53 +476,53 @@ describe Daru::MultiIndex do
         [:b, :one, :foo]
       ])
     end
-    
+
     context "single position" do
       it { expect(idx.at 2).to eq [:b, :two, :baz] }
     end
-    
+
     context "multiple positions" do
       subject { idx.at 1, 2 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
       its(:to_a) { is_expected.to eq [[:b, :two, :bar],
         [:b, :two, :baz]] }
     end
-    
+
     context "range" do
       subject { idx.at 1..2 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
       its(:to_a) { is_expected.to eq [[:b, :two, :bar],
-        [:b, :two, :baz]] }    
+        [:b, :two, :baz]] }
     end
-    
+
     context "range with negative integers" do
       subject { idx.at 1..-2 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
       its(:to_a) { is_expected.to eq [[:b, :two, :bar],
-        [:b, :two, :baz]] }    
-    end    
-    
+        [:b, :two, :baz]] }
+    end
+
     context "rangle with single element" do
       subject { idx.at 1..1 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 1 }
       its(:to_a) { is_expected.to eq [[:b, :two, :bar]] }
     end
-    
+
     context "invalid position" do
       it { expect { idx.at 4 }.to raise_error IndexError }
     end
-    
+
     context "invalid positions" do
       it { expect { idx.at 2, 4 }.to raise_error IndexError }
-    end    
+    end
   end
 
   context "#add" do
@@ -534,7 +534,7 @@ describe Daru::MultiIndex do
         [:b, :one, :foo]
       ]
     end
-    
+
     context "single index" do
       subject { idx.add :b, :two, :baz }
 
@@ -556,15 +556,15 @@ describe Daru::MultiIndex do
         [:b, :one, :foo]
       ]
     end
-    
+
     context "single index" do
       it { expect(idx.valid? :a, :one, :bar).to eq true }
       it { expect(idx.valid? :b, :two, :three).to eq false }
     end
-    
+
     context "multiple indexes" do
       it { expect(idx.valid? :a, :one).to eq true }
       it { expect(idx.valid? :a, :three).to eq false }
     end
-  end    
+  end
 end
