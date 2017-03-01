@@ -22,7 +22,7 @@ Benchmark.bm do |x|
 end
 
 #             ===== Benchmarks =====
-# 
+#
 #                user     system      total        real
 # where        0.000000   0.000000   0.000000 (  0.002575)
 # filter_rows  0.210000   0.000000   0.210000 (  0.205403)

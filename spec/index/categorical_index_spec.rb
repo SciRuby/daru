@@ -7,13 +7,13 @@ describe Daru::CategoricalIndex do
 
       context "single category" do
         subject { idx.pos :a }
-        
+
         it { is_expected.to eq [0, 2, 3] }
       end
-      
+
       context "multiple categories" do
         subject { idx.pos :a, :c }
-        
+
         it { is_expected.to eq [0, 2, 3, 4] }
       end
 
@@ -56,23 +56,23 @@ describe Daru::CategoricalIndex do
       end
     end
   end
-  
+
   context "#subset" do
     let(:idx) { described_class.new [:a, 1, :a, 1, :c] }
-    
+
     context "single index" do
       context "multiple instances" do
         subject { idx.subset :a }
-        
+
         it { is_expected.to be_a described_class }
         its(:size) { is_expected.to eq 2 }
         its(:to_a) { is_expected.to eq [:a, :a] }
       end
     end
-    
+
     context "multiple indexes" do
       subject { idx.subset :a, 1 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 4 }
       its(:to_a) { is_expected.to eq [:a, 1, :a, 1] }
@@ -80,79 +80,79 @@ describe Daru::CategoricalIndex do
 
     context "multiple positional indexes" do
       subject { idx.subset 0, 2 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
       its(:to_a) { is_expected.to eq [:a, :a] }
     end
   end
-  
+
   context "#at" do
     let(:idx) { described_class.new [:a, :a, :a, 1, :c] }
-    
+
     context "single position" do
       it { expect(idx.at 1).to eq :a }
     end
-    
+
     context "multiple positions" do
       subject { idx.at 0, 2, 3 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 3 }
       its(:to_a) { is_expected.to eq [:a, :a, 1] }
     end
-    
+
     context "range" do
       subject { idx.at 2..3 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
-      its(:to_a) { is_expected.to eq [:a, 1] }   
+      its(:to_a) { is_expected.to eq [:a, 1] }
     end
-    
+
     context "range with negative integers" do
       subject { idx.at 2..-2 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 2 }
-      its(:to_a) { is_expected.to eq [:a, 1] }   
-    end    
-    
+      its(:to_a) { is_expected.to eq [:a, 1] }
+    end
+
     context "rangle with single element" do
       subject { idx.at 2..2 }
-      
+
       it { is_expected.to be_a described_class }
       its(:size) { is_expected.to eq 1 }
-      its(:to_a) { is_expected.to eq [:a] }      
+      its(:to_a) { is_expected.to eq [:a] }
     end
-    
+
     context "invalid position" do
       it { expect { idx.at 5 }.to raise_error IndexError }
     end
-    
+
     context "invalid positions" do
       it { expect { idx.at 2, 5 }.to raise_error IndexError }
-    end    
+    end
   end
-  
+
   context "#add" do
     let(:idx) { described_class.new [:a, 1, :a, 1] }
-    
+
     context "single index" do
       subject { idx.add :c }
-      
+
       its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c] }
       its(:categories) { is_expected.to eq [:a, 1, :c] }
     end
-    
+
     context "multiple indexes" do
       subject { idx.add :c, :d }
-      
+
       its(:to_a) { is_expected.to eq [:a, 1, :a, 1, :c, :d] }
       its(:categories) { is_expected.to eq [:a, 1, :c, :d] }
     end
   end
-  
+
   context "#valid?" do
     let(:idx) { described_class.new [:a, 1, :a, 1] }
 
@@ -161,7 +161,7 @@ describe Daru::CategoricalIndex do
       it { expect(idx.valid? 2).to eq true }
       it { expect(idx.valid? 4).to eq false }
     end
-    
+
     context "multiple indexes" do
       it { expect(idx.valid? :a, 1).to eq true }
       it { expect(idx.valid? :a, 1, 5).to eq false }

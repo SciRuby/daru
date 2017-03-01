@@ -35,7 +35,7 @@ Benchmark.bm do |x|
 end
 
 #                     ====== Benchmarks ======
-# 
+#
 # Benchmarking DataFrame#where
 #
 #                             user     system      total      real

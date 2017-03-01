@@ -7,7 +7,7 @@ describe Daru::Vector, 'plotting category' do
     Daru::Vector.new ['III']*10 + ['II']*5 + ['I']*5,
       type: :category,
       categories: ['I', 'II', 'III']
-  end  
+  end
   before do
     Daru.plotting_library = :nyaplot
     allow(Nyaplot::Plot).to receive(:new).and_return(plot)
@@ -42,7 +42,7 @@ describe Daru::Vector, 'plotting category' do
       expect(plot).to receive(:yrange).with [0, 1]
       expect(plot).to receive(:show)
       dv.plot(type: :bar, method: :fraction)
-    end    
+    end
   end
 
   context 'other type' do
