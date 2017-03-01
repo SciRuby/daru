@@ -1995,4 +1995,15 @@ describe Daru::Vector do
     end
   end
 
+  context '#where clause when Nan, nil data value is present' do
+    before do
+        @v = Daru::Vector.new([1,2,3,Float::NAN, nil])
+    end
+    it 'missing/undefined data in Vector/DataFrame' do
+      expect { @v.where(v.lt(4)) }.to eq(Daru::Vector.new([1,2,3]))
+      expect { @v.where(v.lt(3)) }.to eq(Daru::Vector.new([1,2]))
+      expect { @v.where(v.lt(2)) }.to eq(Daru::Vector.new([1]))
+    end
+  end
+
 end if mri?
