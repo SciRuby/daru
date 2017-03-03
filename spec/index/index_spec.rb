@@ -295,4 +295,18 @@ describe Daru::Index do
       it { expect(idx.select {|w| w[0] == 'g' }).to eq(['guitar']) }
     end
   end
+
+  context "#isin" do
+    let(:di) { Daru::Index.new [:one, 'one', 1, 2, 'two'] }
+    let(:list1) {['one', 1]}
+    let(:list2) {['two', 2]}
+    let(:list3) {[2, :one]}
+    let(:list4) {[]}
+    let(:klass) { Daru::Vector }
+
+    it { expect(di.isin(list1)).to eq(klass.new([false, true, true, false, false])) }
+    it { expect(di.isin(list2)).to eq(klass.new([false, false, false, true, true])) }
+    it { expect(di.isin(list3)).to eq(klass.new([true, false, false, true, false])) }
+    it { expect(di.isin(list4)).to eq(klass.new([false, false, false, false, false])) }
+  end
 end
