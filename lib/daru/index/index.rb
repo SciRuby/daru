@@ -187,6 +187,11 @@ module Daru
       @relation_hash.key? index
     end
 
+    def isin indexes
+      bool_array = @relation_hash.keys.map { |r| indexes.include?(r) }
+      Daru::Vector.new(bool_array)
+    end
+
     def empty?
       @relation_hash.empty?
     end
