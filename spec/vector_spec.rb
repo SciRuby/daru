@@ -1407,7 +1407,7 @@ describe Daru::Vector do
                   |  non-missing:5
                   |  factors: 1,2,string
                   |  mode: 1,2
-                  |  Distribution                                
+                  |  Distribution
                   |          string       1  50.00%
                   |             NaN       1  50.00%
                   |               1       2 100.00%
@@ -1420,7 +1420,7 @@ describe Daru::Vector do
                 |  non-missing:5
                 |  factors: 1,2,string
                 |  mode: 1,2
-                |  Distribution                                
+                |  Distribution
                 |             NaN       1  50.00%
                 |          string       1  50.00%
                 |               2       2 100.00%

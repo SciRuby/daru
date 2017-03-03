@@ -886,15 +886,15 @@ module Daru
     #   dv = Daru::Vector.new [1, 2, 3]
     #   puts dv.summary
     #
-    #   =
-    #     n :3
-    #     non-missing:3
-    #     median: 2
-    #     mean: 2.0000
-    #     std.dev.: 1.0000
-    #     std.err.: 0.5774
-    #     skew: 0.0000
-    #     kurtosis: -2.3333
+    #   # =
+    #   #   n :3
+    #   #   non-missing:3
+    #   #   median: 2
+    #   #   mean: 2.0000
+    #   #   std.dev.: 1.0000
+    #   #   std.err.: 0.5774
+    #   #   skew: 0.0000
+    #   #   kurtosis: -2.3333
     def summary(indent_level=0)
       non_missing = size - count_values(*Daru::MISSING_VALUES)
       summary = '  =' * indent_level + "= #{name}" \
@@ -915,13 +915,13 @@ module Daru
       nval = count_values(*Daru::MISSING_VALUES)
       summary = "\n  factors: #{factors.to_a.join(',')}" \
                 "\n  mode: #{mode.to_a.join(',')}" \
-                "\n  Distribution"
+                "\n  Distribution\n"
 
       data = frequencies.sort.each_with_index.map do |v, k|
         [k, v, '%0.2f%%' % ((nval.zero? ? 1 : v.quo(nval))*100)]
       end
 
-      summary + table(data)
+      summary + Formatters::Table.format(data)
     end
 
     # Displays summary for an numeric type Vector
@@ -1573,14 +1573,6 @@ module Daru
         vector_index.sort(&DEFAULT_SORTER)
       end
         .tap { |res| res.reverse! unless opts[:ascending] }
-    end
-
-    def table data
-      Formatters::Table.format(
-        data,
-        headers: ['']*3,
-        row_headers: ['']*frequencies.size
-      )
     end
   end
 end

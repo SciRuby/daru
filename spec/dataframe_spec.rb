@@ -3073,7 +3073,7 @@ describe Daru::DataFrame do
             |    non-missing:3
             |    factors: 1,2,string
             |    mode: 1,2,string
-            |    Distribution                                
+            |    Distribution
             |                 1       1 100.00%
             |                 2       1 100.00%
             |            string       1 100.00%
