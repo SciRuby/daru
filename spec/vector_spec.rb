@@ -1390,17 +1390,17 @@ describe Daru::Vector do
 
   context '#is_values' do
     let(:dv) { Daru::Vector.new [10, 11, 10, nil, nil] }
-    
+
     context 'single value' do
       subject { dv.is_values 10 }
       it { is_expected.to be_a Daru::Vector }
       its(:to_a) { is_expected.to eq [true, false, true, false, false] }
     end
-    
+
     context 'multiple values' do
       subject { dv.is_values 10, nil }
       it { is_expected.to be_a Daru::Vector }
-      its(:to_a) { is_expected.to eq [true, false, true, true, true] }      
+      its(:to_a) { is_expected.to eq [true, false, true, true, true] }
     end
   end
 
@@ -1963,6 +1963,21 @@ describe Daru::Vector do
         # FIXME: inconsistency between IndexError here and NoMethodError on getting - zverok
         expect { vector.d = 5 }.to raise_error IndexError
       end
+    end
+  end
+
+  context "#sort_by_index" do
+    let(:num_vector) { Daru::Vector.new [11, 12, 13], index: [23, 22, 21] }
+    let(:other_types) { Daru::Vector.new [11, Float::NAN, nil], index: [23, 22, 21] }
+
+    it "by default sort in ascending order" do
+      expect(num_vector.sort_by_index().to_a).to eq([13, 12, 11])
+      expect(other_types.sort_by_index().to_a).to eq([nil, Float::NAN, 11])
+    end
+
+    it "sorts the vector in descending order" do
+      expect(num_vector.sort_by_index(ascending: false)).to eq(num_vector)
+      expect(other_types.sort_by_index(ascending: false).to_a).to eq([11, Float::NAN, nil])
     end
   end
 

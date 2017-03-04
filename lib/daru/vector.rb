@@ -603,6 +603,31 @@ module Daru
       Daru::Vector.new(vector, index: index, name: @name, dtype: @dtype)
     end
 
+    # Sorts the vector according to it's`Index` values. Defaults to ascending
+    # order sorting.
+    #
+    # == Options
+    #
+    # ascending::
+    #   This can be `true` or `false`. False, if false, will sort `index` in
+    #   descending order. Defaults to true.
+    #
+    # == Returns:
+    #   new sorted `Vector` according to the index values.
+    #
+    # == Usage
+    #
+    #   dv = Daru::Vector.new [11, 12, 13], index: [23, 22, 21]
+    #   # Say you want to sort index in descending order
+    #   di.sort_by_index(ascending: false)
+    def sort_by_index opts={}
+      opts = {ascending: true}.merge(opts)
+      new_arrangement = resort_index(@index.each_with_index, opts)
+      _, new_order = new_arrangement.transpose
+
+      reorder new_order
+    end
+
     DEFAULT_SORTER = lambda { |(lv, li), (rv, ri)|
       case
       when lv.nil? && rv.nil?

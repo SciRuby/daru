@@ -70,6 +70,20 @@ describe Daru::Index do
     end
   end
 
+  context '#sort' do
+    let(:string_index) { Daru::Index.new ['speaker', 'mic', 'guitar', 'amp'] }
+    let(:num_index) { Daru::Index.new [100, 99, 101, 1, 2] }
+    it 'when index values are string' do
+      expect(string_index.sort()).to eq Daru::Index.new ['amp', 'guitar', 'mic', 'speaker']
+      expect(string_index.sort(ascending: false)).to eq string_index
+    end
+
+    it 'when index values are numbers' do
+      expect(num_index.sort()).to eq Daru::Index.new [1, 2, 99, 100, 101]
+      expect(num_index.sort(ascending: false)).to eq Daru::Index.new [101, 100, 99, 2, 1]
+    end
+  end
+
   context "#size" do
     it "correctly returns the size of the index" do
       idx = Daru::Index.new ['speaker', 'mic', 'guitar', 'amp']
