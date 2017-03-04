@@ -187,6 +187,12 @@ module Daru
       @relation_hash.key? index
     end
 
+    # To check whether index value is any element of list `indexes`.
+    #
+    # @param indexes [Array] the list of indexes.
+    # @return [Object] the Vector having true/false values. `true` at position `i`
+    # if i'th index value is present in `indexes` . If i'th index value is not
+    # present in `indexes` array then `false` at position `i` of the Vector.
     def isin indexes
       bool_array = @relation_hash.keys.map { |r| indexes.include?(r) }
       Daru::Vector.new(bool_array)
