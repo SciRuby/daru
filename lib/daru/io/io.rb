@@ -111,7 +111,7 @@ module Daru
 
       # Execute a query and create a data frame from the result
       #
-      # @param dbh [DBI::DatabaseHandle, String] A DBI connection to be used to run the query OR Path to a SQlite3 database.
+      # @param dbh [DBI::DatabaseHandle, String] A DBI connection OR Path to a SQlite3 database.
       # @param query [String] The query to be executed
       #
       # @return A dataframe containing the data resulting from the query
