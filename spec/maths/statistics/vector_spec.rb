@@ -22,37 +22,10 @@ describe Daru::Vector do
           expect(dv.max(2)).to eq(["Tyrion","Jon Starkgaryen"])
         end
         it "tests function with block input" do
-          expect(dv.max {|i| i.size}).to eq("Jon Starkgaryen")
+          expect(dv.max {|a,b| a.size <=> b.size}).to eq("Jon Starkgaryen")
         end
         it "tests function with output as list of size n, and block" do
-          expect(dv.max(2) {|i| i.size}).to eq(["Jon Starkgaryen","Daenerys"])
-        end
-      end
-
-      context "#index_of_max" do
-        it "tests function with default input" do
-          expect(dv.index_of_max).to eq(:t)
-        end
-        it "tests function with block input" do
-          expect(dv.index_of_max {|i| i.size }).to eq(:j)
-        end
-      end
-
-      context "#min" do
-        it "tests function with default input" do
-          expect(dv.min).to eq("Daenerys")
-        end
-        it "tests function with block input" do
-          expect(dv.min {|i| i.size}).to eq("Tyrion")
-        end
-      end
-
-      context "#index_of_min" do
-        it "tests function with default input" do
-          expect(dv.index_of_min).to eq(:d)
-        end
-        it "tests function with block input" do
-          expect(dv.index_of_min {|i| i.size}).to eq(:t)
+          expect(dv.max(2) {|a,b| a.size <=> b.size}).to eq(["Jon Starkgaryen","Daenerys"])
         end
       end
 
