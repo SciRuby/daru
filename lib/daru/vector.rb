@@ -880,38 +880,28 @@ module Daru
     end
 
     # Create a summary of the Vector using Report Builder.
-    def summary(method=:to_text)
-      ReportBuilder.new(no_title: true).add(self).send(method)
-    end
-
-    # :nocov:
-    def report_building b # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
-      b.section(name: name) do |s|
-        s.text "n :#{size}"
-        s.text "n valid:#{count_values(*Daru::MISSING_VALUES)}"
-        if @type == :object
-          s.text  "factors: #{factors.to_a.join(',')}"
-          s.text  "mode: #{mode}"
-
-          s.table(name: 'Distribution') do |t|
-            frequencies.sort_by(&:to_s).each do |k,v|
-              key = @index.include?(k) ? @index[k] : k
-              t.row [key, v, ('%0.2f%%' % (v.quo(count_values(*Daru::MISSING_VALUES))*100))]
-            end
-          end
-        end
-
-        s.text "median: #{median}" if @type==:numeric || @type==:numeric
-        if @type==:numeric
-          s.text 'mean: %0.4f' % mean
-          if sd
-            s.text 'std.dev.: %0.4f' % sd
-            s.text 'std.err.: %0.4f' % se
-            s.text 'skew: %0.4f' % skew
-            s.text 'kurtosis: %0.4f' % kurtosis
-          end
+    def summary level=0 # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
+      summary = ''
+      indent = '  '+' '*level
+      valid_n = size - indexes(*Daru::MISSING_VALUES).size
+      summary << "n :#{size}\n" \
+                 "n valid:#{valid_n}\n"
+      if @type == :object
+        summary  << "factors: #{factors.to_a.join(',')}\n" \
+                    "mode: #{mode}\n"
+      elsif @type==:numeric && valid_n == size
+        summary <<"median: #{median}\n" \
+                  "mean: %0.4f\n" % mean
+        if sd
+          summary <<"std.dev.: %0.4f\n" % sd
+          summary <<"std.err.: %0.4f\n" % se
+          summary <<"skew: %0.4f\n" % skew
+          summary <<"kurtosis: %0.4f\n" % kurtosis
         end
       end
+      summary = summary.split("\n").map! { |line| indent + line }.join("\n") + "\n"
+      summary = ' '*level + "== #{name}\n" + summary
+      summary
     end
     # :nocov:
 
