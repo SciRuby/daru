@@ -86,20 +86,6 @@ describe Daru::IO do
       end
     end
 
-    context "#from_html" do
-      let(:path) { path = "https://en.wikipedia.org/wiki/Table_(information)" }
-
-      it "reads table from html file into dataframe" do
-        df = Daru::DataFrame.from_html(path)[0]
-        expect(df).to eq(Daru::DataFrame.new({
-          "First name"=>["Tinu", "Blaszczyk", "Lily", "Olatunkboh", "Adrienne", "Axelia", "Jon-Kabat"],
-          "Last name"=>["Elejogun", "Kostrzewski", "McGarrett", "Chijiaku", "Anthoula", "Athanasios", "Zinn"],
-          "Age"=>["14", "25", "16", "22", "22", "22", "22"]
-          })
-        )
-      end
-    end
-
     context "#write_excel" do
       before do
         a   = Daru::Vector.new(100.times.map { rand(100) })
@@ -305,6 +291,22 @@ describe Daru::IO do
         end
       end
     end
+
+    context "#from_html" do
+      let(:path) { path = "file://#{Dir.pwd}/spec/fixtures/wiki_table_info.html" }
+
+      it "reads table from html file into dataframe" do
+        df = Daru::DataFrame.from_html(path)[0]
+        expect(df).to eq(Daru::DataFrame.new(
+          [["Tinu", "Blaszczyk", "Lily", "Olatunkboh", "Adrienne", "Axelia", "Jon-Kabat"],
+          ["Elejogun", "Kostrzewski", "McGarrett", "Chijiaku", "Anthoula", "Athanasios", "Zinn"],
+          ["14", "25", "16", "22", "22", "22", "22"]], order: ["First name","Last name","Age"]
+          )
+        )
+      end
+    end
+
+
   end
 
   describe Daru::Index do

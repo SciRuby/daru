@@ -90,12 +90,6 @@ module Daru
         Daru::DataFrame.new(hsh,daru_options)
       end
 
-      def from_html path
-        page = Mechanize.new.get(path)
-        list = from_html_get_list(page)
-        from_html_get_df_list(list)
-      end
-
       def dataframe_write_csv dataframe, path, opts={}
         options = {
           converters: :numeric
@@ -192,6 +186,16 @@ module Daru
         end
       end
 
+      def from_html path
+        page = Mechanize.new.get(path)
+        page.search('table').map { |table| parse_html_table table }
+            .map { |table| html_table_to_dataframe table }
+            .reject(&:nil?)
+      rescue LoadError
+        STDERR.puts '\nInstall the mechanize gem version 2.7.5 for using'\
+        ' from_html function.'
+      end
+
       private
 
       DARU_OPT_KEYS = [:clone, :order, :index, :name].freeze
@@ -228,23 +232,22 @@ module Daru
         headers.each_with_index.map { |h, i| [h, csv_as_arrays[i]] }.to_h
       end
 
-      def from_html_get_list(page)
-        page.search('table').map { |table|
-          index = table.search('th').map { |header| header.text.strip }
-          data = table.search('tr').map { |row| row.search('td').map { |val| val.text.strip } }.keep_if { |a| a!=[] }
-          {'index' => index, 'data' => data}
-        }.keep_if { |a| a['index'] != [] }
+      def parse_html_table(table)
+        order = table.search('th').map { |header| header.text.strip }
+        data = table.search('tr').map { |row| row.search('td').map { |val| val.text.strip } }
+        index = nil # TO-DO : Scrape index if any
+        name = nil # TO-DO : Scrape name / caption of table
+        {data: data.reject(&:empty?), index: index, name: name, order: order}
       end
 
-      def from_html_get_df_list(list)
-        list.map { |ele|
-          begin
-            indexes, data = ele['index'], ele['data'].transpose
-            hash = Hash[indexes.map { |index| [index,data[indexes.index(index)]] }]
-            Daru::DataFrame.new(hash)
-          rescue # rubocop:disable Lint/HandleExceptions
-          end
-        }
+      def html_table_to_dataframe(table)
+        Daru::DataFrame.rows table[:data],
+          index: table[:index],
+          name: table[:name],
+          order: table[:order]
+        # TO-DO : Remove the rescue block with logical
+        # segregation of navigation menus from tables
+      rescue # rubocop:disable Lint/HandleExceptions
       end
     end
   end
