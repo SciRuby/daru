@@ -105,4 +105,33 @@ describe Daru::Formatters::Table do
       }.unindent}
     end
   end
+
+  context 'no row and column headers' do
+    let(:headers) { nil }
+    let(:row_headers) { nil }
+    it { is_expected.to eq %Q{
+        |       1   2   3
+        |       4   5   6
+        |       7   8   9
+      }.unindent }
+  end
+
+  context 'row headers only' do
+    let(:headers) { nil }
+    it { is_expected.to eq %Q{
+        | row1    1    2    3
+        | row2    4    5    6
+        | row3    7    8    9
+      }.unindent }
+  end
+
+  context 'column headers only' do
+    let(:row_headers) { nil }
+    it { is_expected.to eq %Q{
+        |      col1 col2 col3
+        |         1    2    3
+        |         4    5    6
+        |         7    8    9
+      }.unindent }
+  end
 end

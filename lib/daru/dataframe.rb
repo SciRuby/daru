@@ -1413,19 +1413,16 @@ module Daru
       Daru::DataFrame.new(arry, clone: cln, order: order, index: @index)
     end
 
-    # Generate a summary of this DataFrame with ReportBuilder.
-    def summary(method=:to_text)
-      ReportBuilder.new(no_title: true).add(self).send(method)
-    end
-
-    def report_building(b) # :nodoc: #
-      b.section(name: @name) do |g|
-        g.text "Number of rows: #{nrows}"
-        @vectors.each do |v|
-          g.text "Element:[#{v}]"
-          g.parse_element(self[v])
-        end
+    # Generate a summary of this DataFrame based on individual vectors in the DataFrame
+    # @return [String] String containing the summary of the DataFrame
+    def summary
+      summary = "= #{name}"
+      summary << "\n  Number of rows: #{nrows}"
+      @vectors.each do |v|
+        summary << "\n  Element:[#{v}]\n"
+        summary << self[v].summary(1)
       end
+      summary
     end
 
     # Sorts a dataframe (ascending/descending) in the given pripority sequence of
