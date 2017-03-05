@@ -352,7 +352,7 @@ module Daru
         if other.is_a?(Daru::Vector)
           mod.apply_vector_operator operator, self, other
         else
-          mod.apply_scalar_operator operator, @data,other
+          mod.apply_scalar_operator operator, @data, other
         end
       end
       alias_method operator, method if operator != :== && operator != :!=

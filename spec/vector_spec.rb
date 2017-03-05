@@ -1390,17 +1390,17 @@ describe Daru::Vector do
 
   context '#is_values' do
     let(:dv) { Daru::Vector.new [10, 11, 10, nil, nil] }
-    
+
     context 'single value' do
       subject { dv.is_values 10 }
       it { is_expected.to be_a Daru::Vector }
       its(:to_a) { is_expected.to eq [true, false, true, false, false] }
     end
-    
+
     context 'multiple values' do
       subject { dv.is_values 10, nil }
       it { is_expected.to be_a Daru::Vector }
-      its(:to_a) { is_expected.to eq [true, false, true, true, true] }      
+      its(:to_a) { is_expected.to eq [true, false, true, true, true] }
     end
   end
 
@@ -1992,6 +1992,16 @@ describe Daru::Vector do
 
     it 'should not accept anything else' do
       expect { Daru::Vector.new([], dtype: :kittens) }.to raise_error(ArgumentError)
+    end
+  end
+
+  context '#where clause when Nan, nil data value is present' do
+    let(:v) { Daru::Vector.new([1,2,3,Float::NAN, nil]) }
+
+    it 'missing/undefined data in Vector/DataFrame' do
+      expect(v.where(v.lt(4))).to eq(Daru::Vector.new([1,2,3]))
+      expect(v.where(v.lt(3))).to eq(Daru::Vector.new([1,2]))
+      expect(v.where(v.lt(2))).to eq(Daru::Vector.new([1]))
     end
   end
 
