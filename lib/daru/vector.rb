@@ -1,3 +1,4 @@
+require 'daru/platform.rb'
 require 'daru/maths/arithmetic/vector.rb'
 require 'daru/maths/statistics/vector.rb'
 require 'daru/plotting/gruff.rb'

@@ -1,3 +1,5 @@
+require 'daru/platform'
+
 if Daru.has_nmatrix?
   module Daru
     module Accessors

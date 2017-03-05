@@ -1,3 +1,5 @@
+require 'daru/index/index'
+
 module Daru
   class MultiIndex < Index
     def each(&block)

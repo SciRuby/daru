@@ -1,3 +1,5 @@
+require 'forwardable'
+
 module Daru
   module Accessors
     # Internal class for wrapping ruby array

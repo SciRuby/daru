@@ -67,3 +67,34 @@ def run *cmd
   sh(cmd.join(" "))
 end
 
+task :modular_require do
+  require 'open3'
+
+  errors = []
+  Dir.chdir lib_folder
+
+  # kick off several ruby processes that require a single file
+  Dir['**/*.rb'].map { |lib_file|
+    # does this behave differently?
+    # cmd = ['ruby', '-I', lib_folder, '-r', lib_fil, '-e', "':ok'"]
+    cmd = ['ruby', '-I', lib_folder, "#{lib_folder}/#{lib_file}"]
+    _in, out, wait_thr = Open3.popen2e(*cmd)
+
+    [lib_file, wait_thr, out]
+  }.each { |(file, thr, out)|
+    if thr.value.exitstatus == 0
+      result = '   OK'
+    else
+      result = 'ERROR'
+      errors << out.gets.to_s.chomp
+    end
+    puts [result, file].join(' ')
+  }
+  unless errors.empty?
+    puts
+    puts "ERRORS"
+    puts "---"
+    puts errors
+    exit 1
+  end
+end

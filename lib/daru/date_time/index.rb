@@ -1,3 +1,7 @@
+require 'daru/platform'
+require 'daru/date_time/offsets'
+require 'daru/index/index'
+
 module Daru
   # Private module for storing helper functions for DateTimeIndex.
   # @private
