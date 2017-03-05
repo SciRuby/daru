@@ -62,5 +62,22 @@ RSpec.describe Daru::IO::SqlDataSource do
         }.to raise_error(ArgumentError)
       end
     end
+
+    context 'with path to sqlite3 file' do
+      subject(:df) { Daru::IO::SqlDataSource.make_dataframe(db_name, query) }
+      it { is_expected.to be_a(Daru::DataFrame) }
+      it { expect(df.nrows).to eq 2 }
+      it { expect(df.row[0][:id]).to eq 1 }
+      it { expect(df.row[0][:name]).to eq 'Homer' }
+    end
+
+    context 'with path to unsupported db file' do
+      it {
+        expect {
+          Daru::IO::SqlDataSource.make_dataframe("spec/fixtures/bank2.dat", query)
+        }.to raise_error(ArgumentError)
+      }
+    end
+
   end
 end
