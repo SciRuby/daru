@@ -186,9 +186,10 @@ module Daru
         end
       end
 
-      def from_html path
+      def from_html path, fields
         page = Mechanize.new.get(path)
         page.search('table').map { |table| parse_html_table table }
+            .map { |table| choose_value table, fields }
             .map { |table| html_table_to_dataframe table }
             .reject(&:nil?)
       rescue LoadError
@@ -233,11 +234,18 @@ module Daru
       end
 
       def parse_html_table(table)
-        order = table.search('th').map { |header| header.text.strip }
-        data = table.search('tr').map { |row| row.search('td').map { |val| val.text.strip } }
+        data  = table.search('tr').map { |row| row.search('td').map { |val| val.text.strip } }
         index = nil # TO-DO : Scrape index if any
-        name = nil # TO-DO : Scrape name / caption of table
+        name  = table.search('caption').empty? ? nil : table.search('caption').text.strip # Works only for Wiki
+        order = table.search('th').map { |header| header.text.strip }
         {data: data.reject(&:empty?), index: index, name: name, order: order}
+      end
+
+      def choose_value(scraped_val, user_val)
+        user_val.each do |key,val|
+          scraped_val[key] = val
+        end
+        scraped_val
       end
 
       def html_table_to_dataframe(table)
@@ -245,7 +253,7 @@ module Daru
           index: table[:index],
           name: table[:name],
           order: table[:order]
-        # TO-DO : Remove the rescue block with logical
+        # TO-DO : Remove the rescue block with logical`
         # segregation of navigation menus from tables
       rescue # rubocop:disable Lint/HandleExceptions
       end

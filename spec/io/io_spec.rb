@@ -295,15 +295,29 @@ describe Daru::IO do
     context "#from_html" do
       let(:path) { path = "file://#{Dir.pwd}/spec/fixtures/wiki_table_info.html" }
 
-      it "reads table from html file into dataframe" do
+      it "reads table from html file into dataframe - test table 1" do
         df = Daru::DataFrame.from_html(path)[0]
         expect(df).to eq(Daru::DataFrame.new(
-          [["Tinu", "Blaszczyk", "Lily", "Olatunkboh", "Adrienne", "Axelia", "Jon-Kabat"],
-          ["Elejogun", "Kostrzewski", "McGarrett", "Chijiaku", "Anthoula", "Athanasios", "Zinn"],
-          ["14", "25", "16", "22", "22", "22", "22"]], order: ["First name","Last name","Age"]
+            [["Tinu", "Blaszczyk", "Lily", "Olatunkboh", "Adrienne", "Axelia", "Jon-Kabat"],
+            ["Elejogun", "Kostrzewski", "McGarrett", "Chijiaku", "Anthoula", "Athanasios", "Zinn"],
+            ["14", "25", "16", "22", "22", "22", "22"]], 
+            order: ["First name","Last name","Age"], 
+            name: "Age table"
           )
         )
       end
+
+      it "reads table with options from html file into dataframe - test table 1" do
+        df = Daru::DataFrame.from_html(path, order: ["FName","LName","Age"], name: "People Table")[0]
+        expect(df).to eq(Daru::DataFrame.new(
+            [["Tinu", "Blaszczyk", "Lily", "Olatunkboh", "Adrienne", "Axelia", "Jon-Kabat"],
+            ["Elejogun", "Kostrzewski", "McGarrett", "Chijiaku", "Anthoula", "Athanasios", "Zinn"],
+            ["14", "25", "16", "22", "22", "22", "22"]], 
+            order: ["FName","LName","Age"], 
+            name: "People table"
+          )
+        )
+      end     
     end
 
 

@@ -118,12 +118,13 @@ module Daru
       # == Arguments
       #
       # * path - Path / URL of the html file to be read.
+      # * fields - A Hash to overwrite the scraped values from a web page. Supported keys : data, index, name and order.
       #
       # == Usage
       #
-      #   df = Daru::DataFrame.from_html("https://en.wikipedia.org/wiki/Table_(information)")[0]
-      def from_html path
-        Daru::IO.from_html path
+      # df = Daru::DataFrame.from_html(path, index: [:p1, :p2, :p3, :p4, :p5, :p6, :p7])[0]
+      def from_html path, fields={}
+        Daru::IO.from_html path, fields
       end
 
       # Create DataFrame by specifying rows as an Array of Arrays or Array of
