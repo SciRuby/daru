@@ -200,14 +200,30 @@ module Daru
 
       def from_csv_hash_with_headers(path, opts)
         opts[:header_converters] ||= :symbol
-        ::CSV
-          .parse(open(path), opts)
-          .by_col.map { |col_name, values| [col_name, values] }.to_h
+        url = URI.parse(path)
+        if %w(http https).include?(url.scheme)
+          ::CSV
+            .parse(open(path), opts)
+            .by_col.map { |col_name, values| [col_name, values] }.to_h
+        else
+          ::CSV
+            .read(path, 'rb',opts)
+            .tap { |c| yield c if block_given? }
+            .by_col.map { |col_name, values| [col_name, values] }.to_h
+        end
       end
 
       def from_csv_hash(path, opts)
+        url = URI.parse(path)
         csv_as_arrays =
-          ::CSV.parse(open(path), opts)
+          if %w(http https).include?(url.scheme)
+            ::CSV.parse(open(path), opts)
+          else
+            ::CSV
+              .open(path, 'rb', opts)
+              .tap { |c| yield c if block_given? }
+              .to_a
+          end
         headers       = ArrayHelper.recode_repeated(csv_as_arrays.shift)
         csv_as_arrays = csv_as_arrays.transpose
         headers.each_with_index.map { |h, i| [h, csv_as_arrays[i]] }.to_h
