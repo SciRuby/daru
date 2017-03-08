@@ -80,24 +80,23 @@ module Daru
         #   dv.max
         #   #=> "Tyrion"
         #
-        #   dv.max { |i| i.size }
-        #   #=> "Jon Starkgaryen"
+        #   dv.max(2) { |a,b| a.size <=> b.size }
+        #   #=> ["Jon Starkgaryen","Daenerys"]
         #
         #   dv.max(2) { |i| i.size }
         #   #=> ["Jon Starkgaryen","Daenerys"]
-        def max(size=nil, &block)
+        def max(*size, &block)
+          size = size.count.zero? ? nil : size[0]
           data = @data.data.to_a
           if block_given?
-            data.max(size,&block)
+            if block.parameters.count == 1 # Object block like { |x| x.size }
+              data.max_by(size,&block)
+            else # Comparative block like { |a,b| a.size <=> b.size }
+              data.max(size,&block)
+            end
           else
             data.max(size)
           end
-          # values = if block_given?
-          #            data.values_at(*data.map { |d| yield(d) }.to_a.each_with_index.max(size).map(&:last))
-          #          else
-          #            data.max(size)
-          #          end
-          # size_not_given ? values[0] : values
         end
 
         # Returns the index of the maximum value present in the vector.
@@ -114,10 +113,17 @@ module Daru
         #   dv.index_of_max
         #   #=> :t
         #
-        #   dv.index_of_max { |i| i.size }
-        #   #=> :j
-        def index_of_max(&block)
-          block_given? ? @index.to_a[@data.data.map(&block).to_a.each_with_index.max.last] : @index.max
+        #   dv.index_of_max(2) { |a,b| a.size <=> b.size }
+        #   #=> [:j, :d]
+        #
+        #   dv.max(2) { |i| i.size }
+        #   #=> [:j, :d]
+        def index_of_max(*size,&block)
+          size = size.count.zero? ? nil : size[0]
+          data = @data.data.to_a
+          indx = @index.to_a
+          vals = max(size,&block)
+          vals.is_a?(Array) ? (vals.map { |x| indx[data.index(x)] }) : indx[data.index(vals)]
         end
 
         # Returns the minimum value present in the vector.
@@ -134,11 +140,23 @@ module Daru
         #   dv.min
         #   #=> "Daenerys"
         #
-        #   dv.min { |i| i.size }
-        #   #=> "Tyrion"
-        def min(&block)
-          data = @data.data
-          block_given? ? data[data.map(&block).to_a.each_with_index.min.last] : @data.min
+        #   dv.min(2) { |a,b| a.size <=> b.size }
+        #   #=> ["Tyrion","Daenerys"]
+        #
+        #   dv.min(2) { |i| i.size }
+        #   #=> ["Tyrion","Daenerys"]
+        def min(*size, &block)
+          size = size.count.zero? ? nil : size[0]
+          data = @data.data.to_a
+          if block_given?
+            if block.parameters.count == 1 # Object block like { |x| x.size }
+              data.min_by(size,&block)
+            else # Comparative block like { |a,b| a.size <=> b.size }
+              data.min(size,&block)
+            end
+          else
+            data.min(size)
+          end
         end
 
         # Returns the index of the minimum value present in the vector.
@@ -155,10 +173,17 @@ module Daru
         #   dv.index_of_min
         #   #=> :d
         #
-        #   dv.index_of_min { |i| i.size }
-        #   #=> :t
-        def index_of_min(&block)
-          block_given? ? @index.to_a[@data.data.map(&block).to_a.each_with_index.min.last] : @index.min
+        #   dv.index_of_min(2) { |a,b| a.size <=> b.size }
+        #   #=> [:t, :d]
+        #
+        #   dv.index_of_min(2) { |i| i.size }
+        #   #=> [:t, :d]
+        def index_of_min(*size,&block)
+          size = size.count.zero? ? nil : size[0]
+          data = @data.data.to_a
+          indx = @index.to_a
+          vals = min(size,&block)
+          vals.is_a?(Array) ? (vals.map { |x| indx[data.index(x)] }) : indx[data.index(vals)]
         end
 
         # Return the maximum element present in the Vector, as a Vector.
@@ -766,6 +791,10 @@ module Daru
         alias :ss :sum_of_squares
         alias :percentil :percentile
         alias :se :standard_error
+        alias :max_by :max
+        alias :min_by :min
+        alias :index_of_max_by :index_of_max
+        alias :index_of_min_by :index_of_min
 
         private
 

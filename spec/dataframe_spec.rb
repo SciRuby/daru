@@ -3028,7 +3028,7 @@ describe Daru::DataFrame do
       expect(actual).to eq expected
     end
   end
- 
+
   context "#shape" do
     it "returns an array containing number of rows and columns" do
       expect(@data_frame.shape).to eq([5,3])

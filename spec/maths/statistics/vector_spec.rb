@@ -18,14 +18,107 @@ describe Daru::Vector do
         it "tests function with default input" do
           expect(dv.max).to eq("Tyrion")
         end
-        it "tests function with output as list of size n" do
+        it "tests function with size n" do
           expect(dv.max(2)).to eq(["Tyrion","Jon Starkgaryen"])
         end
-        it "tests function with block input" do
-          expect(dv.max {|a,b| a.size <=> b.size}).to eq("Jon Starkgaryen")
+        it "tests function with comparitive block input" do
+          expect(dv.max { |a,b| a.size <=> b.size }).to eq("Jon Starkgaryen")
         end
-        it "tests function with output as list of size n, and block" do
+        it "tests function with object block input" do
+          expect(dv.max { |x| x.size }).to eq("Jon Starkgaryen")
+        end
+        it "tests function with size n, and comparitive block" do
           expect(dv.max(2) {|a,b| a.size <=> b.size}).to eq(["Jon Starkgaryen","Daenerys"])
+        end
+        it "tests function with size n, and object block" do
+          expect(dv.max(2) {|x| x.size }).to eq(["Jon Starkgaryen","Daenerys"])
+        end
+      end
+
+      context "#index_of_max" do
+        it "tests function with default input" do
+          expect(dv.index_of_max).to eq(:t)
+        end
+        it "tests function with size n" do
+          expect(dv.index_of_max(2)).to eq([:t, :j])
+        end
+        it "tests function with comparitive block input" do
+          expect(dv.index_of_max { |a,b| a.size <=> b.size }).to eq(:j)
+        end
+        it "tests function with object block input" do
+          expect(dv.index_of_max { |x| x.size }).to eq(:j)
+        end
+        it "tests function with size n, and comparitive block" do
+          expect(dv.index_of_max(2) {|a,b| a.size <=> b.size}).to eq([:j, :d])
+        end
+        it "tests function with size n, and object block" do
+          expect(dv.index_of_max(2) {|x| x.size }).to eq([:j, :d])
+        end
+      end
+
+      context "#min" do
+        it "tests function with default input" do
+          expect(dv.min).to eq("Daenerys")
+        end
+        it "tests function with size n" do
+          expect(dv.min(2)).to eq(["Daenerys","Jon Starkgaryen"])
+        end
+        it "tests function with comparitive block input" do
+          expect(dv.min { |a,b| a.size <=> b.size }).to eq("Tyrion")
+        end
+        it "tests function with object block input" do
+          expect(dv.min { |x| x.size }).to eq("Tyrion")
+        end
+        it "tests function with size n, and comparitive block" do
+          expect(dv.min(2) {|a,b| a.size <=> b.size}).to eq(["Tyrion","Daenerys"])
+        end
+        it "tests function with size n, and object block" do
+          expect(dv.min(2) {|x| x.size }).to eq(["Tyrion","Daenerys"])
+        end
+      end
+
+      context "#index_of_min" do
+        it "tests function with default input" do
+          expect(dv.index_of_min).to eq(:d)
+        end
+        it "tests function with size n" do
+          expect(dv.index_of_min(2)).to eq([:d, :j])
+        end
+        it "tests function with comparitive block input" do
+          expect(dv.index_of_min { |a,b| a.size <=> b.size }).to eq(:t)
+        end
+        it "tests function with object block input" do
+          expect(dv.index_of_min { |x| x.size }).to eq(:t)
+        end
+        it "tests function with size n, and comparitive block" do
+          expect(dv.index_of_min(2) {|a,b| a.size <=> b.size}).to eq([:t, :d])
+        end
+        it "tests function with size n, and object block" do
+          expect(dv.index_of_min(2) {|x| x.size }).to eq([:t, :d])
+        end
+      end
+
+      context "#max_by" do
+        it "tests alias of max_by to max" do
+          expect(dv.method(:max_by)).to eq(dv.method(:max))
+        end
+      end
+
+      context "#min_by" do
+        it "tests alias of min_by to min" do
+          expect(dv.method(:min_by)).to eq(dv.method(:min))
+        end
+      end
+
+      context "#index_of_max_by" do
+        it "tests alias of index_of_max_by to index_of_max" do
+          expect(dv.method(:index_of_max_by)).to eq(dv.method(:index_of_max))
+        end
+      end
+
+      context "#index_of_min_by" do
+        it "tests alias of index_of_min_by to index_of_min" do
+          expect(dv.method(:index_of_min_by)).to eq(dv.method(:index_of_min))
         end
       end
 
