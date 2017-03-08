@@ -85,18 +85,18 @@ module Daru
         #
         #   dv.max(2) { |i| i.size }
         #   #=> ["Jon Starkgaryen","Daenerys"]
-        def max(*size, &block)
-          size = size.count.zero? ? nil : size[0]
+        def max(size=nil, &block)
           data = @data.data.to_a
-          if block_given?
-            if block.parameters.count == 1 # Object block like { |x| x.size }
-              data.max_by(size,&block)
-            else # Comparative block like { |a,b| a.size <=> b.size }
-              data.max(size,&block)
-            end
-          else
-            data.max(size)
-          end
+          data = if block_given?
+                   if block.parameters.count == 1 # Object block like { |x| x.size }
+                     data.sort_by(&block)
+                   else # Comparative block like { |a,b| a.size <=> b.size }
+                     data.sort(&block)
+                   end
+                 else
+                   data.sort
+                 end
+          size.nil? ? data.last : data[data.count-size..-1].reverse
         end
 
         # Returns the index of the maximum value present in the vector.
@@ -118,8 +118,7 @@ module Daru
         #
         #   dv.max(2) { |i| i.size }
         #   #=> [:j, :d]
-        def index_of_max(*size,&block)
-          size = size.count.zero? ? nil : size[0]
+        def index_of_max(size=nil,&block)
           data = @data.data.to_a
           indx = @index.to_a
           vals = max(size,&block)
@@ -145,18 +144,18 @@ module Daru
         #
         #   dv.min(2) { |i| i.size }
         #   #=> ["Tyrion","Daenerys"]
-        def min(*size, &block)
-          size = size.count.zero? ? nil : size[0]
+        def min(size=nil, &block)
           data = @data.data.to_a
-          if block_given?
-            if block.parameters.count == 1 # Object block like { |x| x.size }
-              data.min_by(size,&block)
-            else # Comparative block like { |a,b| a.size <=> b.size }
-              data.min(size,&block)
-            end
-          else
-            data.min(size)
-          end
+          data = if block_given?
+                   if block.parameters.count == 1 # Object block like { |x| x.size }
+                     data.sort_by(&block)
+                   else # Comparative block like { |a,b| a.size <=> b.size }
+                     data.sort(&block)
+                   end
+                 else
+                   data.sort
+                 end
+          size.nil? ? data.first : data[0..size-1]
         end
 
         # Returns the index of the minimum value present in the vector.
@@ -178,8 +177,7 @@ module Daru
         #
         #   dv.index_of_min(2) { |i| i.size }
         #   #=> [:t, :d]
-        def index_of_min(*size,&block)
-          size = size.count.zero? ? nil : size[0]
+        def index_of_min(size=nil,&block)
           data = @data.data.to_a
           indx = @index.to_a
           vals = min(size,&block)
