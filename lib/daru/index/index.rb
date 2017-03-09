@@ -187,13 +187,23 @@ module Daru
       @relation_hash.key? index
     end
 
-    # To check whether index value is any element of list `indexes`.
-    #
-    # @param indexes [Array] the list of indexes.
-    # @return [Object] the Vector having true/false values. `true` at position `i`
-    # if i'th index value is present in `indexes` . If i'th index value is not
-    # present in `indexes` array then `false` at position `i` of the Vector.
-    def isin indexes
+    # @note Do not use it to check for Float::NAN as
+    #   Float::NAN == Float::NAN is false
+    # Return vector of booleans with value at ith position is either
+    # true or false depending upon whether index value at position i is equal to
+    # any of the values passed in the argument or not
+    # @param [Array] *indexes values to equate with
+    # @return [Daru::Vector] vector of boolean values
+    # @example
+    #   dv = Daru::Index.new [1, 2, 3, :one, 'one']
+    #   dv.is_values 1, 'one'
+    #   # => #<Daru::Vector(5)>
+    #   #     0  true
+    #   #     1  false
+    #   #     2  false
+    #   #     3  false
+    #   #     4  true
+    def is_values *indexes
       bool_array = @relation_hash.keys.map { |r| indexes.include?(r) }
       Daru::Vector.new(bool_array)
     end
