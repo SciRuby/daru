@@ -15,85 +15,85 @@ describe Daru::Vector do
       let(:dv) { dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j]) }
 
       context "#max" do
-        it "tests function with default input" do
+        it "returns max value" do
           expect(dv.max).to eq("Tyrion")
         end
-        it "tests function with size n" do
+        it "returns N max values" do
           expect(dv.max(2)).to eq(["Tyrion","Jon Starkgaryen"])
         end
-        it "tests function with comparitive block input" do
+        it "returns max value, sorted by comparitive block input" do
           expect(dv.max { |a,b| a.size <=> b.size }).to eq("Jon Starkgaryen")
         end
-        it "tests function with object block input" do
+        it "returns max value, sorted by object block input" do
           expect(dv.max { |x| x.size }).to eq("Jon Starkgaryen")
         end
-        it "tests function with size n, and comparitive block" do
+        it "returns N max values, sorted by comparitive block input" do
           expect(dv.max(2) {|a,b| a.size <=> b.size}).to eq(["Jon Starkgaryen","Daenerys"])
         end
-        it "tests function with size n, and object block" do
+        it "returns N max values, sorted by object block input" do
           expect(dv.max(2) {|x| x.size }).to eq(["Jon Starkgaryen","Daenerys"])
         end
       end
 
       context "#index_of_max" do
-        it "tests function with default input" do
+        it "returns index_of_max value" do
           expect(dv.index_of_max).to eq(:t)
         end
-        it "tests function with size n" do
+        it "returns N index_of_max values" do
           expect(dv.index_of_max(2)).to eq([:t, :j])
         end
-        it "tests function with comparitive block input" do
+        it "returns index_of_max value, sorted by comparitive block input" do
           expect(dv.index_of_max { |a,b| a.size <=> b.size }).to eq(:j)
         end
-        it "tests function with object block input" do
+        it "returns index_of_max value, sorted by object block input" do
           expect(dv.index_of_max { |x| x.size }).to eq(:j)
         end
-        it "tests function with size n, and comparitive block" do
+        it "returns N index_of_max values, sorted by comparitive block input" do
           expect(dv.index_of_max(2) {|a,b| a.size <=> b.size}).to eq([:j, :d])
         end
-        it "tests function with size n, and object block" do
+        it "returns N index_of_max values, sorted by object block input" do
           expect(dv.index_of_max(2) {|x| x.size }).to eq([:j, :d])
         end
       end
 
       context "#min" do
-        it "tests function with default input" do
+        it "returns min value" do
           expect(dv.min).to eq("Daenerys")
         end
-        it "tests function with size n" do
+        it "returns N min values" do
           expect(dv.min(2)).to eq(["Daenerys","Jon Starkgaryen"])
         end
-        it "tests function with comparitive block input" do
+        it "returns min value, sorted by comparitive block input" do
           expect(dv.min { |a,b| a.size <=> b.size }).to eq("Tyrion")
         end
-        it "tests function with object block input" do
+        it "returns min value, sorted by object block input" do
           expect(dv.min { |x| x.size }).to eq("Tyrion")
         end
-        it "tests function with size n, and comparitive block" do
+        it "returns N min values, sorted by comparitive block input" do
           expect(dv.min(2) {|a,b| a.size <=> b.size}).to eq(["Tyrion","Daenerys"])
         end
-        it "tests function with size n, and object block" do
+        it "returns N min values, sorted by object block input" do
           expect(dv.min(2) {|x| x.size }).to eq(["Tyrion","Daenerys"])
         end
       end
 
       context "#index_of_min" do
-        it "tests function with default input" do
+        it "returns index of min value" do
           expect(dv.index_of_min).to eq(:d)
         end
-        it "tests function with size n" do
+        it "returns N index of min values" do
           expect(dv.index_of_min(2)).to eq([:d, :j])
         end
-        it "tests function with comparitive block input" do
+        it "returns index of min value, sorted by comparitive block input" do
           expect(dv.index_of_min { |a,b| a.size <=> b.size }).to eq(:t)
         end
-        it "tests function with object block input" do
+        it "returns index of min value, sorted by object block input" do
           expect(dv.index_of_min { |x| x.size }).to eq(:t)
         end
-        it "tests function with size n, and comparitive block" do
+        it "returns N index of min values, sorted by comparitive block input" do
           expect(dv.index_of_min(2) {|a,b| a.size <=> b.size}).to eq([:t, :d])
         end
-        it "tests function with size n, and object block" do
+        it "returns N index of min values, sorted by object block input" do
           expect(dv.index_of_min(2) {|x| x.size }).to eq([:t, :d])
         end
       end
