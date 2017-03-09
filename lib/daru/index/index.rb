@@ -203,7 +203,7 @@ module Daru
     #   #     2  false
     #   #     3  false
     #   #     4  true
-    def is_values *indexes
+    def is_values(*indexes) # rubocop:disable Style/PredicateName
       bool_array = @relation_hash.keys.map { |r| indexes.include?(r) }
       Daru::Vector.new(bool_array)
     end
