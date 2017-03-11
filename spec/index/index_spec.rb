@@ -301,40 +301,46 @@ describe Daru::Index do
     let(:idx) { described_class.new [:one, 'one', 1, 2, 'two', nil, [1, 2]] }
 
     context "no arguments" do
-      it { expect(idx.is_values).to eq klass.new([false, false, false, false, false, false, false]) }
+      let(:answer) { [false, false, false, false, false, false, false] }
+      it { expect(idx.is_values).to eq klass.new(answer) }
     end
 
     context "single arguments" do
-      it { expect(idx.is_values 'one').to eq klass.new([false, true, false, false, false, false, false]) }
+      let(:answer) { [false, true, false, false, false, false, false] }
+      it { expect(idx.is_values 'one').to eq klass.new(answer) }
     end
 
     context "multiple arguments" do
       context "symbol and number as argument" do
         subject { idx.is_values 2, :one }
+        let(:answer) { [true, false, false, true, false, false, false] }
         it { is_expected.to be_a Daru::Vector }
         its(:size) { is_expected.to eq 7 }
-        it { is_expected.to eq klass.new([true, false, false, true, false, false, false]) }
+        it { is_expected.to eq klass.new(answer) }
       end
 
       context "string and number as argument" do
         subject { idx.is_values('one', 1)}
+        let(:answer) { [false, true, true, false, false, false, false] }
         it { is_expected.to be_a Daru::Vector }
         its(:size) { is_expected.to eq 7 }
-        it { is_expected.to eq klass.new([false, true, true, false, false, false, false]) }
+        it { is_expected.to eq klass.new(answer) }
       end
 
       context "nil is present in arguments" do
         subject { idx.is_values('two', nil)}
+        let(:answer) { [false, false, false, false, true, true, false] }
         it { is_expected.to be_a Daru::Vector }
         its(:size) { is_expected.to eq 7 }
-        it { is_expected.to eq klass.new([false, false, false, false, true, true, false]) }
+        it { is_expected.to eq klass.new(answer) }
       end
 
       context "subarray is present in arguments" do
         subject { idx.is_values([1, 2])}
+        let(:answer) { [false, false, false, false, false, false, true] }
         it { is_expected.to be_a Daru::Vector }
         its(:size) { is_expected.to eq 7 }
-        it { is_expected.to eq klass.new([false, false, false, false, false, false, true]) }
+        it { is_expected.to eq klass.new(answer) }
       end
     end
   end
