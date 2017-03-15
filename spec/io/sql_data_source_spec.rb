@@ -20,47 +20,20 @@ RSpec.describe Daru::IO::SqlDataSource do
 
   describe '.make_dataframe' do
     context 'with DBI::DatabaseHandle' do
-      it 'returns a dataframe' do
-        result = Daru::IO::SqlDataSource.make_dataframe(dbi_handle, query)
-        expect(result).to be_a(Daru::DataFrame)
-        expect(result.nrows).to eq(2)
-        expect(result.row[0][:id]).to eq(1)
-        expect(result.row[0][:name]).to eq('Homer')
-      end
+      subject(:df) { Daru::IO::SqlDataSource.make_dataframe(dbi_handle, query) }
+      it { is_expected.to be_a(Daru::DataFrame) }
+      it { expect(df.nrows).to eq 2 }
+      it { expect(df.row[0][:id]).to eq 1 }
+      it { expect(df.row[0][:name]).to eq 'Homer' }
 
-      context 'with an object not a string as a query' do
-        it 'raises ArgumentError' do
-          expect {
-            Daru::IO::SqlDataSource.make_dataframe(dbi_handle, Object.new)
-          }.to raise_error(ArgumentError)
-        end
-      end
     end
 
     context 'with ActiveRecord::Connection' do
-      it 'returns a dataframe' do
-        result = Daru::IO::SqlDataSource.make_dataframe(active_record_connection, query)
-        expect(result).to be_a(Daru::DataFrame)
-        expect(result.nrows).to eq(2)
-        expect(result.row[0][:id]).to eq(1)
-        expect(result.row[0][:name]).to eq('Homer')
-      end
-
-      context 'with an object not a string as a query' do
-        it 'raises ArgumentError' do
-          expect {
-            Daru::IO::SqlDataSource.make_dataframe(active_record_connection, Object.new)
-          }.to raise_error(ArgumentError)
-        end
-      end
-    end
-
-    context 'with an object not a database connection' do
-      it 'raises ArgumentError' do
-        expect {
-          Daru::IO::SqlDataSource.make_dataframe(Object.new, query)
-        }.to raise_error(ArgumentError)
-      end
+      subject(:df) { Daru::IO::SqlDataSource.make_dataframe(active_record_connection, query) }
+      it { is_expected.to be_a(Daru::DataFrame) }
+      it { expect(df.nrows).to eq 2 }
+      it { expect(df.row[0][:id]).to eq 1 }
+      it { expect(df.row[0][:name]).to eq 'Homer' }
     end
 
     context 'with path to sqlite3 file' do
@@ -71,6 +44,22 @@ RSpec.describe Daru::IO::SqlDataSource do
       it { expect(df.row[0][:name]).to eq 'Homer' }
     end
 
+    context 'with an object not a string as a query' do
+      it {
+        expect {
+          Daru::IO::SqlDataSource.make_dataframe(active_record_connection, Object.new)
+        }.to raise_error(ArgumentError)
+      }
+    end
+
+    context 'with an object not a database connection' do
+      it {
+        expect {
+          Daru::IO::SqlDataSource.make_dataframe(Object.new, query)
+        }.to raise_error(ArgumentError)
+      }
+    end
+
     context 'with path to unsupported db file' do
       it {
         expect {
@@ -78,6 +67,5 @@ RSpec.describe Daru::IO::SqlDataSource do
         }.to raise_error(ArgumentError)
       }
     end
-
   end
 end
