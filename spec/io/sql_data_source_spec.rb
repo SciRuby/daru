@@ -25,7 +25,6 @@ RSpec.describe Daru::IO::SqlDataSource do
       it { expect(df.nrows).to eq 2 }
       it { expect(df.row[0][:id]).to eq 1 }
       it { expect(df.row[0][:name]).to eq 'Homer' }
-
     end
 
     context 'with ActiveRecord::Connection' do
@@ -63,7 +62,7 @@ RSpec.describe Daru::IO::SqlDataSource do
     context 'with path to unsupported db file' do
       it {
         expect {
-          Daru::IO::SqlDataSource.make_dataframe("spec/fixtures/bank2.dat", query)
+          Daru::IO::SqlDataSource.make_dataframe('spec/fixtures/bank2.dat', query)
         }.to raise_error(ArgumentError)
       }
     end
