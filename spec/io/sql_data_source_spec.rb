@@ -14,57 +14,58 @@ RSpec.describe Daru::IO::SqlDataSource do
     ActiveRecord::Base.connection
   end
 
+  let(:dat_file) do
+    'spec/fixtures/bank2.dat'
+  end
+
   let(:query) do
     'select * from accounts'
   end
 
+  let(:source) do
+    active_record_connection
+  end
+
   describe '.make_dataframe' do
+    subject(:df) { Daru::IO::SqlDataSource.make_dataframe(source, query) }
+
     context 'with DBI::DatabaseHandle' do
-      subject(:df) { Daru::IO::SqlDataSource.make_dataframe(dbi_handle, query) }
+      let(:source) { dbi_handle }
       it { is_expected.to be_a(Daru::DataFrame) }
-      it { expect(df.nrows).to eq 2 }
-      it { expect(df.row[0][:id]).to eq 1 }
-      it { expect(df.row[0][:name]).to eq 'Homer' }
+      it { expect(df.row[0]).to have_attributes(id: 1) }
+      it { expect(df.row[0]).to have_attributes(age: 20) }
+      its(:nrows) { is_expected.to eq 2 }
     end
 
     context 'with ActiveRecord::Connection' do
-      subject(:df) { Daru::IO::SqlDataSource.make_dataframe(active_record_connection, query) }
+      let(:source) { active_record_connection }
       it { is_expected.to be_a(Daru::DataFrame) }
-      it { expect(df.nrows).to eq 2 }
-      it { expect(df.row[0][:id]).to eq 1 }
-      it { expect(df.row[0][:name]).to eq 'Homer' }
+      it { expect(df.row[0]).to have_attributes(id: 1) }
+      it { expect(df.row[0]).to have_attributes(age: 20) }
+      its(:nrows) { is_expected.to eq 2 }
     end
 
     context 'with path to sqlite3 file' do
-      subject(:df) { Daru::IO::SqlDataSource.make_dataframe(db_name, query) }
+      let(:source) { db_name }
       it { is_expected.to be_a(Daru::DataFrame) }
-      it { expect(df.nrows).to eq 2 }
-      it { expect(df.row[0][:id]).to eq 1 }
-      it { expect(df.row[0][:name]).to eq 'Homer' }
+      it { expect(df.row[0]).to have_attributes(id: 1) }
+      it { expect(df.row[0]).to have_attributes(age: 20) }
+      its(:nrows) { is_expected.to eq 2 }
     end
 
     context 'with an object not a string as a query' do
-      it {
-        expect {
-          Daru::IO::SqlDataSource.make_dataframe(active_record_connection, Object.new)
-        }.to raise_error(ArgumentError)
-      }
+      let(:query) { Object.new }
+      it { expect { df }.to raise_error(ArgumentError) }
     end
 
     context 'with an object not a database connection' do
-      it {
-        expect {
-          Daru::IO::SqlDataSource.make_dataframe(Object.new, query)
-        }.to raise_error(ArgumentError)
-      }
+      let(:source) { Object.new }
+      it { expect { df }.to raise_error(ArgumentError) }
     end
 
     context 'with path to unsupported db file' do
-      it {
-        expect {
-          Daru::IO::SqlDataSource.make_dataframe('spec/fixtures/bank2.dat', query)
-        }.to raise_error(ArgumentError)
-      }
+      let(:source) { dat_file }
+      it { expect { df }.to raise_error(ArgumentError) }
     end
   end
 end
