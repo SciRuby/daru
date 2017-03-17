@@ -5,17 +5,10 @@ require 'active_record'
 
 RSpec.describe Daru::IO::SqlDataSource do
   include_context 'with accounts table in sqlite3 database'
-  let(:dbi_handle) do
-    DBI.connect("DBI:SQLite3:#{db_name}")
-  end
 
   let(:active_record_connection) do
     ActiveRecord::Base.establish_connection("sqlite3:#{db_name}")
     ActiveRecord::Base.connection
-  end
-
-  let(:dat_file) do
-    'spec/fixtures/bank2.dat'
   end
 
   let(:query) do
@@ -30,26 +23,23 @@ RSpec.describe Daru::IO::SqlDataSource do
     subject(:df) { Daru::IO::SqlDataSource.make_dataframe(source, query) }
 
     context 'with DBI::DatabaseHandle' do
-      let(:source) { dbi_handle }
+      let(:source) { DBI.connect("DBI:SQLite3:#{db_name}") }
       it { is_expected.to be_a(Daru::DataFrame) }
-      it { expect(df.row[0]).to have_attributes(id: 1) }
-      it { expect(df.row[0]).to have_attributes(age: 20) }
+      it { expect(df.row[0]).to have_attributes(id: 1, age: 20) }
       its(:nrows) { is_expected.to eq 2 }
     end
 
     context 'with ActiveRecord::Connection' do
       let(:source) { active_record_connection }
       it { is_expected.to be_a(Daru::DataFrame) }
-      it { expect(df.row[0]).to have_attributes(id: 1) }
-      it { expect(df.row[0]).to have_attributes(age: 20) }
+      it { expect(df.row[0]).to have_attributes(id: 1, age: 20) }
       its(:nrows) { is_expected.to eq 2 }
     end
 
     context 'with path to sqlite3 file' do
       let(:source) { db_name }
       it { is_expected.to be_a(Daru::DataFrame) }
-      it { expect(df.row[0]).to have_attributes(id: 1) }
-      it { expect(df.row[0]).to have_attributes(age: 20) }
+      it { expect(df.row[0]).to have_attributes(id: 1, age: 20) }
       its(:nrows) { is_expected.to eq 2 }
     end
 
@@ -64,7 +54,7 @@ RSpec.describe Daru::IO::SqlDataSource do
     end
 
     context 'with path to unsupported db file' do
-      let(:source) { dat_file }
+      let(:source) { 'spec/fixtures/bank2.dat' }
       it { expect { df }.to raise_error(ArgumentError) }
     end
   end
