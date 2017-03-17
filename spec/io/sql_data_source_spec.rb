@@ -6,17 +6,13 @@ require 'active_record'
 RSpec.describe Daru::IO::SqlDataSource do
   include_context 'with accounts table in sqlite3 database'
 
-  let(:active_record_connection) do
-    ActiveRecord::Base.establish_connection("sqlite3:#{db_name}")
-    ActiveRecord::Base.connection
-  end
-
   let(:query) do
     'select * from accounts'
   end
 
   let(:source) do
-    active_record_connection
+    ActiveRecord::Base.establish_connection("sqlite3:#{db_name}")
+    ActiveRecord::Base.connection
   end
 
   describe '.make_dataframe' do
@@ -30,7 +26,6 @@ RSpec.describe Daru::IO::SqlDataSource do
     end
 
     context 'with ActiveRecord::Connection' do
-      let(:source) { active_record_connection }
       it { is_expected.to be_a(Daru::DataFrame) }
       it { expect(df.row[0]).to have_attributes(id: 1, age: 20) }
       its(:nrows) { is_expected.to eq 2 }
