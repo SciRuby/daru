@@ -222,21 +222,20 @@ module Daru
       self.class.new(new_order.map { |i| from[i] })
     end
 
-    # Sorts a `Index`, according to its values. Defaults to ascending order sorting.
+    # Sorts a `Index`, according to its values. Defaults to ascending order
+    # sorting.
     #
-    # == Options:
+    # @param [Hash] opts the options for sort method.
+    # @option opts [Boolean] :ascending False, to get descending order.
     #
-    # ascending::
-    #   This can be `true` or `false`. False, to get descending order.
+    # @return [Index] sorted `Index` according to its values.
     #
-    # == Returns:
-    # sorted `Index` according to its values.
-    #
-    # == Usage
-    #
+    # @example
     #   di = Daru::Index.new [100, 99, 101, 1, 2]
-    #   # Say you want to sort descending order
-    #   di.sort(ascending: false)
+    #   # Say you want to sort in descending order
+    #   di.sort(ascending: false) #=> Daru::Index.new [101, 100, 99, 2, 1]
+    #   # Say you want to sort in ascending order
+    #   di.sort #=> Daru::Index.new [1, 2, 99, 100, 101]
     def sort opts={}
       opts = {ascending: true}.merge(opts)
       if opts[:ascending]
@@ -244,6 +243,7 @@ module Daru
       else
         new_index, = @relation_hash.sort.reverse.transpose
       end
+
       self.class.new(new_index)
     end
 

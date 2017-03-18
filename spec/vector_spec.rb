@@ -1967,17 +1967,20 @@ describe Daru::Vector do
   end
 
   context "#sort_by_index" do
-    let(:num_vector) { Daru::Vector.new [11, 12, 13], index: [23, 22, 21] }
-    let(:other_types) { Daru::Vector.new [11, Float::NAN, nil], index: [23, 22, 21] }
+    let(:asc) { vector.sort_by_index }
+    let(:desc) { vector.sort_by_index(ascending: false) }
 
-    it "by default sort in ascending order" do
-      expect(num_vector.sort_by_index().to_a).to eq([13, 12, 11])
-      expect(other_types.sort_by_index().to_a).to eq([nil, Float::NAN, 11])
+    context 'numeric vector' do
+      let(:vector) { Daru::Vector.new [11, 13, 12], index: [23, 21, 22] }
+      specify { expect(asc.to_a).to eq [13, 12, 11] }
+      specify { expect(desc.to_a).to eq [11, 12, 13] }
     end
 
-    it "sorts the vector in descending order" do
-      expect(num_vector.sort_by_index(ascending: false)).to eq(num_vector)
-      expect(other_types.sort_by_index(ascending: false).to_a).to eq([11, Float::NAN, nil])
+    context 'mix variable type index' do
+      let(:vector) { Daru::Vector.new [11, Float::NAN, nil],
+                              index: [21, 23, 22] }
+      specify { expect(asc.to_a).to eq [11, nil, Float::NAN] }
+      specify { expect(desc.to_a).to eq [Float::NAN, nil, 11] }
     end
   end
 
