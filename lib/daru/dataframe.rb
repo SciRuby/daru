@@ -1902,14 +1902,13 @@ module Daru
 
     # Pretty print in a nice table format for the command line (irb/pry/iruby)
     def inspect spacing=10, threshold=15
-      row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
       name_part = @name ? ": #{@name} " : ''
 
       "#<#{self.class}#{name_part}(#{nrows}x#{ncols})>\n" +
         Formatters::Table.format(
           each_row.lazy,
           row_headers: row_headers,
-          headers: vectors,
+          headers: headers,
           threshold: threshold,
           spacing: spacing
         )
@@ -2005,6 +2004,18 @@ module Daru
     end
 
     private
+
+    def headers
+      if index.is_a?(MultiIndex)
+        Daru::Index.new(index.name) | @vectors
+      else
+        Daru::Index.new([index.name]) | @vectors
+      end
+    end
+
+    def row_headers
+      index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
+    end
 
     def convert_categorical_vectors names
       names.map do |n|
