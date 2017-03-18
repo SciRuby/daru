@@ -46,7 +46,7 @@ module Daru
     attr_reader :relation_hash, :size
     attr_accessor :name
 
-    def initialize index, opts={}
+    def initialize index, opts={} # rubocop:disable Metrics/MethodLength
       index =
         case index
         when nil
@@ -145,7 +145,7 @@ module Daru
     end
 
     def inspect threshold=20
-      name_part = self.name ? ": #{@name}" : ''
+      name_part = @name ? ": #{@name}" : ''
       if size <= threshold
         "#<#{self.class}#{name_part}(#{size}): {#{to_a.join(', ')}}>"
       else

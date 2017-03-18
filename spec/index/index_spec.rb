@@ -28,6 +28,24 @@ describe Daru::Index do
       expect(i.to_a).to eq([DateTime.new(2012,2,4), DateTime.new(2012,2,5), DateTime.new(2012,2,6)])
       expect(i.frequency).to eq('D')
     end
+
+    context "create an Index with name" do
+      context "if no name is set" do
+        let(:idx) { Daru::Index.new [:a, :b, :c] }
+        it { expect(idx.name).to be_nil }
+      end
+
+      context "correctly return the index name" do
+        let(:idx) { Daru::Index.new [:a, :b, :c], name: 'index_name' }
+        it { expect(idx.name).to eq 'index_name' }
+      end
+
+      context "set new index name" do
+        let(:idx) { Daru::Index.new [:a, :b, :c], name: 'index_name' }
+        before { idx.name = 'new_name' }
+        it { expect(idx.name).to eq 'new_name' }
+      end
+    end
   end
 
   context "#initialize" do
@@ -51,24 +69,6 @@ describe Daru::Index do
       idx = Daru::Index.new [:a, 'a', :hello, '23', 23]
 
       expect(idx.to_a).to eq([:a, 'a', :hello, '23', 23])
-    end
-
-    context "name the index" do
-      context "no name" do
-        let(:idx) { Daru::Index.new [:a, :b, :c] }
-        it { expect(idx.name).to be_nil }
-      end
-
-      context "get index name" do
-        let(:idx) { Daru::Index.new [:a, :b, :c], name: 'index_name' }
-        it { expect(idx.name).to eq 'index_name' }
-      end
-
-      context "set new index name" do
-        let(:idx) { Daru::Index.new [:a, :b, :c], name: 'index_name' }
-        before { idx.name = 'new_name' }
-        it { expect(idx.name).to eq 'new_name' }
-      end
     end
   end
 

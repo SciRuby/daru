@@ -35,6 +35,30 @@ describe Daru::MultiIndex do
           labels: [[0,0,1,1,2,2]])
       }.to raise_error
     end
+
+    context "create an MultiIndex with name" do
+      context "if no name is set" do
+        let(:mi) { Daru::MultiIndex.new(
+                    levels: [[:a,:b,:c], [:one, :two]],
+                    labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]]) }
+        it { expect(mi.name).to be_nil }
+      end
+
+      context "correctly return the MultiIndex name" do
+        let(:mi) { Daru::MultiIndex.new(
+                  levels: [[:a,:b,:c], [:one, :two]],
+                  labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]], name: ['n1', 'n2']) }
+        it { expect(mi.name).to eq ['n1', 'n2'] }
+      end
+
+      context "set new MultiIndex name" do
+        let(:mi) { Daru::MultiIndex.new(
+                  levels: [[:a,:b,:c], [:one, :two]],
+                  labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]], name: ['n1', 'n2']) }
+        before { mi.name = ['k1', 'k2']}
+        it { expect(mi.name).to eq ['k1', 'k2'] }
+      end
+    end
   end
 
   context ".from_tuples" do
@@ -255,6 +279,36 @@ describe Daru::MultiIndex do
         }.unindent
       }
     end
+
+    context 'multi index with name' do
+      subject {
+        mi= Daru::MultiIndex.new(
+                  levels: [[:a,:b,:c],[:one,:two],[:bar, :baz, :foo]],
+                  labels: [
+                    [0,0,0,0,1,1,1,1,2,2,2,2],
+                    [0,0,1,1,0,1,1,0,0,0,1,1],
+                    [0,1,0,1,0,0,1,2,0,1,2,0]], name: ['n1', 'n2', 'n3'])
+      }
+
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::MultiIndex(12x3)>
+        |  n1  n2  n3
+        |   a one bar
+        |         baz
+        |     two bar
+        |         baz
+        |   b one bar
+        |     two bar
+        |         baz
+        |     one foo
+        |   c one bar
+        |         baz
+        |     two foo
+        |         bar
+        }.unindent
+      }
+    end
+
   end
 
   context "#==" do
