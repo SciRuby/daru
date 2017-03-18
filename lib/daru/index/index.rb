@@ -43,9 +43,9 @@ module Daru
       self
     end
 
-    attr_reader :relation_hash, :size
+    attr_reader :relation_hash, :size, :name
 
-    def initialize index
+    def initialize index, opts={}
       index =
         case index
         when nil
@@ -62,6 +62,7 @@ module Daru
       @relation_hash = index.each_with_index.to_h.freeze
       @keys = @relation_hash.keys
       @size = @relation_hash.size
+      @name = opts[:name]
     end
 
     def ==(other)
@@ -144,9 +145,9 @@ module Daru
 
     def inspect threshold=20
       if size <= threshold
-        "#<#{self.class}(#{size}): {#{to_a.join(', ')}}>"
+        "#<#{self.class} #{self.name}(#{size}): {#{to_a.join(', ')}}>"
       else
-        "#<#{self.class}(#{size}): {#{to_a.first(threshold).join(', ')} ... #{to_a.last}}>"
+        "#<#{self.class} #{self.name}(#{size}): {#{to_a.first(threshold).join(', ')} ... #{to_a.last}}>"
       end
     end
 
@@ -220,6 +221,10 @@ module Daru
     def reorder(new_order)
       from = to_a
       self.class.new(new_order.map { |i| from[i] })
+    end
+
+    def set_name _name
+      @name = _name
     end
 
     private
