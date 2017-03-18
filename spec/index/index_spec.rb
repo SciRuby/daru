@@ -52,6 +52,24 @@ describe Daru::Index do
 
       expect(idx.to_a).to eq([:a, 'a', :hello, '23', 23])
     end
+
+    context "name the index" do
+      context "no name" do
+        let(:idx) { Daru::Index.new [:a, :b, :c] }
+        it { expect(idx.name).to be_nil }
+      end
+
+      context "get index name" do
+        let(:idx) { Daru::Index.new [:a, :b, :c], name: 'index_name' }
+        it { expect(idx.name).to eq 'index_name' }
+      end
+
+      context "set new index name" do
+        let(:idx) { Daru::Index.new [:a, :b, :c], name: 'index_name' }
+        before { idx.name = 'new_name' }
+        it { expect(idx.name).to eq 'new_name' }
+      end
+    end
   end
 
   context '#key' do
@@ -101,6 +119,11 @@ describe Daru::Index do
     context 'large index' do
       subject { Daru::Index.new ('a'..'z').to_a  }
       its(:inspect) { is_expected.to eq "#<Daru::Index(26): {a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t ... z}>" }
+    end
+
+    context 'index with name' do
+      subject { Daru::Index.new ['one', 'two', 'three'], name: 'number'  }
+      its(:inspect) { is_expected.to eq "#<Daru::Index: number(3): {one, two, three}>" }
     end
   end
 

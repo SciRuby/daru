@@ -24,6 +24,7 @@ module Daru
 
       @labels = labels
       @levels = levels.map { |e| e.map.with_index.to_h }
+      @name = opts[:name]
     end
 
     def incorrect_fields?(_labels, levels)
@@ -232,7 +233,7 @@ module Daru
 
     def inspect threshold=20
       "#<Daru::MultiIndex(#{size}x#{width})>\n" +
-        Formatters::Table.format([], row_headers: sparse_tuples, threshold: threshold)
+        Formatters::Table.format([], headers: @name, row_headers: sparse_tuples, threshold: threshold)
     end
 
     def to_html
