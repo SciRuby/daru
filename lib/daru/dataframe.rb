@@ -244,6 +244,18 @@ module Daru
     #   #  b          7          2
     #   #  c          8          3
     #   #  d          9          4
+    #
+    #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [6,7,8,9]}, order: [:b, :a],
+    #     index: Daru::Index.new([:a, :b, :c, :d], name: 'idx_name'),
+    #     name: :spider_man)
+    #
+    #   # =>
+    #   # <Daru::DataFrame:80766980 @name = spider_man @size = 4>
+    #   # idx_name            b          a
+    #   #        a          6          1
+    #   #        b          7          2
+    #   #        c          8          3
+    #   #        d          9          4
     def initialize source, opts={} # rubocop:disable Metrics/MethodLength
       vectors, index = opts[:order], opts[:index] # FIXME: just keyword arges after Ruby 2.1
       @data = []

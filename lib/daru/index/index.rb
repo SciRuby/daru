@@ -47,7 +47,7 @@ module Daru
     attr_accessor :name
 
     def initialize index, opts={}
-      index = index_cases index
+      index = guess_index index
 
       @relation_hash = index.each_with_index.to_h.freeze
       @keys = @relation_hash.keys
@@ -216,7 +216,7 @@ module Daru
 
     private
 
-    def index_cases index
+    def guess_index index
       case index
       when nil
         []

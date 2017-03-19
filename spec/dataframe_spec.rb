@@ -3677,7 +3677,7 @@ describe Daru::DataFrame do
       let(:df) { Daru::DataFrame.new({}, order: %w[a b c])}
       it { is_expected.to eq %Q{
         |#<Daru::DataFrame(0x3)>
-        |       a   b   c
+        |   a   b   c
       }.unindent}
     end
 
