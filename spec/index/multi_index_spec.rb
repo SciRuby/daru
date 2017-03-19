@@ -37,26 +37,27 @@ describe Daru::MultiIndex do
     end
 
     context "create an MultiIndex with name" do
-      context "if no name is set" do
-        let(:mi) { Daru::MultiIndex.new(
+      context 'if no name is set' do
+        subject { Daru::MultiIndex.new(
                     levels: [[:a,:b,:c], [:one, :two]],
                     labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]]) }
-        it { expect(mi.name).to be_nil }
+        its(:name) { is_expected.to be_nil }
       end
 
-      context "correctly return the MultiIndex name" do
-        let(:mi) { Daru::MultiIndex.new(
+      context 'correctly return the MultiIndex name' do
+        subject { Daru::MultiIndex.new(
                   levels: [[:a,:b,:c], [:one, :two]],
                   labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]], name: ['n1', 'n2']) }
-        it { expect(mi.name).to eq ['n1', 'n2'] }
+        its(:name) { is_expected.to eq ['n1', 'n2']  }
       end
 
       context "set new MultiIndex name" do
-        let(:mi) { Daru::MultiIndex.new(
+        subject {
+          Daru::MultiIndex.new(
                   levels: [[:a,:b,:c], [:one, :two]],
                   labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]], name: ['n1', 'n2']) }
-        before { mi.name = ['k1', 'k2']}
-        it { expect(mi.name).to eq ['k1', 'k2'] }
+        before { subject.name = ['k1', 'k2'] }
+        its(:name) { is_expected.to eq ['k1', 'k2']  }
       end
     end
   end

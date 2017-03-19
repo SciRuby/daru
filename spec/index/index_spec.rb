@@ -30,20 +30,21 @@ describe Daru::Index do
     end
 
     context "create an Index with name" do
-      context "if no name is set" do
-        let(:idx) { Daru::Index.new [:a, :b, :c] }
-        it { expect(idx.name).to be_nil }
+      context 'if no name is set' do
+        subject { Daru::Index.new [:a, :b, :c]  }
+        its(:name) { is_expected.to be_nil }
       end
 
-      context "correctly return the index name" do
-        let(:idx) { Daru::Index.new [:a, :b, :c], name: 'index_name' }
-        it { expect(idx.name).to eq 'index_name' }
+      context 'correctly return the index name' do
+        subject { Daru::Index.new [:a, :b, :c], name: 'index_name'  }
+        its(:name) { is_expected.to eq 'index_name' }
       end
 
       context "set new index name" do
-        let(:idx) { Daru::Index.new [:a, :b, :c], name: 'index_name' }
-        before { idx.name = 'new_name' }
-        it { expect(idx.name).to eq 'new_name' }
+        subject {
+          Daru::Index.new([:a, :b, :c], name: 'index_name') }
+        before { subject.name = 'new_name'}
+        its(:name) { is_expected.to eq 'new_name' }
       end
     end
   end

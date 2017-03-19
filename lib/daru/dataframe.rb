@@ -2006,11 +2006,7 @@ module Daru
     private
 
     def headers
-      if index.is_a?(MultiIndex)
-        Daru::Index.new(index.name) | @vectors
-      else
-        Daru::Index.new([index.name]) | @vectors
-      end
+      Daru::Index.new(Array(index.name) + @vectors.to_a)
     end
 
     def row_headers

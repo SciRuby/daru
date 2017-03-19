@@ -46,19 +46,8 @@ module Daru
     attr_reader :relation_hash, :size
     attr_accessor :name
 
-    def initialize index, opts={} # rubocop:disable Metrics/MethodLength
-      index =
-        case index
-        when nil
-          []
-        when Integer
-          index.times.to_a
-        when Enumerable
-          index.to_a
-        else
-          raise ArgumentError,
-            "Cannot create index from #{index.class} #{index.inspect}"
-        end
+    def initialize index, opts={}
+      index = index_cases index
 
       @relation_hash = index.each_with_index.to_h.freeze
       @keys = @relation_hash.keys
@@ -226,6 +215,20 @@ module Daru
     end
 
     private
+
+    def index_cases index
+      case index
+      when nil
+        []
+      when Integer
+        index.times.to_a
+      when Enumerable
+        index.to_a
+      else
+        raise ArgumentError,
+          "Cannot create index from #{index.class} #{index.inspect}"
+      end
+    end
 
     def preprocess_range rng
       start   = rng.begin
