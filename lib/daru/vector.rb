@@ -623,8 +623,7 @@ module Daru
     #   #=> Daru::Vector.new [11, 12, 13], index: [23, 22, 21]
     def sort_by_index opts={}
       opts = {ascending: true}.merge(opts)
-      new_arrangement = resort_index(@index.each_with_index, opts)
-      _, new_order = new_arrangement.transpose
+      _, new_order = resort_index(@index.each_with_index, opts).transpose
 
       reorder new_order
     end
