@@ -293,28 +293,57 @@ describe Daru::IO do
     end
 
     context "#from_html" do
-      let(:path) { path = "file://#{Dir.pwd}/spec/fixtures/wiki_table_info.html" }
+      let(:banklist) { "file://#{Dir.pwd}/spec/fixtures/banklist.html" }
+      let(:computer_sales_page) { "file://#{Dir.pwd}/spec/fixtures/computer_sales_page.html" }
+      let(:macau) { "file://#{Dir.pwd}/spec/fixtures/macau.html" }
+      let(:nyse_wsj) { "file://#{Dir.pwd}/spec/fixtures/nyse_wsj.html" }
+      let(:spam) { "file://#{Dir.pwd}/spec/fixtures/spam.html" }
+      let(:valid_markup) { "file://#{Dir.pwd}/spec/fixtures/valid_markup.html" }
+      let(:wiki_climate) { "file://#{Dir.pwd}/spec/fixtures/wiki_climate.html" }
+      let(:wiki_states) { "file://#{Dir.pwd}/spec/fixtures/wiki_states.html" }
+      let(:wiki_table_info) { "file://#{Dir.pwd}/spec/fixtures/wiki_table_info.html" }
 
-      it "reads table from html file into dataframe - test table 1" do
-        df = Daru::DataFrame.from_html(path)[0]
+      it "returns default dataframe list from html tables" do
+        df = Daru::DataFrame.from_html(wiki_table_info)[0]
         expect(df).to eq(Daru::DataFrame.new(
             [["Tinu", "Blaszczyk", "Lily", "Olatunkboh", "Adrienne", "Axelia", "Jon-Kabat"],
             ["Elejogun", "Kostrzewski", "McGarrett", "Chijiaku", "Anthoula", "Athanasios", "Zinn"],
             ["14", "25", "16", "22", "22", "22", "22"]], 
-            order: ["First name","Last name","Age"], 
-            name: "Age table"
+            order: ["First name","Last name","Age"]
           )
         )
       end
 
-      it "reads table with options from html file into dataframe - test table 1" do
-        df = Daru::DataFrame.from_html(path, order: ["FName","LName","Age"], name: "People Table")[0]
+      it "returns searched dataframe list from html tables" do
+        df = Daru::DataFrame.from_html(wiki_table_info, match: "Elejogun")[0]
         expect(df).to eq(Daru::DataFrame.new(
             [["Tinu", "Blaszczyk", "Lily", "Olatunkboh", "Adrienne", "Axelia", "Jon-Kabat"],
             ["Elejogun", "Kostrzewski", "McGarrett", "Chijiaku", "Anthoula", "Athanasios", "Zinn"],
             ["14", "25", "16", "22", "22", "22", "22"]], 
-            order: ["FName","LName","Age"], 
-            name: "People table"
+            order: ["First name","Last name","Age"]
+          )
+        )
+      end     
+
+      it "returns custom dataframe list from html tables" do
+        df = Daru::DataFrame.from_html(wiki_table_info, index: ["Person 1","Person 2","Person 3","Person 4","Person 5","Person 6","Person 7"])[0]
+        expect(df).to eq(Daru::DataFrame.new(
+            [["Tinu", "Blaszczyk", "Lily", "Olatunkboh", "Adrienne", "Axelia", "Jon-Kabat"],
+            ["Elejogun", "Kostrzewski", "McGarrett", "Chijiaku", "Anthoula", "Athanasios", "Zinn"],
+            ["14", "25", "16", "22", "22", "22", "22"]], 
+            order: ["First name","Last name","Age"],
+            index: ["Person 1","Person 2","Person 3","Person 4","Person 5","Person 6","Person 7"]
+          )
+        )
+      end     
+
+      it "skips some rows and returns dataframe list from html tables" do
+        df = Daru::DataFrame.from_html(wiki_table_info, skiprows: [2,0,3])[0]
+        expect(df).to eq(Daru::DataFrame.new(
+            [["Blaszczyk", "Adrienne", "Axelia", "Jon-Kabat"],
+            ["Kostrzewski", "Anthoula", "Athanasios", "Zinn"],
+            ["25", "22", "22", "22"]], 
+            order: ["First name","Last name","Age"]
           )
         )
       end     

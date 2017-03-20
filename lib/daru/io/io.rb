@@ -186,12 +186,14 @@ module Daru
         end
       end
 
-      def from_html path, fields
+      def from_html path, opts
         page = Mechanize.new.get(path)
         page.search('table').map { |table| parse_html_table table }
-            .map { |table| choose_value table, fields }
+            .keep_if { |table| search_for_match table, opts[:match] }
+            .reject(&:nil?).reject(&:empty?)
+            .map { |table| choose_value table, opts }
+            .map { |table| skiprows table, opts[:skiprows] }
             .map { |table| html_table_to_dataframe table }
-            .reject(&:nil?)
       rescue LoadError
         STDERR.puts '\nInstall the mechanize gem version 2.7.5 for using'\
         ' from_html function.'
@@ -234,28 +236,55 @@ module Daru
       end
 
       def parse_html_table(table)
-        data  = table.search('tr').map { |row| row.search('td').map { |val| val.text.strip } }
-        index = nil # TO-DO : Scrape index if any
-        name  = table.search('caption').empty? ? nil : table.search('caption').text.strip # Works only for Wiki
-        order = table.search('th').map { |header| header.text.strip }
-        {data: data.reject(&:empty?), index: index, name: name, order: order}
+        data = table.search('tr').map { |row| row.search('td').map { |val| val.text.strip } }
+        size = data.map(&:count).max
+        data.keep_if { |x| x.count == size }
+        headers = table.search('tr').map { |row| row.search('th').map { |val| val.text.strip } }
+        if headers[0].nil? || headers.map(&:count).max < size
+          {}
+        else
+          headers.keep_if { |x| !(x.count < size || x.nil?) }
+          order = headers.delete_at 0
+          ((order.delete_at 0) while order.count != size) if order.count > size
+          index = headers.flatten==[] ? nil : headers.flatten
+          if (index.nil? || index.count == size) && !order.nil? && order.count>0
+            {data: data.reject(&:empty?).reject(&:nil?), index: index, order: order}
+          else
+            {}
+          end
+        end
       end
 
-      def choose_value(scraped_val, user_val)
-        user_val.each do |key,val|
-          scraped_val[key] = val
+      def search_for_match(table, match=nil)
+        match.nil? ? true : (table.to_s.include? match)
+      end
+
+      def choose_value(scraped_val={}, user_val=nil)
+        unless user_val.nil?
+          user_val.each do |key,val|
+            scraped_val[key] = val
+          end
         end
         scraped_val
+      end
+
+      def skiprows(table, skiprows=nil)
+        unless skiprows.nil?
+          data_skip, index_skip = [], []
+          skiprows.each do |row|
+            data_skip.push(table[:data][row])
+            index_skip.push(table[:index][row]) unless table[:index].nil?
+          end
+          table[:data] -= data_skip
+          table[:index] -= index_skip unless table[:index].nil?
+        end
+        table
       end
 
       def html_table_to_dataframe(table)
         Daru::DataFrame.rows table[:data],
           index: table[:index],
-          name: table[:name],
           order: table[:order]
-        # TO-DO : Remove the rescue block with logical`
-        # segregation of navigation menus from tables
-      rescue # rubocop:disable Lint/HandleExceptions
       end
     end
   end
