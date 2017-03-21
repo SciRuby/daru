@@ -293,14 +293,9 @@ describe Daru::IO do
     end
 
     context "#from_html" do
-      let(:banklist) { "file://#{Dir.pwd}/spec/fixtures/banklist.html" }
-      let(:computer_sales_page) { "file://#{Dir.pwd}/spec/fixtures/computer_sales_page.html" }
       let(:macau) { "file://#{Dir.pwd}/spec/fixtures/macau.html" }
-      let(:nyse_wsj) { "file://#{Dir.pwd}/spec/fixtures/nyse_wsj.html" }
-      let(:spam) { "file://#{Dir.pwd}/spec/fixtures/spam.html" }
       let(:valid_markup) { "file://#{Dir.pwd}/spec/fixtures/valid_markup.html" }
       let(:wiki_climate) { "file://#{Dir.pwd}/spec/fixtures/wiki_climate.html" }
-      let(:wiki_states) { "file://#{Dir.pwd}/spec/fixtures/wiki_states.html" }
       let(:wiki_table_info) { "file://#{Dir.pwd}/spec/fixtures/wiki_table_info.html" }
 
       it "returns default dataframe list from html tables" do
@@ -326,24 +321,22 @@ describe Daru::IO do
       end     
 
       it "returns custom dataframe list from html tables" do
-        df = Daru::DataFrame.from_html(wiki_table_info, index: ["Person 1","Person 2","Person 3","Person 4","Person 5","Person 6","Person 7"])[0]
+        df = Daru::DataFrame.from_html(valid_markup, index: ["W","X","Y","Z"])[0]
         expect(df).to eq(Daru::DataFrame.new(
-            [["Tinu", "Blaszczyk", "Lily", "Olatunkboh", "Adrienne", "Axelia", "Jon-Kabat"],
-            ["Elejogun", "Kostrzewski", "McGarrett", "Chijiaku", "Anthoula", "Athanasios", "Zinn"],
-            ["14", "25", "16", "22", "22", "22", "22"]], 
-            order: ["First name","Last name","Age"],
-            index: ["Person 1","Person 2","Person 3","Person 4","Person 5","Person 6","Person 7"]
+            [["6", "4","9","7"],["7","0","4","0"]],
+            order: ["a","b"],
+            index: ["W","X","Y","Z"]
           )
         )
       end     
 
       it "skips some rows and returns dataframe list from html tables" do
-        df = Daru::DataFrame.from_html(wiki_table_info, skiprows: [2,0,3])[0]
+        df = Daru::DataFrame.from_html(macau, skiprows: [3,4,5,6,7,8,9,10,11])[0]
         expect(df).to eq(Daru::DataFrame.new(
             [["Blaszczyk", "Adrienne", "Axelia", "Jon-Kabat"],
             ["Kostrzewski", "Anthoula", "Athanasios", "Zinn"],
             ["25", "22", "22", "22"]], 
-            order: ["First name","Last name","Age"]
+            order: ["2013","2012","2011","2010","2009","2008"]
           )
         )
       end     

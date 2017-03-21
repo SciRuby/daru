@@ -235,23 +235,29 @@ module Daru
         headers.each_with_index.map { |h, i| [h, csv_as_arrays[i]] }.to_h
       end
 
-      def parse_html_table(table)
+      def parse_html_table(table) # rubocop:disable Metrics/AbcSize
         data = table.search('tr').map { |row| row.search('td').map { |val| val.text.strip } }
         size = data.map(&:count).max
         data.keep_if { |x| x.count == size }
         headers = table.search('tr').map { |row| row.search('th').map { |val| val.text.strip } }
+
+        # Check for index values and filter out other irrelevant data
         if headers[0].nil? || headers.map(&:count).max < size
           {}
         else
           headers.keep_if { |x| !(x.count < size || x.nil?) }
           order = headers.delete_at 0
           ((order.delete_at 0) while order.count != size) if order.count > size
-          index = headers.flatten==[] ? nil : headers.flatten
-          if (index.nil? || index.count == size) && !order.nil? && order.count>0
-            {data: data.reject(&:empty?).reject(&:nil?), index: index, order: order}
-          else
-            {}
-          end
+          parse_html_hash data, headers, order, size
+        end
+      end
+
+      def parse_html_hash data, headers, order, size
+        index = headers.flatten==[] ? nil : headers.flatten
+        if (index.nil? || index.count == size) && !order.nil? && order.count>0
+          {data: data.reject(&:empty?).reject(&:nil?), index: index, order: order}
+        else
+          {}
         end
       end
 
