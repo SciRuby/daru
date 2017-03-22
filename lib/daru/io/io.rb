@@ -233,31 +233,21 @@ module Daru
         headers.each_with_index.map { |h, i| [h, csv_as_arrays[i]] }.to_h
       end
 
-      def parse_html_table(table) # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
+      # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity, Metrics/CyclomaticComplexity
+      def parse_html_table(table)
         data = table.search('tr').map { |row| row.search('td').map { |val| val.text.strip } }
         size = data.map(&:count).max
         data.keep_if { |x| x.count == size }
         headers = table.search('tr').map { |row| row.search('th').map { |val| val.text.strip } }
-
-        # Check for index values and filter out other irrelevant data
-        if headers[0].nil? || headers.map(&:count).max < size
-          {}
-        else
-          headers.delete_at(0) while headers[0].nil? || headers[0].count < size
-          order = headers.delete_at(0)
-          ((order.delete_at 0) while order.count != size) if order.count > size
-          parse_html_index data, headers, order
-        end
-      end
-
-      def parse_html_index data, headers, order
+        return if headers[0].nil? || headers.map(&:count).max < size
+        headers.delete_at(0) while headers[0].nil? || headers[0].count < size
+        order = headers.delete_at(0)
+        ((order.delete_at 0) while order.count != size) if order.count > size
         index = headers.flatten==[] ? nil : headers.flatten
-        if (index.nil? || index.count == data.count) && !order.nil? && order.count>0
-          {data: data.reject(&:empty?).reject(&:nil?), index: index, order: order}
-        else
-          {}
-        end
+        return unless (index.nil? || index.count == data.count) && !order.nil? && order.count>0
+        {data: data.reject(&:empty?).reject(&:nil?), index: index, order: order}
       end
+      # rubocop:enable Metrics/AbcSize, Metrics/PerceivedComplexity, Metrics/CyclomaticComplexity
 
       def search_for_match(table, match=nil)
         match.nil? ? true : (table.to_s.include? match)
