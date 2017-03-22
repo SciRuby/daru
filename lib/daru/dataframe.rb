@@ -63,7 +63,7 @@ module Daru
 
       # Read a database query and returns a Dataset
       #
-      # @param dbh [DBI::DatabaseHandle] A DBI connection to be used to run the query
+      # @param dbh [DBI::DatabaseHandle, String] A DBI connection OR Path to a SQlite3 database.
       # @param query [String] The query to be executed
       #
       # @return A dataframe containing the data resulting from the query
@@ -72,6 +72,11 @@ module Daru
       #
       #  dbh = DBI.connect("DBI:Mysql:database:localhost", "user", "password")
       #  Daru::DataFrame.from_sql(dbh, "SELECT * FROM test")
+      #
+      #  #Alternatively
+      #
+      #  require 'dbi'
+      #  Daru::DataFrame.from_sql("path/to/sqlite.db", "SELECT * FROM test")
       def from_sql dbh, query
         Daru::IO.from_sql dbh, query
       end
@@ -1423,19 +1428,16 @@ module Daru
       Daru::DataFrame.new(arry, clone: cln, order: order, index: @index)
     end
 
-    # Generate a summary of this DataFrame with ReportBuilder.
-    def summary(method=:to_text)
-      ReportBuilder.new(no_title: true).add(self).send(method)
-    end
-
-    def report_building(b) # :nodoc: #
-      b.section(name: @name) do |g|
-        g.text "Number of rows: #{nrows}"
-        @vectors.each do |v|
-          g.text "Element:[#{v}]"
-          g.parse_element(self[v])
-        end
+    # Generate a summary of this DataFrame based on individual vectors in the DataFrame
+    # @return [String] String containing the summary of the DataFrame
+    def summary
+      summary = "= #{name}"
+      summary << "\n  Number of rows: #{nrows}"
+      @vectors.each do |v|
+        summary << "\n  Element:[#{v}]\n"
+        summary << self[v].summary(1)
       end
+      summary
     end
 
     # Sorts a dataframe (ascending/descending) in the given pripority sequence of

@@ -187,6 +187,27 @@ module Daru
       @relation_hash.key? index
     end
 
+    # @note Do not use it to check for Float::NAN as
+    #   Float::NAN == Float::NAN is false
+    # Return vector of booleans with value at ith position is either
+    # true or false depending upon whether index value at position i is equal to
+    # any of the values passed in the argument or not
+    # @param [Array] *indexes values to equate with
+    # @return [Daru::Vector] vector of boolean values
+    # @example
+    #   dv = Daru::Index.new [1, 2, 3, :one, 'one']
+    #   dv.is_values 1, 'one'
+    #   # => #<Daru::Vector(5)>
+    #   #     0  true
+    #   #     1  false
+    #   #     2  false
+    #   #     3  false
+    #   #     4  true
+    def is_values(*indexes) # rubocop:disable Style/PredicateName
+      bool_array = @relation_hash.keys.map { |r| indexes.include?(r) }
+      Daru::Vector.new(bool_array)
+    end
+
     def empty?
       @relation_hash.empty?
     end

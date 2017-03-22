@@ -168,7 +168,7 @@ data_frame.where(
 ```
 ![con1](images/con1.png)
 
-*Plotting* 
+*Plotting*
 
 Daru supports plotting of interactive graphs with [nyaplot](https://github.com/domitry/nyaplot). You can easily create a plot with the `#plot` method. Here we plot the gallons sold on the Y axis and name of the brand on the X axis in a bar graph.
 ``` ruby
@@ -196,7 +196,7 @@ For details see [CONTRIBUTING](https://github.com/v0dro/daru/blob/master/CONTRIB
 
 ## Acknowledgements
 
-* Google and the Ruby Science Foundation for the Google Summer of Code 2016 grant for speed enhancements and implementation of support for categorical data. Special thanks to [@lokeshh](https://github.com/lokeshh), [@zverok](https://github.com/zverok) and [@agisga](https://github.com/agisga) for their efforts. 
+* Google and the Ruby Science Foundation for the Google Summer of Code 2016 grant for speed enhancements and implementation of support for categorical data. Special thanks to [@lokeshh](https://github.com/lokeshh), [@zverok](https://github.com/zverok) and [@agisga](https://github.com/agisga) for their efforts.
 * Google and the Ruby Science Foundation for the Google Summer of Code 2015 grant for further developing daru and integrating it with other ruby gems.
 * Thank you [last.fm](http://www.last.fm/) for making user data accessible to the public.
 

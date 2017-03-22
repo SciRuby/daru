@@ -352,7 +352,7 @@ module Daru
         if other.is_a?(Daru::Vector)
           mod.apply_vector_operator operator, self, other
         else
-          mod.apply_scalar_operator operator, @data,other
+          mod.apply_scalar_operator operator, @data, other
         end
       end
       alias_method operator, method if operator != :== && operator != :!=
@@ -879,41 +879,67 @@ module Daru
       to_html
     end
 
-    # Create a summary of the Vector using Report Builder.
-    def summary(method=:to_text)
-      ReportBuilder.new(no_title: true).add(self).send(method)
-    end
-
-    # :nocov:
-    def report_building b # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
-      b.section(name: name) do |s|
-        s.text "n :#{size}"
-        s.text "n valid:#{count_values(*Daru::MISSING_VALUES)}"
-        if @type == :object
-          s.text  "factors: #{factors.to_a.join(',')}"
-          s.text  "mode: #{mode}"
-
-          s.table(name: 'Distribution') do |t|
-            frequencies.sort_by(&:to_s).each do |k,v|
-              key = @index.include?(k) ? @index[k] : k
-              t.row [key, v, ('%0.2f%%' % (v.quo(count_values(*Daru::MISSING_VALUES))*100))]
-            end
-          end
-        end
-
-        s.text "median: #{median}" if @type==:numeric || @type==:numeric
-        if @type==:numeric
-          s.text 'mean: %0.4f' % mean
-          if sd
-            s.text 'std.dev.: %0.4f' % sd
-            s.text 'std.err.: %0.4f' % se
-            s.text 'skew: %0.4f' % skew
-            s.text 'kurtosis: %0.4f' % kurtosis
-          end
-        end
+    # Create a summary of the Vector
+    # @params [Fixnum] indent_level
+    # @return [String] String containing the summary of the Vector
+    # @example
+    #   dv = Daru::Vector.new [1, 2, 3]
+    #   puts dv.summary
+    #
+    #   # =
+    #   #   n :3
+    #   #   non-missing:3
+    #   #   median: 2
+    #   #   mean: 2.0000
+    #   #   std.dev.: 1.0000
+    #   #   std.err.: 0.5774
+    #   #   skew: 0.0000
+    #   #   kurtosis: -2.3333
+    def summary(indent_level=0)
+      non_missing = size - count_values(*Daru::MISSING_VALUES)
+      summary = '  =' * indent_level + "= #{name}" \
+                "\n  n :#{size}" \
+                "\n  non-missing:#{non_missing}"
+      case type
+      when :object
+        summary << object_summary
+      when :numeric
+        summary << numeric_summary
       end
+      summary.split("\n").join("\n" + '  ' * indent_level)
     end
-    # :nocov:
+
+    # Displays summary for an object type Vector
+    # @return [String] String containing object vector summary
+    def object_summary
+      nval = count_values(*Daru::MISSING_VALUES)
+      summary = "\n  factors: #{factors.to_a.join(',')}" \
+                "\n  mode: #{mode.to_a.join(',')}" \
+                "\n  Distribution\n"
+
+      data = frequencies.sort.each_with_index.map do |v, k|
+        [k, v, '%0.2f%%' % ((nval.zero? ? 1 : v.quo(nval))*100)]
+      end
+
+      summary + Formatters::Table.format(data)
+    end
+
+    # Displays summary for an numeric type Vector
+    # @return [String] String containing numeric vector summary
+    def numeric_summary
+      summary = "\n  median: #{median}" +
+                "\n  mean: %0.4f" % mean
+      if sd
+        summary << "\n  std.dev.: %0.4f" % sd +
+                   "\n  std.err.: %0.4f" % se
+      end
+
+      if count_values(*Daru::MISSING_VALUES).zero?
+        summary << "\n  skew: %0.4f" % skew +
+                   "\n  kurtosis: %0.4f" % kurtosis
+      end
+      summary
+    end
 
     # Over rides original inspect for pretty printing in irb
     def inspect spacing=20, threshold=15

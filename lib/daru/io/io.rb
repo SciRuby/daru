@@ -111,11 +111,10 @@ module Daru
 
       # Execute a query and create a data frame from the result
       #
-      # @param dbh [DBI::DatabaseHandle] A DBI connection to be used to run the query
+      # @param dbh [DBI::DatabaseHandle, String] A DBI connection OR Path to a SQlite3 database.
       # @param query [String] The query to be executed
       #
       # @return A dataframe containing the data resulting from the query
-
       def from_sql(db, query)
         require 'daru/io/sql_data_source'
         SqlDataSource.make_dataframe(db, query)
@@ -186,6 +185,7 @@ module Daru
         end
       end
 
+<<<<<<< HEAD
       def from_html path, opts
         page = Mechanize.new.get(path)
         page.search('table').map { |table| parse_html_table table }
@@ -193,6 +193,13 @@ module Daru
             .reject(&:nil?).reject(&:empty?)
             .map { |table| choose_value table, opts }
             .map { |table| html_table_to_dataframe table }
+=======
+      def from_html path
+        page = Mechanize.new.get(path)
+        page.search('table').map { |table| parse_html_table table }
+            .map { |table| html_table_to_dataframe table }
+            .reject(&:nil?)
+>>>>>>> 84f1aef
       rescue LoadError
         STDERR.puts '\nInstall the mechanize gem version 2.7.5 for using'\
         ' from_html function.'
