@@ -185,7 +185,6 @@ module Daru
         end
       end
 
-<<<<<<< HEAD
       def from_html path, opts
         page = Mechanize.new.get(path)
         page.search('table').map { |table| parse_html_table table }
@@ -193,13 +192,6 @@ module Daru
             .reject(&:nil?).reject(&:empty?)
             .map { |table| choose_value table, opts }
             .map { |table| html_table_to_dataframe table }
-=======
-      def from_html path
-        page = Mechanize.new.get(path)
-        page.search('table').map { |table| parse_html_table table }
-            .map { |table| html_table_to_dataframe table }
-            .reject(&:nil?)
->>>>>>> 84f1aef
       rescue LoadError
         STDERR.puts '\nInstall the mechanize gem version 2.7.5 for using'\
         ' from_html function.'
