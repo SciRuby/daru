@@ -192,7 +192,6 @@ module Daru
             .keep_if { |table| search_for_match table, opts[:match] }
             .reject(&:nil?).reject(&:empty?)
             .map { |table| choose_value table, opts }
-            .map { |table| skiprows table, opts[:skiprows] }
             .map { |table| html_table_to_dataframe table }
       rescue LoadError
         STDERR.puts '\nInstall the mechanize gem version 2.7.5 for using'\
@@ -235,7 +234,7 @@ module Daru
         headers.each_with_index.map { |h, i| [h, csv_as_arrays[i]] }.to_h
       end
 
-      def parse_html_table(table) # rubocop:disable Metrics/AbcSize
+      def parse_html_table(table) # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
         data = table.search('tr').map { |row| row.search('td').map { |val| val.text.strip } }
         size = data.map(&:count).max
         data.keep_if { |x| x.count == size }
@@ -245,16 +244,16 @@ module Daru
         if headers[0].nil? || headers.map(&:count).max < size
           {}
         else
-          headers.keep_if { |x| !(x.count < size || x.nil?) }
-          order = headers.delete_at 0
+          headers.delete_at(0) while headers[0].nil? || headers[0].count < size
+          order = headers.delete_at(0)
           ((order.delete_at 0) while order.count != size) if order.count > size
-          parse_html_hash data, headers, order, size
+          parse_html_index data, headers, order
         end
       end
 
-      def parse_html_hash data, headers, order, size
+      def parse_html_index data, headers, order
         index = headers.flatten==[] ? nil : headers.flatten
-        if (index.nil? || index.count == size) && !order.nil? && order.count>0
+        if (index.nil? || index.count == data.count) && !order.nil? && order.count>0
           {data: data.reject(&:empty?).reject(&:nil?), index: index, order: order}
         else
           {}
@@ -272,19 +271,6 @@ module Daru
           end
         end
         scraped_val
-      end
-
-      def skiprows(table, skiprows=nil)
-        unless skiprows.nil?
-          data_skip, index_skip = [], []
-          skiprows.each do |row|
-            data_skip.push(table[:data][row])
-            index_skip.push(table[:index][row]) unless table[:index].nil?
-          end
-          table[:data] -= data_skip
-          table[:index] -= index_skip unless table[:index].nil?
-        end
-        table
       end
 
       def html_table_to_dataframe(table)

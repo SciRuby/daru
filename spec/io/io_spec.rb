@@ -309,6 +309,14 @@ describe Daru::IO do
         )
       end
 
+      it "returns default dataframe list from html tables with index" do
+        df = Daru::DataFrame.from_html(wiki_climate)[0]
+        expect(df.index).to eq(Daru::Index.new(
+            ["Record high °C (°F)", "Average high °C (°F)", "Daily mean °C (°F)", "Average low °C (°F)", "Record low °C (°F)", "Average rainfall mm (inches)", "Average rainy days", "Average relative humidity (%)", "Mean monthly sunshine hours", "Mean daily sunshine hours"]
+          )
+        )       
+      end
+
       it "returns searched dataframe list from html tables" do
         df = Daru::DataFrame.from_html(wiki_table_info, match: "Elejogun")[0]
         expect(df).to eq(Daru::DataFrame.new(
@@ -316,6 +324,30 @@ describe Daru::IO do
             ["Elejogun", "Kostrzewski", "McGarrett", "Chijiaku", "Anthoula", "Athanasios", "Zinn"],
             ["14", "25", "16", "22", "22", "22", "22"]], 
             order: ["First name","Last name","Age"]
+          )
+        )
+      end
+
+      it "returns searched dataframe list from html tables with index" do
+        df = Daru::DataFrame.from_html(macau, match: "2001")[0]
+        expect(df).to eq(Daru::DataFrame.new(
+          [
+            ["265,603","184,381","161,264","161,432","117,984",""],
+            ["249,259","264,066","209,569","168,777","150,772",""],
+            ["312,319","226,483","186,965","172,060","149,795",""],
+            ["351,793","296,541","237,449","180,241","179,049",""],
+            ["338,692","288,949","230,691","172,391","189,925",""],          
+            ["332,630","271,181","231,328","157,519","175,402",""],          
+            ["344,658","304,276","243,534","205,595","173,103",""],          
+            ["360,899","300,418","257,616","241,140","178,118",""],          
+            ["291,817","280,803","210,885","183,954","163,385",""],          
+            ["327,232","298,873","231,251","205,726","176,879",""],          
+            ["315,538","265,528","228,637","181,677","146,804",""],          
+            ["314,866","257,929","210,922","183,975","151,362",""],          
+            ["3,805,306","3,239,428","2,640,111","2,214,487","1,952,578","0"]
+          ].transpose,
+          order: ["2001","2000","1999","1998","1997","1996"],
+          index: ["January","February","March","April","May","June","July","August","September","October","November","December","Total"]
           )
         )
       end     
@@ -326,17 +358,6 @@ describe Daru::IO do
             [["6", "4","9","7"],["7","0","4","0"]],
             order: ["a","b"],
             index: ["W","X","Y","Z"]
-          )
-        )
-      end     
-
-      it "skips some rows and returns dataframe list from html tables" do
-        df = Daru::DataFrame.from_html(macau, skiprows: [3,4,5,6,7,8,9,10,11])[0]
-        expect(df).to eq(Daru::DataFrame.new(
-            [["Blaszczyk", "Adrienne", "Axelia", "Jon-Kabat"],
-            ["Kostrzewski", "Anthoula", "Athanasios", "Zinn"],
-            ["25", "22", "22", "22"]], 
-            order: ["2013","2012","2011","2010","2009","2008"]
           )
         )
       end     

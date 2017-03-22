@@ -118,7 +118,7 @@ module Daru
       # == Arguments
       #
       # * path - Path / URL of the html file to be read.
-      # * fields - A Hash to overwrite the scraped values from a web page. Supported keys : data, index, name and order.
+      # * fields - A Hash, with match key to search. data, order, index keys can overwrite the scraped values from web.
       #
       # == Usage
       #
