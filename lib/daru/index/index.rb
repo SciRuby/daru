@@ -133,11 +133,11 @@ module Daru
     end
 
     def inspect threshold=20
-      name_part = @name ? ": #{@name}" : ''
+      name_part = @name ? "#{@name} " : ''
       if size <= threshold
-        "#<#{self.class}#{name_part}(#{size}): {#{to_a.join(', ')}}>"
+        "#<#{self.class}(#{size}): #{name_part}{#{to_a.join(', ')}}>"
       else
-        "#<#{self.class}#{name_part}(#{size}): {#{to_a.first(threshold).join(', ')} ... #{to_a.last}}>"
+        "#<#{self.class}(#{size}): #{name_part}{#{to_a.first(threshold).join(', ')} ... #{to_a.last}}>"
       end
     end
 

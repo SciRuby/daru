@@ -124,7 +124,7 @@ describe Daru::Index do
 
     context 'index with name' do
       subject { Daru::Index.new ['one', 'two', 'three'], name: 'number'  }
-      its(:inspect) { is_expected.to eq "#<Daru::Index: number(3): {one, two, three}>" }
+      its(:inspect) { is_expected.to eq "#<Daru::Index(3): number {one, two, three}>" }
     end
   end
 
