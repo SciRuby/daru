@@ -1,5 +1,5 @@
 module Daru
-  class Index
+  class Index # rubocop:disable Metrics/ClassLength
     include Enumerable
     # It so happens that over riding the .new method in a super class also
     # tampers with the default .new method for class that inherit from the
@@ -48,7 +48,6 @@ module Daru
 
     def initialize index, opts={}
       index = guess_index index
-
       @relation_hash = index.each_with_index.to_h.freeze
       @keys = @relation_hash.keys
       @size = @relation_hash.size
