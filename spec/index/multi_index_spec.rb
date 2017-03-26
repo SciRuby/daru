@@ -48,7 +48,7 @@ describe Daru::MultiIndex do
         subject { Daru::MultiIndex.new(
                   levels: [[:a,:b,:c], [:one, :two]],
                   labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]], name: ['n1', 'n2']) }
-        its(:name) { is_expected.to eq ['n1', 'n2']  }
+        its(:name) { is_expected.to eq ['n1', 'n2'] }
       end
 
       context "set new MultiIndex name" do
@@ -56,8 +56,24 @@ describe Daru::MultiIndex do
           Daru::MultiIndex.new(
                   levels: [[:a,:b,:c], [:one, :two]],
                   labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]], name: ['n1', 'n2']) }
-        before { subject.name = ['k1', 'k2'] }
-        its(:name) { is_expected.to eq ['k1', 'k2']  }
+        before(:each) { subject.name = ['k1', 'k2'] }
+        its(:name) { is_expected.to eq ['k1', 'k2'] }
+      end
+
+      context "set new MultiIndex name having empty string" do
+        subject {
+          Daru::MultiIndex.new(
+                  levels: [[:a,:b,:c], [:one, :two]],
+                  labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]], name: ['n1', 'n2']) }
+        before { subject.name = ['k1', ''] }
+        its(:name) { is_expected.to eq ['k1', ''] }
+      end
+
+      it "raises SizeError for wrong number of name" do
+        expect { @multi_mi.name = ['n1', 'n2'] }.to raise_error SizeError
+        expect { @multi_mi.name = [ ] }.to raise_error SizeError
+        expect { @multi_mi.name = [''] }.to raise_error SizeError
+        expect { @multi_mi.name = ['n1', 'n2', 'n3', 'n4'] }.to raise_error SizeError
       end
     end
   end
@@ -294,6 +310,36 @@ describe Daru::MultiIndex do
       its(:inspect) { is_expected.to eq %Q{
         |#<Daru::MultiIndex(12x3)>
         |  n1  n2  n3
+        |   a one bar
+        |         baz
+        |     two bar
+        |         baz
+        |   b one bar
+        |     two bar
+        |         baz
+        |     one foo
+        |   c one bar
+        |         baz
+        |     two foo
+        |         bar
+        }.unindent
+      }
+    end
+
+    context 'multi index with name having empty string' do
+      subject {
+        mi= Daru::MultiIndex.new(
+                  levels: [[:a,:b,:c],[:one,:two],[:bar, :baz, :foo]],
+                  labels: [
+                    [0,0,0,0,1,1,1,1,2,2,2,2],
+                    [0,0,1,1,0,1,1,0,0,0,1,1],
+                    [0,1,0,1,0,0,1,2,0,1,2,0]], name: ['n1', 'n2', 'n3'])
+      }
+      before { subject.name = ['n1', '', 'n3'] }
+
+      its(:inspect) { is_expected.to eq %Q{
+        |#<Daru::MultiIndex(12x3)>
+        |  n1      n3
         |   a one bar
         |         baz
         |     two bar

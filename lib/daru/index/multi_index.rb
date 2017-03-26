@@ -1,5 +1,5 @@
 module Daru
-  class MultiIndex < Index
+  class MultiIndex < Index # rubocop:disable Metrics/ClassLength
     def each(&block)
       to_a.each(&block)
     end
@@ -14,17 +14,30 @@ module Daru
       @levels.map(&:keys)
     end
 
+    # names and levels should be of same size. If size of Array `name` is less
+    # or greater than size of array `levels` then raises `SizeError`.
+    # If user don't want to put name for particular level then user must put
+    # empty string in that index of Array `name`.
+    # For example there is multi_index of 3 levels and user don't want to name
+    # level 0, then do mulit_index.name = ['', 'level1_name1', 'level2_name']
     def initialize opts={}
       labels = opts[:labels]
       levels = opts[:levels]
+      names = opts[:name]
 
       raise ArgumentError, 'Must specify both labels and levels' unless labels && levels
       raise ArgumentError, 'Labels and levels should be same size' if labels.size != levels.size
       raise ArgumentError, 'Incorrect labels and levels' if incorrect_fields?(labels, levels)
+      validate_name names, levels unless names.nil?
 
       @labels = labels
       @levels = levels.map { |e| e.map.with_index.to_h }
-      @name = opts[:name]
+      @name = names
+    end
+
+    def name=(names)
+      validate_name names, labels
+      @name = names
     end
 
     def incorrect_fields?(_labels, levels)
@@ -172,8 +185,20 @@ module Daru
       end
     end
 
+    # Array `name` must have same length as levels and labels.
+    def validate_name names, levels
+      error_msg = 'names and levels should be of same size. size of the name '\
+      'array is #{names.size} and size of the MultiIndex levels and labels is'\
+      ' #{labels.size}.'
+      suggestion_msg = 'If you don\'t want to set name for particular level ' \
+      '(say level `i`) then put empty string on index `i` of the `name` Array.'
+
+      raise SizeError, error_msg if names.size > levels.size
+      raise SizeError, [error_msg, suggestion_msg].join("\n") if names.size < levels.size
+    end
+
     private :find_all_indexes, :multi_index_from_multiple_selections,
-      :retrieve_from_range, :retrieve_from_tuples
+      :retrieve_from_range, :retrieve_from_tuples, :validate_name
 
     def key index
       raise ArgumentError, "Key #{index} is too large" if index >= @labels[0].size
