@@ -1,5 +1,5 @@
 module Daru
-  class Index
+  class Index # rubocop:disable Metrics/ClassLength
     include Enumerable
     # It so happens that over riding the .new method in a super class also
     # tampers with the default .new method for class that inherit from the
@@ -241,6 +241,31 @@ module Daru
     def reorder(new_order)
       from = to_a
       self.class.new(new_order.map { |i| from[i] })
+    end
+
+    # Sorts a `Index`, according to its values. Defaults to ascending order
+    # sorting.
+    #
+    # @param [Hash] opts the options for sort method.
+    # @option opts [Boolean] :ascending False, to get descending order.
+    #
+    # @return [Index] sorted `Index` according to its values.
+    #
+    # @example
+    #   di = Daru::Index.new [100, 99, 101, 1, 2]
+    #   # Say you want to sort in descending order
+    #   di.sort(ascending: false) #=> Daru::Index.new [101, 100, 99, 2, 1]
+    #   # Say you want to sort in ascending order
+    #   di.sort #=> Daru::Index.new [1, 2, 99, 100, 101]
+    def sort opts={}
+      opts = {ascending: true}.merge(opts)
+      if opts[:ascending]
+        new_index, = @relation_hash.sort.transpose
+      else
+        new_index, = @relation_hash.sort.reverse.transpose
+      end
+
+      self.class.new(new_index)
     end
 
     private
