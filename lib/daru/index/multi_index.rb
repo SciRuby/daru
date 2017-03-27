@@ -14,6 +14,11 @@ module Daru
       @levels.map(&:keys)
     end
 
+    def name=(names)
+      validate_name names, @labels
+      @name = names
+    end
+
     # names and levels should be of same size. If size of Array `name` is less
     # or greater than size of array `levels` then raises `SizeError`.
     # If user don't want to put name for particular level then user must put
@@ -23,21 +28,14 @@ module Daru
     def initialize opts={}
       labels = opts[:labels]
       levels = opts[:levels]
-      names = opts[:name]
 
       raise ArgumentError, 'Must specify both labels and levels' unless labels && levels
       raise ArgumentError, 'Labels and levels should be same size' if labels.size != levels.size
       raise ArgumentError, 'Incorrect labels and levels' if incorrect_fields?(labels, levels)
-      validate_name names, levels unless names.nil?
 
       @labels = labels
       @levels = levels.map { |e| e.map.with_index.to_h }
-      @name = names
-    end
-
-    def name=(names)
-      validate_name names, labels
-      @name = names
+      self.name = opts[:name] unless opts[:name].nil?
     end
 
     def incorrect_fields?(_labels, levels)
@@ -187,11 +185,11 @@ module Daru
 
     # Array `name` must have same length as levels and labels.
     def validate_name names, levels
-      error_msg = 'names and levels should be of same size. size of the name '\
-      'array is #{names.size} and size of the MultiIndex levels and labels is'\
-      ' #{labels.size}.'
-      suggestion_msg = 'If you don\'t want to set name for particular level ' \
-      '(say level `i`) then put empty string on index `i` of the `name` Array.'
+      error_msg = "'names' and 'levels' should be of same size. Size of the "\
+      "'name' array is #{names.size} and size of the MultiIndex 'levels' and "\
+      "'labels' is #{labels.size}."
+      suggestion_msg = "If you don\'t want to set name for particular level " \
+      "(say level 'i') then put empty string on index 'i' of the 'name' Array."
 
       raise SizeError, error_msg if names.size > levels.size
       raise SizeError, [error_msg, suggestion_msg].join("\n") if names.size < levels.size
