@@ -32,6 +32,11 @@ describe Daru::IO do
         df = Daru::DataFrame.from_csv 'spec/fixtures/sales-funnel.csv'
         expect(df.vectors.to_a).to eq(%W[Account Name Rep Manager Product Quantity Price Status])
       end
+      
+      it "Makes use of the block_given? functionality inside from_csv_hash" do
+        df = Daru::DataFrame.from_csv ('spec/fixtures/block_given_example.csv') {|csv| csv.each{|row| row.each{|elem| elem.upcase!}}}
+        expect(df.vectors.to_a).to eq(%W[THIS IS A TEST])
+      end
     end
 
     context "#write_csv" do
