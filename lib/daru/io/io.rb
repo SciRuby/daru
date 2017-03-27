@@ -74,16 +74,16 @@ module Daru
       end
 
       # Functions for loading/writing CSV files
-      def from_csv path, opts={}
+      def from_csv path, opts={}, &block
         daru_options, opts = from_csv_prepare_opts opts
 
         # Preprocess headers for detecting and correcting repetition in
         # case the :headers option is not specified.
         hsh =
           if opts[:headers]
-            from_csv_hash_with_headers(path, opts)
+            from_csv_hash_with_headers(path, opts, &block)
           else
-            from_csv_hash(path, opts)
+            from_csv_hash(path, opts, &block)
               .tap { |hash| daru_options[:order] = hash.keys }
           end
 
@@ -199,7 +199,7 @@ module Daru
         [daru_options, opts]
       end
 
-      def from_csv_hash_with_headers(path, opts)
+      def from_csv_hash_with_headers(path, opts, &block)
         opts[:header_converters] ||= :symbol
 
         ::CSV
@@ -208,13 +208,12 @@ module Daru
           .by_col.map { |col_name, values| [col_name, values] }.to_h
       end
 
-      def from_csv_hash(path, opts)
+      def from_csv_hash(path, opts, &block)
         csv_as_arrays =
           ::CSV
           .open(path, 'rb', opts)
-          .tap { |c| yield c if block_given? }
           .to_a
-
+        csv_as_arrays.tap { |c| block.call c if block_given? }
         headers       = ArrayHelper.recode_repeated(csv_as_arrays.shift)
         csv_as_arrays = csv_as_arrays.transpose
 
