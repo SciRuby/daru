@@ -70,10 +70,17 @@ describe Daru::MultiIndex do
       end
 
       it "raises SizeError for wrong number of name" do
-        expect { @multi_mi.name = ['n1', 'n2'] }.to raise_error SizeError
-        expect { @multi_mi.name = [ ] }.to raise_error SizeError
-        expect { @multi_mi.name = [''] }.to raise_error SizeError
-        expect { @multi_mi.name = ['n1', 'n2', 'n3', 'n4'] }.to raise_error SizeError
+        error_msg = '\'names\' and \'levels\' should be of same size. Size of the \'name\' array is 2 and size of the MultiIndex \'levels\' and \'labels\' is 3. If you don\'t want to set name for particular level (say level \'i\') then put empty string on index \'i\' of the \'name\' Array.'
+        expect { @multi_mi.name = ['n1', 'n2'] }.to raise_error(SizeError, error_msg)
+
+        error_msg = "'names' and 'levels' should be of same size. Size of the 'name' array is 0 and size of the MultiIndex 'levels' and 'labels' is 3. If you don\'t want to set name for particular level (say level 'i') then put empty string on index 'i' of the 'name' Array."
+        expect { @multi_mi.name = [ ] }.to raise_error(SizeError, error_msg)
+
+        error_msg = "'names' and 'levels' should be of same size. Size of the 'name' array is 1 and size of the MultiIndex 'levels' and 'labels' is 3. If you don\'t want to set name for particular level (say level 'i') then put empty string on index 'i' of the 'name' Array."
+        expect { @multi_mi.name = [''] }.to raise_error(SizeError, error_msg)
+
+        error_msg = "'names' and 'levels' should be of same size. Size of the 'name' array is 4 and size of the MultiIndex 'levels' and 'labels' is 3."
+        expect { @multi_mi.name = ['n1', 'n2', 'n3', 'n4'] }.to raise_error(SizeError, error_msg)
       end
     end
   end

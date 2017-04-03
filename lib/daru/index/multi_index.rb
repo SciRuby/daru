@@ -14,11 +14,6 @@ module Daru
       @levels.map(&:keys)
     end
 
-    def name=(names)
-      validate_name names, @labels
-      @name = names
-    end
-
     # names and levels should be of same size. If size of Array `name` is less
     # or greater than size of array `levels` then raises `SizeError`.
     # If user don't want to put name for particular level then user must put
@@ -36,6 +31,69 @@ module Daru
       @labels = labels
       @levels = levels.map { |e| e.map.with_index.to_h }
       self.name = opts[:name] unless opts[:name].nil?
+    end
+
+    # @example
+    #
+    #   # set the name during initialization
+    #
+    # mi = Daru::MultiIndex.new(
+    #       levels: [[:a,:b,:c], [:one, :two]],
+    #       labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]], name: ['s1', 's2'])
+    # => #<Daru::MultiIndex(6x2)>
+    #   s1  s2
+    #    a one
+    #      two
+    #    b one
+    #      two
+    #    c one
+    #      two
+    #
+    #   # set new name
+    # mi.name = ['k1', 'k2']
+    # => ["k1", "k2"]
+    # mi
+    # => #<Daru::MultiIndex(6x2)>
+    #   k1  k2
+    #    a one
+    #      two
+    #    b one
+    #      two
+    #    c one
+    #      two
+    #
+    #   #access the name
+    # mi.name
+    # => ["k1", "k2"]
+    #
+    #   # If you don't want to name level 1
+    # mi.name = ['k1', '']
+    # => ["k1", ""]
+    # irb(main):019:0> mi
+    # => #<Daru::MultiIndex(6x2)>
+    #   k1
+    #    a one
+    #      two
+    #    b one
+    #      two
+    #    c one
+    #      two
+    #
+    #   # If you don't want to name level 0
+    #  mi.name = ['', 'k2']
+    # => ["", "k2"]
+    # irb(main):021:0> mi
+    # => #<Daru::MultiIndex(6x2)>
+    #       k2
+    #    a one
+    #      two
+    #    b one
+    #      two
+    #    c one
+    #      two
+    def name=(names)
+      validate_name names, @labels
+      @name = names
     end
 
     def incorrect_fields?(_labels, levels)
