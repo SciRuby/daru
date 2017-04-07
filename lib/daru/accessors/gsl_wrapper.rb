@@ -65,7 +65,7 @@ if Daru.has_gsl?
           ::GSL::Vector.alloc(@data.to_a - [Float::NAN])
         end
 
-        [:mean, :min, :max, :prod, :sum].each do |method|
+        %i[mean min max prod sum].each do |method|
           define_method(method) do
             compact.send(method.to_sym) rescue nil
           end

@@ -929,7 +929,7 @@ module Daru
 
     # creates a new vector with the data of a given field which the block returns true
     def filter_vector vec, &block
-      Daru::Vector.new each_row.select(&block).map { |row| row[vec] }
+      Daru::Vector.new(each_row.select(&block).map { |row| row[vec] })
     end
 
     # Iterates over each row and retains it in a new DataFrame if the block returns
@@ -1047,7 +1047,7 @@ module Daru
     alias :vector_missing_values :missing_values_rows
 
     def has_missing_data?
-      !!@data.any? { |vec| vec.include_values?(*Daru::MISSING_VALUES) }
+      @data.any? { |vec| vec.include_values?(*Daru::MISSING_VALUES) }
     end
     alias :flawed? :has_missing_data?
     deprecate :has_missing_data?, :include_values?, 2016, 10
@@ -1393,7 +1393,7 @@ module Daru
     #   df.rename_vectors :a => :alpha, :c => :gamma
     #   df.vectors.to_a #=> [:alpha, :b, :gamma]
     def rename_vectors name_map
-      existing_targets = name_map.select { |k,v| k != v }.values & vectors.to_a
+      existing_targets = name_map.reject { |k,v| k == v }.values & vectors.to_a
       delete_vectors(*existing_targets)
 
       new_names = vectors.to_a.map { |v| name_map[v] ? name_map[v] : v }
@@ -2066,7 +2066,7 @@ module Daru
       end
     end
 
-    AXES = [:row, :vector].freeze
+    AXES = %i[row vector].freeze
 
     def extract_axis names, default=:vector
       if AXES.include?(names.last)
