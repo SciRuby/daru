@@ -2289,10 +2289,10 @@ module Daru
 
       case source.first
       when Array
-        vectors = (0..source.size-1).to_a if vectors.nil?
+        vectors ||= (0..source.size-1).to_a
         initialize_from_array_of_arrays source, vectors, index, opts
       when Vector
-        vectors = (0..source.size-1).to_a if vectors.nil?
+        vectors ||= (0..source.size-1).to_a
         initialize_from_array_of_vectors source, vectors, index, opts
       when Hash
         initialize_from_array_of_hashes source, vectors, index, opts
