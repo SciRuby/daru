@@ -244,6 +244,17 @@ module Daru
     #   #  b          7          2
     #   #  c          8          3
     #   #  d          9          4
+    #
+    #   df = Daru::DataFrame.new([[1,2,3,4],[6,7,8,9]], name: :bat_man)
+    #
+    #   # =>
+    #   # #<Daru::DataFrame: bat_man (4x2)>
+    #   #             0          1
+    #   #  0          6          1
+    #   #  1          7          2
+    #   #  2          8          3
+    #   #  3          9          4
+
     def initialize source, opts={} # rubocop:disable Metrics/MethodLength
       vectors, index = opts[:order], opts[:index] # FIXME: just keyword arges after Ruby 2.1
       @data = []
@@ -2278,8 +2289,10 @@ module Daru
 
       case source.first
       when Array
+        vectors = (0..source.size-1).to_a if vectors.nil?
         initialize_from_array_of_arrays source, vectors, index, opts
       when Vector
+        vectors = (0..source.size-1).to_a if vectors.nil?
         initialize_from_array_of_vectors source, vectors, index, opts
       when Hash
         initialize_from_array_of_hashes source, vectors, index, opts
