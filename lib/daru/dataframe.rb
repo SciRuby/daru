@@ -250,10 +250,10 @@ module Daru
     #   # =>
     #   # #<Daru::DataFrame: bat_man (4x2)>
     #   #             0          1
-    #   #  0          6          1
-    #   #  1          7          2
-    #   #  2          8          3
-    #   #  3          9          4
+    #   #  0          1          6
+    #   #  1          2          7
+    #   #  2          3          8
+    #   #  3          4          9
 
     def initialize source, opts={} # rubocop:disable Metrics/MethodLength
       vectors, index = opts[:order], opts[:index] # FIXME: just keyword arges after Ruby 2.1
