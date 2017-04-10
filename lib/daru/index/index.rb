@@ -113,15 +113,18 @@ module Daru
       indexes = preprocess_range(indexes.first) if indexes.first.is_a? Range
 
       if indexes.size == 1
-        self[indexes.first]
+        numeric_pos indexes.first
       else
-        indexes.map { |index| by_single_key index }
+        indexes.map { |index| numeric_pos index }
       end
     end
 
     def subset *indexes
       if indexes.first.is_a? Range
-        slice indexes.first.begin, indexes.first.end
+        start = indexes.first.begin
+        en = indexes.first.end
+
+        subset_slice start, en
       elsif include? indexes.first
         # Assume 'indexes' contain indexes not positions
         Daru::Index.new indexes
@@ -162,12 +165,27 @@ module Daru
       start = args[0]
       en = args[1]
 
+      start_idx = @relation_hash[start]
+      en_idx    = @relation_hash[en]
+
+      if start_idx.nil?
+        nil
+      elsif en_idx.nil?
+        Array(start_idx..size-1)
+      else
+        Array(start_idx..en_idx)
+      end
+    end
+
+    def subset_slice *args
+      start = args[0]
+      en = args[1]
+
       if start.is_a?(Integer) && en.is_a?(Integer)
         Index.new @keys[start..en]
       else
         start_idx = @relation_hash[start]
         en_idx    = @relation_hash[en]
-
         Index.new @keys[start_idx..en_idx]
       end
     end
@@ -311,22 +329,14 @@ module Daru
     end
 
     def by_multi_key *key
-      if include? key[0]
-        Daru::Index.new(key.map { |k| k })
-      else
-        # Assume the user is specifing values for index not keys
-        # Return index object having keys corresponding to values provided
-        Daru::Index.new(key.map { |k| key k })
-      end
+      key.map { |k| by_single_key k }
     end
 
     def by_single_key key
       if @relation_hash.key?(key)
         @relation_hash[key]
-      elsif key.is_a?(Numeric) && key < size
-        key
       else
-        raise IndexError, "Specified index #{key.inspect} does not exist"
+        nil
       end
     end
 
@@ -334,7 +344,7 @@ module Daru
     def validate_positions *positions
       positions = [positions] if positions.is_a? Integer
       positions.each do |pos|
-        raise IndexError, "#{pos} is not a valid position." if pos >= size
+        raise IndexError, "#{pos} is not a valid position." if pos >= size || pos < -size
       end
     end
 
@@ -351,6 +361,16 @@ module Daru
         end
       else
         positions
+      end
+    end
+
+    def numeric_pos key
+      if @relation_hash.key?(key)
+        @relation_hash[key]
+      elsif key.is_a?(Numeric) && (key < size && key >= -size)
+        key
+      else
+        raise IndexError, "Specified index #{key.inspect} does not exist"
       end
     end
   end
