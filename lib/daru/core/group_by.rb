@@ -1,7 +1,7 @@
 module Daru
   module Core
     class GroupBy
-      attr_reader :groups
+      attr_reader :groups, :context_new
 
       # Iterate over each group created by group_by. A DataFrame is yielded in
       # block.
@@ -23,6 +23,7 @@ module Daru
         @groups = {}
         @non_group_vectors = context.vectors.to_a - names
         @context = context
+        multi_index_tuples = []
         vectors = names.map { |vec| context[vec].to_a }
         tuples  = vectors[0].zip(*vectors[1..-1])
         # FIXME: It feels like we don't want to sort here. Ruby's #group_by
@@ -35,9 +36,15 @@ module Daru
         keys    = tuples.uniq.sort(&TUPLE_SORTER)
 
         keys.each do |key|
-          @groups[key] = all_indices_for(tuples, key)
+          indices = all_indices_for(tuples, key)
+          @groups[key] = indices
+          indices.each do |indice|
+            multi_index_tuples << key + [indice]
+          end
         end
         @groups.freeze
+        multi_index = Daru::MultiIndex.from_tuples(multi_index_tuples)
+        @context_new = resultant_context(multi_index, names)
       end
 
       # Get a Daru::Vector of the size of each group.
@@ -291,6 +298,15 @@ module Daru
         else
           Daru::Index.new(@groups.keys.flatten)
         end
+      end
+
+      def resultant_context(multi_index, names)
+        context_tmp = @context.dup.delete_vector(*names)
+        rows_tuples = context_tmp.access_row_tuples_by_indexs(
+          *@groups.values.flatten!)
+        context_new = Daru::DataFrame.rows(rows_tuples, index: multi_index)
+        context_new.vectors = context_tmp.vectors
+        return context_new
       end
 
       def all_indices_for arry, element

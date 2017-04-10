@@ -1244,7 +1244,7 @@ module Daru
 
       vectors = [@vectors.first] if vectors.empty?
 
-      Daru::Core::GroupBy.new(self, vectors)
+      Daru::Core::GroupBy.new(self, vectors).context_new
     end
 
     def reindex_vectors new_vectors
@@ -2012,6 +2012,23 @@ module Daru
         where(cat_dv.eq cat)
           .rename(cat)
           .delete_vector cat_name
+      end
+    end
+
+    # returns array of row tuples at given index(s)
+    def access_row_tuples_by_indexs *indexes
+      positions = @index.pos(*indexes)
+      if positions.is_a? Numeric
+        return populate_row_for(positions)
+      else
+        res = []
+        new_rows = @data.map { |vec| vec[*indexes] }
+        indexes.each do |index|
+          tuples = []
+          new_rows.map {|row| tuples += [row[index]]}
+          res << tuples
+        end
+        return res
       end
     end
 

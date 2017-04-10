@@ -29,6 +29,13 @@ describe Daru::Core::GroupBy do
       ['foo', 'three', 8],
       ['foo', 'two'  , 3]
     ])
+
+    @df2 = Daru::DataFrame.new(
+      employee: %w[John Jane Mark John Jane Mark],
+      month: %w[June June June July July July],
+      salary: [1000, 500, 700, 1200, 600, 600]
+    )
+    @employee_grp = @df2.group_by(:employee)
   end
 
   context 'with nil values' do
@@ -51,6 +58,21 @@ describe Daru::Core::GroupBy do
         ['bar'] => [1,3,5],
         ['foo'] => [0,2,4,6,7]
       })
+    end
+
+    it "returns dataframe with multi-index" do
+      let(:mi) { Daru::MultiIndex.from_tuples([
+        ['Jane', 1], ['Jane', 4], ['John', 0],
+        ['John', 3], ['Mark', 2], ['Mark', 6]
+        ]
+      )}
+      let(:vec) { Daru::Index.new(
+        ['month', 'salary']) }
+      expect(@employee_grp.index).to eq(mi)
+      expect(@employee_grp).to eq(Daru::DataFrame.new({
+        month: ["June", "July", "June", "July", "June", "July"],
+        salary: [500, 600, 1000, 1200, 700, 600]
+        }, index: mi))
     end
 
     it "groups by a double layer hierarchy" do
