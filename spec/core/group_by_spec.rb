@@ -30,12 +30,6 @@ describe Daru::Core::GroupBy do
       ['foo', 'two'  , 3]
     ])
 
-    @df2 = Daru::DataFrame.new(
-      employee: %w[John Jane Mark John Jane Mark],
-      month: %w[June June June July July July],
-      salary: [1000, 500, 700, 1200, 600, 600]
-    )
-    @employee_grp = @df2.group_by(:employee)
   end
 
   context 'with nil values' do
@@ -53,6 +47,19 @@ describe Daru::Core::GroupBy do
   end
 
   context "#initialize" do
+    let(:df_emp) { Daru::DataFrame.new(
+      employee: %w[John Jane Mark John Jane Mark],
+      month: %w[June June June July July July],
+      salary: [1000, 500, 700, 1200, 600, 600]
+    ) }
+    let(:employee_grp) { df_emp.group_by(:employee).df }
+    let(:mi_single) { Daru::MultiIndex.from_tuples([
+        ['Jane', 1], ['Jane', 4], ['John', 0],
+        ['John', 3], ['Mark', 2], ['Mark', 5]
+        ]
+      )}
+    let(:vec_single) { Daru::Index.new(['month', 'salary']) }
+
     it "groups by a single tuple" do
       expect(@sl_group.groups).to eq({
         ['bar'] => [1,3,5],
@@ -61,18 +68,10 @@ describe Daru::Core::GroupBy do
     end
 
     it "returns dataframe with multi-index" do
-      let(:mi) { Daru::MultiIndex.from_tuples([
-        ['Jane', 1], ['Jane', 4], ['John', 0],
-        ['John', 3], ['Mark', 2], ['Mark', 6]
-        ]
-      )}
-      let(:vec) { Daru::Index.new(
-        ['month', 'salary']) }
-      expect(@employee_grp.index).to eq(mi)
-      expect(@employee_grp).to eq(Daru::DataFrame.new({
+      expect(employee_grp).to eq(Daru::DataFrame.new({
         month: ["June", "July", "June", "July", "June", "July"],
         salary: [500, 600, 1000, 1200, 700, 600]
-        }, index: mi))
+        }, index: mi_single))
     end
 
     it "groups by a double layer hierarchy" do

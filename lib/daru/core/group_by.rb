@@ -1,7 +1,7 @@
 module Daru
   module Core
     class GroupBy
-      attr_reader :groups, :context_new
+      attr_reader :groups, :df
 
       # Iterate over each group created by group_by. A DataFrame is yielded in
       # block.
@@ -43,8 +43,7 @@ module Daru
           end
         end
         @groups.freeze
-        multi_index = Daru::MultiIndex.from_tuples(multi_index_tuples)
-        @context_new = resultant_context(multi_index, names)
+        @df = resultant_context(multi_index_tuples, names) unless multi_index_tuples.empty?
       end
 
       # Get a Daru::Vector of the size of each group.
@@ -258,6 +257,10 @@ module Daru
         Daru::Vector.new(result_hash.values, index: index)
       end
 
+      def inspect
+        self.df.inspect
+      end
+
       private
 
       def select_groups_from method, quantity
@@ -300,8 +303,9 @@ module Daru
         end
       end
 
-      def resultant_context(multi_index, names)
-        context_tmp = @context.dup.delete_vector(*names)
+      def resultant_context(multi_index_tuples, names)
+        multi_index = Daru::MultiIndex.from_tuples(multi_index_tuples)
+        context_tmp = @context.dup.delete_vectors(*names)
         rows_tuples = context_tmp.access_row_tuples_by_indexs(
           *@groups.values.flatten!)
         context_new = Daru::DataFrame.rows(rows_tuples, index: multi_index)

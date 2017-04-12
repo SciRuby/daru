@@ -1244,7 +1244,7 @@ module Daru
 
       vectors = [@vectors.first] if vectors.empty?
 
-      Daru::Core::GroupBy.new(self, vectors).context_new
+      Daru::Core::GroupBy.new(self, vectors)
     end
 
     def reindex_vectors new_vectors
