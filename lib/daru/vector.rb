@@ -555,7 +555,7 @@ module Daru
     # Get index of element
     def index_of element
       case dtype
-      when :array then @index.key @data.index { |x| x.eql? element }
+      when :array then @index.key(@data.index { |x| x.eql? element })
       else @index.key @data.index(element)
       end
     end
@@ -669,7 +669,7 @@ module Daru
     def delete_if
       return to_enum(:delete_if) unless block_given?
 
-      keep_e, keep_i = each_with_index.select { |n, _i| !yield(n) }.transpose
+      keep_e, keep_i = each_with_index.reject { |n, _i| yield(n) }.transpose
 
       @data = cast_vector_to @dtype, keep_e
       @index = Daru::Index.new(keep_i)

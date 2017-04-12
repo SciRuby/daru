@@ -244,6 +244,17 @@ module Daru
     #   #  b          7          2
     #   #  c          8          3
     #   #  d          9          4
+    #
+    #   df = Daru::DataFrame.new([[1,2,3,4],[6,7,8,9]], name: :bat_man)
+    #
+    #   # =>
+    #   # #<Daru::DataFrame: bat_man (4x2)>
+    #   #             0          1
+    #   #  0          1          6
+    #   #  1          2          7
+    #   #  2          3          8
+    #   #  3          4          9
+
     def initialize source, opts={} # rubocop:disable Metrics/MethodLength
       vectors, index = opts[:order], opts[:index] # FIXME: just keyword arges after Ruby 2.1
       @data = []
@@ -918,7 +929,7 @@ module Daru
 
     # creates a new vector with the data of a given field which the block returns true
     def filter_vector vec, &block
-      Daru::Vector.new each_row.select(&block).map { |row| row[vec] }
+      Daru::Vector.new(each_row.select(&block).map { |row| row[vec] })
     end
 
     # Iterates over each row and retains it in a new DataFrame if the block returns
@@ -1036,7 +1047,7 @@ module Daru
     alias :vector_missing_values :missing_values_rows
 
     def has_missing_data?
-      !!@data.any? { |vec| vec.include_values?(*Daru::MISSING_VALUES) }
+      @data.any? { |vec| vec.include_values?(*Daru::MISSING_VALUES) }
     end
     alias :flawed? :has_missing_data?
     deprecate :has_missing_data?, :include_values?, 2016, 10
@@ -1382,7 +1393,7 @@ module Daru
     #   df.rename_vectors :a => :alpha, :c => :gamma
     #   df.vectors.to_a #=> [:alpha, :b, :gamma]
     def rename_vectors name_map
-      existing_targets = name_map.select { |k,v| k != v }.values & vectors.to_a
+      existing_targets = name_map.reject { |k,v| k == v }.values & vectors.to_a
       delete_vectors(*existing_targets)
 
       new_names = vectors.to_a.map { |v| name_map[v] ? name_map[v] : v }
@@ -2055,7 +2066,7 @@ module Daru
       end
     end
 
-    AXES = [:row, :vector].freeze
+    AXES = %i[row vector].freeze
 
     def extract_axis names, default=:vector
       if AXES.include?(names.last)
@@ -2278,8 +2289,10 @@ module Daru
 
       case source.first
       when Array
+        vectors ||= (0..source.size-1).to_a
         initialize_from_array_of_arrays source, vectors, index, opts
       when Vector
+        vectors ||= (0..source.size-1).to_a
         initialize_from_array_of_vectors source, vectors, index, opts
       when Hash
         initialize_from_array_of_hashes source, vectors, index, opts

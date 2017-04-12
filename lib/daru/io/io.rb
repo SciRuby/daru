@@ -187,7 +187,7 @@ module Daru
 
       private
 
-      DARU_OPT_KEYS = [:clone, :order, :index, :name].freeze
+      DARU_OPT_KEYS = %i[clone order index name].freeze
 
       def from_csv_prepare_opts opts
         opts[:col_sep]           ||= ','

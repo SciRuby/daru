@@ -120,7 +120,7 @@ module Daru
         Daru::Index.new indexes
       else
         # Assume 'indexes' contain positions not indexes
-        Daru::Index.new indexes.map { |k| key k }
+        Daru::Index.new(indexes.map { |k| key k })
       end
     end
 
@@ -290,11 +290,11 @@ module Daru
 
     def by_multi_key *key
       if include? key[0]
-        Daru::Index.new key.map { |k| k }
+        Daru::Index.new(key.map { |k| k })
       else
         # Assume the user is specifing values for index not keys
         # Return index object having keys corresponding to values provided
-        Daru::Index.new key.map { |k| key k }
+        Daru::Index.new(key.map { |k| key k })
       end
     end
 

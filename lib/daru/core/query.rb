@@ -9,13 +9,13 @@ module Daru
         end
 
         def & other
-          BoolArray.new @barry.zip(other.barry).map { |b, o| b && o }
+          BoolArray.new(@barry.zip(other.barry).map { |b, o| b && o })
         end
 
         alias :and :&
 
         def | other
-          BoolArray.new @barry.zip(other.barry).map { |b, o| b || o }
+          BoolArray.new(@barry.zip(other.barry).map { |b, o| b || o })
         end
 
         alias :or :|
@@ -39,11 +39,11 @@ module Daru
 
       class << self
         def apply_scalar_operator operator, data, other
-          BoolArray.new data.map { |d| !!d.send(operator, other) if d.respond_to?(operator) }
+          BoolArray.new(data.map { |d| !!d.send(operator, other) if d.respond_to?(operator) })
         end
 
         def apply_vector_operator operator, vector, other
-          BoolArray.new vector.zip(other).map { |d, o| !!d.send(operator, o) }
+          BoolArray.new(vector.zip(other).map { |d, o| !!d.send(operator, o) })
         end
 
         def df_where data_frame, bool_array

@@ -461,7 +461,7 @@ module Daru
       @coding_scheme = scheme
     end
 
-    CODING_SCHEMES = [:dummy, :deviation, :helmert, :simple].freeze
+    CODING_SCHEMES = %i[dummy deviation helmert simple].freeze
 
     # Contrast code the vector acording to the coding scheme set.
     # @note To set the coding scheme use #coding_scheme=
