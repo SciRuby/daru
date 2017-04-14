@@ -124,7 +124,7 @@ module Daru
         Daru::Index.new indexes
       else
         # Assume 'indexes' contain positions not indexes
-        Daru::Index.new indexes.map { |k| key k }
+        Daru::Index.new(indexes.map { |k| key k })
       end
     end
 
@@ -192,6 +192,27 @@ module Daru
       @relation_hash.key? index
     end
 
+    # @note Do not use it to check for Float::NAN as
+    #   Float::NAN == Float::NAN is false
+    # Return vector of booleans with value at ith position is either
+    # true or false depending upon whether index value at position i is equal to
+    # any of the values passed in the argument or not
+    # @param [Array] *indexes values to equate with
+    # @return [Daru::Vector] vector of boolean values
+    # @example
+    #   dv = Daru::Index.new [1, 2, 3, :one, 'one']
+    #   dv.is_values 1, 'one'
+    #   # => #<Daru::Vector(5)>
+    #   #     0  true
+    #   #     1  false
+    #   #     2  false
+    #   #     3  false
+    #   #     4  true
+    def is_values(*indexes) # rubocop:disable Style/PredicateName
+      bool_array = @relation_hash.keys.map { |r| indexes.include?(r) }
+      Daru::Vector.new(bool_array)
+    end
+
     def empty?
       @relation_hash.empty?
     end
@@ -225,6 +246,31 @@ module Daru
     def reorder(new_order)
       from = to_a
       self.class.new(new_order.map { |i| from[i] })
+    end
+
+    # Sorts a `Index`, according to its values. Defaults to ascending order
+    # sorting.
+    #
+    # @param [Hash] opts the options for sort method.
+    # @option opts [Boolean] :ascending False, to get descending order.
+    #
+    # @return [Index] sorted `Index` according to its values.
+    #
+    # @example
+    #   di = Daru::Index.new [100, 99, 101, 1, 2]
+    #   # Say you want to sort in descending order
+    #   di.sort(ascending: false) #=> Daru::Index.new [101, 100, 99, 2, 1]
+    #   # Say you want to sort in ascending order
+    #   di.sort #=> Daru::Index.new [1, 2, 99, 100, 101]
+    def sort opts={}
+      opts = {ascending: true}.merge(opts)
+      if opts[:ascending]
+        new_index, = @relation_hash.sort.transpose
+      else
+        new_index, = @relation_hash.sort.reverse.transpose
+      end
+
+      self.class.new(new_index)
     end
 
     private
@@ -263,11 +309,11 @@ module Daru
 
     def by_multi_key *key
       if include? key[0]
-        Daru::Index.new key.map { |k| k }
+        Daru::Index.new(key.map { |k| k })
       else
         # Assume the user is specifing values for index not keys
         # Return index object having keys corresponding to values provided
-        Daru::Index.new key.map { |k| key k }
+        Daru::Index.new(key.map { |k| key k })
       end
     end
 

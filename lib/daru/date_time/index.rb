@@ -490,7 +490,7 @@ module Daru
     #   @return [Array<Integer>] Array containing minutes of each index.
     # @!method sec
     #   @return [Array<Integer>] Array containing seconds of each index.
-    [:year, :month, :day, :hour, :min, :sec].each do |meth|
+    %i[year month day hour min sec].each do |meth|
       define_method(meth) do
         each_with_object([]) do |d, arr|
           arr << d.send(meth)

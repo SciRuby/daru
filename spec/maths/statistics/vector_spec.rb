@@ -12,6 +12,116 @@ describe Daru::Vector do
         end
       end
 
+      let(:dv) { dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j]) }
+
+      context "#max" do
+        it "returns max value" do
+          expect(dv.max).to eq("Tyrion")
+        end
+        it "returns N max values" do
+          expect(dv.max(2)).to eq(["Tyrion","Jon Starkgaryen"])
+        end
+        it "returns max value, sorted by comparitive block input" do
+          expect(dv.max { |a,b| a.size <=> b.size }).to eq("Jon Starkgaryen")
+        end
+        it "returns max value, sorted by object block input" do
+          expect(dv.max { |x| x.size }).to eq("Jon Starkgaryen")
+        end
+        it "returns N max values, sorted by comparitive block input" do
+          expect(dv.max(2) {|a,b| a.size <=> b.size}).to eq(["Jon Starkgaryen","Daenerys"])
+        end
+        it "returns N max values, sorted by object block input" do
+          expect(dv.max(2) {|x| x.size }).to eq(["Jon Starkgaryen","Daenerys"])
+        end
+      end
+
+      context "#index_of_max" do
+        it "returns index_of_max value" do
+          expect(dv.index_of_max).to eq(:t)
+        end
+        it "returns N index_of_max values" do
+          expect(dv.index_of_max(2)).to eq([:t, :j])
+        end
+        it "returns index_of_max value, sorted by comparitive block input" do
+          expect(dv.index_of_max { |a,b| a.size <=> b.size }).to eq(:j)
+        end
+        it "returns index_of_max value, sorted by object block input" do
+          expect(dv.index_of_max { |x| x.size }).to eq(:j)
+        end
+        it "returns N index_of_max values, sorted by comparitive block input" do
+          expect(dv.index_of_max(2) {|a,b| a.size <=> b.size}).to eq([:j, :d])
+        end
+        it "returns N index_of_max values, sorted by object block input" do
+          expect(dv.index_of_max(2) {|x| x.size }).to eq([:j, :d])
+        end
+      end
+
+      context "#min" do
+        it "returns min value" do
+          expect(dv.min).to eq("Daenerys")
+        end
+        it "returns N min values" do
+          expect(dv.min(2)).to eq(["Daenerys","Jon Starkgaryen"])
+        end
+        it "returns min value, sorted by comparitive block input" do
+          expect(dv.min { |a,b| a.size <=> b.size }).to eq("Tyrion")
+        end
+        it "returns min value, sorted by object block input" do
+          expect(dv.min { |x| x.size }).to eq("Tyrion")
+        end
+        it "returns N min values, sorted by comparitive block input" do
+          expect(dv.min(2) {|a,b| a.size <=> b.size}).to eq(["Tyrion","Daenerys"])
+        end
+        it "returns N min values, sorted by object block input" do
+          expect(dv.min(2) {|x| x.size }).to eq(["Tyrion","Daenerys"])
+        end
+      end
+
+      context "#index_of_min" do
+        it "returns index of min value" do
+          expect(dv.index_of_min).to eq(:d)
+        end
+        it "returns N index of min values" do
+          expect(dv.index_of_min(2)).to eq([:d, :j])
+        end
+        it "returns index of min value, sorted by comparitive block input" do
+          expect(dv.index_of_min { |a,b| a.size <=> b.size }).to eq(:t)
+        end
+        it "returns index of min value, sorted by object block input" do
+          expect(dv.index_of_min { |x| x.size }).to eq(:t)
+        end
+        it "returns N index of min values, sorted by comparitive block input" do
+          expect(dv.index_of_min(2) {|a,b| a.size <=> b.size}).to eq([:t, :d])
+        end
+        it "returns N index of min values, sorted by object block input" do
+          expect(dv.index_of_min(2) {|x| x.size }).to eq([:t, :d])
+        end
+      end
+
+      context "#max_by" do
+        it "tests alias of max_by to max" do
+          expect(dv.method(:max_by)).to eq(dv.method(:max))
+        end
+      end
+
+      context "#min_by" do
+        it "tests alias of min_by to min" do
+          expect(dv.method(:min_by)).to eq(dv.method(:min))
+        end
+      end
+
+      context "#index_of_max_by" do
+        it "tests alias of index_of_max_by to index_of_max" do
+          expect(dv.method(:index_of_max_by)).to eq(dv.method(:index_of_max))
+        end
+      end
+
+      context "#index_of_min_by" do
+        it "tests alias of index_of_min_by to index_of_min" do
+          expect(dv.method(:index_of_min_by)).to eq(dv.method(:index_of_min))
+        end
+      end
+
       context "#sum_of_squares" do
         it "calcs sum of squares, omits nil values" do
           v = Daru::Vector.new [1,2,3,4,5,6], dtype: dtype

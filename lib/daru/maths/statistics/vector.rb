@@ -19,10 +19,6 @@ module Daru
           @data.product
         end
 
-        def min
-          @data.min
-        end
-
         def range
           max - min
         end
@@ -45,7 +41,7 @@ module Daru
         # be applied to vectors. Default is [:count, :mean, :std, :max,
         # :min]. Methods will be applied in the specified order.
         def describe methods=nil
-          methods ||= [:count, :mean, :std, :min, :max]
+          methods ||= %i[count mean std min max]
           description = methods.map { |m| send(m) }
           Daru::Vector.new(description, index: methods, name: :statistics)
         end
@@ -70,24 +66,129 @@ module Daru
           reject_values(*Daru::MISSING_VALUES).uniq.reset_index!
         end
 
-        # Maximum element of the vector.
+        # Returns the maximum value present in the vector.
         #
-        # @param return_type [Symbol] Data type of the returned value. Defaults
-        #   to returning only the maximum number but passing *:vector* will return
-        #   a Daru::Vector with the index of the corresponding maximum value.
-        def max return_type=:stored_type
-          max_value = @data.max
-          if return_type == :vector
-            Daru::Vector.new({index_of(max_value) => max_value}, name: @name, dtype: @dtype)
-          else
-            max_value
-          end
+        # @example
+        #
+        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j])
+        #   #=>
+        #   #   #<Daru::Vector(3)>
+        #   #       t   Tyrion
+        #   #       d   Daenerys
+        #   #       j   Jon Starkgaryen
+        #
+        #   dv.max
+        #   #=> "Tyrion"
+        #
+        #   dv.max(2) { |a,b| a.size <=> b.size }
+        #   #=> ["Jon Starkgaryen","Daenerys"]
+        #
+        #   dv.max(2) { |i| i.size }
+        #   #=> ["Jon Starkgaryen","Daenerys"]
+        def max(size=nil, &block)
+          data = @data.data.to_a
+          data = if block_given?
+                   if block.parameters.count == 1 # Object block like { |x| x.size }
+                     data.sort_by(&block)
+                   else # Comparative block like { |a,b| a.size <=> b.size }
+                     data.sort(&block)
+                   end
+                 else
+                   data.sort
+                 end
+          size.nil? ? data.last : data[data.count-size..-1].reverse
         end
 
-        # Return a Vector with the max element and its index.
+        # Returns the index of the maximum value present in the vector.
+        #
+        # @example
+        #
+        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j])
+        #   #=>
+        #   #   #<Daru::Vector(3)>
+        #   #       t   Tyrion
+        #   #       d   Daenerys
+        #   #       j   Jon Starkgaryen
+        #
+        #   dv.index_of_max
+        #   #=> :t
+        #
+        #   dv.index_of_max(2) { |a,b| a.size <=> b.size }
+        #   #=> [:j, :d]
+        #
+        #   dv.max(2) { |i| i.size }
+        #   #=> [:j, :d]
+        def index_of_max(size=nil,&block)
+          data = @data.data.to_a
+          indx = @index.to_a
+          vals = max(size,&block)
+          vals.is_a?(Array) ? (vals.map { |x| indx[data.index(x)] }) : indx[data.index(vals)]
+        end
+
+        # Returns the minimum value present in the vector.
+        #
+        # @example
+        #
+        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j])
+        #   #=>
+        #   #   #<Daru::Vector(3)>
+        #   #       t   Tyrion
+        #   #       d   Daenerys
+        #   #       j   Jon Starkgaryen
+        #
+        #   dv.min
+        #   #=> "Daenerys"
+        #
+        #   dv.min(2) { |a,b| a.size <=> b.size }
+        #   #=> ["Tyrion","Daenerys"]
+        #
+        #   dv.min(2) { |i| i.size }
+        #   #=> ["Tyrion","Daenerys"]
+        def min(size=nil, &block)
+          data = @data.data.to_a
+          data = if block_given?
+                   if block.parameters.count == 1 # Object block like { |x| x.size }
+                     data.sort_by(&block)
+                   else # Comparative block like { |a,b| a.size <=> b.size }
+                     data.sort(&block)
+                   end
+                 else
+                   data.sort
+                 end
+          size.nil? ? data.first : data[0..size-1]
+        end
+
+        # Returns the index of the minimum value present in the vector.
+        #
+        # @example
+        #
+        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j])
+        #   #=>
+        #   #   #<Daru::Vector(3)>
+        #   #       t   Tyrion
+        #   #       d   Daenerys
+        #   #       j   Jon Starkgaryen
+        #
+        #   dv.index_of_min
+        #   #=> :d
+        #
+        #   dv.index_of_min(2) { |a,b| a.size <=> b.size }
+        #   #=> [:t, :d]
+        #
+        #   dv.index_of_min(2) { |i| i.size }
+        #   #=> [:t, :d]
+        def index_of_min(size=nil,&block)
+          data = @data.data.to_a
+          indx = @index.to_a
+          vals = min(size,&block)
+          vals.is_a?(Array) ? (vals.map { |x| indx[data.index(x)] }) : indx[data.index(vals)]
+        end
+
+        # Return the maximum element present in the Vector, as a Vector.
         # @return [Daru::Vector]
         def max_index
-          max :vector
+          max_value = @data.max
+          Daru::Vector.new({index_of(max_value) => max_value}, name: @name, dtype: @dtype)
         end
 
         def frequencies
@@ -470,7 +571,7 @@ module Daru
         # @!method rolling_variance
         #   Calculate rolling variance
         #   @param [Integer] n (10) Loopback length
-        [:count, :mean, :median, :max, :min, :sum, :std, :variance].each do |meth|
+        %i[count mean median max min sum std variance].each do |meth|
           define_method("rolling_#{meth}".to_sym) do |n=10|
             rolling(meth, n)
           end
@@ -688,6 +789,10 @@ module Daru
         alias :ss :sum_of_squares
         alias :percentil :percentile
         alias :se :standard_error
+        alias :max_by :max
+        alias :min_by :min
+        alias :index_of_max_by :index_of_max
+        alias :index_of_min_by :index_of_min
 
         private
 

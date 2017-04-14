@@ -329,6 +329,14 @@ describe Daru::DataFrame do
         expect(df[:a])         .to eq(Daru::Vector.new([1,2,3,4,5]))
       end
 
+      it "allows creation of dataframe with a default order" do
+        arr_of_arrs_df    = Daru::DataFrame.new([[1,2,3], [4,5,6], [7,8,9]])
+        arr_of_vectors_df = Daru::DataFrame.new([Daru::Vector.new([1,2,3]), Daru::Vector.new([4,5,6]), Daru::Vector.new([7,8,9])])
+
+        expect(arr_of_arrs_df.vectors.to_a).to eq([0,1,2])
+        expect(arr_of_vectors_df.vectors.to_a).to eq([0,1,2])
+      end
+
       it "raises error for incomplete DataFrame index" do
         expect {
           df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],

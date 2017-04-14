@@ -38,7 +38,7 @@ module Daru
 
           diagram =
             case
-            when !([:scatter, :bar, :line, :histogram] & types).empty?
+            when !(%i[scatter bar line histogram] & types).empty?
               plot_regular_diagrams plot, opts
             when types.include?(:box)
               plot_box_diagram plot
@@ -102,7 +102,7 @@ module Daru
           end
         end
 
-        SHAPES = %w(circle triangle-up diamond square triangle-down cross).freeze
+        SHAPES = %w[circle triangle-up diamond square triangle-down cross].freeze
         def get_shape type
           validate_type type, :scatter
           SHAPES.cycle
