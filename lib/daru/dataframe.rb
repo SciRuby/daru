@@ -277,7 +277,7 @@ module Daru
     #     c: [11,22,33,44,55]},
     #     order: [:a, :b, :c],
     #     index: idx)
-    #    # => 
+    #    # =>
     #    #<Daru::DataFrame(5x3)>
     #    #   s1   a   b   c
     #    #  100   1  11  11
