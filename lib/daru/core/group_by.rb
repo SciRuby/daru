@@ -23,7 +23,6 @@ module Daru
         @groups = {}
         @non_group_vectors = context.vectors.to_a - names
         @context = context
-        multi_index_tuples = []
         vectors = names.map { |vec| context[vec].to_a }
         tuples  = vectors[0].zip(*vectors[1..-1])
         # FIXME: It feels like we don't want to sort here. Ruby's #group_by
@@ -33,17 +32,7 @@ module Daru
         #   #  => {4=>["test"], 2=>["me"], 6=>["please"]}
         #
         # - zverok, 2016-09-12
-        keys    = tuples.uniq.sort(&TUPLE_SORTER)
-
-        keys.each do |key|
-          indices = all_indices_for(tuples, key)
-          @groups[key] = indices
-          indices.each do |indice|
-            multi_index_tuples << key + [indice]
-          end
-        end
-        @groups.freeze
-        @df = resultant_context(multi_index_tuples, names) unless multi_index_tuples.empty?
+        init_groups_df tuples, names
       end
 
       # Get a Daru::Vector of the size of each group.
@@ -258,10 +247,24 @@ module Daru
       end
 
       def inspect
-        self.df.inspect
+        @df.inspect
       end
 
       private
+
+      def init_groups_df tuples, names
+        multi_index_tuples = []
+        keys = tuples.uniq.sort(&TUPLE_SORTER)
+        keys.each do |key|
+          indices = all_indices_for(tuples, key)
+          @groups[key] = indices
+          indices.each do |indice|
+            multi_index_tuples << key + [indice]
+          end
+        end
+        @groups.freeze
+        @df = resultant_context(multi_index_tuples, names) unless multi_index_tuples.empty?
+      end
 
       def select_groups_from method, quantity
         selection     = @context
@@ -307,10 +310,11 @@ module Daru
         multi_index = Daru::MultiIndex.from_tuples(multi_index_tuples)
         context_tmp = @context.dup.delete_vectors(*names)
         rows_tuples = context_tmp.access_row_tuples_by_indexs(
-          *@groups.values.flatten!)
+          *@groups.values.flatten!
+        )
         context_new = Daru::DataFrame.rows(rows_tuples, index: multi_index)
         context_new.vectors = context_tmp.vectors
-        return context_new
+        context_new
       end
 
       def all_indices_for arry, element

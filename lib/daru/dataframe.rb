@@ -2018,18 +2018,17 @@ module Daru
     # returns array of row tuples at given index(s)
     def access_row_tuples_by_indexs *indexes
       positions = @index.pos(*indexes)
-      if positions.is_a? Numeric
-        return populate_row_for(positions)
-      else
-        res = []
-        new_rows = @data.map { |vec| vec[*indexes] }
-        indexes.each do |index|
-          tuples = []
-          new_rows.map {|row| tuples += [row[index]]}
-          res << tuples
-        end
-        return res
+
+      return populate_row_for(positions) if positions.is_a? Numeric
+
+      res = []
+      new_rows = @data.map { |vec| vec[*indexes] }
+      indexes.each do |index|
+        tuples = []
+        new_rows.map { |row| tuples += [row[index]] }
+        res << tuples
       end
+      res
     end
 
     private
