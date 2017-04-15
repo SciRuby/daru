@@ -74,7 +74,8 @@ module Daru
           _data, new_index = fetch_new_data_and_index dv, bool_array
           all_index = dv.index.to_a
           yield_data = dv.map(&block).to_a
-          all_data = all_index.map { |idx| new_index.include? idx ? yield_data[idx] : dv[idx] }
+          all_data = all_index.map { |idx| new_index.include?(idx) ? yield_data[idx] : dv[idx] }
+
           resultant_dv = Daru::Vector.new all_data,
             index: dv.index.class.new(all_index),
             dtype: dv.dtype,

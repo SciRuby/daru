@@ -421,6 +421,20 @@ module Daru
       Daru::Core::Query.vector_where self, bool_array
     end
 
+    # Return a new vector based on the contents of a boolean array and &block.
+    #
+    # @param [Daru::Core::Query::BoolArray, Array<TrueClass, FalseClass>, &block] bool_arry The
+    #   collection containing the true of false values. Each element in the Vector
+    #   corresponding to a `true` in the bool_arry will be returned along with it's
+    #   index. The &block may contain manipulative functions for the Vector elements.
+    # @example Usage of #apply_where.
+    #   dv = Daru::Vector.new ['3 days', '5 weeks', '2 weeks']
+    #   dv = dv.apply_where(dv.match /weeks/) { |x| "#{x.split.first.to_i * 7} days" }
+    #   # =>
+    #   ##<Daru::Vector(3)>
+    #   #  0   3 days
+    #   #  1   35 days
+    #   #  2   14 days
     def apply_where bool_array, &block
       Daru::Core::Query.vector_apply_where self, bool_array, &block
     end
@@ -1151,17 +1165,10 @@ module Daru
     # @param Regexp A regular matching expression. For example, +/weeks/+.
     # @return [Array] Conatining either +nil+ or integer values, according to the match with the given +regexp+
     # @example
-    #   def convert_to_days week
-    #     "#{week.split.first.to_i * 7} days"
-    #   end
-    #
     #   dv = Daru::Vector.new ['3 days', '5 weeks', '2 weeks']
-    #   dv.apply_where(dv.match /weeks/) { |x| convert_to_days x }
+    #   dv.match /weeks/
     #
-    #   # => #<Daru::Vector(3)>
-    #   #        0  3 days
-    #   #        1 35 days
-    #   #        2 14 days
+    #   # => [nil, 2, 2]
     def match(regexp)
       @data.map { |x| x =~ regexp }
     end
