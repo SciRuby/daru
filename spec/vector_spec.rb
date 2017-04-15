@@ -2009,6 +2009,13 @@ describe Daru::Vector do
     end
   end
 
+  context '#match' do
+      it 'returns matching array for a given regexp' do
+        dv = Daru::Vector.new ['3 days', '5 weeks', '2 weeks']
+        expect(dv.match /weeks/).to eq [nil, 2, 2]
+      end
+  end
+  
   context '#method_missing' do
     context 'getting' do
       subject(:vector) { Daru::Vector.new [1,2,3], index: [:a, :b, :c] }
