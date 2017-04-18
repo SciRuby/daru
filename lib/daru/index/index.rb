@@ -48,18 +48,21 @@ module Daru
 
     # @example
     #
-    # idx = Daru::Index.new [:one, 'one', 1, 2, :two]
-    # => #<Daru::Index(5): {one, one, 1, 2, two}>
+    #   idx = Daru::Index.new [:one, 'one', 1, 2, :two]
+    #   => #<Daru::Index(5): {one, one, 1, 2, two}>
     #
     #   # set the name
-    # idx.name = "index_name"
-    # => "index_name"
-    # idx
-    # => #<Daru::Index(5): index_name {one, one, 1, 2, two}>
+    #
+    #   idx.name = "index_name"
+    #   => "index_name"
+    #
+    #   idx
+    #   => #<Daru::Index(5): index_name {one, one, 1, 2, two}>
     #
     #   # set the name during initialization
-    # idx = Daru::Index.new [:one, 'one', 1, 2, :two], name: "index_name"
-    # => #<Daru::Index(5): index_name {one, one, 1, 2, two}>
+    #
+    #   idx = Daru::Index.new [:one, 'one', 1, 2, :two], name: "index_name"
+    #   => #<Daru::Index(5): index_name {one, one, 1, 2, two}>
     def initialize index, opts={}
       index = guess_index index
       @relation_hash = index.each_with_index.to_h.freeze

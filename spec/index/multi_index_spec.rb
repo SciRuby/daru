@@ -306,29 +306,17 @@ describe Daru::MultiIndex do
 
     context 'multi index with name' do
       subject {
-        mi= Daru::MultiIndex.new(
-                  levels: [[:a,:b,:c],[:one,:two],[:bar, :baz, :foo]],
-                  labels: [
-                    [0,0,0,0,1,1,1,1,2,2,2,2],
-                    [0,0,1,1,0,1,1,0,0,0,1,1],
-                    [0,1,0,1,0,0,1,2,0,1,2,0]], name: ['n1', 'n2', 'n3'])
+        Daru::MultiIndex.new(
+          levels: [[:a,:b,:c],[:one,:two],[:bar, :baz, :foo]],
+          labels: [
+            [0,0,0,0,1,1,1,1,2,2,2,2],
+            [0,0,1,1,0,1,1,0,0,0,1,1],
+            [0,1,0,1,0,0,1,2,0,1,2,0]], name: ['n1', 'n2', 'n3'])
       }
 
-      its(:inspect) { is_expected.to eq %Q{
+      its(:inspect) { is_expected.to start_with %Q{
         |#<Daru::MultiIndex(12x3)>
         |  n1  n2  n3
-        |   a one bar
-        |         baz
-        |     two bar
-        |         baz
-        |   b one bar
-        |     two bar
-        |         baz
-        |     one foo
-        |   c one bar
-        |         baz
-        |     two foo
-        |         bar
         }.unindent
       }
     end
@@ -344,21 +332,9 @@ describe Daru::MultiIndex do
       }
       before { subject.name = ['n1', '', 'n3'] }
 
-      its(:inspect) { is_expected.to eq %Q{
+      its(:inspect) { is_expected.to start_with %Q{
         |#<Daru::MultiIndex(12x3)>
         |  n1      n3
-        |   a one bar
-        |         baz
-        |     two bar
-        |         baz
-        |   b one bar
-        |     two bar
-        |         baz
-        |     one foo
-        |   c one bar
-        |         baz
-        |     two foo
-        |         bar
         }.unindent
       }
     end
