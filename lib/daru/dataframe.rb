@@ -254,6 +254,37 @@ module Daru
     #   #  1          2          7
     #   #  2          3          8
     #   #  3          4          9
+    #
+    #   # Dataframe having Index name
+    #
+    #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [6,7,8,9]}, order: [:b, :a],
+    #     index: Daru::Index.new([:a, :b, :c, :d], name: 'idx_name'),
+    #     name: :spider_man)
+    #
+    #   # =>
+    #   # <Daru::DataFrame:80766980 @name = spider_man @size = 4>
+    #   # idx_name            b          a
+    #   #        a          6          1
+    #   #        b          7          2
+    #   #        c          8          3
+    #   #        d          9          4
+    #
+    #
+    #   idx = Daru::Index.new [100, 99, 101, 1, 2], name: "s1"
+    #   => #<Daru::Index(5): s1 {100, 99, 101, 1, 2}>
+    #
+    #   df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
+    #     c: [11,22,33,44,55]},
+    #     order: [:a, :b, :c],
+    #     index: idx)
+    #    # =>
+    #    #<Daru::DataFrame(5x3)>
+    #    #   s1   a   b   c
+    #    #  100   1  11  11
+    #    #   99   2  12  22
+    #    #  101   3  13  33
+    #    #    1   4  14  44
+    #    #    2   5  15  55
 
     def initialize source, opts={} # rubocop:disable Metrics/MethodLength
       vectors, index = opts[:order], opts[:index] # FIXME: just keyword arges after Ruby 2.1
@@ -1913,14 +1944,13 @@ module Daru
 
     # Pretty print in a nice table format for the command line (irb/pry/iruby)
     def inspect spacing=10, threshold=15
-      row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
       name_part = @name ? ": #{@name} " : ''
 
       "#<#{self.class}#{name_part}(#{nrows}x#{ncols})>\n" +
         Formatters::Table.format(
           each_row.lazy,
           row_headers: row_headers,
-          headers: vectors,
+          headers: headers,
           threshold: threshold,
           spacing: spacing
         )
@@ -2016,6 +2046,14 @@ module Daru
     end
 
     private
+
+    def headers
+      Daru::Index.new(Array(index.name) + @vectors.to_a)
+    end
+
+    def row_headers
+      index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
+    end
 
     def convert_categorical_vectors names
       names.map do |n|

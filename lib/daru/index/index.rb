@@ -44,24 +44,31 @@ module Daru
     end
 
     attr_reader :relation_hash, :size
+    attr_accessor :name
 
-    def initialize index
-      index =
-        case index
-        when nil
-          []
-        when Integer
-          index.times.to_a
-        when Enumerable
-          index.to_a
-        else
-          raise ArgumentError,
-            "Cannot create index from #{index.class} #{index.inspect}"
-        end
-
+    # @example
+    #
+    #   idx = Daru::Index.new [:one, 'one', 1, 2, :two]
+    #   => #<Daru::Index(5): {one, one, 1, 2, two}>
+    #
+    #   # set the name
+    #
+    #   idx.name = "index_name"
+    #   => "index_name"
+    #
+    #   idx
+    #   => #<Daru::Index(5): index_name {one, one, 1, 2, two}>
+    #
+    #   # set the name during initialization
+    #
+    #   idx = Daru::Index.new [:one, 'one', 1, 2, :two], name: "index_name"
+    #   => #<Daru::Index(5): index_name {one, one, 1, 2, two}>
+    def initialize index, opts={}
+      index = guess_index index
       @relation_hash = index.each_with_index.to_h.freeze
       @keys = @relation_hash.keys
       @size = @relation_hash.size
+      @name = opts[:name]
     end
 
     def ==(other)
@@ -143,10 +150,11 @@ module Daru
     end
 
     def inspect threshold=20
+      name_part = @name ? "#{@name} " : ''
       if size <= threshold
-        "#<#{self.class}(#{size}): {#{to_a.join(', ')}}>"
+        "#<#{self.class}(#{size}): #{name_part}{#{to_a.join(', ')}}>"
       else
-        "#<#{self.class}(#{size}): {#{to_a.first(threshold).join(', ')} ... #{to_a.last}}>"
+        "#<#{self.class}(#{size}): #{name_part}{#{to_a.first(threshold).join(', ')} ... #{to_a.last}}>"
       end
     end
 
@@ -269,6 +277,20 @@ module Daru
     end
 
     private
+
+    def guess_index index
+      case index
+      when nil
+        []
+      when Integer
+        index.times.to_a
+      when Enumerable
+        index.to_a
+      else
+        raise ArgumentError,
+          "Cannot create index from #{index.class} #{index.inspect}"
+      end
+    end
 
     def preprocess_range rng
       start   = rng.begin

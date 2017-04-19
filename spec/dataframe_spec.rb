@@ -3677,7 +3677,7 @@ describe Daru::DataFrame do
       expect(df_union.index.to_a).to eq v1 + v2
     end
   end
-  
+
   context '#inspect' do
     subject { df.inspect }
 
@@ -3698,6 +3698,41 @@ describe Daru::DataFrame do
         |   1   2   4   7
         |   2   3   5   8
        }.unindent}
+    end
+
+    context 'if index name is set' do
+      context 'single index with name' do
+        let(:df) { Daru::DataFrame.new({a: [1,2,3], b: [3,4,5], c: [6,7,8]},
+        name: 'test')}
+        before { df.index.name = 'index_name' }
+        it { should == %Q{
+          |#<Daru::DataFrame: test (3x3)>
+          | index_name          a          b          c
+          |          0          1          3          6
+          |          1          2          4          7
+          |          2          3          5          8
+         }.unindent}
+      end
+
+      context 'MultiIndex with name' do
+        let(:mi) { Daru::MultiIndex.new(
+                levels: [[:a,:b,:c], [:one, :two]],
+                labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]], name: ['s1', 's2']) }
+        let(:df) { Daru::DataFrame.new({
+          a: [11, 12, 13, 14, 15, 16], b: [21, 22, 23, 24, 25, 26]},
+            name: 'test', index: mi)}
+        it { should == %Q{
+          |#<Daru::DataFrame: test (6x2)>
+          |  s1  s2   a   b
+          |   a one  11  21
+          |     two  12  22
+          |   b one  13  23
+          |     two  14  24
+          |   c one  15  25
+          |     two  16  26
+         }.unindent}
+      end
+
     end
 
     context 'no name' do
