@@ -33,7 +33,17 @@ describe Daru::IO do
         expect(df.vectors.to_a).to eq(%W[Account Name Rep Manager Product Quantity Price Status])
       end
     end
-
+    
+    context "+ stubbing" do
+      it ".from_csv works for urls (header comparison for mock data)" do
+        WebMock.stub_request(:get,'http://dumm/some.csv').
+          to_return(status: 200, body: File.read('spec/fixtures/scientific_notation.csv'))
+        df = Daru::DataFrame.from_csv('http://dumm/some.csv', col_sep:',', headers: true)
+        expect(df.vectors).to eq([:x, :y].to_index)
+      end
+    end
+    
+    
     context "#write_csv" do
       before do
         @df = Daru::DataFrame.new({
