@@ -1,45 +1,66 @@
 describe Daru::IO do
   describe Daru::DataFrame do
     context ".from_csv" do
-      it "loads from a CSV file" do
-        df = Daru::DataFrame.from_csv('spec/fixtures/matrix_test.csv',
-          col_sep: ' ', headers: true)
+      before do
+        %w[matrix_test repeated_fields scientific_notation sales-funnel].each do |file|
+          WebMock
+            .stub_request(:get,"http://dummy_remote_url/#{file}.csv")
+            .to_return(status: 200, body: File.read("spec/fixtures/#{file}.csv"))
+        
+          def local_csv_url file
+            "spec/fixtures/#{file}.csv"
+          end
 
-        df.vectors = [:image_resolution, :mls, :true_transform].to_index
-        expect(df.vectors).to eq([:image_resolution, :mls, :true_transform].to_index)
-        expect(df[:image_resolution].first).to eq(6.55779)
-        expect(df[:true_transform].first).to eq("-0.2362347,0.6308649,0.7390552,0,0.6523478,-0.4607318,0.6018043,0,0.7201635,0.6242881,-0.3027024,4262.65,0,0,0,1")
+          def remote_csv_url file
+            "http://dummy_remote_url/#{file}.csv"
+          end
+        end
+      end
+
+      it "loads from a CSV file" do
+        file = 'matrix_test'
+        paths = [local_csv_url(file), remote_csv_url(file)]
+        paths.each do |path|
+          df = Daru::DataFrame.from_csv(path,col_sep: ' ', headers: true)
+          df.vectors = [:image_resolution, :mls, :true_transform].to_index
+          expect(df.vectors).to eq([:image_resolution, :mls, :true_transform].to_index)
+          expect(df[:image_resolution].first).to eq(6.55779)
+          expect(df[:true_transform].first).to eq("-0.2362347,0.6308649,0.7390552,0,0.6523478,-0.4607318,0.6018043,0,0.7201635,0.6242881,-0.3027024,4262.65,0,0,0,1")
+        end
       end
 
       it "works properly for repeated headers" do
-        df = Daru::DataFrame.from_csv('spec/fixtures/repeated_fields.csv',header_converters: :symbol)
-        expect(df.vectors.to_a).to eq(["id", "name_1", "age_1", "city", "a1", "name_2", "age_2"])
+        file = 'repeated_fields'
+        paths = [local_csv_url(file), remote_csv_url(file)]
+        paths.each do |path|
+          df = Daru::DataFrame.from_csv(path,header_converters: :symbol)
+          expect(df.vectors.to_a).to eq(["id", "name_1", "age_1", "city", "a1", "name_2", "age_2"])
 
-        age = Daru::Vector.new([3, 4, 5, 6, nil, 8])
-        expect(df['age_2']).to eq(age)
+          age = Daru::Vector.new([3, 4, 5, 6, nil, 8])
+          expect(df['age_2']).to eq(age)
+        end
       end
 
       it "accepts scientific notation as float" do
-        ds = Daru::DataFrame.from_csv('spec/fixtures/scientific_notation.csv', order: ['x', 'y'])
-        expect(ds.vectors.to_a).to eq(['x', 'y'])
-        y = [9.629587310436753e+127, 1.9341543147883677e+129, 3.88485279048245e+130]
-        y.zip(ds['y']).each do |y_expected, y_ds|
-          expect(y_ds).to be_within(0.001).of(y_expected)
+        file = 'scientific_notation'
+        paths = [local_csv_url(file), remote_csv_url(file)]
+        paths.each do |path|
+          ds = Daru::DataFrame.from_csv(path, order: ['x', 'y'])
+          expect(ds.vectors.to_a).to eq(['x', 'y'])
+          y = [9.629587310436753e+127, 1.9341543147883677e+129, 3.88485279048245e+130]
+          y.zip(ds['y']).each do |y_expected, y_ds|
+            expect(y_ds).to be_within(0.001).of(y_expected)
+          end
         end
       end
 
       it "follows the order of columns given in CSV" do
-        df = Daru::DataFrame.from_csv 'spec/fixtures/sales-funnel.csv'
-        expect(df.vectors.to_a).to eq(%W[Account Name Rep Manager Product Quantity Price Status])
-      end
-    end
-    
-    context "+ stubbing" do
-      it ".from_csv works for urls (header comparison for mock data)" do
-        WebMock.stub_request(:get,'http://dumm/some.csv').
-          to_return(status: 200, body: File.read('spec/fixtures/scientific_notation.csv'))
-        df = Daru::DataFrame.from_csv('http://dumm/some.csv', col_sep:',', headers: true)
-        expect(df.vectors).to eq([:x, :y].to_index)
+        file = 'sales-funnel'
+        paths = [local_csv_url(file), remote_csv_url(file)]
+        paths.each do |path|
+          df = Daru::DataFrame.from_csv path
+          expect(df.vectors.to_a).to eq(%W[Account Name Rep Manager Product Quantity Price Status])
+        end
       end
     end
     
