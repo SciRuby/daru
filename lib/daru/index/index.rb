@@ -304,7 +304,7 @@ module Daru
       elsif key.is_a?(Numeric) && key < size
         key
       else
-        raise IndexError, "Specified index #{key.inspect} does not exist"
+        raise IndexError, "Specified vector #{key.inspect} does not exist"
       end
     end
 
