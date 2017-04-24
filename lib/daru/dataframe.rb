@@ -20,7 +20,7 @@ module Daru
       #
       # == Arguments
       #
-      # * path - Path of the file to load specified as a String.
+      # * path - Local path / Remote URL of the file to load specified as a String.
       #
       # == Options
       #

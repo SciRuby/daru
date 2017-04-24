@@ -7,6 +7,7 @@ require 'tempfile'
 require 'pry-byebug'
 require 'nokogiri'
 require 'gruff'
+require 'webmock/rspec'
 
 def mri?
   RUBY_ENGINE == 'ruby'
