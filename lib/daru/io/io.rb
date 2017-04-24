@@ -200,7 +200,7 @@ module Daru
       def from_csv_hash_with_headers(path, opts)
         opts[:header_converters] ||= :symbol
         ::CSV
-          .parse(new_open(path), opts)
+          .parse(open(path), opts)
           .tap { |c| yield c if block_given? }
           .by_col.map { |col_name, values| [col_name, values] }.to_h
       end
@@ -208,19 +208,12 @@ module Daru
       def from_csv_hash(path, opts)
         csv_as_arrays =
           ::CSV
-          .parse(new_open(path), opts)
+          .parse(open(path), opts)
           .tap { |c| yield c if block_given? }
           .to_a
         headers       = ArrayHelper.recode_repeated(csv_as_arrays.shift)
         csv_as_arrays = csv_as_arrays.transpose
         headers.each_with_index.map { |h, i| [h, csv_as_arrays[i]] }.to_h
-      end
-
-      def new_open(url)
-        open(url)
-      rescue URI::InvalidURIError
-        host = url.match(".+\:\/\/([^\/]+)")[1]
-        Net::HTTP.get host, url.partition(host)[2] || '/'
       end
     end
   end

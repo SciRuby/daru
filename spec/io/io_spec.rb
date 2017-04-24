@@ -4,7 +4,7 @@ describe Daru::IO do
       before do
         %w[matrix_test repeated_fields scientific_notation sales-funnel].each do |file|
           WebMock
-            .stub_request(:get,"http://dummy_remote_url/#{file}.csv")
+            .stub_request(:get,"http://dummy-remote-url/#{file}.csv")
             .to_return(status: 200, body: File.read("spec/fixtures/#{file}.csv"))
         
           def local_csv_url file
@@ -12,7 +12,7 @@ describe Daru::IO do
           end
 
           def remote_csv_url file
-            "http://dummy_remote_url/#{file}.csv"
+            "http://dummy-remote-url/#{file}.csv"
           end
         end
       end
