@@ -3872,4 +3872,12 @@ describe Daru::DataFrame do
       | c DATE) CHARACTER SET=UTF8;
     }.unindent}
   end
+
+  context "#by_single_key" do
+    let(:df) { Daru::DataFrame.new(a: [1, 2, 3], b: [4, 5, 6] ) }
+
+    it 'raise error when vector is missing from dataframe' do
+      expect { df[:c] }.to raise_error(IndexError, /Specified vector c does not exist/)
+    end
+  end
 end if mri?

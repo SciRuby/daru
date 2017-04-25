@@ -2100,7 +2100,11 @@ module Daru
 
     def access_vector_single_index *names
       if names.count < 2
-        pos = @vectors[names.first]
+	begin
+          pos = @vectors[names.first]
+	rescue IndexError
+	  raise IndexError, "Specified vector #{names.first} does not exist"
+	end
 
         return @data[pos] if pos.is_a?(Numeric)
 
