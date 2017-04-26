@@ -386,5 +386,6 @@ describe Daru::Index do
         it { is_expected.to eq klass.new(answer) }
       end
     end
+
   end
 end
