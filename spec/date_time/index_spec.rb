@@ -202,6 +202,11 @@ describe DateTimeIndex do
         "#<Daru::DateTimeIndex(4) 2014-07-01T00:00:00+00:00...2014-07-04T00:00:00+00:00>"
       }
     end
+
+    context 'empty index' do
+      let(:index){ DateTimeIndex.new([]) }
+      it { is_expected.to eq "#<Daru::DateTimeIndex(0)>" }
+    end
   end
 
   context "#frequency" do
@@ -242,6 +247,14 @@ describe DateTimeIndex do
         DateTime.new(2015,7),DateTime.new(2013,7)])
       expect(index['2014']).to eq(DateTimeIndex.new([
         DateTime.new(2014,5),DateTime.new(2014,7)]))
+    end
+
+    it 'does not fail on absent data' do
+      index = DateTimeIndex.new([
+        DateTime.new(2014,5),DateTime.new(2018,6),DateTime.new(2014,7),DateTime.new(2016,7),
+        DateTime.new(2013,7)])
+      p DateTimeIndex.new([])
+      expect(index['2015']).to eq(DateTimeIndex.new([]))
     end
 
     it "accepts only year for frequency data" do
@@ -504,6 +517,11 @@ describe DateTimeIndex do
         start: DateTime.new(2012,2,1), :end => DateTime.new(2012,2,4))
       expect(index.to_a).to eq([
         DateTime.new(2012,2,1),DateTime.new(2012,2,2),DateTime.new(2012,2,3),DateTime.new(2012,2,4)])
+    end
+
+    context 'empty index' do
+      subject(:index) { DateTimeIndex.new([]) }
+      its(:to_a) { is_expected.to eq [] }
     end
   end
 
