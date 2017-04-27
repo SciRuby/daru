@@ -529,7 +529,7 @@ module Daru
       slice first, last
     end
 
-    def slice_between_dates first, last # rubocop:disable Metrics/AbcSize
+    def slice_between_dates first, last # rubocop:disable Metrics/AbcSize,Metrics/PerceivedComplexity
       # about that ^ disable: I'm waiting for cleaner understanding
       # of offsets logic. Reference: https://github.com/v0dro/daru/commit/7e1c34aec9516a9ba33037b4a1daaaaf1de0726a#diff-a95ef410a8e1f4ea3cc48d231bb880faR250
       start    = @data.bsearch { |d| d[0] >= first }
