@@ -405,7 +405,7 @@ module Daru
         @data
       else
         @data.sort_by(&:last)
-      end.transpose.first
+      end.transpose.first || []
     end
 
     # Size of index.
@@ -419,6 +419,7 @@ module Daru
 
     def inspect
       meta = [@periods, @frequency ? "frequency=#{@frequency}" : nil].compact.join(', ')
+      return "#<#{self.class}(#{meta})>" if @data.empty?
       "#<#{self.class}(#{meta}) " \
          "#{@data.first[0]}...#{@data.last[0]}>"
     end
@@ -528,7 +529,7 @@ module Daru
       slice first, last
     end
 
-    def slice_between_dates first, last # rubocop:disable Metrics/AbcSize
+    def slice_between_dates first, last # rubocop:disable Metrics/AbcSize,Metrics/PerceivedComplexity
       # about that ^ disable: I'm waiting for cleaner understanding
       # of offsets logic. Reference: https://github.com/v0dro/daru/commit/7e1c34aec9516a9ba33037b4a1daaaaf1de0726a#diff-a95ef410a8e1f4ea3cc48d231bb880faR250
       start    = @data.bsearch { |d| d[0] >= first }
@@ -542,7 +543,7 @@ module Daru
         st = @data.index(start)
         en = after_en ? @data.index(after_en) - 1 : Helper.last_date(@data)[1]
         return start[1] if st == en
-        DateTimeIndex.new(@data[st..en].transpose[0])
+        DateTimeIndex.new(@data[st..en].transpose[0] || []) # empty slice guard
       end
     end
 

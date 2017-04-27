@@ -73,6 +73,11 @@ Style/EmptyCaseCondition:
 Style/MultilineBlockChain:
   Enabled: false
 
+Style/PercentLiteralDelimiters:
+  PreferredDelimiters:
+    '%i': '[]'
+    '%w': '[]'
+
 # Neither of prefered styles are good enough :(
 Style/BlockDelimiters:
   Enabled: false
