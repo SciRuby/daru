@@ -465,4 +465,66 @@ describe Daru::Core::GroupBy do
 
     it { is_expected.to eq Daru::DataFrame.new({num: [6]}, index: ['a']) }
   end
+
+  context '#summarize' do
+    let(:dataframe) { Daru::DataFrame.new({
+      employee: %w[John Jane Mark John Jane Mark],
+      month: %w[June June June July July July],
+      salary: [1000, 500, 700, 1200, 600, 600]})
+    }
+    context 'group and summarize sum for particular single vector' do
+      subject { dataframe.group_by([:employee]).summarize(salary: :sum) }
+
+      it { is_expected.to eq Daru::DataFrame.new({
+              salary: [1100, 2200, 1300]},
+              index: ['Jane', 'John', 'Mark'])
+      }
+    end
+
+    context 'group and summarize sum for two vectors' do
+      subject {
+        dataframe.group_by([:employee, :month]).summarize(salary: :sum) }
+
+      it { is_expected.to eq Daru::DataFrame.new({
+              salary: [600, 500, 1200, 1000, 600, 700]},
+              index: Daru::MultiIndex.from_tuples([
+                  ['Jane', 'July'],
+                  ['Jane', 'June'],
+                  ['John', 'July'],
+                  ['John', 'June'],
+                  ['Mark', 'July'],
+                  ['Mark', 'June']
+                ])
+      )}
+    end
+
+    context 'group and summarize sum and lambda function for vectors' do
+      subject { dataframe.group_by([:employee]).summarize(
+        salary: :sum,
+        month: ->(vec) { vec.to_a.join('/') }) }
+
+      it { is_expected.to eq Daru::DataFrame.new({
+        salary: [1100, 2200, 1300],
+        month: ['June/July', 'June/July', 'June/July']},
+        index: ['Jane', 'John', 'Mark'])
+      }
+    end
+
+    context 'group and summarize sum and lambda functions on dataframe' do
+      subject { dataframe.group_by([:employee]).summarize(
+        salary: :sum,
+        month: ->(vec) { vec.to_a.join('/') },
+        mean_salary: ->(df) { df.salary.mean },
+        periods: ->(df) { df.size }
+      )}
+
+      it { is_expected.to eq Daru::DataFrame.new({
+        salary: [1100, 2200, 1300],
+        month: ['June/July', 'June/July', 'June/July'],
+        mean_salar: [550, 1100, 650],
+        periods: [2, 2, 2]},
+        index: ['Jane', 'John', 'Mark'], order: [:salary, :month,
+                                                :mean_salary, :periods]) }
+    end
+  end
 end
