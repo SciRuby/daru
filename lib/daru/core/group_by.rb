@@ -1,6 +1,6 @@
 module Daru
   module Core
-    class GroupBy
+    class GroupBy # rubocop:disable Metrics/ClassLength
       attr_reader :groups, :df
 
       # Iterate over each group created by group_by. A DataFrame is yielded in
@@ -56,6 +56,20 @@ module Daru
       # Get the last group
       def last
         tail(1)
+      end
+
+      def summarize(options={})
+        colmn_value = []
+        options.keys.each do |vec|
+          do_this_on_vec = options[vec]
+          colmn_value << if @non_group_vectors.include?(vec)
+                           apply_method_on_colmns(vec, do_this_on_vec)
+                         else
+                           apply_method_on_df(do_this_on_vec)
+                         end
+        end
+
+        Daru::DataFrame.new(colmn_value, index: @keys, order: options.keys)
       end
 
       # Get the top 'n' groups
@@ -247,8 +261,8 @@ module Daru
 
       def init_groups_df tuples, names
         multi_index_tuples = []
-        keys = tuples.uniq.sort(&TUPLE_SORTER)
-        keys.each do |key|
+        @keys = tuples.uniq.sort(&TUPLE_SORTER)
+        @keys.each do |key|
           indices = all_indices_for(tuples, key)
           @groups[key] = indices
           indices.each do |indice|
@@ -289,6 +303,31 @@ module Daru
         index = apply_method_index
         order = Daru::Index.new(order)
         Daru::DataFrame.new(rows.transpose, index: index, order: order)
+      end
+
+      # Do the `method` (`method` can be :sum, :mean, :std, :median, etc or
+      # lambda/function/Proc), on the column.
+      def apply_method_on_colmns colmns, method
+        rows = []
+        @keys.each do |indexes|
+          slice = @df[colmns][*indexes]
+          case method
+          when Symbol
+            rows << (slice.is_a?(Daru::Vector) ? slice.send(method) : slice)
+          when Proc
+            rows << method.call(slice)
+          end
+        end
+        rows
+      end
+
+      def apply_method_on_df method
+        rows = []
+        @keys.each do |indexes|
+          slice = @df.row[*indexes]
+          rows << method.call(slice)
+        end
+        rows
       end
 
       def apply_method_index
