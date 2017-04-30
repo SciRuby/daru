@@ -196,15 +196,8 @@ module Daru
         transpose = elements.transpose
         rows      = indexes.each.map { |idx| transpose[idx] }
 
-        new_index =
-          begin
-            @context.index[indexes]
-          rescue IndexError
-            indexes
-          end
-
         Daru::DataFrame.rows(
-          rows, index: new_index, order: @context.vectors
+          rows, index: indexes, order: @context.vectors
         )
       end
 

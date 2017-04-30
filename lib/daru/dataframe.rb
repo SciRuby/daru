@@ -504,7 +504,7 @@ module Daru
     def dup vectors_to_dup=nil
       vectors_to_dup = @vectors.to_a unless vectors_to_dup
 
-      src = vectors_to_dup.map { |vec| @data[@vectors[vec]].dup }
+      src = vectors_to_dup.map { |vec| @data[@vectors.pos(vec)].dup }
       new_order = Daru::Index.new(vectors_to_dup)
 
       Daru::DataFrame.new src, order: new_order, index: @index.dup, name: @name, clone: true
@@ -2132,7 +2132,7 @@ module Daru
 
     def access_vector *names
       if names.first.is_a?(Range)
-        dup(@vectors[names.first])
+        dup(@vectors.subset(names.first))
       elsif @vectors.is_a?(MultiIndex)
         access_vector_multi_index(*names)
       else
@@ -2155,7 +2155,7 @@ module Daru
     def access_vector_single_index *names
       if names.count < 2
         begin
-          pos = @vectors[names.first]
+          pos = @vectors.is_a?(Daru::DateTimeIndex) ? @vectors[names.first] : @vectors.pos(names.first)
         rescue IndexError
           raise IndexError, "Specified vector #{names.first} does not exist"
         end
@@ -2165,7 +2165,7 @@ module Daru
         names = pos
       end
 
-      new_vectors = names.map { |name| [name, @data[@vectors[name]]] }.to_h
+      new_vectors = names.map { |name| [name, @data[@vectors.pos(name)]] }.to_h
 
       order = names.is_a?(Array) ? Daru::Index.new(names) : names
       Daru::DataFrame.new(new_vectors, order: order,
