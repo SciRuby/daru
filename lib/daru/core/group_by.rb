@@ -58,20 +58,6 @@ module Daru
         tail(1)
       end
 
-      def summarize(options={})
-        colmn_value = []
-        options.keys.each do |vec|
-          do_this_on_vec = options[vec]
-          colmn_value << if @non_group_vectors.include?(vec)
-                           apply_method_on_colmns(vec, do_this_on_vec)
-                         else
-                           apply_method_on_df(do_this_on_vec)
-                         end
-        end
-
-        Daru::DataFrame.new(colmn_value, index: @keys, order: options.keys)
-      end
-
       # Get the top 'n' groups
       # @param quantity [Fixnum] (5) The number of groups.
       # @example Usage of head
@@ -257,6 +243,11 @@ module Daru
         @df.inspect
       end
 
+      def summarize(options={})
+        @df.index.remove_layer (@df.index.levels.size - 1)
+        @df.summarize(options)
+      end
+
       private
 
       def init_groups_df tuples, names
@@ -303,31 +294,6 @@ module Daru
         index = apply_method_index
         order = Daru::Index.new(order)
         Daru::DataFrame.new(rows.transpose, index: index, order: order)
-      end
-
-      # Do the `method` (`method` can be :sum, :mean, :std, :median, etc or
-      # lambda/function/Proc), on the column.
-      def apply_method_on_colmns colmns, method
-        rows = []
-        @keys.each do |indexes|
-          slice = @df[colmns][*indexes]
-          case method
-          when Symbol
-            rows << (slice.is_a?(Daru::Vector) ? slice.send(method) : slice)
-          when Proc
-            rows << method.call(slice)
-          end
-        end
-        rows
-      end
-
-      def apply_method_on_df method
-        rows = []
-        @keys.each do |indexes|
-          slice = @df.row[*indexes]
-          rows << method.call(slice)
-        end
-        rows
       end
 
       def apply_method_index
