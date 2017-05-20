@@ -141,11 +141,7 @@ module Daru
 
           mat_rows = vectors.collect do |row|
             vectors.collect do |col|
-              if row == col
-                self[row].variance
-              else
-                cache[[col,row]]
-              end
+              row == col ? self[row].variance : cache[[col,row]]
             end
           end
 
