@@ -501,8 +501,7 @@ module Daru
     # * +:dtype+ - :array for Ruby Array. :nmatrix for NMatrix.
     def cast opts={}
       dt = opts[:dtype]
-      raise ArgumentError, "Unsupported dtype #{opts[:dtype]}" unless
-        dt == :array || dt == :nmatrix || dt == :gsl
+      raise ArgumentError, "Unsupported dtype #{opts[:dtype]}" unless %i[array nmatrix gsl].include?(dt)
 
       @data = cast_vector_to dt unless @dtype == dt
     end

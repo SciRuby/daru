@@ -726,7 +726,7 @@ module Daru
     # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
     # Default to :vector.
     def map! axis=:vector, &block
-      if axis == :vector || axis == :column
+      if %i[vector column].include?(axis)
         map_vectors!(&block)
       elsif axis == :row
         map_rows!(&block)
@@ -1166,7 +1166,7 @@ module Daru
     #     row[:a] < 3 and row[:b] == 'b'
     #   end #=> true
     def any? axis=:vector, &block
-      if axis == :vector || axis == :column
+      if %i[vector column].include?(axis)
         @data.any?(&block)
       elsif axis == :row
         each_row do |row|
@@ -1188,7 +1188,7 @@ module Daru
     #     row[:a] < 10
     #   end #=> true
     def all? axis=:vector, &block
-      if axis == :vector || axis == :column
+      if %i[vector column].include?(axis)
         @data.all?(&block)
       elsif axis == :row
         each_row.all?(&block)
@@ -2101,7 +2101,7 @@ module Daru
     end
 
     def dispatch_to_axis(axis, method, *args, &block)
-      if axis == :vector || axis == :column
+      if %i[vector column].include?(axis)
         send("#{method}_vector", *args, &block)
       elsif axis == :row
         send("#{method}_row", *args, &block)
@@ -2111,7 +2111,7 @@ module Daru
     end
 
     def dispatch_to_axis_pl(axis, method, *args, &block)
-      if axis == :vector || axis == :column
+      if %i[vector column].include?(axis)
         send("#{method}_vectors", *args, &block)
       elsif axis == :row
         send("#{method}_rows", *args, &block)
