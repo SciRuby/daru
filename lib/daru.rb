@@ -80,13 +80,13 @@ module Daru
   create_has_library :gruff
 end
 
-[['spreadsheet', '~>1.1.1'], ['mechanize','~>2.7.5']].each do |lib|
+{'spreadsheet' => '~>1.1.1', 'mechanize' => '~>2.7.5'}.each do |name, version|
   begin
-    gem lib[0], lib[1]
-    require lib[0]
+    gem name, version
+    require name
   rescue LoadError
-    STDERR.puts "\nInstall the #{lib[0]} gem version #{lib[1]} for using"\
-    " #{lib[0]} functions."
+    STDERR.puts "\nInstall the #{name} gem version #{version} for using"\
+    " #{name} functions."
   end
 end
 

@@ -117,17 +117,43 @@ module Daru
         Daru::IO.from_plaintext path, fields
       end
 
-      # Read the table data from a remote html file. For this method to work,
-      # the data should be present in a html file with proper combination of <table>, <th> and <td> tags.
+      # Read the table data from a remote html file. Please note that this module
+      # works only for static table elements on a HTML page, and won't work in
+      # cases where the data is being loaded into the HTML table by Javascript.
       #
+      # By default - all <th> tag elements in the first proper row are considered
+      # as the order, and all the <th> tag elements in the first column are
+      # considered as the index.
+      # 
       # == Arguments
       #
-      # * path - Path / URL of the html file to be read.
-      # * fields - A Hash, with match key to search. data, order, index keys can overwrite the scraped values from web.
+      # * path [String] - URL of the target HTML file.
+      # * fields [Hash] - 
+      #
+      #   +:match+ - A string to match for, to choose a particular table(s) from multiple tables of a HTML page.
+      #
+      #   +:order+ - An *Array* which would act as the user-defined order for the parsed *Daru::DataFrame*. That is, the given order will override the order scraped by this module.
+      #
+      #   +:index+ - An *Array* which would act as the user-defined index for the parsed *Daru::DataFrame*. That is, the given index will override the index scraped by this module.
+      #
+      # == Returns
+      # An Array of +Daru::DataFrame+s, with each dataframe corresponding to a 
+      # HTML table on that webpage.
       #
       # == Usage
+      #   dfs = Daru::DataFrame.from_html("http://www.moneycontrol.com/", match: "Sun Pharma")
+      #   dfs.count
+      #   # => 4
       #
-      # df = Daru::DataFrame.from_html(path, index: [:p1, :p2, :p3, :p4, :p5, :p6, :p7])[0]
+      #   dfs.first
+      #   # 
+      #   # => <Daru::DataFrame(5x4)>
+      #   #          Company      Price     Change Value (Rs
+      #   #     0 Sun Pharma     502.60     -65.05   2,117.87
+      #   #     1   Reliance    1356.90      19.60     745.10
+      #   #     2 Tech Mahin     379.45     -49.70     650.22
+      #   #     3        ITC     315.85       6.75     621.12
+      #   #     4       HDFC    1598.85      50.95     553.91
       def from_html path, fields={}
         Daru::IO.from_html path, fields
       end

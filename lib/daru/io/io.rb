@@ -187,10 +187,10 @@ module Daru
 
       def from_html path, opts
         page = Mechanize.new.get(path)
-        page.search('table').map { |table| parse_html_table table }
-            .keep_if { |table| search_for_match table, opts[:match] }
-            .reject(&:nil?).reject(&:empty?)
-            .map { |table| choose_value table, opts }
+        page.search('table').map { |table| html_parse_table table }
+            .keep_if { |table| html_search table, opts[:match] }
+            .compact
+            .map { |table| html_decide_values table, opts }
             .map { |table| html_table_to_dataframe table }
       rescue LoadError
         STDERR.puts '\nInstall the mechanize gem version 2.7.5 for using'\
@@ -233,33 +233,44 @@ module Daru
         headers.each_with_index.map { |h, i| [h, csv_as_arrays[i]] }.to_h
       end
 
-      # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity, Metrics/CyclomaticComplexity
-      def parse_html_table(table)
-        data = table.search('tr').map { |row| row.search('td').map { |val| val.text.strip } }
-        size = data.map(&:count).max
-        data.keep_if { |x| x.count == size }
-        headers = table.search('tr').map { |row| row.search('th').map { |val| val.text.strip } }
-        return if headers[0].nil? || headers.map(&:count).max < size
-        headers.delete_at(0) while headers[0].nil? || headers[0].count < size
-        order = headers.delete_at(0)
-        ((order.delete_at 0) while order.count != size) if order.count > size
-        index = headers.flatten==[] ? nil : headers.flatten
-        return unless (index.nil? || index.count == data.count) && !order.nil? && order.count>0
-        {data: data.reject(&:empty?).reject(&:nil?), index: index, order: order}
+      def html_parse_table(table)
+        headers, headers_size = html_scrape_tag(table,'th')
+        data, size = html_scrape_tag(table, 'td')
+        data = data.keep_if { |x| x.count == size }
+        order, indice = html_parse_hash(headers, size, headers_size) if headers_size >= size
+        return unless (indice.nil? || indice.count == data.count) && !order.nil? && order.count>0
+        {data: data.compact, index: indice, order: order}
       end
-      # rubocop:enable Metrics/AbcSize, Metrics/PerceivedComplexity, Metrics/CyclomaticComplexity
 
-      def search_for_match(table, match=nil)
+      def html_scrape_tag(table, tag)
+        arr  = table.search('tr').map { |row| row.search(tag).map { |val| val.text.strip } }
+        size = arr.map(&:count).max
+        [arr, size]
+      end
+
+      # Splits headers (all th tags) into order and index. Wherein,
+      # Order : All <th> tags on first proper row of HTML table
+      # index : All <th> tags on first proper column of HTML table
+      def html_parse_hash(headers, size, headers_size)
+        headers_index = headers.find_index { |x| x.count == headers_size }
+        order = headers[headers_index]
+        order_index = order.count - size
+        order = order[order_index..-1]
+        indice = headers[headers_index+1..-1].flatten
+        indice = nil if indice.to_a.empty?
+        [order, indice]
+      end
+
+      def html_search(table, match=nil)
         match.nil? ? true : (table.to_s.include? match)
       end
 
-      def choose_value(scraped_val={}, user_val=nil)
-        unless user_val.nil?
-          user_val.each do |key,val|
-            scraped_val[key] = val
-          end
+      # Allows user to override the scraped order / index / data
+      def html_decide_values(scraped_val={}, user_val={})
+        %I[name index order].each do |key|
+          user_val[key] ||= scraped_val[key]
         end
-        scraped_val
+        user_val
       end
 
       def html_table_to_dataframe(table)
