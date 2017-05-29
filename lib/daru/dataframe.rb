@@ -130,11 +130,13 @@ module Daru
       # * path [String] - URL of the target HTML file.
       # * fields [Hash] -
       #
-      #   +:match+ - A string to match for, to choose a particular table(s) from multiple tables of a HTML page.
+      #   +:match+ - A *String* to match and choose a particular table(s) from multiple tables of a HTML page.
       #
       #   +:order+ - An *Array* which would act as the user-defined order, to override the parsed *Daru::DataFrame*.
       #
       #   +:index+ - An *Array* which would act as the user-defined index, to override the parsed *Daru::DataFrame*.
+      #
+      #   +:name+ - A *String* that manually assigns a name to the scraped *Daru::DataFrame*, for user's preference.
       #
       # == Returns
       # An Array of +Daru::DataFrame+s, with each dataframe corresponding to a

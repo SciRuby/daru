@@ -267,7 +267,7 @@ module Daru
 
       # Allows user to override the scraped order / index / data
       def html_decide_values(scraped_val={}, user_val={})
-        %I[name index order].each do |key|
+        %I[data index name order].each do |key|
           user_val[key] ||= scraped_val[key]
         end
         user_val
