@@ -124,20 +124,20 @@ module Daru
       # By default - all <th> tag elements in the first proper row are considered
       # as the order, and all the <th> tag elements in the first column are
       # considered as the index.
-      # 
+      #
       # == Arguments
       #
       # * path [String] - URL of the target HTML file.
-      # * fields [Hash] - 
+      # * fields [Hash] -
       #
       #   +:match+ - A string to match for, to choose a particular table(s) from multiple tables of a HTML page.
       #
-      #   +:order+ - An *Array* which would act as the user-defined order for the parsed *Daru::DataFrame*. That is, the given order will override the order scraped by this module.
+      #   +:order+ - An *Array* which would act as the user-defined order, to override the parsed *Daru::DataFrame*.
       #
-      #   +:index+ - An *Array* which would act as the user-defined index for the parsed *Daru::DataFrame*. That is, the given index will override the index scraped by this module.
+      #   +:index+ - An *Array* which would act as the user-defined index, to override the parsed *Daru::DataFrame*.
       #
       # == Returns
-      # An Array of +Daru::DataFrame+s, with each dataframe corresponding to a 
+      # An Array of +Daru::DataFrame+s, with each dataframe corresponding to a
       # HTML table on that webpage.
       #
       # == Usage
@@ -146,7 +146,7 @@ module Daru
       #   # => 4
       #
       #   dfs.first
-      #   # 
+      #   #
       #   # => <Daru::DataFrame(5x4)>
       #   #          Company      Price     Change Value (Rs
       #   #     0 Sun Pharma     502.60     -65.05   2,117.87
