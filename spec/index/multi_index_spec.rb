@@ -35,6 +35,54 @@ describe Daru::MultiIndex do
           labels: [[0,0,1,1,2,2]])
       }.to raise_error
     end
+
+    context "create an MultiIndex with name" do
+      context 'if no name is set' do
+        subject { Daru::MultiIndex.new(
+                    levels: [[:a,:b,:c], [:one, :two]],
+                    labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]]) }
+        its(:name) { is_expected.to be_nil }
+      end
+
+      context 'correctly return the MultiIndex name' do
+        subject { Daru::MultiIndex.new(
+                  levels: [[:a,:b,:c], [:one, :two]],
+                  labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]], name: ['n1', 'n2']) }
+        its(:name) { is_expected.to eq ['n1', 'n2'] }
+      end
+
+      context "set new MultiIndex name" do
+        subject {
+          Daru::MultiIndex.new(
+                  levels: [[:a,:b,:c], [:one, :two]],
+                  labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]], name: ['n1', 'n2']) }
+        before(:each) { subject.name = ['k1', 'k2'] }
+        its(:name) { is_expected.to eq ['k1', 'k2'] }
+      end
+
+      context "set new MultiIndex name having empty string" do
+        subject {
+          Daru::MultiIndex.new(
+                  levels: [[:a,:b,:c], [:one, :two]],
+                  labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]], name: ['n1', 'n2']) }
+        before { subject.name = ['k1', ''] }
+        its(:name) { is_expected.to eq ['k1', ''] }
+      end
+
+      it "raises SizeError for wrong number of name" do
+        error_msg = "\'names\' and \'levels\' should be of same size. Size of the \'name\' array is 2 and size of the MultiIndex \'levels\' and \'labels\' is 3.\nIf you don\'t want to set name for particular level (say level \'i\') then put empty string on index \'i\' of the \'name\' Array."
+        expect { @multi_mi.name = ['n1', 'n2'] }.to raise_error(SizeError, error_msg)
+
+        error_msg = "'names' and 'levels' should be of same size. Size of the 'name' array is 0 and size of the MultiIndex 'levels' and 'labels' is 3.\nIf you don\'t want to set name for particular level (say level 'i') then put empty string on index 'i' of the 'name' Array."
+        expect { @multi_mi.name = [ ] }.to raise_error(SizeError, error_msg)
+
+        error_msg = "'names' and 'levels' should be of same size. Size of the 'name' array is 1 and size of the MultiIndex 'levels' and 'labels' is 3.\nIf you don\'t want to set name for particular level (say level 'i') then put empty string on index 'i' of the 'name' Array."
+        expect { @multi_mi.name = [''] }.to raise_error(SizeError, error_msg)
+
+        error_msg = "'names' and 'levels' should be of same size. Size of the 'name' array is 4 and size of the MultiIndex 'levels' and 'labels' is 3."
+        expect { @multi_mi.name = ['n1', 'n2', 'n3', 'n4'] }.to raise_error(SizeError, error_msg)
+      end
+    end
   end
 
   context ".from_tuples" do
@@ -255,6 +303,42 @@ describe Daru::MultiIndex do
         }.unindent
       }
     end
+
+    context 'multi index with name' do
+      subject {
+        Daru::MultiIndex.new(
+          levels: [[:a,:b,:c],[:one,:two],[:bar, :baz, :foo]],
+          labels: [
+            [0,0,0,0,1,1,1,1,2,2,2,2],
+            [0,0,1,1,0,1,1,0,0,0,1,1],
+            [0,1,0,1,0,0,1,2,0,1,2,0]], name: ['n1', 'n2', 'n3'])
+      }
+
+      its(:inspect) { is_expected.to start_with %Q{
+        |#<Daru::MultiIndex(12x3)>
+        |  n1  n2  n3
+        }.unindent
+      }
+    end
+
+    context 'multi index with name having empty string' do
+      subject {
+        mi= Daru::MultiIndex.new(
+                  levels: [[:a,:b,:c],[:one,:two],[:bar, :baz, :foo]],
+                  labels: [
+                    [0,0,0,0,1,1,1,1,2,2,2,2],
+                    [0,0,1,1,0,1,1,0,0,0,1,1],
+                    [0,1,0,1,0,0,1,2,0,1,2,0]], name: ['n1', 'n2', 'n3'])
+      }
+      before { subject.name = ['n1', '', 'n3'] }
+
+      its(:inspect) { is_expected.to start_with %Q{
+        |#<Daru::MultiIndex(12x3)>
+        |  n1      n3
+        }.unindent
+      }
+    end
+
   end
 
   context "#==" do

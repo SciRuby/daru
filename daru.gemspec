@@ -70,10 +70,11 @@ EOF
   spec.add_development_dependency 'activerecord', '~> 4.0'
   spec.add_development_dependency 'mechanize'
   spec.add_development_dependency 'sqlite3'
-  spec.add_development_dependency 'rubocop', '>= 0.40.0'
+  spec.add_development_dependency 'rubocop', '~> 0.49.0'
   spec.add_development_dependency 'ruby-prof'
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'gruff'
+  spec.add_development_dependency 'webmock'
   if RUBY_VERSION < '2.1.0'
     spec.add_development_dependency 'nokogiri', '<= 1.6.8.1'
   else

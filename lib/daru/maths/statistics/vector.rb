@@ -41,7 +41,7 @@ module Daru
         # be applied to vectors. Default is [:count, :mean, :std, :max,
         # :min]. Methods will be applied in the specified order.
         def describe methods=nil
-          methods ||= [:count, :mean, :std, :min, :max]
+          methods ||= %i[count mean std min max]
           description = methods.map { |m| send(m) }
           Daru::Vector.new(description, index: methods, name: :statistics)
         end
@@ -571,7 +571,7 @@ module Daru
         # @!method rolling_variance
         #   Calculate rolling variance
         #   @param [Integer] n (10) Loopback length
-        [:count, :mean, :median, :max, :min, :sum, :std, :variance].each do |meth|
+        %i[count mean median max min sum std variance].each do |meth|
           define_method("rolling_#{meth}".to_sym) do |n=10|
             rolling(meth, n)
           end

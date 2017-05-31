@@ -1,6 +1,14 @@
 describe Daru::IO do
   describe Daru::DataFrame do
     context ".from_csv" do
+      before do
+        %w[matrix_test repeated_fields scientific_notation sales-funnel].each do |file|
+          WebMock
+            .stub_request(:get,"http://dummy-remote-url/#{file}.csv")
+            .to_return(status: 200, body: File.read("spec/fixtures/#{file}.csv"))
+        end
+      end
+
       it "loads from a CSV file" do
         df = Daru::DataFrame.from_csv('spec/fixtures/matrix_test.csv',
           col_sep: ' ', headers: true)
@@ -32,8 +40,16 @@ describe Daru::IO do
         df = Daru::DataFrame.from_csv 'spec/fixtures/sales-funnel.csv'
         expect(df.vectors.to_a).to eq(%W[Account Name Rep Manager Product Quantity Price Status])
       end
-    end
 
+      it "checks for equal parsing of local CSV files and remote CSV files" do
+        %w[matrix_test repeated_fields scientific_notation sales-funnel].each do |file|
+          df_local  = Daru::DataFrame.from_csv("spec/fixtures/#{file}.csv")
+          df_remote = Daru::DataFrame.from_csv("http://dummy-remote-url/#{file}.csv")
+          expect(df_local).to eq(df_remote)
+        end
+      end
+    end
+    
     context "#write_csv" do
       before do
         @df = Daru::DataFrame.new({

@@ -2033,6 +2033,24 @@ describe Daru::Vector do
     end
   end
 
+  context "#sort_by_index" do
+    let(:asc) { vector.sort_by_index }
+    let(:desc) { vector.sort_by_index(ascending: false) }
+
+    context 'numeric vector' do
+      let(:vector) { Daru::Vector.new [11, 13, 12], index: [23, 21, 22] }
+      specify { expect(asc.to_a).to eq [13, 12, 11] }
+      specify { expect(desc.to_a).to eq [11, 12, 13] }
+    end
+
+    context 'mix variable type index' do
+      let(:vector) { Daru::Vector.new [11, Float::NAN, nil],
+                              index: [21, 23, 22] }
+      specify { expect(asc.to_a).to eq [11, nil, Float::NAN] }
+      specify { expect(desc.to_a).to eq [Float::NAN, nil, 11] }
+    end
+  end
+
   context '#db_type' do
     it 'is DATE for vector with any date in it' do
       # FIXME: is it sane?.. - zverok

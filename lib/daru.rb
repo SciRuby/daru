@@ -38,11 +38,13 @@ module Daru
 
   @plotting_library = :nyaplot
 
+  @error_stream = $stderr
+
   class << self
     # A variable which will set whether Vector metadata is updated immediately or lazily.
     # Call the #update method every time a values are set or removed in order to update
     # metadata like positions of missing values.
-    attr_accessor :lazy_update
+    attr_accessor :lazy_update, :error_stream
     attr_reader :plotting_library
 
     def create_has_library(library)
@@ -72,6 +74,10 @@ module Daru
         raise ArgumentError, "Unsupported library #{lib}"
       end
     end
+
+    def error msg
+      error_stream.puts msg if error_stream
+    end
   end
 
   create_has_library :gsl
@@ -85,7 +91,7 @@ end
     gem name, version
     require name
   rescue LoadError
-    STDERR.puts "\nInstall the #{name} gem version #{version} for using"\
+    Daru.error "\nInstall the #{name} gem version #{version} for using"\
     " #{name} functions."
   end
 end
@@ -97,6 +103,8 @@ require 'erb'
 require 'date'
 
 require 'daru/version.rb'
+
+require 'open-uri'
 
 require 'daru/index/index.rb'
 require 'daru/index/multi_index.rb'

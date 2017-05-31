@@ -28,6 +28,25 @@ describe Daru::Index do
       expect(i.to_a).to eq([DateTime.new(2012,2,4), DateTime.new(2012,2,5), DateTime.new(2012,2,6)])
       expect(i.frequency).to eq('D')
     end
+
+    context "create an Index with name" do
+      context 'if no name is set' do
+        subject { Daru::Index.new [:a, :b, :c]  }
+        its(:name) { is_expected.to be_nil }
+      end
+
+      context 'correctly return the index name' do
+        subject { Daru::Index.new [:a, :b, :c], name: 'index_name'  }
+        its(:name) { is_expected.to eq 'index_name' }
+      end
+
+      context "set new index name" do
+        subject {
+          Daru::Index.new([:a, :b, :c], name: 'index_name') }
+        before { subject.name = 'new_name'}
+        its(:name) { is_expected.to eq 'new_name' }
+      end
+    end
   end
 
   context "#initialize" do
@@ -70,6 +89,25 @@ describe Daru::Index do
     end
   end
 
+  context '#sort' do
+    let(:asc) { index.sort }
+    let(:desc) { index.sort(ascending: false) }
+
+    context 'string index' do
+      let(:index) { Daru::Index.new ['mic', 'amp', 'guitar', 'speaker'] }
+      specify { expect(asc).to eq Daru::Index.new ['amp', 'guitar', 'mic',
+       'speaker'] }
+      specify { expect(desc).to eq Daru::Index.new ['speaker', 'mic', 'guitar',
+       'amp'] }
+    end
+
+    context 'number index' do
+      let(:index) { Daru::Index.new [100, 99, 101, 1, 2]  }
+      specify { expect(asc).to eq Daru::Index.new [1, 2, 99, 100, 101] }
+      specify { expect(desc).to eq Daru::Index.new [101, 100, 99, 2, 1] }
+    end
+  end
+
   context "#size" do
     it "correctly returns the size of the index" do
       idx = Daru::Index.new ['speaker', 'mic', 'guitar', 'amp']
@@ -101,6 +139,11 @@ describe Daru::Index do
     context 'large index' do
       subject { Daru::Index.new ('a'..'z').to_a  }
       its(:inspect) { is_expected.to eq "#<Daru::Index(26): {a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t ... z}>" }
+    end
+
+    context 'index with name' do
+      subject { Daru::Index.new ['one', 'two', 'three'], name: 'number'  }
+      its(:inspect) { is_expected.to eq "#<Daru::Index(3): number {one, two, three}>" }
     end
   end
 
@@ -142,25 +185,25 @@ describe Daru::Index do
     end
 
     it "works with ranges" do
-      expect(@id[:two..:five]).to eq(Daru::Index.new([:two, :three, :four, :five]))
+      expect(@id[:two..:five]).to eq([1, 2, 3, 4])
 
-      expect(@mixed_id['a'..'c']).to eq(Daru::Index.new(['a','b','c']))
+      expect(@mixed_id['a'..'c']).to eq([0, 1, 2])
 
-      # If both start and end are numbers then refer to numerical indexes
-      expect(@mixed_id[0..2]).to eq(Daru::Index.new(['a','b','c']))
+      # returns nil if first index is invalid
+      expect(@mixed_id.slice('d', 5)).to be_nil
 
-      # If atleast one is a number then refer to actual indexing
-      expect(@mixed_id.slice('b',8)).to eq(Daru::Index.new(['b','c',:d,:a,8]))
+      # returns positions till the end if first index is present
+      expect(@mixed_id.slice('c', 6)).to eq([2, 3, 4, 5, 6, 7])
     end
 
     it "returns multiple keys if specified multiple indices" do
-      expect(@id[0,1,3,4]).to eq(Daru::Index.new([:one, :two, :four, :five]))
-      expect(@mixed_id[0,5,3,2]).to eq(Daru::Index.new(['a', 8, :d, 'c']))
+      expect(@id[:one, :two, :four, :five]).to eq([0, 1, 3, 4])
+      expect(@mixed_id[0,5,3,2]).to eq([nil, 7, 6, nil])
     end
 
-    it "returns correct index position for non-numeric index" do
+    it "returns nil for invalid indexes" do
       expect(@id[:four]).to eq(3)
-      expect(@id[3]).to eq(3)
+      expect(@id[3]).to be_nil
     end
 
     it "returns correct index position for mixed index" do
@@ -343,5 +386,6 @@ describe Daru::Index do
         it { is_expected.to eq klass.new(answer) }
       end
     end
+
   end
 end
