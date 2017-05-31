@@ -1,26 +1,22 @@
 require 'spec_helper'
 
-describe 'Daru' do
-  it 'default error stream should be $stderr' do
-    expect(Daru.error_stream).to eq($stderr)
+describe '#error' do
+  context 'by default' do
+    it { expect { Daru.error('test') }.to output("test\n").to_stderr_from_any_process }
   end
 
-  it 'should be able to set error stream to nil' do
-    Daru.error_stream = nil
-    expect(Daru.error_stream).to be_nil
+  context 'when set to nil' do
+    before { Daru.error_stream = nil }
+    it { expect { Daru.error('test') }.not_to output('test').to_stderr_from_any_process }
   end
 
-  it 'should print error message if error stream set to $stderr' do
-    Daru.error_stream = $stderr
-    allow($stderr).to receive(:puts).and_return(true)
-    Daru.error('priting error message')
-    expect($stderr).to have_received(:puts)
-  end
+  context 'when set to instance of custom class' do
+    let(:custom_stream) { double(puts: nil) }
+    before { Daru.error_stream = custom_stream }
 
-  it 'should not print error message if it is set to nil' do
-    Daru.error_stream = nil
-    allow($stderr).to receive(:puts).and_return(true)
-    Daru.error('priting error message')
-    expect($stderr).not_to have_received(:puts)
+    it 'calls puts' do
+      expect { Daru.error('test') }.not_to output('test').to_stderr_from_any_process
+      expect(custom_stream).to have_received(:puts).with('test')
+    end
   end
 end
