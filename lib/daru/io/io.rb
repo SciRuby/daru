@@ -191,8 +191,8 @@ module Daru
             .map { |table| html_decide_values table, opts }
             .map { |table| html_table_to_dataframe table }
       rescue LoadError
-        STDERR.puts '\nInstall the mechanize gem version 2.7.5 for using'\
-        ' from_html function.'
+        raise 'Install the mechanize gem version 2.7.5 with `gem install mechanize`,'\
+        ' for using the from_html function.'
       end
 
       private
