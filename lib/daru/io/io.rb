@@ -276,7 +276,8 @@ module Daru
       def html_table_to_dataframe(table)
         Daru::DataFrame.rows table[:data],
           index: table[:index],
-          order: table[:order]
+          order: table[:order],
+          name: table[:name]
       end
     end
   end
