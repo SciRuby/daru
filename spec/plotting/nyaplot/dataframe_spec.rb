@@ -35,7 +35,6 @@ describe Daru::DataFrame, 'plotting' do
         .with(numerics.to_nyaplotdf, :box, :x, :y1, :y2)
         .ordered
 
-      expect(plot).to receive(:show).ordered
       data_frame.plot(type: :box)
     end
   end
@@ -47,7 +46,6 @@ describe Daru::DataFrame, 'plotting' do
           .with(data_frame.to_nyaplotdf, :scatter, :x, :y1)
           .ordered
 
-        expect(plot).to receive(:show).ordered
         data_frame.plot(type: :scatter, x: :x, y: :y1)
       end
 
@@ -56,7 +54,6 @@ describe Daru::DataFrame, 'plotting' do
           .with(data_frame.to_nyaplotdf, :scatter, :x)
           .ordered
 
-        expect(plot).to receive(:show).ordered
         data_frame.plot(type: :scatter, x: :x)
       end
     end
@@ -69,7 +66,6 @@ describe Daru::DataFrame, 'plotting' do
         expect(plot).to receive(:add_with_df)
           .with(data_frame.to_nyaplotdf, :scatter, :x, :y2)
           .ordered
-        expect(plot).to receive(:show).ordered
 
         data_frame.plot(type: :scatter, x: [:x, :x], y: [:y1, :y2])
       end
@@ -81,7 +77,6 @@ describe Daru::DataFrame, 'plotting' do
         expect(plot).to receive(:add_with_df)
           .with(data_frame.to_nyaplotdf, :line, :x, :y2)
           .ordered
-        expect(plot).to receive(:show).ordered
 
         data_frame.plot(type: [:scatter, :line], x: [:x, :x], y: [:y1, :y2])
       end
@@ -93,7 +88,6 @@ describe Daru::DataFrame, 'plotting' do
         expect(plot).to receive(:add_with_df)
           .with(data_frame.to_nyaplotdf, :line, :x, :y2)
           .ordered
-        expect(plot).to receive(:show).ordered
 
         data_frame.plot(
           type: [:scatter, :line],
@@ -136,7 +130,6 @@ describe Daru::DataFrame, 'category plotting' do
       expect(plot).to receive :legend
       expect(plot).to receive :xrange
       expect(plot).to receive :yrange
-      expect(plot).to receive :show
       df.plot(type: :scatter, x: :a, y: :b, categorized: {by: :c, method: :color}) do |p, d|
         p.xrange [-10, 10]
         p.yrange [-10, 10]
@@ -149,7 +142,6 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:color).exactly(3).times
       expect(diagram).to receive(:tooltip_contents).exactly(3).times
       expect(plot).to receive :legend
-      expect(plot).to receive :show
       df.plot(type: :scatter, x: :a, y: :b,
         categorized: {by: :c, method: :color})
     end
@@ -162,7 +154,6 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:color).with :green
       expect(diagram).to receive(:tooltip_contents).exactly(3).times
       expect(plot).to receive :legend
-      expect(plot).to receive :show
       df.plot(type: :scatter, x: :a, y: :b,
         categorized: {by: :c, method: :color, color: [:red, :blue, :green]})
     end
@@ -173,7 +164,6 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:shape).exactly(3).times
       expect(diagram).to receive(:tooltip_contents).exactly(3).times
       expect(plot).to receive :legend
-      expect(plot).to receive :show
       df.plot(type: :scatter, x: :a, y: :b,
         categorized: {by: :c, method: :shape})
     end
@@ -186,7 +176,6 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:shape).with 'diamond'
       expect(diagram).to receive(:tooltip_contents).exactly(3).times
       expect(plot).to receive :legend
-      expect(plot).to receive :show
       df.plot(type: :scatter, x: :a, y: :b,
         categorized: {by: :c, method: :shape, shape: %w(circle triangle-up diamond)})
     end
@@ -197,7 +186,6 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:size).exactly(3).times
       expect(diagram).to receive(:tooltip_contents).exactly(3).times
       expect(plot).to receive :legend
-      expect(plot).to receive :show
       df.plot(type: :scatter, x: :a, y: :b,
         categorized: {by: :c, method: :size})
     end
@@ -210,7 +198,6 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:size).with 300
       expect(diagram).to receive(:tooltip_contents).exactly(3).times
       expect(plot).to receive :legend
-      expect(plot).to receive :show
       df.plot(type: :scatter, x: :a, y: :b,
         categorized: {by: :c, method: :size, size: [100, 200, 300]})
     end
@@ -240,7 +227,6 @@ describe Daru::DataFrame, 'category plotting' do
       expect(plot).to receive :legend
       expect(plot).to receive :xrange
       expect(plot).to receive :yrange
-      expect(plot).to receive :show
       df.plot(type: :line, x: :a, y: :b, categorized: {by: :c, method: :color}) do |p, d|
         p.xrange [-10, 10]
         p.yrange [-10, 10]
@@ -252,7 +238,6 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:title).exactly(3).times
       expect(diagram).to receive(:color).exactly(3).times
       expect(plot).to receive :legend
-      expect(plot).to receive :show
       df.plot(type: :line, x: :a, y: :b, categorized: {by: :c, method: :color})
     end
 
@@ -263,7 +248,6 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:color).with :blue
       expect(diagram).to receive(:color).with :green
       expect(plot).to receive :legend
-      expect(plot).to receive :show
       df.plot(type: :line, x: :a, y: :b,
         categorized: {by: :c, method: :color, color: [:red, :blue, :green]})
     end
@@ -273,7 +257,6 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:title).exactly(3).times
       expect(diagram).to receive(:stroke_width).exactly(3).times
       expect(plot).to receive :legend
-      expect(plot).to receive :show
       df.plot(type: :line, x: :a, y: :b, categorized: {by: :c, method: :stroke_width})
     end
 
@@ -284,7 +267,6 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:stroke_width).with 200
       expect(diagram).to receive(:stroke_width).with 300
       expect(plot).to receive :legend
-      expect(plot).to receive :show
       df.plot(type: :line, x: :a, y: :b,
         categorized: {by: :c, method: :stroke_width, stroke_width: [100, 200, 300]})
     end

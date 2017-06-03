@@ -17,7 +17,6 @@ describe Daru::Vector, 'plotting category' do
       expect(plot).to receive(:add).with(:bar, ['I', 'II', 'III'], [5, 5, 10])
       expect(plot).to receive :x_label
       expect(plot).to receive :y_label
-      expect(plot).to receive(:show)
       dv.plot(type: :bar) do |p|
         p.x_label 'Categories'
         p.y_label 'Frequency'
@@ -26,21 +25,18 @@ describe Daru::Vector, 'plotting category' do
 
     it 'plots bar graph without taking a block' do
       expect(plot).to receive(:add).with(:bar, ["I", "II", "III"], [5, 5, 10])
-      expect(plot).to receive(:show)
       dv.plot(type: :bar)
     end
 
     it 'plots bar graph with percentage' do
       expect(plot).to receive(:add).with(:bar, ["I", "II", "III"], [25, 25, 50])
       expect(plot).to receive(:yrange).with [0, 100]
-      expect(plot).to receive(:show)
       dv.plot(type: :bar, method: :percentage)
     end
 
     it 'plots bar graph with fraction' do
       expect(plot).to receive(:add).with(:bar, ["I", "II", "III"], [0.25, 0.25, 0.50])
       expect(plot).to receive(:yrange).with [0, 1]
-      expect(plot).to receive(:show)
       dv.plot(type: :bar, method: :fraction)
     end
   end

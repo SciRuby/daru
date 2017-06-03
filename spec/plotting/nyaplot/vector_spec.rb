@@ -12,7 +12,6 @@ describe Daru::Vector, 'plotting' do
 
   it 'plots the vector' do
     expect(plot).to receive(:add).with(:box, [11, 22, 33]).ordered
-    expect(plot).to receive(:show).ordered
 
     vector.plot(type: :box)
   end
@@ -20,14 +19,12 @@ describe Daru::Vector, 'plotting' do
   context 'scatter' do
     it 'is default type' do
       expect(plot).to receive(:add).with(:scatter, instance_of(Array), instance_of(Array)).ordered
-      expect(plot).to receive(:show).ordered
 
       vector.plot
     end
 
     it 'sets x_axis to 0...size' do
       expect(plot).to receive(:add).with(:scatter, [0, 1, 2], [11, 22, 33]).ordered
-      expect(plot).to receive(:show).ordered
 
       vector.plot(type: :scatter)
     end
@@ -37,7 +34,6 @@ describe Daru::Vector, 'plotting' do
     context type.to_s do
       it 'does not set x axis' do
         expect(plot).to receive(:add).with(type, [11, 22, 33]).ordered
-        expect(plot).to receive(:show).ordered
 
         vector.plot(type: type)
       end
@@ -48,7 +44,6 @@ describe Daru::Vector, 'plotting' do
     context type.to_s do
       it 'sets x axis to index' do
         expect(plot).to receive(:add).with(type, [:a, :b, :c], [11, 22, 33]).ordered
-        expect(plot).to receive(:show).ordered
 
         vector.plot(type: type)
       end
@@ -58,7 +53,6 @@ describe Daru::Vector, 'plotting' do
   context 'with block provided' do
     it 'yields plot and diagram' do
       expect(plot).to receive(:add).with(:box, [11, 22, 33]).ordered.and_return(diagram)
-      expect(plot).to receive(:show).ordered
 
       expect { |b| vector.plot(type: :box, &b) }.to yield_with_args(plot, diagram)
     end
