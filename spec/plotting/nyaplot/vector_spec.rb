@@ -13,20 +13,20 @@ describe Daru::Vector, 'plotting' do
   it 'plots the vector' do
     expect(plot).to receive(:add).with(:box, [11, 22, 33]).ordered
 
-    vector.plot(type: :box)
+    expect(vector.plot(type: :box)).to eq plot
   end
 
   context 'scatter' do
     it 'is default type' do
       expect(plot).to receive(:add).with(:scatter, instance_of(Array), instance_of(Array)).ordered
 
-      vector.plot
+      expect(vector.plot).to eq plot
     end
 
     it 'sets x_axis to 0...size' do
       expect(plot).to receive(:add).with(:scatter, [0, 1, 2], [11, 22, 33]).ordered
 
-      vector.plot(type: :scatter)
+      expect(vector.plot(type: :scatter)).to eq plot
     end
   end
 
@@ -35,7 +35,7 @@ describe Daru::Vector, 'plotting' do
       it 'does not set x axis' do
         expect(plot).to receive(:add).with(type, [11, 22, 33]).ordered
 
-        vector.plot(type: type)
+        expect(vector.plot(type: type)).to eq plot
       end
     end
   end
@@ -45,7 +45,7 @@ describe Daru::Vector, 'plotting' do
       it 'sets x axis to index' do
         expect(plot).to receive(:add).with(type, [:a, :b, :c], [11, 22, 33]).ordered
 
-        vector.plot(type: type)
+        expect(vector.plot(type: type)).to eq plot
       end
     end
   end

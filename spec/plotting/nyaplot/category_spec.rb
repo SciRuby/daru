@@ -25,19 +25,19 @@ describe Daru::Vector, 'plotting category' do
 
     it 'plots bar graph without taking a block' do
       expect(plot).to receive(:add).with(:bar, ["I", "II", "III"], [5, 5, 10])
-      dv.plot(type: :bar)
+      expect(dv.plot(type: :bar)).to eq plot
     end
 
     it 'plots bar graph with percentage' do
       expect(plot).to receive(:add).with(:bar, ["I", "II", "III"], [25, 25, 50])
       expect(plot).to receive(:yrange).with [0, 100]
-      dv.plot(type: :bar, method: :percentage)
+      expect(dv.plot(type: :bar, method: :percentage)).to eq plot
     end
 
     it 'plots bar graph with fraction' do
       expect(plot).to receive(:add).with(:bar, ["I", "II", "III"], [0.25, 0.25, 0.50])
       expect(plot).to receive(:yrange).with [0, 1]
-      dv.plot(type: :bar, method: :fraction)
+      expect(dv.plot(type: :bar, method: :fraction)).to eq plot
     end
   end
 

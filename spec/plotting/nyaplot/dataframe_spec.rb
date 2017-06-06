@@ -35,7 +35,7 @@ describe Daru::DataFrame, 'plotting' do
         .with(numerics.to_nyaplotdf, :box, :x, :y1, :y2)
         .ordered
 
-      data_frame.plot(type: :box)
+      expect(data_frame.plot(type: :box)).to eq plot
     end
   end
 
@@ -46,7 +46,7 @@ describe Daru::DataFrame, 'plotting' do
           .with(data_frame.to_nyaplotdf, :scatter, :x, :y1)
           .ordered
 
-        data_frame.plot(type: :scatter, x: :x, y: :y1)
+        expect(data_frame.plot(type: :scatter, x: :x, y: :y1)).to eq plot
       end
 
       it 'works without :y provided' do
@@ -54,7 +54,7 @@ describe Daru::DataFrame, 'plotting' do
           .with(data_frame.to_nyaplotdf, :scatter, :x)
           .ordered
 
-        data_frame.plot(type: :scatter, x: :x)
+        expect(data_frame.plot(type: :scatter, x: :x)).to eq plot
       end
     end
 
@@ -67,7 +67,9 @@ describe Daru::DataFrame, 'plotting' do
           .with(data_frame.to_nyaplotdf, :scatter, :x, :y2)
           .ordered
 
-        data_frame.plot(type: :scatter, x: [:x, :x], y: [:y1, :y2])
+        expect(
+          data_frame.plot(type: :scatter, x: [:x, :x], y: [:y1, :y2])
+        ).to eq plot
       end
 
       it 'works with multiple types provided' do
@@ -78,7 +80,10 @@ describe Daru::DataFrame, 'plotting' do
           .with(data_frame.to_nyaplotdf, :line, :x, :y2)
           .ordered
 
-        data_frame.plot(type: [:scatter, :line], x: [:x, :x], y: [:y1, :y2])
+        expect(
+          data_frame.plot(
+            type: [:scatter, :line], x: [:x, :x], y: [:y1, :y2])
+        ).to eq plot
       end
 
       it 'works with numeric var names' do
@@ -89,7 +94,8 @@ describe Daru::DataFrame, 'plotting' do
           .with(data_frame.to_nyaplotdf, :line, :x, :y2)
           .ordered
 
-        data_frame.plot(
+        expect(
+          data_frame.plot(
           type: [:scatter, :line],
           # FIXME: this didn't work due to default type: :scatter opts
           #type1: :scatter,
@@ -98,7 +104,8 @@ describe Daru::DataFrame, 'plotting' do
           x2: :x,
           y1: :y1,
           y2: :y2
-        )
+          )
+        ).to eq plot
       end
     end
   end
@@ -142,8 +149,11 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:color).exactly(3).times
       expect(diagram).to receive(:tooltip_contents).exactly(3).times
       expect(plot).to receive :legend
-      df.plot(type: :scatter, x: :a, y: :b,
-        categorized: {by: :c, method: :color})
+      expect(
+        df.plot(
+          type: :scatter, x: :a, y: :b,
+          categorized: {by: :c, method: :color})
+      ).to eq plot
     end
 
     it 'plots scatter plot categoried by custom colors' do
@@ -154,8 +164,8 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:color).with :green
       expect(diagram).to receive(:tooltip_contents).exactly(3).times
       expect(plot).to receive :legend
-      df.plot(type: :scatter, x: :a, y: :b,
-        categorized: {by: :c, method: :color, color: [:red, :blue, :green]})
+      expect(df.plot(type: :scatter, x: :a, y: :b,
+        categorized: {by: :c, method: :color, color: [:red, :blue, :green]})).to eq plot
     end
 
     it 'plots scatter plot categoried by shape' do
@@ -164,8 +174,8 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:shape).exactly(3).times
       expect(diagram).to receive(:tooltip_contents).exactly(3).times
       expect(plot).to receive :legend
-      df.plot(type: :scatter, x: :a, y: :b,
-        categorized: {by: :c, method: :shape})
+      expect(df.plot(type: :scatter, x: :a, y: :b,
+        categorized: {by: :c, method: :shape})).to eq plot
     end
 
     it 'plots scatter plot categoried by custom shapes' do
@@ -176,8 +186,13 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:shape).with 'diamond'
       expect(diagram).to receive(:tooltip_contents).exactly(3).times
       expect(plot).to receive :legend
-      df.plot(type: :scatter, x: :a, y: :b,
-        categorized: {by: :c, method: :shape, shape: %w(circle triangle-up diamond)})
+      expect(
+        df.plot(
+          type: :scatter, x: :a, y: :b,
+          categorized: {
+            by: :c, method: :shape,
+            shape: %w(circle triangle-up diamond)})
+      ).to eq plot
     end
 
     it 'plots scatter plot categoried by size' do
@@ -186,8 +201,8 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:size).exactly(3).times
       expect(diagram).to receive(:tooltip_contents).exactly(3).times
       expect(plot).to receive :legend
-      df.plot(type: :scatter, x: :a, y: :b,
-        categorized: {by: :c, method: :size})
+      expect(df.plot(type: :scatter, x: :a, y: :b,
+        categorized: {by: :c, method: :size})).to eq plot
     end
 
     it 'plots scatter plot categoried by cusom sizes' do
@@ -198,8 +213,17 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:size).with 300
       expect(diagram).to receive(:tooltip_contents).exactly(3).times
       expect(plot).to receive :legend
-      df.plot(type: :scatter, x: :a, y: :b,
-        categorized: {by: :c, method: :size, size: [100, 200, 300]})
+      expect(
+        df.plot(
+          type: :scatter,
+          x: :a, y: :b,
+          categorized: {
+            by: :c,
+            method: :size,
+            size: [100, 200, 300]
+            }
+          )
+        ).to eq plot
     end
   end
 
@@ -238,7 +262,12 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:title).exactly(3).times
       expect(diagram).to receive(:color).exactly(3).times
       expect(plot).to receive :legend
-      df.plot(type: :line, x: :a, y: :b, categorized: {by: :c, method: :color})
+      expect(
+        df.plot(
+          type: :line, x: :a, y: :b,
+          categorized: {by: :c, method: :color}
+        )
+      ).to eq plot
     end
 
     it 'plots line plot categoried by custom colors' do
@@ -248,8 +277,12 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:color).with :blue
       expect(diagram).to receive(:color).with :green
       expect(plot).to receive :legend
-      df.plot(type: :line, x: :a, y: :b,
-        categorized: {by: :c, method: :color, color: [:red, :blue, :green]})
+      expect(
+        df.plot(
+          type: :line, x: :a, y: :b,
+          categorized: {by: :c, method: :color, color: [:red, :blue, :green]}
+          )
+      ).to eq plot
     end
 
     it 'plots line plot categoried by stroke width' do
@@ -257,7 +290,12 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:title).exactly(3).times
       expect(diagram).to receive(:stroke_width).exactly(3).times
       expect(plot).to receive :legend
-      df.plot(type: :line, x: :a, y: :b, categorized: {by: :c, method: :stroke_width})
+      expect(
+        df.plot(
+          type: :line, x: :a, y: :b,
+          categorized: {by: :c, method: :stroke_width}
+        )
+      ).to eq plot
     end
 
     it 'plots line plot categoried by custom stroke widths' do
@@ -267,8 +305,13 @@ describe Daru::DataFrame, 'category plotting' do
       expect(diagram).to receive(:stroke_width).with 200
       expect(diagram).to receive(:stroke_width).with 300
       expect(plot).to receive :legend
-      df.plot(type: :line, x: :a, y: :b,
-        categorized: {by: :c, method: :stroke_width, stroke_width: [100, 200, 300]})
+      expect(
+        df.plot(
+          type: :line, x: :a, y: :b,
+          categorized: {
+            by: :c, method: :stroke_width, stroke_width: [100, 200, 300]}
+          )
+      ).to eq plot
     end
   end
 
