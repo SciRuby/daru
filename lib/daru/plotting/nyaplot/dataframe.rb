@@ -48,7 +48,7 @@ module Daru
 
           yield(plot, diagram) if block_given?
 
-          plot.show
+          plot
         end
 
         def plot_with_category opts
@@ -66,8 +66,8 @@ module Daru
 
             plot.legend true
             yield plot, *diagrams if block_given?
-            plot.show
 
+            plot
           else
             raise ArgumentError, "Unsupported type #{type}"
           end
