@@ -768,11 +768,14 @@ module Daru
     #
     # Usage:
     #
-    #   ts = Daru::Vector.new((1..10).map { rand })
-    #           # => [0.69, 0.23, 0.44, 0.71, ...]
+    #   ts = Daru::Vector.new(1..5)
+    #           # => [1, 2, 3, 4, 5]
     #
-    #   ts.lag   # => [nil, 0.69, 0.23, 0.44, ...]
-    #   ts.lag(2) # => [nil, nil, 0.69, 0.23, ...]
+    #   ts.lag      # => [nil, 1, 2, 3, 4]
+    #   ts.lag(1)   # => [nil, 1, 2, 3, 4]
+    #   ts.lag(2)   # => [nil, nil, 1, 2, 3]
+    #   ts.lag(-1)  # => [2, 3, 4, 5, nil]
+    #
     def lag k=1
       return dup if k.zero?
       return Daru::Vector.new([nil]*@data.size, index: @index, name: @name) if k.abs >= @data.size
