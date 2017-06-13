@@ -762,14 +762,15 @@ module Daru
 
     # Lags the series by k periods.
     #
-    # The convention is to set the oldest observations (the first ones
-    # in the series) to nil so that the size of the lagged series is the
-    # same as the original.
+    # Lags the series by k periods where k can be a positive or negative
+    # integer.
+    # Returns a new series with nil values are inserted into the series
+    # keeping the size of the new series the same as the original.
     #
     # Usage:
     #
     #   ts = Daru::Vector.new(1..5)
-    #           # => [1, 2, 3, 4, 5]
+    #               # => [1, 2, 3, 4, 5]
     #
     #   ts.lag      # => [nil, 1, 2, 3, 4]
     #   ts.lag(1)   # => [nil, 1, 2, 3, 4]
