@@ -2024,6 +2024,11 @@ describe Daru::Vector do
       expect(lag_100).to all( be_nil)
       expect(lag_100.size).to be @xiu.size
       expect(lag_100).to be_a(Daru::Vector)
+
+      lag_for_size = @xiu.lag @xiu.size
+      expect(lag_for_size).to all(be_nil)
+      expect(lag_for_size.size).to be @xiu.size
+      expect(lag_for_size).to be_a(Daru::Vector)
     end
   end
 
