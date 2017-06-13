@@ -764,7 +764,7 @@ module Daru
     #
     # Lags the series by k periods where k can be a positive or negative
     # integer.
-    # Returns a new series with nil values are inserted into the series
+    # Returns a new series with nil values inserted into the series
     # keeping the size of the new series the same as the original.
     #
     # Usage:
