@@ -775,7 +775,7 @@ module Daru
     #   ts.lag(2) # => [nil, nil, 0.69, 0.23, ...]
     def lag k=1
       return dup if k.zero?
-      return Daru::Vector.new([nil]*@data.size) if k.abs > @data.size
+      return Daru::Vector.new([nil]*@data.size, index: @index, name: @name) if k.abs > @data.size
 
       dat = @data.to_a.dup
       if k > 0
