@@ -776,15 +776,7 @@ module Daru
     def lag k=1
       return dup if k.zero?
       return Daru::Vector.new([nil]*@data.size, index: @index, name: @name) if k.abs > @data.size
-
-      dat = @data.to_a.dup
-      if k > 0
-        dat = [nil] * k + dat[0..dat.size-k-1]
-      else
-        dat = dat[k.abs..dat.size-1] + [nil]*k.abs
-      end
-
-      Daru::Vector.new(dat, index: @index, name: @name)
+      _lag k
     end
 
     def detach_index
@@ -1384,6 +1376,16 @@ module Daru
     end
 
     private
+
+    def _lag k
+      dat = @data.to_a.dup
+      dat = if k > 0
+              [nil] * k + dat[0..dat.size-k-1]
+            elsif k < 0
+              dat[k.abs..dat.size-1] + [nil]*k.abs
+            end
+      Daru::Vector.new(dat, index: @index, name: @name)
+    end
 
     def nil_positions
       @nil_positions ||

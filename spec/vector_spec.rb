@@ -1970,6 +1970,12 @@ describe Daru::Vector do
     end
 
     it "lags the vector by specified amount" do
+      lag0 = @xiu.lag 0
+      expect(lag0[0]).to be_within(0.001).of(17.28)
+      expect(lag0[4]).to be_within(0.001).of(17.82)
+      expect(lag0.size).to be @xiu.size
+      expect(lag0).to be_a(Daru::Vector)
+
       lag1 = @xiu.lag
 
       expect(lag1[0]).to be_nil
