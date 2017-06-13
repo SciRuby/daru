@@ -1972,14 +1972,49 @@ describe Daru::Vector do
     it "lags the vector by specified amount" do
       lag1 = @xiu.lag
 
+      expect(lag1[0]).to be_nil
+      expect(lag1[1]).to be_within(0.001).of(17.28)
       expect(lag1[lag1.size - 1]).to be_within(0.001).of(16.66)
       expect(lag1[lag1.size - 2]).to be_within(0.001).of(16.36)
+      expect(lag1.size).to be @xiu.size
 
       #test with different lagging unit
       lag2 = @xiu.lag(2)
 
+      expect(lag2[0]).to be_nil
+      expect(lag2[1]).to be_nil
+      expect(lag2[2]).to be_within(0.001).of(17.28)
       expect(lag2[lag2.size - 1]).to be_within(0.001).of(16.36)
       expect(lag2[lag2.size - 2]).to be_within(0.001).of(16.56)
+      expect(lag2.size).to be @xiu.size
+
+      lag_1 = @xiu.lag -1
+
+      expect(lag_1[0]).to be_within(0.001).of(17.45)
+      expect(lag_1[lag1.size - 1]).to be_nil
+      expect(lag_1[lag2.size - 2]).not_to be_nil
+      expect(lag_1[lag1.size - 3]).to be_within(0.001).of(16.66)
+      expect(lag_1[lag1.size - 4]).to be_within(0.001).of(16.36)
+      expect(lag_1.size).to be @xiu.size
+
+      #test with different lagging unit
+      lag_2 = @xiu.lag -2
+
+      expect(lag_2[0]).to be_within(0.001).of(17.84)
+      expect(lag_2[lag2.size - 1]).to be_nil
+      expect(lag_2[lag2.size - 2]).to be_nil
+      expect(lag_2[lag2.size - 3]).not_to be_nil
+      expect(lag_2[lag2.size - 5]).to be_within(0.001).of(16.36)
+      expect(lag_2[lag2.size - 6]).to be_within(0.001).of(16.56)
+      expect(lag_2.size).to be @xiu.size
+
+      lag100 = @xiu.lag 100
+      expect(lag100).to all( be_nil)
+      expect(lag100.size).to be @xiu.size
+
+      lag_100 = @xiu.lag -100
+      expect(lag_100).to all( be_nil)
+      expect(lag_100.size).to be @xiu.size
     end
   end
 

@@ -775,10 +775,14 @@ module Daru
     #   ts.lag(2) # => [nil, nil, 0.69, 0.23, ...]
     def lag k=1
       return dup if k.zero?
+      return [nil]*@data.size if k.abs > @data.size
 
       dat = @data.to_a.dup
-      (dat.size - 1).downto(k) { |i| dat[i] = dat[i - k] }
-      (0...k).each { |i| dat[i] = nil }
+      if k > 0
+        dat = [nil] * k + dat[0..dat.size-k-1]
+      else
+        dat = dat[k.abs..dat.size-1] + [nil]*k.abs
+      end
 
       Daru::Vector.new(dat, index: @index, name: @name)
     end
