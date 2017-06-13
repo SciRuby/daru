@@ -1977,6 +1977,7 @@ describe Daru::Vector do
       expect(lag1[lag1.size - 1]).to be_within(0.001).of(16.66)
       expect(lag1[lag1.size - 2]).to be_within(0.001).of(16.36)
       expect(lag1.size).to be @xiu.size
+      expect(lag1).to be_a(Daru::Vector)
 
       #test with different lagging unit
       lag2 = @xiu.lag(2)
@@ -1996,6 +1997,7 @@ describe Daru::Vector do
       expect(lag_1[lag1.size - 3]).to be_within(0.001).of(16.66)
       expect(lag_1[lag1.size - 4]).to be_within(0.001).of(16.36)
       expect(lag_1.size).to be @xiu.size
+      expect(lag_1).to be_a(Daru::Vector)
 
       #test with different lagging unit
       lag_2 = @xiu.lag -2
@@ -2015,6 +2017,7 @@ describe Daru::Vector do
       lag_100 = @xiu.lag -100
       expect(lag_100).to all( be_nil)
       expect(lag_100.size).to be @xiu.size
+      expect(lag_100).to be_a(Daru::Vector)
     end
   end
 
