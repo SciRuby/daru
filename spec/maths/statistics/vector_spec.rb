@@ -699,17 +699,26 @@ describe Daru::Vector do
       data = Daru::Vector.new(
         File.readlines("spec/fixtures/stock_data.csv").map(&:to_f))
 
-      macd, signal = data.macd
+      macd, signal, hist = data.macd
 
       # check the MACD
-      expect(macd[-1]).to be_within(1e-6).of(3.12e-4)
-      expect(macd[-10]).to be_within(1e-4).of(-1.07e-2)
-      expect(macd[-20]).to be_within(1e-5).of(-5.65e-3)
+      macd_1, macd_10, macd_20 = 3.12e-4, -1.07e-2, -5.65e-3
+      expect(macd[-1]).to be_within(1e-6).of(macd_1)
+      expect(macd[-10]).to be_within(1e-4).of(macd_10)
+      expect(macd[-20]).to be_within(1e-5).of(macd_20)
 
       # check the signal
-      expect(signal[-1]).to be_within(1e-5).of(-0.00628)
-      expect(signal[-10]).to be_within(1e-5).of(-0.00971)
-      expect(signal[-20]).to be_within(1e-5).of(-0.00338)
+      sig_1, sig_10, sig_20 = -0.00628, -0.00971, -0.00338
+      expect(signal[-1]).to be_within(1e-5).of(sig_1)
+      expect(signal[-10]).to be_within(1e-5).of(sig_10)
+      expect(signal[-20]).to be_within(1e-5).of(sig_20)
+
+      # check histogram
+      hist_1, hist_10, hist_20 = (macd_1-sig_1), (macd_10-sig_10), (macd_20-sig_20)
+      expect(hist[-1]).to be_within(1e-4).of(hist_1)
+      expect(hist[-10]).to be_within(1e-4).of(hist_10)
+      expect(hist[-20]).to be_within(1e-4).of(hist_20)
+
     end
   end
 

@@ -701,7 +701,9 @@ module Daru
         # signal value
         def macd(fast=12, slow=26, signal=9)
           series = ema(fast) - ema(slow)
-          [series, series.ema(signal)]
+          signal_ma = series.ema(signal)
+          histogram = series - signal_ma
+          [series, signal_ma, histogram]
         end
 
         # Calculates the autocorrelation coefficients of the series.
