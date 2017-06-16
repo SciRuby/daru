@@ -760,14 +760,24 @@ module Daru
       self
     end
 
-    # Lags the series by k periods.
+    # Lags the series by `k` periods.
     #
-    # Lags the series by k periods where k can be a positive or negative
-    # integer.
-    # Returns a new series with nil values inserted into the series
-    # keeping the size of the new series the same as the original.
+    # Lags the series by `k` periods, "shifting" data and inserting `nil`s
+    # from beginning or end of a vector, while preserving original vector's
+    # size.
     #
-    # Usage:
+    # `k` can be positive or negative integer. If `k` is positive, `nil`s
+    # are inserted at the beginning of the vector, otherwise they are
+    # inserted at the end.
+    #
+    # @param [Integer] k "shift" the series by `k` periods. `k` can be
+    #   positive or negative. (default = 1)
+    #
+    # @return [Daru::Vector] a new vector with "shifted" inital values
+    #   and `nil` values inserted. The return vector is the same length
+    #   as the orignal vector.
+    #
+    # @example Lag a vector with different periods `k`
     #
     #   ts = Daru::Vector.new(1..5)
     #               # => [1, 2, 3, 4, 5]
