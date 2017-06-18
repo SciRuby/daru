@@ -2004,7 +2004,7 @@ describe Daru::Vector do
     end
 
     context 'large negative' do
-      let(:amount) { source.size - 100 }
+      let(:amount) { -(source.size + 100) }
       it { is_expected.to eq Daru::Vector.new([nil]*source.size) }
     end
 
