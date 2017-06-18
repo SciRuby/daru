@@ -799,12 +799,6 @@ module Daru
       end
     end
 
-    def copy(values)
-      # Make sure values is right-justified to the size of the vector
-      values.concat([nil] * (size-values.size)) if values.size < size
-      Daru::Vector.new(values[0...size], index: @index, name: @name)
-    end
-
     def detach_index
       Daru::DataFrame.new(
         index: @index.to_a,
@@ -1402,6 +1396,12 @@ module Daru
     end
 
     private
+
+    def copy(values)
+      # Make sure values is right-justified to the size of the vector
+      values.concat([nil] * (size-values.size)) if values.size < size
+      Daru::Vector.new(values[0...size], index: @index, name: @name)
+    end
 
     def nil_positions
       @nil_positions ||
