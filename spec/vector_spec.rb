@@ -1963,73 +1963,51 @@ describe Daru::Vector do
     end
   end
 
-  context "#lag" do
-    before do
-      @xiu = Daru::Vector.new([17.28, 17.45, 17.84, 17.74, 17.82, 17.85, 17.36, 17.3, 17.56, 17.49, 17.46, 17.4, 17.03, 17.01,
-        16.86, 16.86, 16.56, 16.36, 16.66, 16.77])
+  describe '#lag' do
+    let(:source) { Daru::Vector.new(1..5) }
+
+    context 'by default' do
+      subject { source.lag }
+      it { is_expected.to eq Daru::Vector.new([nil, 1, 2, 3, 4]) }
     end
 
-    it "lags the vector by specified amount" do
-      lag0 = @xiu.lag 0
-      expect(lag0[0]).to be_within(0.001).of(17.28)
-      expect(lag0[4]).to be_within(0.001).of(17.82)
-      expect(lag0.size).to be @xiu.size
-      expect(lag0).to be_a(Daru::Vector)
+    subject { source.lag(amount) }
 
-      lag1 = @xiu.lag
-
-      expect(lag1[0]).to be_nil
-      expect(lag1[1]).to be_within(0.001).of(17.28)
-      expect(lag1[lag1.size - 1]).to be_within(0.001).of(16.66)
-      expect(lag1[lag1.size - 2]).to be_within(0.001).of(16.36)
-      expect(lag1.size).to be @xiu.size
-      expect(lag1).to be_a(Daru::Vector)
-
-      #test with different lagging unit
-      lag2 = @xiu.lag(2)
-
-      expect(lag2[0]).to be_nil
-      expect(lag2[1]).to be_nil
-      expect(lag2[2]).to be_within(0.001).of(17.28)
-      expect(lag2[lag2.size - 1]).to be_within(0.001).of(16.36)
-      expect(lag2[lag2.size - 2]).to be_within(0.001).of(16.56)
-      expect(lag2.size).to be @xiu.size
-
-      lag_1 = @xiu.lag -1
-
-      expect(lag_1[0]).to be_within(0.001).of(17.45)
-      expect(lag_1[lag1.size - 1]).to be_nil
-      expect(lag_1[lag2.size - 2]).not_to be_nil
-      expect(lag_1[lag1.size - 3]).to be_within(0.001).of(16.66)
-      expect(lag_1[lag1.size - 4]).to be_within(0.001).of(16.36)
-      expect(lag_1.size).to be @xiu.size
-      expect(lag_1).to be_a(Daru::Vector)
-
-      #test with different lagging unit
-      lag_2 = @xiu.lag -2
-
-      expect(lag_2[0]).to be_within(0.001).of(17.84)
-      expect(lag_2[lag2.size - 1]).to be_nil
-      expect(lag_2[lag2.size - 2]).to be_nil
-      expect(lag_2[lag2.size - 3]).not_to be_nil
-      expect(lag_2[lag2.size - 5]).to be_within(0.001).of(16.36)
-      expect(lag_2[lag2.size - 6]).to be_within(0.001).of(16.56)
-      expect(lag_2.size).to be @xiu.size
-
-      lag100 = @xiu.lag 100
-      expect(lag100).to all( be_nil)
-      expect(lag100.size).to be @xiu.size
-
-      lag_100 = @xiu.lag -100
-      expect(lag_100).to all( be_nil)
-      expect(lag_100.size).to be @xiu.size
-      expect(lag_100).to be_a(Daru::Vector)
-
-      lag_for_size = @xiu.lag @xiu.size
-      expect(lag_for_size).to all(be_nil)
-      expect(lag_for_size.size).to be @xiu.size
-      expect(lag_for_size).to be_a(Daru::Vector)
+    context '0' do
+      let(:amount) { 0 }
+      it { is_expected.to eq Daru::Vector.new([1, 2, 3, 4, 5]) }
     end
+
+    context 'same as vector size' do
+      let(:amount) { source.size }
+      it { is_expected.to eq Daru::Vector.new([nil]*source.size) }
+    end
+
+    context 'same as vector -ve size' do
+      let(:amount) { -source.size }
+      it { is_expected.to eq Daru::Vector.new([nil]*source.size) }
+    end
+
+    context 'positive' do
+      let(:amount) { 2 }
+      it { is_expected.to eq Daru::Vector.new([nil, nil, 1, 2, 3]) }
+    end
+
+    context 'negative' do
+      let(:amount) { -1 }
+      it { is_expected.to eq Daru::Vector.new([2, 3, 4, 5, nil]) }
+    end
+
+    context 'large positive' do
+      let(:amount) { source.size + 100 }
+      it { is_expected.to eq Daru::Vector.new([nil]*source.size) }
+    end
+
+    context 'large negative' do
+      let(:amount) { source.size - 100 }
+      it { is_expected.to eq Daru::Vector.new([nil]*source.size) }
+    end
+
   end
 
   context "#group_by" do
