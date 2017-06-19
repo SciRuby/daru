@@ -760,27 +760,43 @@ module Daru
       self
     end
 
-    # Lags the series by k periods.
+    # Lags the series by `k` periods.
     #
-    # The convention is to set the oldest observations (the first ones
-    # in the series) to nil so that the size of the lagged series is the
-    # same as the original.
+    # Lags the series by `k` periods, "shifting" data and inserting `nil`s
+    # from beginning or end of a vector, while preserving original vector's
+    # size.
     #
-    # Usage:
+    # `k` can be positive or negative integer. If `k` is positive, `nil`s
+    # are inserted at the beginning of the vector, otherwise they are
+    # inserted at the end.
     #
-    #   ts = Daru::Vector.new((1..10).map { rand })
-    #           # => [0.69, 0.23, 0.44, 0.71, ...]
+    # @param [Integer] k "shift" the series by `k` periods. `k` can be
+    #   positive or negative. (default = 1)
     #
-    #   ts.lag   # => [nil, 0.69, 0.23, 0.44, ...]
-    #   ts.lag(2) # => [nil, nil, 0.69, 0.23, ...]
+    # @return [Daru::Vector] a new vector with "shifted" inital values
+    #   and `nil` values inserted. The return vector is the same length
+    #   as the orignal vector.
+    #
+    # @example Lag a vector with different periods `k`
+    #
+    #   ts = Daru::Vector.new(1..5)
+    #               # => [1, 2, 3, 4, 5]
+    #
+    #   ts.lag      # => [nil, 1, 2, 3, 4]
+    #   ts.lag(1)   # => [nil, 1, 2, 3, 4]
+    #   ts.lag(2)   # => [nil, nil, 1, 2, 3]
+    #   ts.lag(-1)  # => [2, 3, 4, 5, nil]
+    #
     def lag k=1
-      return dup if k.zero?
-
-      dat = @data.to_a.dup
-      (dat.size - 1).downto(k) { |i| dat[i] = dat[i - k] }
-      (0...k).each { |i| dat[i] = nil }
-
-      Daru::Vector.new(dat, index: @index, name: @name)
+      case k
+      when 0 then dup
+      when 1...size
+        copy([nil] * k + data.to_a)
+      when -size..-1
+        copy(data.to_a[k.abs...size])
+      else
+        copy([])
+      end
     end
 
     def detach_index
@@ -1380,6 +1396,12 @@ module Daru
     end
 
     private
+
+    def copy(values)
+      # Make sure values is right-justified to the size of the vector
+      values.concat([nil] * (size-values.size)) if values.size < size
+      Daru::Vector.new(values[0...size], index: @index, name: @name)
+    end
 
     def nil_positions
       @nil_positions ||
