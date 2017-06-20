@@ -693,33 +693,46 @@ describe Daru::Vector do
     end
   end
 
-  context "#macd" do
-    it "calculates moving average convergence divergence" do
-      # MACD uses a lot more data than the other ones, so we need a bigger vector
-      data = Daru::Vector.new(
-        File.readlines("spec/fixtures/stock_data.csv").map(&:to_f))
+  describe '#macd' do
+    let(:source) { Daru::DataFrame.from_csv('spec/fixtures/macd_data.csv') }
 
-      macd, signal, hist = data.macd
+    # skip initial records during compare as ema is sensitive to
+    # period used.
+    # http://ta-lib.org/d_api/ta_setunstableperiod.html
+    let(:stability_offset) { 90 }
+    let(:delta) { 0.001 }
 
-      # check the MACD
-      macd_1, macd_10, macd_20 = 3.12e-4, -1.07e-2, -5.65e-3
-      expect(macd[-1]).to be_within(1e-6).of(macd_1)
-      expect(macd[-10]).to be_within(1e-4).of(macd_10)
-      expect(macd[-20]).to be_within(1e-5).of(macd_20)
+    let(:macd) { subject[0] }
+    let(:macdsig) { subject[1] }
+    let(:macdhist) { subject[2] }
 
-      # check the signal
-      sig_1, sig_10, sig_20 = -0.00628, -0.00971, -0.00338
-      expect(signal[-1]).to be_within(1e-5).of(sig_1)
-      expect(signal[-10]).to be_within(1e-5).of(sig_10)
-      expect(signal[-20]).to be_within(1e-5).of(sig_20)
 
-      # check histogram
-      hist_1, hist_10, hist_20 = (macd_1-sig_1), (macd_10-sig_10), (macd_20-sig_20)
-      expect(hist[-1]).to be_within(1e-4).of(hist_1)
-      expect(hist[-10]).to be_within(1e-4).of(hist_10)
-      expect(hist[-20]).to be_within(1e-4).of(hist_20)
+    context 'by default' do
+      subject { source['price'].macd }
 
+      it do
+        30.times do |i|
+          idx = stability_offset + i
+          expect(macd[idx]).to be_within(delta).of(source['macd_12_26_9'][idx])
+          expect(macdsig[idx]).to be_within(delta).of(source['macdsig_12_26_9'][idx])
+          expect(macdhist[idx]).to be_within(delta).of(source['macdhist_12_26_9'][idx])
+        end
+      end
     end
+
+    context 'custom values for fast, slow, signal' do
+      subject { source['price'].macd 6, 13, 4}
+
+      it do
+        30.times do |i|
+          idx = stability_offset + i
+          expect(macd[idx]).to be_within(delta).of(source['macd_6_13_4'][idx])
+          expect(macdsig[idx]).to be_within(delta).of(source['macdsig_6_13_4'][idx])
+          expect(macdhist[idx]).to be_within(delta).of(source['macdhist_6_13_4'][idx])
+        end
+      end
+    end
+
   end
 
   context "#cumsum" do
