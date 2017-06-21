@@ -693,7 +693,7 @@ describe Daru::Vector do
     end
   end
 
-  describe '#macd' do
+  RSpec.shared_examples 'correct macd' do |*settings|
     let(:source) { Daru::DataFrame.from_csv('spec/fixtures/macd_data.csv') }
 
     # skip initial records during compare as ema is sensitive to
@@ -702,30 +702,32 @@ describe Daru::Vector do
     let(:stability_offset) { 90 }
     let(:delta) { 0.001 }
 
-   context 'by default' do
+    if settings.empty?
       subject { source['price'].macd }
+      settings_str = '12_26_9'
+    else
+      fast, slow, signal = settings
+      subject { source['price'].macd fast, slow, signal }
+      settings_str = settings.join('_')
+    end
 
-      %w[ macd macdsig macdhist ].each_with_index do |field, i|
-        macd_type = "#{field}_12_26_9"
-        it do
-          act = subject[i][stability_offset..-1]
-          exp = source[macd_type][stability_offset..-1]
-          expect(act).to be_all_within(delta).of(exp)
-        end
+    %w[ macd macdsig macdhist ].each_with_index do |field, i|
+      macd_type = "#{field}_#{settings_str}"
+      it do
+        act = subject[i][stability_offset..-1]
+        exp = source[macd_type][stability_offset..-1]
+        expect(act).to be_all_within(delta).of(exp)
       end
+    end
+  end
+
+  describe '#macd' do
+    context 'by default' do
+      it_should_behave_like 'correct macd'
     end
 
     context 'custom values for fast, slow, signal' do
-      subject { source['price'].macd 6, 13, 4}
-
-      %w[ macd macdsig macdhist ].each_with_index do |field, i|
-        macd_type = "#{field}_6_13_4"
-        it do
-          act = subject[i][stability_offset..-1]
-          exp = source[macd_type][stability_offset..-1]
-          expect(act).to be_all_within(delta).of(exp)
-        end
-      end
+      it_should_behave_like 'correct macd', 6, 13, 4
     end
 
   end
