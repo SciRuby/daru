@@ -702,20 +702,15 @@ describe Daru::Vector do
     let(:stability_offset) { 90 }
     let(:delta) { 0.001 }
 
-    let(:macd) { subject[0] }
-    let(:macdsig) { subject[1] }
-    let(:macdhist) { subject[2] }
-
-
-    context 'by default' do
+   context 'by default' do
       subject { source['price'].macd }
 
-      it do
-        30.times do |i|
-          idx = stability_offset + i
-          expect(macd[idx]).to be_within(delta).of(source['macd_12_26_9'][idx])
-          expect(macdsig[idx]).to be_within(delta).of(source['macdsig_12_26_9'][idx])
-          expect(macdhist[idx]).to be_within(delta).of(source['macdhist_12_26_9'][idx])
+      %w[ macd macdsig macdhist ].each_with_index do |field, i|
+        macd_type = "#{field}_12_26_9"
+        it do
+          act = subject[i][stability_offset..-1]
+          exp = source[macd_type][stability_offset..-1]
+          expect(act).to be_all_within(delta).of(exp)
         end
       end
     end
@@ -723,12 +718,12 @@ describe Daru::Vector do
     context 'custom values for fast, slow, signal' do
       subject { source['price'].macd 6, 13, 4}
 
-      it do
-        30.times do |i|
-          idx = stability_offset + i
-          expect(macd[idx]).to be_within(delta).of(source['macd_6_13_4'][idx])
-          expect(macdsig[idx]).to be_within(delta).of(source['macdsig_6_13_4'][idx])
-          expect(macdhist[idx]).to be_within(delta).of(source['macdhist_6_13_4'][idx])
+      %w[ macd macdsig macdhist ].each_with_index do |field, i|
+        macd_type = "#{field}_6_13_4"
+        it do
+          act = subject[i][stability_offset..-1]
+          exp = source[macd_type][stability_offset..-1]
+          expect(act).to be_all_within(delta).of(exp)
         end
       end
     end

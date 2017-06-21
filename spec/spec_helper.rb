@@ -1,5 +1,6 @@
 require 'rspec'
 require 'rspec/its'
+require 'rspec/expectations'
 require 'matrix'
 require 'awesome_print'
 require 'distribution'
@@ -49,6 +50,24 @@ end
 def expect_correct_df_in_delta df1, df2, delta
   df1.each_vector_with_index do |vector, i|
     expect_correct_vector_in_delta vector, df2[i], delta
+  end
+end
+
+RSpec::Matchers.define :be_all_within do |delta|
+  match do |actual|
+    actual.each_with_index do |val, idx|
+      @idx = idx
+      pass = (actual[idx].to_f - @expected[idx].to_f).abs < delta.to_f
+      return false if not pass
+    end
+  end
+
+  chain :of do |expected|
+    @expected = expected
+  end
+
+  failure_message do |actual|
+    "at index=[#{@idx}], expected '#{actual[@idx]}' to be within '#{delta}' of '#{@expected[@idx]}'."
   end
 end
 
