@@ -55,6 +55,8 @@ end
 
 RSpec::Matchers.define :be_all_within do |delta|
   match do |actual|
+    expect(@expected).to_not be_nil
+    expect(actual.size).to equal(actual.size)
     (@act, @exp), @idx = actual.zip(@expected).each_with_index.detect { |(a, e), _| (a - e).abs > delta }
     @idx.nil?
   end
@@ -64,6 +66,8 @@ RSpec::Matchers.define :be_all_within do |delta|
   end
 
   failure_message do |actual|
+    return "expected value must be provided using '.of'." if @expected.nil?
+    return "expected.size must equal actual.size." if @expected.size != actual.size
     "at index=[#{@idx}], expected '#{actual[@idx]}' to be within '#{delta}' of '#{@expected[@idx]}'."
   end
 end
