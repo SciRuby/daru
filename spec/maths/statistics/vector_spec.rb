@@ -693,7 +693,7 @@ describe Daru::Vector do
     end
   end
 
-  RSpec.shared_examples 'correct macd' do |*settings|
+  RSpec.shared_examples 'correct macd' do |*args|
     let(:source) { Daru::DataFrame.from_csv('spec/fixtures/macd_data.csv') }
 
     # skip initial records during compare as ema is sensitive to
@@ -701,21 +701,14 @@ describe Daru::Vector do
     # http://ta-lib.org/d_api/ta_setunstableperiod.html
     let(:stability_offset) { 90 }
     let(:delta) { 0.001 }
+    let(:desc) { args.empty? ? '12_26_9' : args.join('_') }
 
-    if settings.empty?
-      subject { source['price'].macd }
-      settings_str = '12_26_9'
-    else
-      fast, slow, signal = settings
-      subject { source['price'].macd fast, slow, signal }
-      settings_str = settings.join('_')
-    end
+    subject { source['price'].macd(*args) }
 
     %w[ macd macdsig macdhist ].each_with_index do |field, i|
-      macd_type = "#{field}_#{settings_str}"
       it do
         act = subject[i][stability_offset..-1]
-        exp = source[macd_type][stability_offset..-1]
+        exp = source["#{field}_#{desc}"][stability_offset..-1]
         expect(act).to be_all_within(delta).of(exp)
       end
     end
