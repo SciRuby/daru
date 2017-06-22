@@ -693,24 +693,36 @@ describe Daru::Vector do
     end
   end
 
-  context "#macd" do
-    it "calculates moving average convergence divergence" do
-      # MACD uses a lot more data than the other ones, so we need a bigger vector
-      data = Daru::Vector.new(
-        File.readlines("spec/fixtures/stock_data.csv").map(&:to_f))
+  RSpec.shared_examples 'correct macd' do |*args|
+    let(:source) { Daru::DataFrame.from_csv('spec/fixtures/macd_data.csv') }
 
-      macd, signal = data.macd
+    # skip initial records during compare as ema is sensitive to
+    # period used.
+    # http://ta-lib.org/d_api/ta_setunstableperiod.html
+    let(:stability_offset) { 90 }
+    let(:delta) { 0.001 }
+    let(:desc) { args.empty? ? '12_26_9' : args.join('_') }
 
-      # check the MACD
-      expect(macd[-1]).to be_within(1e-6).of(3.12e-4)
-      expect(macd[-10]).to be_within(1e-4).of(-1.07e-2)
-      expect(macd[-20]).to be_within(1e-5).of(-5.65e-3)
+    subject { source['price'].macd(*args) }
 
-      # check the signal
-      expect(signal[-1]).to be_within(1e-5).of(-0.00628)
-      expect(signal[-10]).to be_within(1e-5).of(-0.00971)
-      expect(signal[-20]).to be_within(1e-5).of(-0.00338)
+    %w[ macd macdsig macdhist ].each_with_index do |field, i|
+      it do
+        act = subject[i][stability_offset..-1]
+        exp = source["#{field}_#{desc}"][stability_offset..-1]
+        expect(act).to be_all_within(delta).of(exp)
+      end
     end
+  end
+
+  describe '#macd' do
+    context 'by default' do
+      it_should_behave_like 'correct macd'
+    end
+
+    context 'custom values for fast, slow, signal' do
+      it_should_behave_like 'correct macd', 6, 13, 4
+    end
+
   end
 
   context "#cumsum" do

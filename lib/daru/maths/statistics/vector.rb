@@ -682,26 +682,28 @@ module Daru
 
         # Moving Average Convergence-Divergence.
         # Calculates the MACD (moving average convergence-divergence) of the time
-        # series - this is a comparison of a fast EMA with a slow EMA.
+        # series.
+        # @see https://en.wikipedia.org/wiki/MACD
         #
-        # == Arguments
-        # * *fast*: integer, (default = 12) - fast component of MACD
-        # * *slow*: integer, (default = 26) - slow component of MACD
-        # * *signal*: integer, (default = 9) - signal component of MACD
+        # @param fast [Integer] fast period of MACD (default 12)
+        # @param slow [Integer] slow period of MACD (default 26)
+        # @param signal [Integer] signal period of MACD (default 9)
         #
-        # == Usage
-        #
+        # @example Create a series and calculate MACD values
         #   ts = Daru::Vector.new((1..100).map { rand })
         #            # => [0.69, 0.23, 0.44, 0.71, ...]
-        #   ts.macd(13)
+        #   macdseries, macdsignal, macdhist = ts.macd
+        #   macdseries, macdsignal, macdhist = ts.macd(13)
+        #   macdseries, macdsignal, macdhist = ts.macd(signal=5)
         #
-        # == Returns
+        # @return [Array<Daru::Vector>] macdseries, macdsignal and macdhist are
+        #   returned as an array of three Daru::Vectors
         #
-        # Array of two Daru::Vectors - comparison of fast EMA with slow and EMA with
-        # signal value
         def macd(fast=12, slow=26, signal=9)
-          series = ema(fast) - ema(slow)
-          [series, series.ema(signal)]
+          macdseries = ema(fast) - ema(slow)
+          macdsignal = macdseries.ema(signal)
+          macdhist = macdseries - macdsignal
+          [macdseries, macdsignal, macdhist]
         end
 
         # Calculates the autocorrelation coefficients of the series.
