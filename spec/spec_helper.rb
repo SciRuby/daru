@@ -55,11 +55,8 @@ end
 
 RSpec::Matchers.define :be_all_within do |delta|
   match do |actual|
-    actual.each_with_index do |val, idx|
-      @idx = idx
-      pass = (actual[idx].to_f - @expected[idx].to_f).abs < delta.to_f
-      return false if not pass
-    end
+    (@act, @exp), @idx = actual.zip(@expected).each_with_index.detect { |(a, e), _| (a - e).abs > delta }
+    @idx.nil?
   end
 
   chain :of do |expected|
