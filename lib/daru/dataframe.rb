@@ -4,6 +4,7 @@ require 'daru/maths/statistics/dataframe.rb'
 require 'daru/plotting/gruff.rb'
 require 'daru/plotting/nyaplot.rb'
 require 'daru/io/io.rb'
+require 'securerandom'
 
 module Daru
   class DataFrame # rubocop:disable Metrics/ClassLength
@@ -248,8 +249,10 @@ module Daru
     # The name of the DataFrame
     attr_reader :name
 
-    # The number of rows present in the DataFrame
-    attr_reader :size
+    # The number of rows present in the DataFrame and
+    # the id of the dataframe table. The element_id will be set, when `to_html`
+    # is executed (means html table code is generated).
+    attr_reader :size, :element_id
 
     # DataFrame basically consists of an Array of Vector objects.
     # These objects are indexed by row and column by vectors and index Index objects.
@@ -1870,7 +1873,8 @@ module Daru
     end
 
     # Convert to html for IRuby.
-    def to_html threshold=30
+    def to_html(element_id=SecureRandom.uuid, threshold=30)
+      @element_id = element_id
       path = if index.is_a?(MultiIndex)
                File.expand_path('../iruby/templates/dataframe_mi.html.erb', __FILE__)
              else
