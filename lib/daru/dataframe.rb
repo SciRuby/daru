@@ -4,7 +4,6 @@ require 'daru/maths/statistics/dataframe.rb'
 require 'daru/plotting/gruff.rb'
 require 'daru/plotting/nyaplot.rb'
 require 'daru/io/io.rb'
-require 'securerandom'
 
 module Daru
   class DataFrame # rubocop:disable Metrics/ClassLength
@@ -1883,20 +1882,22 @@ module Daru
     end
 
     def to_html_thead
-      table_thead_path = if index.is_a?(MultiIndex)
-               File.expand_path('../iruby/templates/dataframe_mi_thead.html.erb', __FILE__)
-             else
-               File.expand_path('../iruby/templates/dataframe_thead.html.erb', __FILE__)
-             end
+      table_thead_path =
+        if index.is_a?(MultiIndex)
+          File.expand_path('../iruby/templates/dataframe_mi_thead.html.erb', __FILE__)
+        else
+          File.expand_path('../iruby/templates/dataframe_thead.html.erb', __FILE__)
+        end
       ERB.new(File.read(table_thead_path).strip).result(binding)
     end
 
     def to_html_tbody(threshold=30)
-      table_tbody_path = if index.is_a?(MultiIndex)
-               File.expand_path('../iruby/templates/dataframe_mi_tbody.html.erb', __FILE__)
-             else
-               File.expand_path('../iruby/templates/dataframe_tbody.html.erb', __FILE__)
-             end
+      table_tbody_path =
+        if index.is_a?(MultiIndex)
+          File.expand_path('../iruby/templates/dataframe_mi_tbody.html.erb', __FILE__)
+        else
+          File.expand_path('../iruby/templates/dataframe_tbody.html.erb', __FILE__)
+        end
       ERB.new(File.read(table_tbody_path).strip).result(binding)
     end
 
