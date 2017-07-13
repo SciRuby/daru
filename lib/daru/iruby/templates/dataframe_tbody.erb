@@ -1,0 +1,28 @@
+<tbody>
+  <% @index.first(threshold).each_with_index do |index, pos| %>
+    <tr>
+      <td><%= index %></td>
+      <% row.at(pos).each do |element| %>
+        <td><%= element.to_s %></td>
+      <% end %>
+    </tr>
+  <% end %>
+
+  <% if nrows > threshold %>
+    <tr>
+      <% (@vectors.size + 1).times do %>
+        <td>...</td>
+      <% end %>
+    </tr>
+
+    <% last_index = @index.to_a.last
+       last_row = row_at @index.size-1 %>
+
+    <tr>
+      <td><%= last_index %></td>
+        <% last_row.each do |element| %>
+          <td><%= element.to_s %></td>
+        <% end %>
+    </tr>
+  <% end %>
+</tbody>

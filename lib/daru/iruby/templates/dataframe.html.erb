@@ -1,52 +1,5 @@
+<b> Daru::DataFrame<%= name ? ": #{name} " : ''%>(<%=nrows%>x<%=ncols%>) </b>
 <table id='<%= element_id %>'>
-  <tr>
-    <th colspan='<%= @vectors.size+1 %>'>Daru::DataFrame<%= name ? ": #{name} " : ''%>(<%=nrows%>x<%=ncols%>)</th>
-  </tr>
-
-  <% if @vectors.is_a? MultiIndex %>
-    <% Daru::IRuby::Helpers.tuples_with_colspans(@vectors).each_with_index do |tuple, idx| %>
-      <tr>
-        <% if idx.zero? %>
-          <th rowspan="<%= @vectors.width %>"></th>
-        <% end %>
-        <% tuple.each do |idx, span| %>
-          <th colspan="<%= span %>"><%= idx %></th>
-        <% end %>
-      </tr>
-    <% end %>
-  <% else %>
-    <tr>
-      <th></th>
-      <% @vectors.each do |vector| %>
-        <th><%=vector%></th>
-      <% end %>
-    </tr>
-  <% end %>
-
-  <% @index.first(threshold).each_with_index do |index, pos| %>
-    <tr>
-      <td><%= index %></td>
-      <% row.at(pos).each do |element| %>
-        <td><%= element.to_s %></td>
-      <% end %>
-    </tr>
-  <% end %>
-
-  <% if nrows > threshold %>
-    <tr>
-      <% (@vectors.size + 1).times do %>
-        <td>...</td>
-      <% end %>
-    </tr>
-
-    <% last_index = @index.to_a.last
-       last_row = row_at @index.size-1 %>
-
-    <tr>
-      <td><%= last_index %></td>
-        <% last_row.each do |element| %>
-          <td><%= element.to_s %></td>
-        <% end %>
-    </tr>
-  <% end %>
+  <%= table_thead %>
+  <%= table_tbody %>
 </table>

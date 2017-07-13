@@ -1875,6 +1875,8 @@ module Daru
     # Convert to html for IRuby.
     def to_html(element_id=SecureRandom.uuid, threshold=30)
       @element_id = element_id
+      table_thead = File.expand_path('../iruby/templates/dataframe_thead.html.erb', __FILE__)
+      table_tbody = File.expand_path('../iruby/templates/dataframe_tbody.html.erb', __FILE__)
       path = if index.is_a?(MultiIndex)
                File.expand_path('../iruby/templates/dataframe_mi.html.erb', __FILE__)
              else
