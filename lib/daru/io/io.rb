@@ -223,7 +223,6 @@ module Daru
           .parse(open(path), opts)
           .tap { |c| yield c if block_given? }
           .to_a.reject(&:empty?)
-        
         headers       = ArrayHelper.recode_repeated(csv_as_arrays.shift)
         csv_as_arrays = csv_as_arrays.transpose
         headers.each_with_index.map { |h, i| [h, csv_as_arrays[i]] }.to_h
