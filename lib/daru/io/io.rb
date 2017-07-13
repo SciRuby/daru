@@ -214,7 +214,7 @@ module Daru
           ::CSV
           .open(path, 'rb', opts)
           .tap { |c| yield c if block_given? }
-          .to_a
+          .to_a.reject(&:empty?)
 
         headers       = ArrayHelper.recode_repeated(csv_as_arrays.shift)
         csv_as_arrays = csv_as_arrays.transpose

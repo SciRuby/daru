@@ -32,6 +32,11 @@ describe Daru::IO do
         df = Daru::DataFrame.from_csv 'spec/fixtures/sales-funnel.csv'
         expect(df.vectors.to_a).to eq(%W[Account Name Rep Manager Product Quantity Price Status])
       end
+
+      it "handles empty rows in the CSV" do
+        df = Daru::DataFrame.from_csv 'spec/fixtures/empty_rows_test.csv'
+        expect(df.nrows).to eq(13)
+      end
     end
 
     context "#write_csv" do
