@@ -109,7 +109,7 @@ describe Daru::Vector do
     context '#to_html' do
       let(:doc) { Nokogiri::HTML(vector.to_html) }
       subject(:table) { doc.at('table') }
-      let(:header) { table.at('tr:first-child > th:first-child') }
+      let(:header) { doc.at('b') }
 
       context 'simple' do
         let(:vector) { Daru::Vector.new [1,nil,3],
@@ -119,13 +119,12 @@ describe Daru::Vector do
         describe 'header' do
           subject { header }
           it { is_expected.not_to be_nil }
-          its(['colspan']) { is_expected.to eq '2' }
-          its(:text) { is_expected.to eq "Daru::Vector(3)"\
-            "#{":category" if type == :category}" }
+          its(:text) { is_expected.to eq " Daru::Vector(3)"\
+            "#{":category" if type == :category} " }
         end
 
         describe 'name' do
-          subject(:name) { table.at('tr:nth-child(2) > th:nth-child(2)') }
+          subject(:name) { table.at('thead > tr:first-child > th:nth-child(2)') }
           it { is_expected.not_to be_nil }
           its(:text) { is_expected.to eq 'test' }
 
@@ -151,18 +150,18 @@ describe Daru::Vector do
 
       context 'large vector' do
         subject(:vector) { Daru::Vector.new [1,2,3] * 100, name: 'test', type: type }
-        it 'has only 30 rows (+ 2 header rows, + 2 finishing rows)' do
-          expect(table.search('tr').size).to eq 34
+        it 'has only 30 rows (+ 1 header rows, + 2 finishing rows)' do
+          expect(table.search('tr').size).to eq 33
         end
 
         describe '"skipped" row' do
-          subject(:row) { table.search('tr:nth-child(33) td').map(&:text) }
+          subject(:row) { table.search('tr:nth-child(31) td').map(&:text) }
           its(:count) { is_expected.to eq 2 }
           it { is_expected.to eq ['...', '...'] }
         end
 
         describe 'last row' do
-          subject(:row) { table.search('tr:nth-child(34) td').map(&:text) }
+          subject(:row) { table.search('tr:nth-child(32) td').map(&:text) }
           its(:count) { is_expected.to eq 2 }
           it { is_expected.to eq ['299', '3'] }
         end
@@ -189,19 +188,18 @@ describe Daru::Vector do
         describe 'header' do
           subject { header }
           it { is_expected.not_to be_nil }
-          its(['colspan']) { is_expected.to eq '3' }
-          its(:text) { is_expected.to eq "Daru::Vector(7)"\
-            "#{":category" if type == :category}" }
+          its(:text) { is_expected.to eq " Daru::Vector(7)"\
+            "#{":category" if type == :category} " }
         end
 
         describe 'name row' do
-          subject(:row) { table.at('tr:nth-child(2)').search('th') }
+          subject(:row) { table.at('thead > tr:nth-child(1)').search('th') }
           its(:count) { should == 2 }
           it { expect(row.first['colspan']).to eq '2' }
         end
 
         describe 'first data row' do
-          let(:row) { table.at('tr:nth-child(3)') }
+          let(:row) { table.at('tbody > tr:first-child') }
           subject { row.inner_html.scan(/<t[dh].+?<\/t[dh]>/) }
           it { is_expected.to eq [
             '<th rowspan="3">foo</th>',
