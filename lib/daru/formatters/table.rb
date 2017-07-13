@@ -10,6 +10,7 @@ module Daru
         @data = data || []
         @headers = (headers || []).to_a
         @row_headers = (row_headers || []).to_a
+        @row_headers = [''] * @data.to_a.size if @row_headers.empty?
       end
 
       DEFAULT_SPACING = 10

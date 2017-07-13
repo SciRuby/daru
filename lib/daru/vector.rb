@@ -352,7 +352,7 @@ module Daru
         if other.is_a?(Daru::Vector)
           mod.apply_vector_operator operator, self, other
         else
-          mod.apply_scalar_operator operator, @data,other
+          mod.apply_scalar_operator operator, @data, other
         end
       end
       alias_method operator, method if operator != :== && operator != :!=
@@ -462,6 +462,26 @@ module Daru
       values.any? { |v| include_with_nan? @data, v }
     end
 
+    # @note Do not use it to check for Float::NAN as
+    #   Float::NAN == Float::NAN is false
+    # Return vector of booleans with value at ith position is either
+    # true or false depending upon whether value at position i is equal to
+    # any of the values passed in the argument or not
+    # @param [Array] *values values to equate with
+    # @return [Daru::Vector] vector of boolean values
+    # @example
+    #   dv = Daru::Vector.new [1, 2, 3, 2, 1]
+    #   dv.is_values 1, 2
+    #   # => #<Daru::Vector(5)>
+    #   #     0  true
+    #   #     1  true
+    #   #     2 false
+    #   #     3  true
+    #   #     4  true
+    def is_values(*values)
+      Daru::Vector.new values.map { |v| eq(v) }.inject(:|)
+    end
+
     # Append an element to the vector by specifying the element and index
     def concat element, index
       raise IndexError, 'Expected new unique index' if @index.include? index
@@ -481,8 +501,7 @@ module Daru
     # * +:dtype+ - :array for Ruby Array. :nmatrix for NMatrix.
     def cast opts={}
       dt = opts[:dtype]
-      raise ArgumentError, "Unsupported dtype #{opts[:dtype]}" unless
-        dt == :array || dt == :nmatrix || dt == :gsl
+      raise ArgumentError, "Unsupported dtype #{opts[:dtype]}" unless %i[array nmatrix gsl].include?(dt)
 
       @data = cast_vector_to dt unless @dtype == dt
     end
@@ -535,7 +554,7 @@ module Daru
     # Get index of element
     def index_of element
       case dtype
-      when :array then @index.key @data.index { |x| x.eql? element }
+      when :array then @index.key(@data.index { |x| x.eql? element })
       else @index.key @data.index(element)
       end
     end
@@ -583,6 +602,31 @@ module Daru
       Daru::Vector.new(vector, index: index, name: @name, dtype: @dtype)
     end
 
+    # Sorts the vector according to it's`Index` values. Defaults to ascending
+    # order sorting.
+    #
+    # @param [Hash] opts the options for sort_by_index method.
+    # @option opts [Boolean] :ascending false, will sort `index` in
+    #  descending order.
+    #
+    # @return [Vector] new sorted `Vector` according to the index values.
+    #
+    # @example
+    #
+    #   dv = Daru::Vector.new [11, 13, 12], index: [23, 21, 22]
+    #   # Say you want to sort index in ascending order
+    #   dv.sort_by_index(ascending: true)
+    #   #=> Daru::Vector.new [13, 12, 11], index: [21, 22, 23]
+    #   # Say you want to sort index in descending order
+    #   dv.sort_by_index(ascending: false)
+    #   #=> Daru::Vector.new [11, 12, 13], index: [23, 22, 21]
+    def sort_by_index opts={}
+      opts = {ascending: true}.merge(opts)
+      _, new_order = resort_index(@index.each_with_index, opts).transpose
+
+      reorder new_order
+    end
+
     DEFAULT_SORTER = lambda { |(lv, li), (rv, ri)|
       case
       when lv.nil? && rv.nil?
@@ -624,7 +668,7 @@ module Daru
     def delete_if
       return to_enum(:delete_if) unless block_given?
 
-      keep_e, keep_i = each_with_index.select { |n, _i| !yield(n) }.transpose
+      keep_e, keep_i = each_with_index.reject { |n, _i| yield(n) }.transpose
 
       @data = cast_vector_to @dtype, keep_e
       @index = Daru::Index.new(keep_i)
@@ -702,31 +746,6 @@ module Daru
       self
     end
 
-    # Returns a vector which has *true* in the position where the element in self
-    # is nil, and false otherwise.
-    #
-    # == Usage
-    #
-    #   v = Daru::Vector.new([1,2,4,nil])
-    #   v.is_nil?
-    #   # =>
-    #   #<Daru::Vector:89421000 @name = nil @size = 4 >
-    #   #      nil
-    #   #  0  false
-    #   #  1  false
-    #   #  2  false
-    #   #  3  true
-    #
-    def is_nil?
-      # FIXME: EXTREMELY bad name for method not returning boolean - zverok, 2016-05-18
-      recode(&:nil?)
-    end
-
-    # Opposite of #is_nil?
-    def not_nil?
-      recode { |v| !v.nil? }
-    end
-
     # Replace all nils in the vector with the value passed as an argument. Destructive.
     # See #replace_nils for non-destructive version
     #
@@ -741,27 +760,43 @@ module Daru
       self
     end
 
-    # Lags the series by k periods.
+    # Lags the series by `k` periods.
     #
-    # The convention is to set the oldest observations (the first ones
-    # in the series) to nil so that the size of the lagged series is the
-    # same as the original.
+    # Lags the series by `k` periods, "shifting" data and inserting `nil`s
+    # from beginning or end of a vector, while preserving original vector's
+    # size.
     #
-    # Usage:
+    # `k` can be positive or negative integer. If `k` is positive, `nil`s
+    # are inserted at the beginning of the vector, otherwise they are
+    # inserted at the end.
     #
-    #   ts = Daru::Vector.new((1..10).map { rand })
-    #           # => [0.69, 0.23, 0.44, 0.71, ...]
+    # @param [Integer] k "shift" the series by `k` periods. `k` can be
+    #   positive or negative. (default = 1)
     #
-    #   ts.lag   # => [nil, 0.69, 0.23, 0.44, ...]
-    #   ts.lag(2) # => [nil, nil, 0.69, 0.23, ...]
+    # @return [Daru::Vector] a new vector with "shifted" inital values
+    #   and `nil` values inserted. The return vector is the same length
+    #   as the orignal vector.
+    #
+    # @example Lag a vector with different periods `k`
+    #
+    #   ts = Daru::Vector.new(1..5)
+    #               # => [1, 2, 3, 4, 5]
+    #
+    #   ts.lag      # => [nil, 1, 2, 3, 4]
+    #   ts.lag(1)   # => [nil, 1, 2, 3, 4]
+    #   ts.lag(2)   # => [nil, nil, 1, 2, 3]
+    #   ts.lag(-1)  # => [2, 3, 4, 5, nil]
+    #
     def lag k=1
-      return dup if k.zero?
-
-      dat = @data.to_a.dup
-      (dat.size - 1).downto(k) { |i| dat[i] = dat[i - k] }
-      (0...k).each { |i| dat[i] = nil }
-
-      Daru::Vector.new(dat, index: @index, name: @name)
+      case k
+      when 0 then dup
+      when 1...size
+        copy([nil] * k + data.to_a)
+      when -size..-1
+        copy(data.to_a[k.abs...size])
+      else
+        copy([])
+      end
     end
 
     def detach_index
@@ -884,41 +919,67 @@ module Daru
       to_html
     end
 
-    # Create a summary of the Vector using Report Builder.
-    def summary(method=:to_text)
-      ReportBuilder.new(no_title: true).add(self).send(method)
-    end
-
-    # :nocov:
-    def report_building b # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
-      b.section(name: name) do |s|
-        s.text "n :#{size}"
-        s.text "n valid:#{count_values(*Daru::MISSING_VALUES)}"
-        if @type == :object
-          s.text  "factors: #{factors.to_a.join(',')}"
-          s.text  "mode: #{mode}"
-
-          s.table(name: 'Distribution') do |t|
-            frequencies.sort_by(&:to_s).each do |k,v|
-              key = @index.include?(k) ? @index[k] : k
-              t.row [key, v, ('%0.2f%%' % (v.quo(count_values(*Daru::MISSING_VALUES))*100))]
-            end
-          end
-        end
-
-        s.text "median: #{median}" if @type==:numeric || @type==:numeric
-        if @type==:numeric
-          s.text 'mean: %0.4f' % mean
-          if sd
-            s.text 'std.dev.: %0.4f' % sd
-            s.text 'std.err.: %0.4f' % se
-            s.text 'skew: %0.4f' % skew
-            s.text 'kurtosis: %0.4f' % kurtosis
-          end
-        end
+    # Create a summary of the Vector
+    # @params [Fixnum] indent_level
+    # @return [String] String containing the summary of the Vector
+    # @example
+    #   dv = Daru::Vector.new [1, 2, 3]
+    #   puts dv.summary
+    #
+    #   # =
+    #   #   n :3
+    #   #   non-missing:3
+    #   #   median: 2
+    #   #   mean: 2.0000
+    #   #   std.dev.: 1.0000
+    #   #   std.err.: 0.5774
+    #   #   skew: 0.0000
+    #   #   kurtosis: -2.3333
+    def summary(indent_level=0)
+      non_missing = size - count_values(*Daru::MISSING_VALUES)
+      summary = '  =' * indent_level + "= #{name}" \
+                "\n  n :#{size}" \
+                "\n  non-missing:#{non_missing}"
+      case type
+      when :object
+        summary << object_summary
+      when :numeric
+        summary << numeric_summary
       end
+      summary.split("\n").join("\n" + '  ' * indent_level)
     end
-    # :nocov:
+
+    # Displays summary for an object type Vector
+    # @return [String] String containing object vector summary
+    def object_summary
+      nval = count_values(*Daru::MISSING_VALUES)
+      summary = "\n  factors: #{factors.to_a.join(',')}" \
+                "\n  mode: #{mode.to_a.join(',')}" \
+                "\n  Distribution\n"
+
+      data = frequencies.sort.each_with_index.map do |v, k|
+        [k, v, '%0.2f%%' % ((nval.zero? ? 1 : v.quo(nval))*100)]
+      end
+
+      summary + Formatters::Table.format(data)
+    end
+
+    # Displays summary for an numeric type Vector
+    # @return [String] String containing numeric vector summary
+    def numeric_summary
+      summary = "\n  median: #{median}" +
+                "\n  mean: %0.4f" % mean
+      if sd
+        summary << "\n  std.dev.: %0.4f" % sd +
+                   "\n  std.err.: %0.4f" % se
+      end
+
+      if count_values(*Daru::MISSING_VALUES).zero?
+        summary << "\n  skew: %0.4f" % skew +
+                   "\n  kurtosis: %0.4f" % kurtosis
+      end
+      summary
+    end
 
     # Over rides original inspect for pretty printing in irb
     def inspect spacing=20, threshold=15
@@ -1335,6 +1396,12 @@ module Daru
     end
 
     private
+
+    def copy(values)
+      # Make sure values is right-justified to the size of the vector
+      values.concat([nil] * (size-values.size)) if values.size < size
+      Daru::Vector.new(values[0...size], index: @index, name: @name)
+    end
 
     def nil_positions
       @nil_positions ||

@@ -12,6 +12,116 @@ describe Daru::Vector do
         end
       end
 
+      let(:dv) { dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j]) }
+
+      context "#max" do
+        it "returns max value" do
+          expect(dv.max).to eq("Tyrion")
+        end
+        it "returns N max values" do
+          expect(dv.max(2)).to eq(["Tyrion","Jon Starkgaryen"])
+        end
+        it "returns max value, sorted by comparitive block input" do
+          expect(dv.max { |a,b| a.size <=> b.size }).to eq("Jon Starkgaryen")
+        end
+        it "returns max value, sorted by object block input" do
+          expect(dv.max { |x| x.size }).to eq("Jon Starkgaryen")
+        end
+        it "returns N max values, sorted by comparitive block input" do
+          expect(dv.max(2) {|a,b| a.size <=> b.size}).to eq(["Jon Starkgaryen","Daenerys"])
+        end
+        it "returns N max values, sorted by object block input" do
+          expect(dv.max(2) {|x| x.size }).to eq(["Jon Starkgaryen","Daenerys"])
+        end
+      end
+
+      context "#index_of_max" do
+        it "returns index_of_max value" do
+          expect(dv.index_of_max).to eq(:t)
+        end
+        it "returns N index_of_max values" do
+          expect(dv.index_of_max(2)).to eq([:t, :j])
+        end
+        it "returns index_of_max value, sorted by comparitive block input" do
+          expect(dv.index_of_max { |a,b| a.size <=> b.size }).to eq(:j)
+        end
+        it "returns index_of_max value, sorted by object block input" do
+          expect(dv.index_of_max { |x| x.size }).to eq(:j)
+        end
+        it "returns N index_of_max values, sorted by comparitive block input" do
+          expect(dv.index_of_max(2) {|a,b| a.size <=> b.size}).to eq([:j, :d])
+        end
+        it "returns N index_of_max values, sorted by object block input" do
+          expect(dv.index_of_max(2) {|x| x.size }).to eq([:j, :d])
+        end
+      end
+
+      context "#min" do
+        it "returns min value" do
+          expect(dv.min).to eq("Daenerys")
+        end
+        it "returns N min values" do
+          expect(dv.min(2)).to eq(["Daenerys","Jon Starkgaryen"])
+        end
+        it "returns min value, sorted by comparitive block input" do
+          expect(dv.min { |a,b| a.size <=> b.size }).to eq("Tyrion")
+        end
+        it "returns min value, sorted by object block input" do
+          expect(dv.min { |x| x.size }).to eq("Tyrion")
+        end
+        it "returns N min values, sorted by comparitive block input" do
+          expect(dv.min(2) {|a,b| a.size <=> b.size}).to eq(["Tyrion","Daenerys"])
+        end
+        it "returns N min values, sorted by object block input" do
+          expect(dv.min(2) {|x| x.size }).to eq(["Tyrion","Daenerys"])
+        end
+      end
+
+      context "#index_of_min" do
+        it "returns index of min value" do
+          expect(dv.index_of_min).to eq(:d)
+        end
+        it "returns N index of min values" do
+          expect(dv.index_of_min(2)).to eq([:d, :j])
+        end
+        it "returns index of min value, sorted by comparitive block input" do
+          expect(dv.index_of_min { |a,b| a.size <=> b.size }).to eq(:t)
+        end
+        it "returns index of min value, sorted by object block input" do
+          expect(dv.index_of_min { |x| x.size }).to eq(:t)
+        end
+        it "returns N index of min values, sorted by comparitive block input" do
+          expect(dv.index_of_min(2) {|a,b| a.size <=> b.size}).to eq([:t, :d])
+        end
+        it "returns N index of min values, sorted by object block input" do
+          expect(dv.index_of_min(2) {|x| x.size }).to eq([:t, :d])
+        end
+      end
+
+      context "#max_by" do
+        it "tests alias of max_by to max" do
+          expect(dv.method(:max_by)).to eq(dv.method(:max))
+        end
+      end
+
+      context "#min_by" do
+        it "tests alias of min_by to min" do
+          expect(dv.method(:min_by)).to eq(dv.method(:min))
+        end
+      end
+
+      context "#index_of_max_by" do
+        it "tests alias of index_of_max_by to index_of_max" do
+          expect(dv.method(:index_of_max_by)).to eq(dv.method(:index_of_max))
+        end
+      end
+
+      context "#index_of_min_by" do
+        it "tests alias of index_of_min_by to index_of_min" do
+          expect(dv.method(:index_of_min_by)).to eq(dv.method(:index_of_min))
+        end
+      end
+
       context "#sum_of_squares" do
         it "calcs sum of squares, omits nil values" do
           v = Daru::Vector.new [1,2,3,4,5,6], dtype: dtype
@@ -103,9 +213,14 @@ describe Daru::Vector do
       end
 
       context "#mode" do
-        it "returns the mode" do
+        it "returns the single modal value as a numeric" do
           mode_test_example = Daru::Vector.new [1,2,3,2,4,4,4,4], dtype: dtype
           expect(mode_test_example.mode).to eq(4)
+        end
+
+        it "returns multiple modal values as a vector" do
+          mode_test_example = Daru::Vector.new [1,2,2,2,3,2,4,4,4,4], dtype: dtype
+          expect(mode_test_example.mode).to eq(Daru::Vector.new [2,4], dtype: dtype)
         end
       end
 
@@ -578,24 +693,36 @@ describe Daru::Vector do
     end
   end
 
-  context "#macd" do
-    it "calculates moving average convergence divergence" do
-      # MACD uses a lot more data than the other ones, so we need a bigger vector
-      data = Daru::Vector.new(
-        File.readlines("spec/fixtures/stock_data.csv").map(&:to_f))
+  RSpec.shared_examples 'correct macd' do |*args|
+    let(:source) { Daru::DataFrame.from_csv('spec/fixtures/macd_data.csv') }
 
-      macd, signal = data.macd
+    # skip initial records during compare as ema is sensitive to
+    # period used.
+    # http://ta-lib.org/d_api/ta_setunstableperiod.html
+    let(:stability_offset) { 90 }
+    let(:delta) { 0.001 }
+    let(:desc) { args.empty? ? '12_26_9' : args.join('_') }
 
-      # check the MACD
-      expect(macd[-1]).to be_within(1e-6).of(3.12e-4)
-      expect(macd[-10]).to be_within(1e-4).of(-1.07e-2)
-      expect(macd[-20]).to be_within(1e-5).of(-5.65e-3)
+    subject { source['price'].macd(*args) }
 
-      # check the signal
-      expect(signal[-1]).to be_within(1e-5).of(-0.00628)
-      expect(signal[-10]).to be_within(1e-5).of(-0.00971)
-      expect(signal[-20]).to be_within(1e-5).of(-0.00338)
+    %w[ macd macdsig macdhist ].each_with_index do |field, i|
+      it do
+        act = subject[i][stability_offset..-1]
+        exp = source["#{field}_#{desc}"][stability_offset..-1]
+        expect(act).to be_all_within(delta).of(exp)
+      end
     end
+  end
+
+  describe '#macd' do
+    context 'by default' do
+      it_should_behave_like 'correct macd'
+    end
+
+    context 'custom values for fast, slow, signal' do
+      it_should_behave_like 'correct macd', 6, 13, 4
+    end
+
   end
 
   context "#cumsum" do

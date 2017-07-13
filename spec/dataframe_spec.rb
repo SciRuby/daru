@@ -329,6 +329,14 @@ describe Daru::DataFrame do
         expect(df[:a])         .to eq(Daru::Vector.new([1,2,3,4,5]))
       end
 
+      it "allows creation of dataframe with a default order" do
+        arr_of_arrs_df    = Daru::DataFrame.new([[1,2,3], [4,5,6], [7,8,9]])
+        arr_of_vectors_df = Daru::DataFrame.new([Daru::Vector.new([1,2,3]), Daru::Vector.new([4,5,6]), Daru::Vector.new([7,8,9])])
+
+        expect(arr_of_arrs_df.vectors.to_a).to eq([0,1,2])
+        expect(arr_of_vectors_df.vectors.to_a).to eq([0,1,2])
+      end
+
       it "raises error for incomplete DataFrame index" do
         expect {
           df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
@@ -2594,6 +2602,13 @@ describe Daru::DataFrame do
         @df.vectors = Daru::Index.new([1,2,'3',4,'5'])
       }.to raise_error(ArgumentError)
     end
+
+    it "change name of vectors in @data" do
+      new_index_array = [:k, :l, :m]
+      @df.vectors = Daru::Index.new(new_index_array)
+
+      expect(@df.data.map { |vector| vector.name }).to eq(new_index_array)
+    end
   end
 
   context "#rename_vectors" do
@@ -3043,9 +3058,34 @@ describe Daru::DataFrame do
   end
 
   context "#summary" do
-    it "produces a summary of data frame" do
-      expect(@data_frame.summary.match("#{@data_frame.name}")).to_not eq(nil)
-      expect(@df_mi.summary.match("#{@df_mi.name}")).to_not eq(nil)
+    subject { df.summary }
+
+    context "DataFrame" do
+      let(:df) { Daru::DataFrame.new({a: [1,2,5], b: [1,2,"string"]}, order: [:a, :b], index: [:one, :two, :three], name: 'frame') }
+      it { is_expected.to eq %Q{
+            |= frame
+            |  Number of rows: 3
+            |  Element:[a]
+            |  == a
+            |    n :3
+            |    non-missing:3
+            |    median: 2
+            |    mean: 2.6667
+            |    std.dev.: 2.0817
+            |    std.err.: 1.2019
+            |    skew: 0.2874
+            |    kurtosis: -2.3333
+            |  Element:[b]
+            |  == b
+            |    n :3
+            |    non-missing:3
+            |    factors: 1,2,string
+            |    mode: 1,2,string
+            |    Distribution
+            |                 1       1 100.00%
+            |                 2       1 100.00%
+            |            string       1 100.00%
+        }.unindent }
     end
   end
 
@@ -3637,7 +3677,7 @@ describe Daru::DataFrame do
       expect(df_union.index.to_a).to eq v1 + v2
     end
   end
-  
+
   context '#inspect' do
     subject { df.inspect }
 
@@ -3658,6 +3698,41 @@ describe Daru::DataFrame do
         |   1   2   4   7
         |   2   3   5   8
        }.unindent}
+    end
+
+    context 'if index name is set' do
+      context 'single index with name' do
+        let(:df) { Daru::DataFrame.new({a: [1,2,3], b: [3,4,5], c: [6,7,8]},
+        name: 'test')}
+        before { df.index.name = 'index_name' }
+        it { should == %Q{
+          |#<Daru::DataFrame: test (3x3)>
+          | index_name          a          b          c
+          |          0          1          3          6
+          |          1          2          4          7
+          |          2          3          5          8
+         }.unindent}
+      end
+
+      context 'MultiIndex with name' do
+        let(:mi) { Daru::MultiIndex.new(
+                levels: [[:a,:b,:c], [:one, :two]],
+                labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]], name: ['s1', 's2']) }
+        let(:df) { Daru::DataFrame.new({
+          a: [11, 12, 13, 14, 15, 16], b: [21, 22, 23, 24, 25, 26]},
+            name: 'test', index: mi)}
+        it { should == %Q{
+          |#<Daru::DataFrame: test (6x2)>
+          |  s1  s2   a   b
+          |   a one  11  21
+          |     two  12  22
+          |   b one  13  23
+          |     two  14  24
+          |   c one  15  25
+          |     two  16  26
+         }.unindent}
+      end
+
     end
 
     context 'no name' do
@@ -3831,5 +3906,13 @@ describe Daru::DataFrame do
       | b VARCHAR (255),
       | c DATE) CHARACTER SET=UTF8;
     }.unindent}
+  end
+
+  context "#by_single_key" do
+    let(:df) { Daru::DataFrame.new(a: [1, 2, 3], b: [4, 5, 6] ) }
+
+    it 'raise error when vector is missing from dataframe' do
+      expect { df[:c] }.to raise_error(IndexError, /Specified vector c does not exist/)
+    end
   end
 end if mri?

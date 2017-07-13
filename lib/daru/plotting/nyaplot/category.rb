@@ -12,7 +12,7 @@ module Daru
             # Set yrange for good view
             set_yrange plot, opts[:method]
             yield plot, diagram if block_given?
-            plot.show
+            plot
           else
             raise ArgumentError, "#{type} type is not supported."
           end

@@ -213,7 +213,7 @@ module Daru
 
     class Week < DateOffset
       def initialize *args
-        @n = !args[0].is_a?(Hash)? args[0] : 1
+        @n = args[0].is_a?(Hash) ? 1 : args[0]
         opts = args[-1]
         @weekday = opts[:weekday] || 0
       end

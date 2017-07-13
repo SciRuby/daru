@@ -18,7 +18,7 @@ describe Daru::DataFrame, 'plotting dataframe using gruff' do
       expect(plot).to receive(:data).exactly(3).times
       df.plot type: :bar
     end
-    
+
     it 'plots bar graph with block' do
       expect(plot).to receive :labels=
       expect(plot).to receive(:data).exactly(3).times
@@ -56,7 +56,7 @@ describe Daru::DataFrame, 'plotting dataframe using gruff' do
       df.plot type: :scatter, x: :c, y: :a
     end
   end
-  
+
   context 'invalid type' do
     it { expect { df.plot type: :lol }.to raise_error ArgumentError }
   end
@@ -72,10 +72,10 @@ describe Daru::DataFrame, 'dataframe category plotting with gruff' do
     }, index: 'a'..'f')
   end
   before { df.to_category :c }
-  
+
   context 'scatter' do
     let(:plot) { instance_double 'Gruff::Scatter' }
-    before { allow(Gruff::Scatter).to receive(:new).and_return(plot) }    
+    before { allow(Gruff::Scatter).to receive(:new).and_return(plot) }
     it 'plots scatter plot categorized by category vector' do
       expect(plot).to receive(:data).exactly(2).times
       df.plot type: :scatter, x: :a, y: :b, categorized: { by: :c }

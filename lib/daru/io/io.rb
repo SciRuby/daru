@@ -76,7 +76,6 @@ module Daru
       # Functions for loading/writing CSV files
       def from_csv path, opts={}
         daru_options, opts = from_csv_prepare_opts opts
-
         # Preprocess headers for detecting and correcting repetition in
         # case the :headers option is not specified.
         hsh =
@@ -86,7 +85,6 @@ module Daru
             from_csv_hash(path, opts)
               .tap { |hash| daru_options[:order] = hash.keys }
           end
-
         Daru::DataFrame.new(hsh,daru_options)
       end
 
@@ -111,11 +109,10 @@ module Daru
 
       # Execute a query and create a data frame from the result
       #
-      # @param dbh [DBI::DatabaseHandle] A DBI connection to be used to run the query
+      # @param dbh [DBI::DatabaseHandle, String] A DBI connection OR Path to a SQlite3 database.
       # @param query [String] The query to be executed
       #
       # @return A dataframe containing the data resulting from the query
-
       def from_sql(db, query)
         require 'daru/io/sql_data_source'
         SqlDataSource.make_dataframe(db, query)
@@ -186,9 +183,21 @@ module Daru
         end
       end
 
+      def from_html path, opts
+        page = Mechanize.new.get(path)
+        page.search('table').map { |table| html_parse_table table }
+            .keep_if { |table| html_search table, opts[:match] }
+            .compact
+            .map { |table| html_decide_values table, opts }
+            .map { |table| html_table_to_dataframe table }
+      rescue LoadError
+        raise 'Install the mechanize gem version 2.7.5 with `gem install mechanize`,'\
+        ' for using the from_html function.'
+      end
+
       private
 
-      DARU_OPT_KEYS = [:clone, :order, :index, :name].freeze
+      DARU_OPT_KEYS = %i[clone order index name].freeze
 
       def from_csv_prepare_opts opts
         opts[:col_sep]           ||= ','
@@ -202,9 +211,8 @@ module Daru
 
       def from_csv_hash_with_headers(path, opts)
         opts[:header_converters] ||= :symbol
-
         ::CSV
-          .read(path, 'rb',opts)
+          .parse(open(path), opts)
           .tap { |c| yield c if block_given? }
           .by_col.map { |col_name, values| [col_name, values] }.to_h
       end
@@ -212,14 +220,60 @@ module Daru
       def from_csv_hash(path, opts)
         csv_as_arrays =
           ::CSV
-          .open(path, 'rb', opts)
+          .parse(open(path), opts)
           .tap { |c| yield c if block_given? }
           .to_a.reject(&:empty?)
-
+        
         headers       = ArrayHelper.recode_repeated(csv_as_arrays.shift)
         csv_as_arrays = csv_as_arrays.transpose
-
         headers.each_with_index.map { |h, i| [h, csv_as_arrays[i]] }.to_h
+      end
+
+      def html_parse_table(table)
+        headers, headers_size = html_scrape_tag(table,'th')
+        data, size = html_scrape_tag(table, 'td')
+        data = data.keep_if { |x| x.count == size }
+        order, indice = html_parse_hash(headers, size, headers_size) if headers_size >= size
+        return unless (indice.nil? || indice.count == data.count) && !order.nil? && order.count>0
+        {data: data.compact, index: indice, order: order}
+      end
+
+      def html_scrape_tag(table, tag)
+        arr  = table.search('tr').map { |row| row.search(tag).map { |val| val.text.strip } }
+        size = arr.map(&:count).max
+        [arr, size]
+      end
+
+      # Splits headers (all th tags) into order and index. Wherein,
+      # Order : All <th> tags on first proper row of HTML table
+      # index : All <th> tags on first proper column of HTML table
+      def html_parse_hash(headers, size, headers_size)
+        headers_index = headers.find_index { |x| x.count == headers_size }
+        order = headers[headers_index]
+        order_index = order.count - size
+        order = order[order_index..-1]
+        indice = headers[headers_index+1..-1].flatten
+        indice = nil if indice.to_a.empty?
+        [order, indice]
+      end
+
+      def html_search(table, match=nil)
+        match.nil? ? true : (table.to_s.include? match)
+      end
+
+      # Allows user to override the scraped order / index / data
+      def html_decide_values(scraped_val={}, user_val={})
+        %I[data index name order].each do |key|
+          user_val[key] ||= scraped_val[key]
+        end
+        user_val
+      end
+
+      def html_table_to_dataframe(table)
+        Daru::DataFrame.rows table[:data],
+          index: table[:index],
+          order: table[:order],
+          name: table[:name]
       end
     end
   end

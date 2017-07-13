@@ -1,7 +1,7 @@
 module Daru
   module Core
     class GroupBy
-      attr_reader :groups
+      attr_reader :groups, :df
 
       # Iterate over each group created by group_by. A DataFrame is yielded in
       # block.
@@ -32,12 +32,7 @@ module Daru
         #   #  => {4=>["test"], 2=>["me"], 6=>["please"]}
         #
         # - zverok, 2016-09-12
-        keys    = tuples.uniq.sort(&TUPLE_SORTER)
-
-        keys.each do |key|
-          @groups[key] = all_indices_for(tuples, key)
-        end
-        @groups.freeze
+        init_groups_df tuples, names
       end
 
       # Get a Daru::Vector of the size of each group.
@@ -201,15 +196,8 @@ module Daru
         transpose = elements.transpose
         rows      = indexes.each.map { |idx| transpose[idx] }
 
-        new_index =
-          begin
-            @context.index[indexes]
-          rescue IndexError
-            indexes
-          end
-
         Daru::DataFrame.rows(
-          rows, index: new_index, order: @context.vectors
+          rows, index: indexes, order: @context.vectors
         )
       end
 
@@ -251,7 +239,25 @@ module Daru
         Daru::Vector.new(result_hash.values, index: index)
       end
 
+      def inspect
+        @df.inspect
+      end
+
       private
+
+      def init_groups_df tuples, names
+        multi_index_tuples = []
+        keys = tuples.uniq.sort(&TUPLE_SORTER)
+        keys.each do |key|
+          indices = all_indices_for(tuples, key)
+          @groups[key] = indices
+          indices.each do |indice|
+            multi_index_tuples << key + [indice]
+          end
+        end
+        @groups.freeze
+        @df = resultant_context(multi_index_tuples, names) unless multi_index_tuples.empty?
+      end
 
       def select_groups_from method, quantity
         selection     = @context
@@ -291,6 +297,17 @@ module Daru
         else
           Daru::Index.new(@groups.keys.flatten)
         end
+      end
+
+      def resultant_context(multi_index_tuples, names)
+        multi_index = Daru::MultiIndex.from_tuples(multi_index_tuples)
+        context_tmp = @context.dup.delete_vectors(*names)
+        rows_tuples = context_tmp.access_row_tuples_by_indexs(
+          *@groups.values.flatten!
+        )
+        context_new = Daru::DataFrame.rows(rows_tuples, index: multi_index)
+        context_new.vectors = context_tmp.vectors
+        context_new
       end
 
       def all_indices_for arry, element

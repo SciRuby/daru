@@ -22,7 +22,7 @@ module Daru
         #   Calculate the minimum value of each numeric vector
         # @!method product
         #   Compute the product of each numeric vector
-        [:mean, :variance_sample, :range, :median, :mode, :std, :sum, :count, :min, :product].each do |meth|
+        %i[mean variance_sample range median mode std sum count min product].each do |meth|
           define_method(meth) do
             compute_stats meth
           end
@@ -70,9 +70,9 @@ module Daru
         # @!method rolling_variance
         #   Calculate moving variance
         #   @param [Integer] n (10) Loopback length. Default to 10.
-        [
-          :cumsum,:standardize,:acf,:ema,:rolling_mean,:rolling_median,:rolling_max,
-          :rolling_min,:rolling_count,:rolling_std,:rolling_variance, :rolling_sum
+        %i[
+          cumsum standardize acf ema rolling_mean rolling_median rolling_max
+          rolling_min rolling_count rolling_std rolling_variance rolling_sum
         ].each do |meth|
           define_method(meth) do |*args|
             apply_method_to_numerics meth, *args
@@ -88,7 +88,7 @@ module Daru
         # be applied to numeric vectors. Default is [:count, :mean, :std, :max,
         # :min]. Methods will be applied in the specified order.
         def describe methods=nil
-          methods ||= [:count, :mean, :std, :min, :max]
+          methods ||= %i[count mean std min max]
 
           description_hash = {}
           numeric_vectors.each do |vec|
@@ -133,17 +133,15 @@ module Daru
         # Calculate sample variance-covariance between the numeric vectors.
         def covariance
           cache = Hash.new do |h, (col, row)|
-            h[[col, row]] = vector_cov(self[row],self[col])
+            value = vector_cov(self[row],self[col])
+            h[[col, row]] = value
+            h[[row, col]] = value
           end
           vectors = numeric_vectors
 
           mat_rows = vectors.collect do |row|
             vectors.collect do |col|
-              if row == col
-                self[row].variance
-              else
-                cache[[col,row]]
-              end
+              row == col ? self[row].variance : cache[[col,row]]
             end
           end
 
