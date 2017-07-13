@@ -249,10 +249,8 @@ module Daru
     # The name of the DataFrame
     attr_reader :name
 
-    # The number of rows present in the DataFrame and
-    # the id of the dataframe table. The element_id will be set, when `to_html`
-    # is executed (means html table code is generated).
-    attr_reader :size, :element_id
+    # The number of rows present in the DataFrame
+    attr_reader :size
 
     # DataFrame basically consists of an Array of Vector objects.
     # These objects are indexed by row and column by vectors and index Index objects.
@@ -1873,9 +1871,7 @@ module Daru
     end
 
     # Convert to html for IRuby.
-    def to_html(element_id=SecureRandom.uuid, threshold=30)
-      @element_id = element_id
-      # TODO: add tbody and thead erb for multi index dataframe.
+    def to_html(threshold=30)
       table_thead = to_html_thead
       table_tbody = to_html_tbody(threshold)
       path = if index.is_a?(MultiIndex)
@@ -1887,12 +1883,20 @@ module Daru
     end
 
     def to_html_thead
-      table_thead_path = File.expand_path('../iruby/templates/dataframe_thead.html.erb', __FILE__)
+      table_thead_path = if index.is_a?(MultiIndex)
+               File.expand_path('../iruby/templates/dataframe_mi_thead.html.erb', __FILE__)
+             else
+               File.expand_path('../iruby/templates/dataframe_thead.html.erb', __FILE__)
+             end
       ERB.new(File.read(table_thead_path).strip).result(binding)
     end
 
     def to_html_tbody(threshold=30)
-      table_tbody_path = File.expand_path('../iruby/templates/dataframe_tbody.html.erb', __FILE__)
+      table_tbody_path = if index.is_a?(MultiIndex)
+               File.expand_path('../iruby/templates/dataframe_mi_tbody.html.erb', __FILE__)
+             else
+               File.expand_path('../iruby/templates/dataframe_tbody.html.erb', __FILE__)
+             end
       ERB.new(File.read(table_tbody_path).strip).result(binding)
     end
 

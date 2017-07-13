@@ -1,7 +1,7 @@
 describe Daru::DataFrame, '#to_html' do
   let(:doc) { Nokogiri::HTML(df.to_html) }
   subject(:table) { doc.at('table') }
-  let(:header) { table.at('tr:first-child > th:first-child') }
+  let(:header) { doc.at('b')}
   let(:name) { 'test' }
 
   let(:splitted_row) { row.inner_html.scan(/<t[dh].+?<\/t[dh]>/) }
@@ -13,18 +13,17 @@ describe Daru::DataFrame, '#to_html' do
       subject { header }
 
       it { is_expected.not_to be_nil }
-      its(['colspan']) { is_expected.to eq (df.ncols + 1).to_s }
-      its(:text) { is_expected.to eq "Daru::DataFrame: test (3x3)" }
+      its(:text) { is_expected.to eq " Daru::DataFrame: test (3x3) " }
 
       context 'without name' do
         let(:name) { nil }
 
-        its(:text) { is_expected.to eq "Daru::DataFrame(3x3)" }
+        its(:text) { is_expected.to eq " Daru::DataFrame(3x3) " }
       end
     end
 
     describe 'column headers' do
-      subject(:columns) { table.search('tr:nth-child(2) th').map(&:text) }
+      subject(:columns) { table.search('tr:nth-child(1) th').map(&:text) }
       its(:size) { is_expected.to eq df.ncols + 1 }
       it { is_expected.to eq ['', 'a', 'b', 'c'] }
     end
@@ -34,7 +33,7 @@ describe Daru::DataFrame, '#to_html' do
 
       subject { splitted_row }
       describe 'first row' do
-        let(:row) { table.search('tr:nth-child(2)') }
+        let(:row) { table.search('thead > tr:nth-child(1)') }
 
         it { is_expected.to eq [
           '<th rowspan="2"></th>',
@@ -44,7 +43,7 @@ describe Daru::DataFrame, '#to_html' do
       end
 
       describe 'next row' do
-        let(:row) { table.search('tr:nth-child(3)') }
+        let(:row) { table.search('thead > tr:nth-child(2)') }
 
         it { is_expected.to eq [
           '<th colspan="1">foo</th>',
@@ -62,7 +61,7 @@ describe Daru::DataFrame, '#to_html' do
 
     describe 'values' do
       subject(:values) {
-        table.search('tr')[2..-1]
+        table.search('tr')[1..-1]
              .map { |tr| tr.search('td')[1..-1].map(&:text) }
       }
       its(:count) { is_expected.to eq df.nrows }
@@ -76,21 +75,21 @@ describe Daru::DataFrame, '#to_html' do
     describe 'header' do
       subject { header }
 
-      its(:text) { is_expected.to eq "Daru::DataFrame: test (300x3)" }
+      its(:text) { is_expected.to eq " Daru::DataFrame: test (300x3) " }
     end
 
-    it 'has only 30 rows (+ 2 header rows, + 2 finishing rows)' do
-      expect(table.search('tr').size).to eq 34
+    it 'has only 30 rows (+ 1 header rows, + 2 finishing rows)' do
+      expect(table.search('tr').size).to eq 33
     end
 
     describe '"skipped" row' do
-      subject(:row) { table.search('tr:nth-child(33) td').map(&:text) }
+      subject(:row) { table.search('tr:nth-child(31) td').map(&:text) }
       its(:count) { is_expected.to eq df.ncols + 1 }
       it { is_expected.to all eq '...' }
     end
 
     describe 'last row' do
-      subject(:row) { table.search('tr:nth-child(34) td').map(&:text) }
+      subject(:row) { table.search('tr:nth-child(32) td').map(&:text) }
       its(:count) { is_expected.to eq df.ncols + 1 }
       it { is_expected.to eq ['299', *df.row[-1].map(&:to_s)] }
     end
@@ -119,12 +118,11 @@ describe Daru::DataFrame, '#to_html' do
       subject { header }
 
       it { is_expected.not_to be_nil }
-      its(['colspan']) { is_expected.to eq (df.ncols + df.index.width).to_s }
-      its(:text) { is_expected.to eq "Daru::DataFrame: test (7x2)" }
+      its(:text) { is_expected.to eq " Daru::DataFrame: test (7x2) " }
     end
 
     describe 'column headers' do
-      let(:row) { table.search('tr:nth-child(2)') }
+      let(:row) { table.search('thead > tr:nth-child(1)') }
       subject { splitted_row }
 
       it { is_expected.to eq [
@@ -139,7 +137,7 @@ describe Daru::DataFrame, '#to_html' do
 
       subject { splitted_row }
       describe 'first row' do
-        let(:row) { table.search('tr:nth-child(2)') }
+        let(:row) { table.search('thead > tr:nth-child(1)') }
 
         it { is_expected.to eq [
           '<th colspan="2" rowspan="2"></th>',
@@ -148,7 +146,7 @@ describe Daru::DataFrame, '#to_html' do
       end
 
       describe 'next row' do
-        let(:row) { table.search('tr:nth-child(3)') }
+        let(:row) { table.search('thead > tr:nth-child(2)') }
 
         it { is_expected.to eq [
           '<th colspan="1">foo</th>',
@@ -158,7 +156,7 @@ describe Daru::DataFrame, '#to_html' do
     end
 
     describe 'first row' do
-      let(:row) { table.search('tr:nth-child(3)') }
+      let(:row) { table.search('tbody > tr:nth-child(1)') }
       subject { splitted_row }
 
       it { is_expected.to eq [
