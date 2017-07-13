@@ -20,7 +20,7 @@ module Daru
       #
       # == Arguments
       #
-      # * path - Path of the file to load specified as a String.
+      # * path - Local path / Remote URL of the file to load specified as a String.
       #
       # == Options
       #
@@ -63,7 +63,7 @@ module Daru
 
       # Read a database query and returns a Dataset
       #
-      # @param dbh [DBI::DatabaseHandle] A DBI connection to be used to run the query
+      # @param dbh [DBI::DatabaseHandle, String] A DBI connection OR Path to a SQlite3 database.
       # @param query [String] The query to be executed
       #
       # @return A dataframe containing the data resulting from the query
@@ -72,6 +72,11 @@ module Daru
       #
       #  dbh = DBI.connect("DBI:Mysql:database:localhost", "user", "password")
       #  Daru::DataFrame.from_sql(dbh, "SELECT * FROM test")
+      #
+      #  #Alternatively
+      #
+      #  require 'dbi'
+      #  Daru::DataFrame.from_sql("path/to/sqlite.db", "SELECT * FROM test")
       def from_sql dbh, query
         Daru::IO.from_sql dbh, query
       end
@@ -110,6 +115,49 @@ module Daru
       #   df = Daru::DataFrame.from_plaintext 'spec/fixtures/bank2.dat', [:v1,:v2,:v3,:v4,:v5,:v6]
       def from_plaintext path, fields
         Daru::IO.from_plaintext path, fields
+      end
+
+      # Read the table data from a remote html file. Please note that this module
+      # works only for static table elements on a HTML page, and won't work in
+      # cases where the data is being loaded into the HTML table by Javascript.
+      #
+      # By default - all <th> tag elements in the first proper row are considered
+      # as the order, and all the <th> tag elements in the first column are
+      # considered as the index.
+      #
+      # == Arguments
+      #
+      # * path [String] - URL of the target HTML file.
+      # * fields [Hash] -
+      #
+      #   +:match+ - A *String* to match and choose a particular table(s) from multiple tables of a HTML page.
+      #
+      #   +:order+ - An *Array* which would act as the user-defined order, to override the parsed *Daru::DataFrame*.
+      #
+      #   +:index+ - An *Array* which would act as the user-defined index, to override the parsed *Daru::DataFrame*.
+      #
+      #   +:name+ - A *String* that manually assigns a name to the scraped *Daru::DataFrame*, for user's preference.
+      #
+      # == Returns
+      # An Array of +Daru::DataFrame+s, with each dataframe corresponding to a
+      # HTML table on that webpage.
+      #
+      # == Usage
+      #   dfs = Daru::DataFrame.from_html("http://www.moneycontrol.com/", match: "Sun Pharma")
+      #   dfs.count
+      #   # => 4
+      #
+      #   dfs.first
+      #   #
+      #   # => <Daru::DataFrame(5x4)>
+      #   #          Company      Price     Change Value (Rs
+      #   #     0 Sun Pharma     502.60     -65.05   2,117.87
+      #   #     1   Reliance    1356.90      19.60     745.10
+      #   #     2 Tech Mahin     379.45     -49.70     650.22
+      #   #     3        ITC     315.85       6.75     621.12
+      #   #     4       HDFC    1598.85      50.95     553.91
+      def from_html path, fields={}
+        Daru::IO.from_html path, fields
       end
 
       # Create DataFrame by specifying rows as an Array of Arrays or Array of
@@ -239,6 +287,48 @@ module Daru
     #   #  b          7          2
     #   #  c          8          3
     #   #  d          9          4
+    #
+    #   df = Daru::DataFrame.new([[1,2,3,4],[6,7,8,9]], name: :bat_man)
+    #
+    #   # =>
+    #   # #<Daru::DataFrame: bat_man (4x2)>
+    #   #             0          1
+    #   #  0          1          6
+    #   #  1          2          7
+    #   #  2          3          8
+    #   #  3          4          9
+    #
+    #   # Dataframe having Index name
+    #
+    #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [6,7,8,9]}, order: [:b, :a],
+    #     index: Daru::Index.new([:a, :b, :c, :d], name: 'idx_name'),
+    #     name: :spider_man)
+    #
+    #   # =>
+    #   # <Daru::DataFrame:80766980 @name = spider_man @size = 4>
+    #   # idx_name            b          a
+    #   #        a          6          1
+    #   #        b          7          2
+    #   #        c          8          3
+    #   #        d          9          4
+    #
+    #
+    #   idx = Daru::Index.new [100, 99, 101, 1, 2], name: "s1"
+    #   => #<Daru::Index(5): s1 {100, 99, 101, 1, 2}>
+    #
+    #   df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
+    #     c: [11,22,33,44,55]},
+    #     order: [:a, :b, :c],
+    #     index: idx)
+    #    # =>
+    #    #<Daru::DataFrame(5x3)>
+    #    #   s1   a   b   c
+    #    #  100   1  11  11
+    #    #   99   2  12  22
+    #    #  101   3  13  33
+    #    #    1   4  14  44
+    #    #    2   5  15  55
+
     def initialize source, opts={} # rubocop:disable Metrics/MethodLength
       vectors, index = opts[:order], opts[:index] # FIXME: just keyword arges after Ruby 2.1
       @data = []
@@ -457,7 +547,7 @@ module Daru
     def dup vectors_to_dup=nil
       vectors_to_dup = @vectors.to_a unless vectors_to_dup
 
-      src = vectors_to_dup.map { |vec| @data[@vectors[vec]].dup }
+      src = vectors_to_dup.map { |vec| @data[@vectors.pos(vec)].dup }
       new_order = Daru::Index.new(vectors_to_dup)
 
       Daru::DataFrame.new src, order: new_order, index: @index.dup, name: @name, clone: true
@@ -679,7 +769,7 @@ module Daru
     # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
     # Default to :vector.
     def map! axis=:vector, &block
-      if axis == :vector || axis == :column
+      if %i[vector column].include?(axis)
         map_vectors!(&block)
       elsif axis == :row
         map_rows!(&block)
@@ -913,7 +1003,7 @@ module Daru
 
     # creates a new vector with the data of a given field which the block returns true
     def filter_vector vec, &block
-      Daru::Vector.new each_row.select(&block).map { |row| row[vec] }
+      Daru::Vector.new(each_row.select(&block).map { |row| row[vec] })
     end
 
     # Iterates over each row and retains it in a new DataFrame if the block returns
@@ -1031,7 +1121,7 @@ module Daru
     alias :vector_missing_values :missing_values_rows
 
     def has_missing_data?
-      !!@data.any? { |vec| vec.include_values?(*Daru::MISSING_VALUES) }
+      @data.any? { |vec| vec.include_values?(*Daru::MISSING_VALUES) }
     end
     alias :flawed? :has_missing_data?
     deprecate :has_missing_data?, :include_values?, 2016, 10
@@ -1119,7 +1209,7 @@ module Daru
     #     row[:a] < 3 and row[:b] == 'b'
     #   end #=> true
     def any? axis=:vector, &block
-      if axis == :vector || axis == :column
+      if %i[vector column].include?(axis)
         @data.any?(&block)
       elsif axis == :row
         each_row do |row|
@@ -1141,7 +1231,7 @@ module Daru
     #     row[:a] < 10
     #   end #=> true
     def all? axis=:vector, &block
-      if axis == :vector || axis == :column
+      if %i[vector column].include?(axis)
         @data.all?(&block)
       elsif axis == :row
         each_row.all?(&block)
@@ -1356,6 +1446,9 @@ module Daru
       end
 
       @vectors = new_index
+      @data.zip(new_index.to_a).each do |vect, name|
+        vect.name = name
+      end
       self
     end
 
@@ -1374,7 +1467,7 @@ module Daru
     #   df.rename_vectors :a => :alpha, :c => :gamma
     #   df.vectors.to_a #=> [:alpha, :b, :gamma]
     def rename_vectors name_map
-      existing_targets = name_map.select { |k,v| k != v }.values & vectors.to_a
+      existing_targets = name_map.reject { |k,v| k == v }.values & vectors.to_a
       delete_vectors(*existing_targets)
 
       new_names = vectors.to_a.map { |v| name_map[v] ? name_map[v] : v }
@@ -1405,19 +1498,16 @@ module Daru
       Daru::DataFrame.new(arry, clone: cln, order: order, index: @index)
     end
 
-    # Generate a summary of this DataFrame with ReportBuilder.
-    def summary(method=:to_text)
-      ReportBuilder.new(no_title: true).add(self).send(method)
-    end
-
-    def report_building(b) # :nodoc: #
-      b.section(name: @name) do |g|
-        g.text "Number of rows: #{nrows}"
-        @vectors.each do |v|
-          g.text "Element:[#{v}]"
-          g.parse_element(self[v])
-        end
+    # Generate a summary of this DataFrame based on individual vectors in the DataFrame
+    # @return [String] String containing the summary of the DataFrame
+    def summary
+      summary = "= #{name}"
+      summary << "\n  Number of rows: #{nrows}"
+      @vectors.each do |v|
+        summary << "\n  Element:[#{v}]\n"
+        summary << self[v].summary(1)
       end
+      summary
     end
 
     # Sorts a dataframe (ascending/descending) in the given pripority sequence of
@@ -1897,14 +1987,13 @@ module Daru
 
     # Pretty print in a nice table format for the command line (irb/pry/iruby)
     def inspect spacing=10, threshold=15
-      row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
       name_part = @name ? ": #{@name} " : ''
 
       "#<#{self.class}#{name_part}(#{nrows}x#{ncols})>\n" +
         Formatters::Table.format(
           each_row.lazy,
           row_headers: row_headers,
-          headers: vectors,
+          headers: headers,
           threshold: threshold,
           spacing: spacing
         )
@@ -1999,7 +2088,31 @@ module Daru
       end
     end
 
+    # returns array of row tuples at given index(s)
+    def access_row_tuples_by_indexs *indexes
+      positions = @index.pos(*indexes)
+
+      return populate_row_for(positions) if positions.is_a? Numeric
+
+      res = []
+      new_rows = @data.map { |vec| vec[*indexes] }
+      indexes.each do |index|
+        tuples = []
+        new_rows.map { |row| tuples += [row[index]] }
+        res << tuples
+      end
+      res
+    end
+
     private
+
+    def headers
+      Daru::Index.new(Array(index.name) + @vectors.to_a)
+    end
+
+    def row_headers
+      index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
+    end
 
     def convert_categorical_vectors names
       names.map do |n|
@@ -2031,7 +2144,7 @@ module Daru
     end
 
     def dispatch_to_axis(axis, method, *args, &block)
-      if axis == :vector || axis == :column
+      if %i[vector column].include?(axis)
         send("#{method}_vector", *args, &block)
       elsif axis == :row
         send("#{method}_row", *args, &block)
@@ -2041,7 +2154,7 @@ module Daru
     end
 
     def dispatch_to_axis_pl(axis, method, *args, &block)
-      if axis == :vector || axis == :column
+      if %i[vector column].include?(axis)
         send("#{method}_vectors", *args, &block)
       elsif axis == :row
         send("#{method}_rows", *args, &block)
@@ -2050,7 +2163,7 @@ module Daru
       end
     end
 
-    AXES = [:row, :vector].freeze
+    AXES = %i[row vector].freeze
 
     def extract_axis names, default=:vector
       if AXES.include?(names.last)
@@ -2062,7 +2175,7 @@ module Daru
 
     def access_vector *names
       if names.first.is_a?(Range)
-        dup(@vectors[names.first])
+        dup(@vectors.subset(names.first))
       elsif @vectors.is_a?(MultiIndex)
         access_vector_multi_index(*names)
       else
@@ -2084,14 +2197,18 @@ module Daru
 
     def access_vector_single_index *names
       if names.count < 2
-        pos = @vectors[names.first]
+        begin
+          pos = @vectors.is_a?(Daru::DateTimeIndex) ? @vectors[names.first] : @vectors.pos(names.first)
+        rescue IndexError
+          raise IndexError, "Specified vector #{names.first} does not exist"
+        end
 
         return @data[pos] if pos.is_a?(Numeric)
 
         names = pos
       end
 
-      new_vectors = names.map { |name| [name, @data[@vectors[name]]] }.to_h
+      new_vectors = names.map { |name| [name, @data[@vectors.pos(name)]] }.to_h
 
       order = names.is_a?(Array) ? Daru::Index.new(names) : names
       Daru::DataFrame.new(new_vectors, order: order,
@@ -2273,8 +2390,10 @@ module Daru
 
       case source.first
       when Array
+        vectors ||= (0..source.size-1).to_a
         initialize_from_array_of_arrays source, vectors, index, opts
       when Vector
+        vectors ||= (0..source.size-1).to_a
         initialize_from_array_of_vectors source, vectors, index, opts
       when Hash
         initialize_from_array_of_hashes source, vectors, index, opts

@@ -73,6 +73,8 @@ module Daru
         query = String.try_convert(query) or
           raise ArgumentError, "Query must be a string, #{query.class} received"
 
+        db = attempt_sqlite3_connection(db) if db.is_a?(String) && Pathname(db).exist?
+
         case db
         when DBI::DatabaseHandle
           DbiAdapter.new(db, query)
@@ -81,6 +83,14 @@ module Daru
         else
           raise ArgumentError, "Unknown database adapter type #{db.class}"
         end
+      end
+
+      def attempt_sqlite3_connection(db)
+        DBI.connect("DBI:SQLite3:#{db}")
+      rescue SQLite3::NotADatabaseException
+        raise ArgumentError, "Expected #{db} to point to a SQLite3 database"
+      rescue NameError
+        raise NameError, "In order to establish a connection to #{db}, please require 'dbi'"
       end
     end
   end

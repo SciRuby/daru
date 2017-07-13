@@ -10,7 +10,7 @@ describe Daru::Vector, 'plotting category vector with gruff' do
       expect(plot).to receive :data
       dv.plot type: :bar
     end
-    
+
     it 'plots bar graph with block' do
       expect(plot).to receive :labels=
       expect(plot).to receive :data
@@ -18,7 +18,7 @@ describe Daru::Vector, 'plotting category vector with gruff' do
       dv.plot(type: :bar) { |p| p.title = 'hello' }
     end
   end
-  
+
   context 'pie' do
     let(:plot) { instance_double 'Gruff::Pie' }
     before { allow(Gruff::Pie).to receive(:new).and_return(plot) }
@@ -27,7 +27,7 @@ describe Daru::Vector, 'plotting category vector with gruff' do
       dv.plot type: :pie
     end
   end
-  
+
   context 'sidebar' do
     let(:plot) { instance_double 'Gruff::SideBar' }
     before { allow(Gruff::SideBar).to receive(:new).and_return(plot) }

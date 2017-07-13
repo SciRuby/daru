@@ -38,7 +38,7 @@ module Daru
 
           diagram =
             case
-            when !([:scatter, :bar, :line, :histogram] & types).empty?
+            when !(%i[scatter bar line histogram] & types).empty?
               plot_regular_diagrams plot, opts
             when types.include?(:box)
               plot_box_diagram plot
@@ -48,7 +48,7 @@ module Daru
 
           yield(plot, diagram) if block_given?
 
-          plot.show
+          plot
         end
 
         def plot_with_category opts
@@ -66,8 +66,8 @@ module Daru
 
             plot.legend true
             yield plot, *diagrams if block_given?
-            plot.show
 
+            plot
           else
             raise ArgumentError, "Unsupported type #{type}"
           end
@@ -102,7 +102,7 @@ module Daru
           end
         end
 
-        SHAPES = %w(circle triangle-up diamond square triangle-down cross).freeze
+        SHAPES = %w[circle triangle-up diamond square triangle-down cross].freeze
         def get_shape type
           validate_type type, :scatter
           SHAPES.cycle

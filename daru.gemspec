@@ -52,7 +52,6 @@ EOF
 
   spec.add_runtime_dependency 'backports'
 
-  spec.add_development_dependency 'reportbuilder', '~> 1.4'
   spec.add_development_dependency 'spreadsheet', '~> 1.1.1'
   spec.add_development_dependency 'bundler', '~> 1.10'
   spec.add_development_dependency 'rake', '~>10.5'
@@ -65,15 +64,17 @@ EOF
   spec.add_development_dependency 'nyaplot', '~> 0.1.5'
   spec.add_development_dependency 'nmatrix', '~> 0.2.1'
   spec.add_development_dependency 'distribution', '~> 0.7'
-  spec.add_development_dependency 'rb-gsl', '~>1.16'
+  spec.add_development_dependency 'gsl', '~>2.1.0.2'
   spec.add_development_dependency 'dbd-sqlite3'
   spec.add_development_dependency 'dbi'
   spec.add_development_dependency 'activerecord', '~> 4.0'
+  spec.add_development_dependency 'mechanize'
   spec.add_development_dependency 'sqlite3'
-  spec.add_development_dependency 'rubocop', '>= 0.40.0'
+  spec.add_development_dependency 'rubocop', '~> 0.49.0'
   spec.add_development_dependency 'ruby-prof'
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'gruff'
+  spec.add_development_dependency 'webmock'
   if RUBY_VERSION < '2.1.0'
     spec.add_development_dependency 'nokogiri', '<= 1.6.8.1'
   else

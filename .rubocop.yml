@@ -2,6 +2,10 @@ AllCops:
   Include:
     - 'lib/**/*'
   Exclude:
+    - 'daru.gemspec'
+    - 'Rakefile'
+    - 'Gemfile'
+    - 'Guardfile'
     - '**/*.erb'
     - 'spec/*'
     - 'spec/**/*'
@@ -12,7 +16,7 @@ AllCops:
   TargetRubyVersion: 2.0
 
 # Preferred codebase style ---------------------------------------------
-Style/ExtraSpacing:
+Layout/ExtraSpacing:
   AllowForAlignment: true
 
 Style/FormatString:
@@ -21,16 +25,16 @@ Style/FormatString:
 Style/AndOr:
   EnforcedStyle: conditionals
 
-Style/SpaceAroundEqualsInParameterDefault:
+Layout/SpaceAroundEqualsInParameterDefault:
   EnforcedStyle: no_space
 
-Style/SpaceInsideBlockBraces:
+Layout/SpaceInsideBlockBraces:
   EnforcedStyle: space
 
-Style/SpaceInsideHashLiteralBraces:
+Layout/SpaceInsideHashLiteralBraces:
   EnforcedStyle: no_space
 
-Style/AlignParameters:
+Layout/AlignParameters:
   EnforcedStyle: with_fixed_indentation
 
 Style/EmptyElse:
@@ -57,10 +61,10 @@ Style/SingleLineBlockParams:
 Style/PerlBackrefs:
   Enabled: false
 
-Style/SpaceAfterComma:
+Layout/SpaceAfterComma:
   Enabled: false
 
-Style/SpaceAroundOperators:
+Layout/SpaceAroundOperators:
   Enabled: false
 
 Style/EmptyCaseCondition:
@@ -68,6 +72,15 @@ Style/EmptyCaseCondition:
 
 Style/MultilineBlockChain:
   Enabled: false
+
+# See https://github.com/bbatsov/rubocop/issues/4429
+Style/YodaCondition:
+  Enabled: false
+
+Style/PercentLiteralDelimiters:
+  PreferredDelimiters:
+    '%i': '[]'
+    '%w': '[]'
 
 # Neither of prefered styles are good enough :(
 Style/BlockDelimiters:
@@ -121,3 +134,6 @@ Style/PredicateName:
     - 'lib/daru/dataframe.rb'
     - 'lib/daru/monkeys.rb'
     - 'lib/daru/vector.rb'
+
+Security/MarshalLoad:
+  Enabled: false

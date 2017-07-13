@@ -6,6 +6,7 @@ rvm:
   - '2.1'
   - '2.2'
   - '2.3.0'
+  - '2.4.0'
 
 matrix:
   fast_finish:
@@ -17,9 +18,11 @@ script:
 
 install:
   - gem install bundler
+  - gem install rainbow -v '2.2.1'
   - bundle install
 
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y libgsl0-dev r-base r-base-dev
   - sudo Rscript -e "install.packages(c('Rserve','irr'),,'http://cran.us.r-project.org')"
+  - sudo apt-get install libmagickwand-dev imagemagick

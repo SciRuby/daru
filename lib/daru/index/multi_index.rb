@@ -1,5 +1,5 @@
 module Daru
-  class MultiIndex < Index
+  class MultiIndex < Index # rubocop:disable Metrics/ClassLength
     def each(&block)
       to_a.each(&block)
     end
@@ -14,6 +14,68 @@ module Daru
       @levels.map(&:keys)
     end
 
+    # names and levels should be of same size. If size of Array `name` is less
+    # or greater than size of array `levels` then it raises `SizeError`.
+    # If user don't want to put name for particular level then user must put
+    # empty string in that index of Array `name`.
+    # For example there is multi_index of 3 levels and user don't want to name
+    # level 0, then do mulit_index.name = ['', 'level1_name1', 'level2_name']
+    #
+    # @example
+    #
+    #   # set the name during initialization
+    #
+    #   mi = Daru::MultiIndex.new(
+    #       levels: [[:a,:b,:c], [:one, :two]],
+    #       labels: [[0,0,1,1,2,2], [0,1,0,1,0,1]], name: ['s1', 's2'])
+    #
+    #   # =>
+    #   # <Daru::MultiIndex(6x2)>
+    #   #   s1  s2
+    #   #    a one
+    #   #      two
+    #   #    b one
+    #   #      two
+    #   #    c one
+    #   #      two
+    #
+    #   # set new name
+    #
+    #   mi.name = ['k1', 'k2']
+    #   => ["k1", "k2"]
+    #
+    #   mi
+    #   =>
+    #   #   #<Daru::MultiIndex(6x2)>
+    #   #   k1  k2
+    #   #    a one
+    #   #      two
+    #   #    b one
+    #   #      two
+    #   #    c one
+    #   #      two
+    #
+    #   # access the name
+    #
+    #   mi.name
+    #   => ["k1", "k2"]
+    #
+    #   # If you don't want to name level 0
+    #
+    #   mi.name = ['', 'k2']
+    #   => ["", "k2"]
+    #
+    #   mi
+    #   =>
+    #   #<Daru::MultiIndex(6x2)>
+    #   #       k2
+    #   #    a one
+    #   #      two
+    #   #    b one
+    #   #      two
+    #   #    c one
+    #   #      two
+    #
     def initialize opts={}
       labels = opts[:labels]
       levels = opts[:levels]
@@ -24,6 +86,12 @@ module Daru
 
       @labels = labels
       @levels = levels.map { |e| e.map.with_index.to_h }
+      self.name = opts[:name] unless opts[:name].nil?
+    end
+
+    def name=(names)
+      validate_name names, @labels
+      @name = names
     end
 
     def incorrect_fields?(_labels, levels)
@@ -171,8 +239,20 @@ module Daru
       end
     end
 
+    # Array `name` must have same length as levels and labels.
+    def validate_name names, levels
+      error_msg = "'names' and 'levels' should be of same size. Size of the "\
+      "'name' array is #{names.size} and size of the MultiIndex 'levels' and "\
+      "'labels' is #{labels.size}."
+      suggestion_msg = "If you don\'t want to set name for particular level " \
+      "(say level 'i') then put empty string on index 'i' of the 'name' Array."
+
+      raise SizeError, error_msg if names.size > levels.size
+      raise SizeError, [error_msg, suggestion_msg].join("\n") if names.size < levels.size
+    end
+
     private :find_all_indexes, :multi_index_from_multiple_selections,
-      :retrieve_from_range, :retrieve_from_tuples
+      :retrieve_from_range, :retrieve_from_tuples, :validate_name
 
     def key index
       raise ArgumentError, "Key #{index} is too large" if index >= @labels[0].size
@@ -232,7 +312,7 @@ module Daru
 
     def inspect threshold=20
       "#<Daru::MultiIndex(#{size}x#{width})>\n" +
-        Formatters::Table.format([], row_headers: sparse_tuples, threshold: threshold)
+        Formatters::Table.format([], headers: @name, row_headers: sparse_tuples, threshold: threshold)
     end
 
     def to_html

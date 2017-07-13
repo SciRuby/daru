@@ -26,8 +26,7 @@ module Daru
           diagram = create_diagram plot, options[:type], x_axis
 
           yield plot, diagram if block_given?
-
-          plot.show
+          plot
         end
 
         private

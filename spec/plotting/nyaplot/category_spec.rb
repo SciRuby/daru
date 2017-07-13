@@ -7,7 +7,7 @@ describe Daru::Vector, 'plotting category' do
     Daru::Vector.new ['III']*10 + ['II']*5 + ['I']*5,
       type: :category,
       categories: ['I', 'II', 'III']
-  end  
+  end
   before do
     Daru.plotting_library = :nyaplot
     allow(Nyaplot::Plot).to receive(:new).and_return(plot)
@@ -17,7 +17,6 @@ describe Daru::Vector, 'plotting category' do
       expect(plot).to receive(:add).with(:bar, ['I', 'II', 'III'], [5, 5, 10])
       expect(plot).to receive :x_label
       expect(plot).to receive :y_label
-      expect(plot).to receive(:show)
       dv.plot(type: :bar) do |p|
         p.x_label 'Categories'
         p.y_label 'Frequency'
@@ -26,23 +25,20 @@ describe Daru::Vector, 'plotting category' do
 
     it 'plots bar graph without taking a block' do
       expect(plot).to receive(:add).with(:bar, ["I", "II", "III"], [5, 5, 10])
-      expect(plot).to receive(:show)
-      dv.plot(type: :bar)
+      expect(dv.plot(type: :bar)).to eq plot
     end
 
     it 'plots bar graph with percentage' do
       expect(plot).to receive(:add).with(:bar, ["I", "II", "III"], [25, 25, 50])
       expect(plot).to receive(:yrange).with [0, 100]
-      expect(plot).to receive(:show)
-      dv.plot(type: :bar, method: :percentage)
+      expect(dv.plot(type: :bar, method: :percentage)).to eq plot
     end
 
     it 'plots bar graph with fraction' do
       expect(plot).to receive(:add).with(:bar, ["I", "II", "III"], [0.25, 0.25, 0.50])
       expect(plot).to receive(:yrange).with [0, 1]
-      expect(plot).to receive(:show)
-      dv.plot(type: :bar, method: :fraction)
-    end    
+      expect(dv.plot(type: :bar, method: :fraction)).to eq plot
+    end
   end
 
   context 'other type' do
