@@ -1891,7 +1891,7 @@ module Daru
       ERB.new(File.read(table_thead_path).strip).result(binding)
     end
 
-    def to_html_tbody(threshold)
+    def to_html_tbody(threshold=30)
       table_tbody_path = File.expand_path('../iruby/templates/dataframe_tbody.html.erb', __FILE__)
       ERB.new(File.read(table_tbody_path).strip).result(binding)
     end
