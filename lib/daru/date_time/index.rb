@@ -226,7 +226,7 @@ module Daru
       to_a.each(&block)
     end
 
-    attr_reader :frequency, :offset, :periods
+    attr_reader :frequency, :offset, :periods, :keys
 
     # Create a DateTimeIndex with or without a frequency in data. The constructor
     # should be used for creating DateTimeIndex by directly passing in DateTime
