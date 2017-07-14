@@ -84,6 +84,11 @@ describe Daru::Vector do
           expect(dv.index.to_a).to eq(['a', 'b', :r, 0])
         end
 
+        it "initializes array with nils with dtype NMatrix" do
+          dv = Daru::Vector.new [2, nil], dtype: :nmatrix
+          expect(dv.to_a).to eq([2, nil])
+          expect(dv.index.to_a).to eq([0, 1])
+        end
       end
 
       context "#reorder!" do
