@@ -1481,7 +1481,7 @@ module Daru
 
     # Note: To maintain sanity, this _MUST_ be the _ONLY_ place in daru where the
     # @dtype variable is set and the underlying data type of vector changed.
-    def cast_vector_to dtype, source=nil, nm_dtype=nil
+    def cast_vector_to dtype, source=nil, nm_dtype=nil # rubocop:disable Style/CyclomaticComplexity
       source = @data.to_a if source.nil?
 
       new_vector =
