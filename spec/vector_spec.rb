@@ -998,6 +998,14 @@ describe Daru::Vector do
         its(:to_json) { is_expected.to eq(vector.to_h.to_json) }
       end
 
+      context '#to_s' do
+        subject(:vector) do
+          Daru::Vector.new ["a", "b"], name: "Test", index: [1, 2]
+        end
+
+        its(:to_s) { is_expected.to eq "#<Daru::Vector: Test(2)>"}
+      end
+
       context "#uniq" do
         before do
           @v = Daru::Vector.new [1, 2, 2, 2.0, 3, 3.0], index:[:a, :b, :c, :d, :e, :f]
