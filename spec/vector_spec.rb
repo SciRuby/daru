@@ -998,7 +998,7 @@ describe Daru::Vector do
         its(:to_json) { is_expected.to eq(vector.to_h.to_json) }
       end
 
-      context '#to_s' do
+      context "#to_s" do
         subject(:vector) do
           Daru::Vector.new ["a", "b"], name: "Test", index: [1, 2]
         end
