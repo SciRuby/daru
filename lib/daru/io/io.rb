@@ -201,6 +201,7 @@ module Daru
 
       def from_csv_prepare_opts opts
         opts[:col_sep]           ||= ','
+        opts[:skip_blanks]       ||= true
         opts[:converters]        ||= :numeric
 
         daru_options = opts.keys.each_with_object({}) do |k, hash|
@@ -222,7 +223,7 @@ module Daru
           ::CSV
           .parse(open(path), opts)
           .tap { |c| yield c if block_given? }
-          .to_a.reject(&:empty?)
+          .to_a
         headers       = ArrayHelper.recode_repeated(csv_as_arrays.shift)
         csv_as_arrays = csv_as_arrays.transpose
         headers.each_with_index.map { |h, i| [h, csv_as_arrays[i]] }.to_h
