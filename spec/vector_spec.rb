@@ -411,6 +411,7 @@ describe Daru::Vector do
 
           context "Splat .at on DateTime index" do
             subject { dv_dt.at(*[1,2]) }
+
             it { is_expected.to be_a Daru::Vector }
             its(:size) { is_expected.to eq 2 }
             its(:to_a) { is_expected.to eq ['b', 'c'] }
