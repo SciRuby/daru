@@ -916,7 +916,7 @@ module Daru
     end
 
     def to_s
-      to_html
+      "#<#{self.class}#{': ' + @name if @name}(#{size})#{':category' if category?}>"
     end
 
     # Create a summary of the Vector
@@ -985,7 +985,7 @@ module Daru
     def inspect spacing=20, threshold=15
       row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
 
-      "#<#{self.class}(#{size})#{':cataegory' if category?}>\n" +
+      "#<#{self.class}(#{size})#{':category' if category?}>\n" +
         Formatters::Table.format(
           to_a.lazy.map { |v| [v] },
           headers: @name && [@name],
