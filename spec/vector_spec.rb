@@ -999,11 +999,18 @@ describe Daru::Vector do
       end
 
       context "#to_s" do
-        subject(:vector) do
-          Daru::Vector.new ["a", "b"], name: "Test", index: [1, 2]
+        before do
+          @v = Daru::Vector.new ["a", "b"], index: [1, 2]
         end
 
-        its(:to_s) { is_expected.to eq "#<Daru::Vector: Test(2)>"}
+        it 'produces a class, size description' do
+          expect(@v.to_s).to eq("#<Daru::Vector(2)>")
+        end
+
+        it 'produces a class, name, size description' do
+          @v.name = "Test"
+          expect(@v.to_s).to eq("#<Daru::Vector: Test(2)>")
+        end
       end
 
       context "#uniq" do

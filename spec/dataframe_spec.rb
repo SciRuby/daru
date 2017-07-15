@@ -3832,6 +3832,10 @@ describe Daru::DataFrame do
   end
 
   context '#to_s' do
+    it 'produces a class, size description' do
+      expect(@data_frame.to_s).to eq "#<Daru::DataFrame(5x3)>"
+    end
+
     it 'produces a class, name, size description' do
       @data_frame.name = "Test"
       expect(@data_frame.to_s).to eq "#<Daru::DataFrame: Test(5x3)>"
