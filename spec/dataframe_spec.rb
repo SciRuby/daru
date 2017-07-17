@@ -1581,6 +1581,13 @@ describe Daru::DataFrame do
     it 'has synonym' do
       expect(@data_frame.first(2)).to eq(@data_frame.head(2))
     end
+
+    it 'works on DateTime indexes' do
+      idx = Daru::DateTimeIndex.new(['2017-01-01', '2017-02-01', '2017-03-01'])
+      df = Daru::DataFrame.new({col1: ['a', 'b', 'c']}, index: idx)
+      first = Daru::DataFrame.new({col1: ['a']}, index: Daru::DateTimeIndex.new(['2017-01-01']))
+      expect(df.head(1)).to eq(first)
+    end
   end
 
   context "#last" do
