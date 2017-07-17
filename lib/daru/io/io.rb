@@ -201,6 +201,7 @@ module Daru
 
       def from_csv_prepare_opts opts
         opts[:col_sep]           ||= ','
+        opts[:skip_blanks]       ||= true
         opts[:converters]        ||= :numeric
 
         daru_options = opts.keys.each_with_object({}) do |k, hash|
