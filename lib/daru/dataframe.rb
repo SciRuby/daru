@@ -1880,7 +1880,7 @@ module Daru
     end
 
     def to_s
-      to_html
+      "#<#{self.class}#{': ' + @name if @name}(#{nrows}x#{ncols})>"
     end
 
     # Method for updating the metadata (i.e. missing value positions) of the
