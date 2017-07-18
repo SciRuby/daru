@@ -1,0 +1,21 @@
+<thead>
+  <% if @vectors.is_a? MultiIndex %>
+    <% Daru::IRuby::Helpers.tuples_with_colspans(@vectors).each_with_index do |tuple, idx| %>
+      <tr>
+        <% if idx.zero? %>
+          <th colspan="<%= index.width %>" rowspan="<%= @vectors.width %>"></th>
+        <% end %>
+        <% tuple.each do |idx, span| %>
+          <th colspan="<%= span %>"><%= idx %></th>
+        <% end %>
+      </tr>
+    <% end %>
+  <% else %>
+    <tr>
+      <th colspan="<%= index.width %>"></th>
+      <% @vectors.each do |vector| %>
+        <th><%=vector%></th>
+      <% end %>
+    </tr>
+  <% end %>
+</thead>

@@ -1,0 +1,17 @@
+<tbody>
+  <% @index.each_with_index.first(threshold).each do |index, pos| %>
+    <tr>
+      <td><%= index %></td>
+      <td><%= self.at(pos) %></td>
+    </tr>
+  <% end %>
+
+  <% if size > threshold %>
+    <% last_index = @index.size-1 %>
+    <tr><td>...</td><td>...</td></tr>
+    <tr>
+      <td><%= last_index %></td>
+      <td><%= self.at last_index %></td>
+    </tr>
+  <% end %>
+</tbody>

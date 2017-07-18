@@ -1,0 +1,26 @@
+<tbody>
+  <% Daru::IRuby::Helpers.tuples_with_rowspans(@index).first(threshold).zip(to_a).each do |tuple, value| %>
+    <tr>
+      <% tuple.each do |idx, span| %>
+        <th rowspan="<%= span %>"><%= idx %></th>
+      <% end %>
+      <td><%= value %></td>
+    </tr>
+  <% end %>
+
+  <% if size > threshold %>
+    <% last_index = @index.to_a.last %>
+    <tr>
+      <% last_index.size.times do %>
+        <th>...</th>
+      <% end %>
+      <td>...</td>
+    </tr>
+    <tr>
+      <% last_index.each do |idx| %>
+        <th><%= idx %></td>
+      <% end %>
+      <td><%= self[last_index] %></td>
+    </tr>
+  <% end %>
+</tbody>
