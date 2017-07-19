@@ -634,7 +634,7 @@ module Daru
     #     b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   8],
     #     c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
     #   }, index: 11..18)
-    #   df
+    #   df.replace_values nil, Float::NAN
     #   # => #<Daru::DataFrame(8x3)>
     #   #       a   b   c
     #   #   11   1   a   a
