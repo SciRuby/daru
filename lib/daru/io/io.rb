@@ -278,9 +278,9 @@ module Daru
 
       CSV::Converters[:boolean_converter] = lambda do |f, _|
         case f.downcase.strip
-        when "true"
+        when 'true'
           true
-        when "false"
+        when 'false'
           false
         else
           f
