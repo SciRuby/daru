@@ -1515,7 +1515,7 @@ module Daru
         else raise ArgumentError, "Unknown dtype #{dtype}"
         end
 
-      @dtype = dtype || :array
+      @dtype = dtype
       new_vector
     end
 
