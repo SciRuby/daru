@@ -46,6 +46,11 @@ describe Daru::IO do
         expect(df.nrows).to eq(13)
       end
 
+      it "uses the custom boolean converter correctly" do
+        df = Daru::DataFrame.from_csv 'spec/fixtures/boolean_converter_test.csv', converters: [:boolean_converter]
+        expect(df['Domestic'].to_a).to all be_boolean
+      end
+
       it "checks for equal parsing of local CSV files and remote CSV files" do
         %w[matrix_test repeated_fields scientific_notation sales-funnel].each do |file|
           df_local  = Daru::DataFrame.from_csv("spec/fixtures/#{file}.csv")

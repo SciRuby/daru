@@ -275,6 +275,17 @@ module Daru
           order: table[:order],
           name: table[:name]
       end
+
+      CSV::Converters[:boolean_converter] = lambda do |f, _|
+        case f.downcase.strip
+        when "true"
+          true
+        when "false"
+          false
+        else
+          f
+        end
+      end
     end
   end
 end
