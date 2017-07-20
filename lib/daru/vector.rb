@@ -1481,22 +1481,19 @@ module Daru
 
     # Note: To maintain sanity, this _MUST_ be the _ONLY_ place in daru where the
     # @dtype variable is set and the underlying data type of vector changed.
-    def cast_vector_to dtype, source=nil, nm_dtype=nil # rubocop:disable Style/CyclomaticComplexity
+    def cast_vector_to dtype, source=nil, nm_dtype=nil
       source = @data.to_a if source.nil?
 
       new_vector =
         case dtype
         when :array   then Daru::Accessors::ArrayWrapper.new(source, self)
-        when :nmatrix then
-          # To avoid arrays with nils throwing TypeError for :int32 default nm_dtype
-          nm_dtype = :object if nm_dtype.nil? && source.any?(&:nil?)
-          Daru::Accessors::NMatrixWrapper.new(source, self, nm_dtype)
+        when :nmatrix then Daru::Accessors::NMatrixWrapper.new(source, self, nm_dtype)
         when :gsl then Daru::Accessors::GSLWrapper.new(source, self)
         when :mdarray then raise NotImplementedError, 'MDArray not yet supported.'
         else raise ArgumentError, "Unknown dtype #{dtype}"
         end
 
-      @dtype = dtype || :array
+      @dtype = dtype
       new_vector
     end
 
