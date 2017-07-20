@@ -25,7 +25,7 @@ if Daru.has_nmatrix?
         attr_reader :size, :data, :nm_dtype
 
         def initialize vector, context, nm_dtype=:int32
-          # To avoid arrays with nils throwing TypeError for :int32 default nm_dtype
+          # To avoid arrays with nils throwing TypeError for nil nm_dtype
           nm_dtype = :object if nm_dtype.nil? && vector.any?(&:nil?)
           @size = vector.size
           @data = NMatrix.new [@size*2], vector.to_a, dtype: nm_dtype
