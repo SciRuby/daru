@@ -217,8 +217,8 @@ module Daru
         converters.flat_map do |c|
           if ::CSV::Converters[c]
             ::CSV::Converters[c]
-          elsif Daru::IO::CSV::Converters[c]
-            Daru::IO::CSV::Converters[c]
+          elsif Daru::IO::CSV::CONVERTERS[c]
+            Daru::IO::CSV::CONVERTERS[c]
           else
             c
           end
@@ -290,7 +290,6 @@ module Daru
           order: table[:order],
           name: table[:name]
       end
-
     end
   end
 end

@@ -1,8 +1,7 @@
 module Daru
   module IO
     module CSV
-
-      Converters =  {
+      CONVERTERS = {
         boolean: lambda { |f, _|
           case f.downcase.strip
           when 'true'
@@ -13,8 +12,7 @@ module Daru
             f
           end
         }
-      }
-
+      }.freeze
     end
   end
 end
