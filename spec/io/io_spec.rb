@@ -47,7 +47,7 @@ describe Daru::IO do
       end
 
       it "uses the custom boolean converter correctly" do
-        df = Daru::DataFrame.from_csv 'spec/fixtures/boolean_converter_test.csv', converters: [:boolean_converter]
+        df = Daru::DataFrame.from_csv 'spec/fixtures/boolean_converter_test.csv', converters: [:boolean]
         expect(df['Domestic'].to_a).to all be_boolean
       end
 
