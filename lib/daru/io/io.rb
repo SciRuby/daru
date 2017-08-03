@@ -1,4 +1,5 @@
 module Daru
+  require_relative 'csv/converters.rb'
   module IOHelpers
     class << self
       def process_row(row,empty)
@@ -202,12 +203,26 @@ module Daru
       def from_csv_prepare_opts opts
         opts[:col_sep]           ||= ','
         opts[:skip_blanks]       ||= true
-        opts[:converters]        ||= :numeric
+        opts[:converters]        ||= [:numeric]
+
+        opts[:converters] = from_csv_prepare_converters(opts[:converters])
 
         daru_options = opts.keys.each_with_object({}) do |k, hash|
           hash[k] = opts.delete(k) if DARU_OPT_KEYS.include?(k)
         end
         [daru_options, opts]
+      end
+
+      def from_csv_prepare_converters(converters)
+        converters.flat_map do |c|
+          if ::CSV::Converters[c]
+            ::CSV::Converters[c]
+          elsif Daru::IO::CSV::CONVERTERS[c]
+            Daru::IO::CSV::CONVERTERS[c]
+          else
+            c
+          end
+        end
       end
 
       def from_csv_hash_with_headers(path, opts)
