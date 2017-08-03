@@ -7,12 +7,12 @@ module Daru
           size = opts[:size] || 500
           x = extract_x_vector opts[:x]
           y = extract_y_vectors opts[:y]
-          if opts[:categorized]
-            return plot_with_category(size, type, x, y, opts[:categorized])
-          end
+          type = process_type type, opts[:categorized]
           case type
           when :line, :bar, :scatter
             plot = send("#{type}_plot", size, x, y)
+          when :scatter_categorized
+            plot = scatter_with_category(size, x, y, opts[:categorized])
           # TODO: hist, box
           # It turns out hist and box are not supported in Gruff yet
           else
@@ -23,6 +23,10 @@ module Daru
         end
 
         private
+
+        def process_type type, categorized
+          type == :scatter && categorized ? :scatter_categorized : type
+        end
 
         def line_plot size, x, y
           plot = Gruff::Line.new size
@@ -50,21 +54,15 @@ module Daru
           plot
         end
 
-        def plot_with_category size, type, x, y, opts
+        def scatter_with_category size, x, y, opts
           x = Daru::Vector.new x
           y = y.first
-          case type
-          when :scatter
-            plot = Gruff::Scatter.new size
-            cat_dv = self[opts[:by]]
-            cat_dv.categories.each do |cat|
-              bools = cat_dv.eq cat
-              plot.data cat, x.where(bools).to_a, y.where(bools).to_a
-            end
-          else
-            raise ArgumentError, "Type #{type} is not supported."
+          plot = Gruff::Scatter.new size
+          cat_dv = self[opts[:by]]
+          cat_dv.categories.each do |cat|
+            bools = cat_dv.eq cat
+            plot.data cat, x.where(bools).to_a, y.where(bools).to_a
           end
-          yield plot if block_given?
           plot
         end
 

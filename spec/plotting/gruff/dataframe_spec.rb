@@ -80,5 +80,15 @@ describe Daru::DataFrame, 'dataframe category plotting with gruff' do
       expect(plot).to receive(:data).exactly(2).times
       df.plot type: :scatter, x: :a, y: :b, categorized: { by: :c }
     end
+
+    it 'plots with axes description' do
+      expect(plot).to receive(:data).exactly(2).times
+      expect(plot).to receive(:x_axis_label=).exactly(1).times
+      expect(plot).to receive(:y_axis_label=).exactly(1).times
+      df.plot type: :scatter, x: :a, y: :b, categorized: { by: :c } do |gruff_plot|
+        gruff_plot.x_axis_label = 'A data'
+        gruff_plot.y_axis_label = 'B data'
+      end
+    end
   end
 end
