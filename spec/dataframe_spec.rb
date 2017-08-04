@@ -530,7 +530,7 @@ describe Daru::DataFrame do
         index: [:one, :two, :three, :four, :five], name: :d))
       end
 
-      it "assigns updates vector with default length if given just a value" do
+      it "updates vector with default length if given just a value" do
         @df[:c] = 1.0
         expect(@df[:c]).to eq(Daru::Vector.new([1.0, 1.0, 1.0, 1.0, 1.0],
         index: [:one, :two, :three, :four, :five], name: :c))
