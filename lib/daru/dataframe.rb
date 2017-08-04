@@ -2310,7 +2310,8 @@ module Daru
     end
 
     def prepare_vector_for_insert name, vector
-      if vector.is_a?(Daru::Vector)
+      case vector
+      when Daru::Vector
         # so that index-by-index assignment is avoided when possible.
         return vector.dup if vector.index == @index
 
@@ -2319,14 +2320,22 @@ module Daru
             v[idx] = vector.index.include?(idx) ? vector[idx] : nil
           end
         }
-      elsif vector.is_a?(Array) || vector.is_a?(Range)
-        if @size != vector.size
-          raise "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}"
-        end
-        Daru::Vector.new(vector, name: coerce_name(name), index: @index)
+      when Array, Range
+        prepare_enum_for_insert name, vector
       else
-        Daru::Vector.new(Array(vector) * @size, name: coerce_name(name), index: @index)
+        prepare_value_for_insert name, vector
       end
+    end
+
+    def prepare_enum_for_insert name, enum
+      if @size != enum.size
+        raise "Specified vector of length #{enum.size} cannot be inserted in DataFrame of size #{@size}"
+      end
+      Daru::Vector.new(enum, name: coerce_name(name), index: @index)
+    end
+
+    def prepare_value_for_insert name, value
+      Daru::Vector.new(Array(value) * @size, name: coerce_name(name), index: @index)
     end
 
     def insert_or_modify_row indexes, vector
