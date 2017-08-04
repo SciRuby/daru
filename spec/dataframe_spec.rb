@@ -524,6 +524,18 @@ describe Daru::DataFrame do
           index: [:one, :two, :three, :four, :five]))
       end
 
+      it "assigns new vector with default length if given just a value" do
+        @df[:d] = 1.0
+        expect(@df[:d]).to eq(Daru::Vector.new([1.0, 1.0, 1.0, 1.0, 1.0],
+        index: [:one, :two, :three, :four, :five], name: :d))
+      end
+
+      it "assigns updates vector with default length if given just a value" do
+        @df[:c] = 1.0
+        expect(@df[:c]).to eq(Daru::Vector.new([1.0, 1.0, 1.0, 1.0, 1.0],
+        index: [:one, :two, :three, :four, :five], name: :c))
+      end
+
       it "appends an Array as a Daru::Vector" do
         @df[:d] = [69,99,108,85,49]
 

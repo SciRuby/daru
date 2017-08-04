@@ -2319,14 +2319,13 @@ module Daru
             v[idx] = vector.index.include?(idx) ? vector[idx] : nil
           end
         }
-      else
-        # FIXME: No spec checks this case... And SizeError is not a thing - zverok, 2016-05-08
+      elsif vector.is_a?(Array) || vector.is_a?(Range)
         if @size != vector.size
-          raise SizeError,
-            "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}"
+          raise "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}"
         end
-
         Daru::Vector.new(vector, name: coerce_name(name), index: @index)
+      else
+        Daru::Vector.new(Array(vector) * @size, name: coerce_name(name), index: @index)
       end
     end
 
