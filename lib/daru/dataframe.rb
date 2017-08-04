@@ -2262,7 +2262,7 @@ module Daru
       if @index.empty?
         insert_vector_in_empty name, vector
       else
-        vec = prepare_vector_for_insert name, vector
+        vec = prepare_for_insert name, vector
 
         assign_or_add_vector name, vec
       end
@@ -2309,22 +2309,25 @@ module Daru
       @data.map! { |v| v.empty? ? v.reindex(@index) : v }
     end
 
-    def prepare_vector_for_insert name, vector
-      case vector
+    def prepare_for_insert name, arg
+      case arg
       when Daru::Vector
-        # so that index-by-index assignment is avoided when possible.
-        return vector.dup if vector.index == @index
-
-        Daru::Vector.new([], name: coerce_name(name), index: @index).tap { |v|
-          @index.each do |idx|
-            v[idx] = vector.index.include?(idx) ? vector[idx] : nil
-          end
-        }
+        prepare_vector_for_insert name, arg
       when Array, Range
-        prepare_enum_for_insert name, vector
+        prepare_enum_for_insert name, arg
       else
-        prepare_value_for_insert name, vector
+        prepare_value_for_insert name, arg
       end
+    end
+
+    def prepare_vector_for_insert name, vector
+      # so that index-by-index assignment is avoided when possible.
+      return vector.dup if vector.index == @index
+      Daru::Vector.new([], name: coerce_name(name), index: @index).tap { |v|
+        @index.each do |idx|
+          v[idx] = vector.index.include?(idx) ? vector[idx] : nil
+        end
+      }
     end
 
     def prepare_enum_for_insert name, enum
