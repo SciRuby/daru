@@ -1,3 +1,49 @@
+# 0.1.6 (04 August 2017)
+* Major Enhancements
+  - Add support for reading HTML tables into DataFrames (@athityakumar)
+  - Add support for importing remote CSVs (@athityakumar)
+  - Allow named indexes (@Shekharrajak)
+  - DataFrame GroupBy returns MultiIndex DataFrame (@Shekharrajak)
+  - Add new functions to Vector: max, min, index_of_max, index_of_min, max_by, min_by, index_of_max_by, index_of_min_by (@athityakumar)
+  - Add summary to DataFrame and Vector without reportbuilder (@ananyo2012)
+  - Add support for missing data for where clause (@athityakumar)
+
+* Minor Enhancements
+  - Add a boolean converter to the CSV importer (@baarkerlounger)
+  - Fix documentation of replace_values method (@kojix2)
+  - Improve HTML table code of DataFrame and Vector (@Shekharrajak  )
+  - Support CSV files with empty rows (@baarkerlounger)
+  - Better DataFrame and Vector to_s methods (@baarkerlounger)
+  - Add support for histogram to Vector moving average convergence-divergence (@parthm)
+  - Add support for negative arguments to Vector.lag (@parthm)
+  - Return Nyaplot instance instead of nil for Nyaplot Vector, Category and DataFrame (@Shekharrajak)
+  - Add global configurable error stream which allows error stream to be silenced (@sivagollapalli)
+  - Rubocop update and cleanup (@zverok)
+  - Improve performance of DataFrame covariance (@genya0407)
+  - Index [] to only take index value as argument (@ananyo2012)
+  - Better error raised when Vector is missing from DataFrame (@sivagollapalli)
+  - Add default order for DataFrame (@athityakumar)
+  - Add is_values to Index (@Shekharrajak)
+  - Improve spec style in IO/SQL data source spec (@dshvimer)
+  - Open SQLite databases by bath (@dshvimer)
+  - Remove unnecessary whitespace (@Shekharrajak)
+  - Remove the .svg from Travis CI build link (@athityakumar)
+  - Fix Travis CI icon in README (@athityakumar)
+  - Replace is_nil?, not_nil? with is_values (@lokeshh)
+  - Update contributing documentation (@v0dro)
+
+* Fixes
+  - Fix missing axis labels for categorized scatter plot with Gruff (@xprazak2)
+  - Fix NMatrix Vector initialization when Vector has nils and no nm_type is given (@baarkerlounger)
+  - Fix head/tail methods on DataFrames with DateTime indexes and on Vector_at splat calls (@baarkerlounger)
+  - Fix empty DateTime Index (@zverok)
+  - Fix where clause when data contains missing/undefined values (@Shekharrajak)
+  - Fix apply_scalar_operator spec (@athityakumar)
+  - Change nil check to respond_to operator check for apply_scalar_operator (@athityakumar)
+  - Make where compatible with is_values (@athityakumar)
+  - Fix vector is_values method (@athityakumar)
+
+
 # 0.1.5 (30 January 2017)
 * Major Enhancements
   - Add Daru::Vector#group_by (@lokeshh).
@@ -19,7 +65,7 @@
   - `DataFrame#access_row` with integer index. (Yusuke Sangenya)
   - Add method alias for comparison operator. (Yusuke Sangenya)
   - Update Nokogiri version. (Yusuke Sangenya)
-  - Return `Daru::Vector` for multiple modal values for `Daru::Vector#mode`. (baarkerlounger)
+  - Return `Daru::Vector` for multiple modal values for `Daru::Vector#mode`. (@baarkerlounger)
 
 * Fixes
   - Fix many to one joins. The prior version was shifting values in the left dataframe before checking whether values in the right dataframe should be shifted.  They both need to be checked at the same time before shifting either. (@gnilrets)
