@@ -2262,7 +2262,7 @@ module Daru
       if @index.empty?
         insert_vector_in_empty name, vector
       else
-        vec = prepare_vector_for_insert name, vector
+        vec = prepare_for_insert name, vector
 
         assign_or_add_vector name, vec
       end
@@ -2309,25 +2309,36 @@ module Daru
       @data.map! { |v| v.empty? ? v.reindex(@index) : v }
     end
 
-    def prepare_vector_for_insert name, vector
-      if vector.is_a?(Daru::Vector)
-        # so that index-by-index assignment is avoided when possible.
-        return vector.dup if vector.index == @index
-
-        Daru::Vector.new([], name: coerce_name(name), index: @index).tap { |v|
-          @index.each do |idx|
-            v[idx] = vector.index.include?(idx) ? vector[idx] : nil
-          end
-        }
+    def prepare_for_insert name, arg
+      case arg
+      when Daru::Vector
+        prepare_vector_for_insert name, arg
+      when Array, Range
+        prepare_enum_for_insert name, arg
       else
-        # FIXME: No spec checks this case... And SizeError is not a thing - zverok, 2016-05-08
-        if @size != vector.size
-          raise SizeError,
-            "Specified vector of length #{vector.size} cannot be inserted in DataFrame of size #{@size}"
-        end
-
-        Daru::Vector.new(vector, name: coerce_name(name), index: @index)
+        prepare_value_for_insert name, arg
       end
+    end
+
+    def prepare_vector_for_insert name, vector
+      # so that index-by-index assignment is avoided when possible.
+      return vector.dup if vector.index == @index
+      Daru::Vector.new([], name: coerce_name(name), index: @index).tap { |v|
+        @index.each do |idx|
+          v[idx] = vector.index.include?(idx) ? vector[idx] : nil
+        end
+      }
+    end
+
+    def prepare_enum_for_insert name, enum
+      if @size != enum.size
+        raise "Specified vector of length #{enum.size} cannot be inserted in DataFrame of size #{@size}"
+      end
+      Daru::Vector.new(enum, name: coerce_name(name), index: @index)
+    end
+
+    def prepare_value_for_insert name, value
+      Daru::Vector.new(Array(value) * @size, name: coerce_name(name), index: @index)
     end
 
     def insert_or_modify_row indexes, vector
