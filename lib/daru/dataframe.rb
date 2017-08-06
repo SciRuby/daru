@@ -1902,7 +1902,7 @@ module Daru
     end
 
     def to_s
-      "#<#{self.class}#{': ' + @name if @name}(#{nrows}x#{ncols})>"
+      "#<#{self.class}#{': ' + @name.to_s if @name}(#{nrows}x#{ncols})>"
     end
 
     # Method for updating the metadata (i.e. missing value positions) of the
@@ -2310,10 +2310,9 @@ module Daru
     end
 
     def prepare_for_insert name, arg
-      case arg
-      when Daru::Vector
+      if arg.is_a? Daru::Vector
         prepare_vector_for_insert name, arg
-      when Array, Range
+      elsif arg.respond_to?(:to_a)
         prepare_enum_for_insert name, arg
       else
         prepare_value_for_insert name, arg
