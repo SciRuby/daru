@@ -542,6 +542,13 @@ describe Daru::DataFrame do
         expect(@df.d.class).to eq(Daru::Vector)
       end
 
+      it "appends an arbitrary enumerable as a Daru::Vector" do
+        @df[:d] = Set.new([69,99,108,85,49])
+
+        expect(@df[:d]).to eq(Daru::Vector.new([69, 99, 108, 85, 49],
+        index: [:one, :two, :three, :four, :five], name: :c))
+      end
+
       it "replaces an already present vector" do
         @df[:a] = [69,99,108,85,49].dv(nil, [:one, :two, :three, :four, :five])
 
