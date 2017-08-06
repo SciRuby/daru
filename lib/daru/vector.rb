@@ -938,7 +938,7 @@ module Daru
     end
 
     def to_s
-      "#<#{self.class}#{': ' + @name if @name}(#{size})#{':category' if category?}>"
+      "#<#{self.class}#{': ' + @name.to_s if @name}(#{size})#{':category' if category?}>"
     end
 
     # Create a summary of the Vector
