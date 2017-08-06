@@ -1,7 +1,7 @@
 # 0.1.6 (04 August 2017)
 * Major Enhancements
   - Add support for reading HTML tables into DataFrames (@athityakumar)
-  - Add support for importing remote CSVs (@athityakumar)
+  - Add support for importing remote CSVs (@athityakumar, @anshuman23)
   - Allow named indexes (@Shekharrajak)
   - DataFrame GroupBy returns MultiIndex DataFrame (@Shekharrajak)
   - Add new functions to Vector: max, min, index_of_max, index_of_min, max_by, min_by, index_of_max_by, index_of_min_by (@athityakumar)
@@ -9,6 +9,7 @@
   - Add support for missing data for where clause (@athityakumar)
 
 * Minor Enhancements
+  - Allow inserting or updating DataFrame vectors with single values (@baarkerlounger)
   - Add a boolean converter to the CSV importer (@baarkerlounger)
   - Fix documentation of replace_values method (@kojix2)
   - Improve HTML table code of DataFrame and Vector (@Shekharrajak  )
