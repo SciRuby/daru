@@ -1028,6 +1028,11 @@ describe Daru::Vector do
           @v.name = "Test"
           expect(@v.to_s).to eq("#<Daru::Vector: Test(2)>")
         end
+
+        it 'produces a class, name, size description when the name is a symbol' do
+          @v.name = :Test
+          expect(@v.to_s).to eq("#<Daru::Vector: Test(2)>")
+        end
       end
 
       context "#uniq" do

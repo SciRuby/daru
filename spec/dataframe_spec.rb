@@ -3866,6 +3866,11 @@ describe Daru::DataFrame do
       @data_frame.name = "Test"
       expect(@data_frame.to_s).to eq "#<Daru::DataFrame: Test(5x3)>"
     end
+
+    it 'produces a class, name, size description when the name is a symbol' do
+      @data_frame.name = :Test
+      expect(@data_frame.to_s).to eq "#<Daru::DataFrame: Test(5x3)>"
+    end
   end
 
   context '#to_json' do
