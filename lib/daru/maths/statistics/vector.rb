@@ -205,7 +205,7 @@ module Daru
         def proportions
           len = size - count_values(*Daru::MISSING_VALUES)
           frequencies.to_h.each_with_object({}) do |(el, count), hash|
-            hash[el] = count / len
+            hash[el] = count / len.to_f
           end
         end
 
