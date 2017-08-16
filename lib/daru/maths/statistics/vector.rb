@@ -86,16 +86,7 @@ module Daru
         #   dv.max(2) { |i| i.size }
         #   #=> ["Jon Starkgaryen","Daenerys"]
         def max(size=nil, &block)
-          dv   = reject_values(nil)
-          data = if block_given?
-                   if block.parameters.count == 1 # Object block like { |x| x.size }
-                     dv.sort_by(&block)
-                   else # Comparative block like { |a,b| a.size <=> b.size }
-                     dv.sort(&block).to_a
-                   end
-                 else
-                   dv.sort.to_a
-                 end
+          data = sort_without_nil(&block)
           size.nil? ? data.last : data[data.count-size..-1].reverse
         end
 
@@ -120,7 +111,7 @@ module Daru
         #   #=> [:j, :d]
         def index_of_max(size=nil,&block)
           dv   = reject_values(nil)
-          data = dv.data.to_a.compact
+          data = dv.data.to_a
           indx = dv.index.to_a
           vals = max(size, &block)
           vals.is_a?(Array) ? (vals.map { |x| indx[data.index(x)] }) : indx[data.index(vals)]
@@ -146,16 +137,7 @@ module Daru
         #   dv.min(2) { |i| i.size }
         #   #=> ["Tyrion","Daenerys"]
         def min(size=nil, &block)
-          dv   = reject_values(nil)
-          data = if block_given?
-                   if block.parameters.count == 1 # Object block like { |x| x.size }
-                     dv.sort_by(&block)
-                   else # Comparative block like { |a,b| a.size <=> b.size }
-                     dv.sort(&block).to_a
-                   end
-                 else
-                   dv.sort.to_a
-                 end
+          data = sort_without_nil(&block)
           size.nil? ? data.first : data[0..size-1]
         end
 
@@ -856,6 +838,14 @@ module Daru
           end
 
           out.collect { |i| valid[i] }
+        end
+
+        def sort_without_nil(&block)
+          dv = reject_values(nil)
+          
+          return dv.sort.to_a unless block_given?
+          return dv.sort_by(&block) if block.parameters.count == 1 # Object block like { |x| x.size }
+          dv.sort(&block).to_a # Comparative block like { |a,b| a.size <=> b.size }
         end
       end
     end
