@@ -111,10 +111,8 @@ module Daru
         #   #=> [:j, :d]
         def index_of_max(size=nil,&block)
           dv   = reject_values(nil)
-          data = dv.data.to_a
-          indx = dv.index.to_a
           vals = max(size, &block)
-          vals.is_a?(Array) ? (vals.map { |x| indx[data.index(x)] }) : indx[data.index(vals)]
+          vals.is_a?(Array) ? (vals.map { |x| dv.index_of(x) }) : dv.index_of(vals)
         end
 
         # Returns the minimum value present in the vector.
@@ -162,10 +160,8 @@ module Daru
         #   #=> [:t, :d]
         def index_of_min(size=nil,&block)
           dv   = reject_values(nil)
-          data = dv.data.to_a
-          indx = dv.index.to_a
           vals = min(size, &block)
-          vals.is_a?(Array) ? (vals.map { |x| indx[data.index(x)] }) : indx[data.index(vals)]
+          vals.is_a?(Array) ? (vals.map { |x| dv.index_of(x) }) : dv.index_of(vals)
         end
 
         # Return the maximum element present in the Vector, as a Vector.
@@ -842,7 +838,7 @@ module Daru
 
         def sort_without_nil(&block)
           dv = reject_values(nil)
-          
+
           return dv.sort.to_a unless block_given?
           return dv.sort_by(&block) if block.parameters.count == 1 # Object block like { |x| x.size }
           dv.sort(&block).to_a # Comparative block like { |a,b| a.size <=> b.size }
