@@ -86,15 +86,15 @@ module Daru
         #   dv.max(2) { |i| i.size }
         #   #=> ["Jon Starkgaryen","Daenerys"]
         def max(size=nil, &block)
-          data = @data.data.to_a
+          dv   = reject_values(nil)
           data = if block_given?
                    if block.parameters.count == 1 # Object block like { |x| x.size }
-                     data.sort_by(&block)
+                     dv.sort_by(&block)
                    else # Comparative block like { |a,b| a.size <=> b.size }
-                     data.sort(&block)
+                     dv.sort(&block).to_a
                    end
                  else
-                   data.sort
+                   dv.sort.to_a
                  end
           size.nil? ? data.last : data[data.count-size..-1].reverse
         end
@@ -119,9 +119,10 @@ module Daru
         #   dv.max(2) { |i| i.size }
         #   #=> [:j, :d]
         def index_of_max(size=nil,&block)
-          data = @data.data.to_a
-          indx = @index.to_a
-          vals = max(size,&block)
+          dv   = reject_values(nil)
+          data = dv.data.to_a.compact
+          indx = dv.index.to_a
+          vals = max(size, &block)
           vals.is_a?(Array) ? (vals.map { |x| indx[data.index(x)] }) : indx[data.index(vals)]
         end
 
@@ -145,15 +146,15 @@ module Daru
         #   dv.min(2) { |i| i.size }
         #   #=> ["Tyrion","Daenerys"]
         def min(size=nil, &block)
-          data = @data.data.to_a
+          dv   = reject_values(nil)
           data = if block_given?
                    if block.parameters.count == 1 # Object block like { |x| x.size }
-                     data.sort_by(&block)
+                     dv.sort_by(&block)
                    else # Comparative block like { |a,b| a.size <=> b.size }
-                     data.sort(&block)
+                     dv.sort(&block).to_a
                    end
                  else
-                   data.sort
+                   dv.sort.to_a
                  end
           size.nil? ? data.first : data[0..size-1]
         end
@@ -178,9 +179,10 @@ module Daru
         #   dv.index_of_min(2) { |i| i.size }
         #   #=> [:t, :d]
         def index_of_min(size=nil,&block)
-          data = @data.data.to_a
-          indx = @index.to_a
-          vals = min(size,&block)
+          dv   = reject_values(nil)
+          data = dv.data.to_a
+          indx = dv.index.to_a
+          vals = min(size, &block)
           vals.is_a?(Array) ? (vals.map { |x| indx[data.index(x)] }) : indx[data.index(vals)]
         end
 

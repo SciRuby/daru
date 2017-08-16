@@ -12,7 +12,7 @@ describe Daru::Vector do
         end
       end
 
-      let(:dv) { dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j]) }
+      let(:dv) { dv = Daru::Vector.new (["Tyrion", "Daenerys", nil, "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :n, :j]) }
 
       context "#max" do
         it "returns max value" do
