@@ -1605,6 +1605,11 @@ describe Daru::DataFrame, "categorical" do
     it { is_expected.to be_a Daru::DataFrame }
     its(:'b.type') { is_expected.to eq :category }
     its(:'c.type') { is_expected.to eq :category }
+
+    it "can add_row after to_category" do
+      new_row = df.add_row [1, 'first', 'a']
+      expect(new_row).not_to eq nil
+    end
   end
 
   context "#interact_code" do
