@@ -1,5 +1,7 @@
 module Daru
   module Category # rubocop:disable Metrics/ModuleLength
+    UNDEFINED = Object.new.freeze
+
     attr_accessor :base_category
     attr_reader :index, :coding_scheme, :name
 
@@ -131,7 +133,10 @@ module Daru
     #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
     #   dv.count :a
     #   # => 2
-    def count category
+    #   dv.count
+    #   # => 5
+    def count category=UNDEFINED
+      return @cat_hash.values.map(&:size).inject(&:+) if category == UNDEFINED # count all
       raise ArgumentError, "Invalid category #{category}" unless
         categories.include?(category)
 
