@@ -277,6 +277,17 @@ module Daru
     # Default to *true*.
     #
     # == Usage
+    #
+    #   df = Daru::DataFrame.new
+    #   # =>
+    #   # <Daru::DataFrame(0x0)>
+    #   # Creates an empty DataFrame with no rows or columns.
+    #
+    #   df = Daru::DataFrame.new({}, order: [:a, :b])
+    #   #<Daru::DataFrame(0x2)>
+    #     a   b
+    #   # Creates a DataFrame with no rows and columns :a and :b
+    #
     #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [6,7,8,9]}, order: [:b, :a],
     #     index: [:a, :b, :c, :d], name: :spider_man)
     #
@@ -329,7 +340,7 @@ module Daru
     #    #    1   4  14  44
     #    #    2   5  15  55
 
-    def initialize source, opts={} # rubocop:disable Metrics/MethodLength
+    def initialize source={}, opts={} # rubocop:disable Metrics/MethodLength
       vectors, index = opts[:order], opts[:index] # FIXME: just keyword arges after Ruby 2.1
       @data = []
       @name = opts[:name]
