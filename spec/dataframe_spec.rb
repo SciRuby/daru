@@ -145,8 +145,15 @@ describe Daru::DataFrame do
   end
 
   context "#initialize" do
+
+    it "initializes an empty DataFrame with no arguments" do
+      df = Daru::DataFrame.new
+      expect(df.nrows).to eq(0)
+      expect(df.ncols).to eq(0)
+    end
+
     context Daru::Index do
-      it "initializes an empty DataFrame" do
+      it "initializes an empty DataFrame with empty source arg" do
         df = Daru::DataFrame.new({}, order: [:a, :b])
 
         expect(df.vectors).to eq(Daru::Index.new [:a, :b])
