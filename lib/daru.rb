@@ -124,3 +124,5 @@ require 'daru/core/merge.rb'
 
 require 'daru/date_time/offsets.rb'
 require 'daru/date_time/index.rb'
+
+require 'backports/2.0.0/array/to_h'
