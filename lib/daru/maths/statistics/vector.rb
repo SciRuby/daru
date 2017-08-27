@@ -66,7 +66,7 @@ module Daru
           reject_values(*Daru::MISSING_VALUES).uniq.reset_index!
         end
 
-        # Returns the maximum value present in the vector.
+        # Returns the maximum value present in the vector, with an optional comparator block.
         #
         # @example
         #
@@ -82,15 +82,34 @@ module Daru
         #
         #   dv.max(2) { |a,b| a.size <=> b.size }
         #   #=> ["Jon Starkgaryen","Daenerys"]
-        #
-        #   dv.max(2) { |i| i.size }
-        #   #=> ["Jon Starkgaryen","Daenerys"]
         def max(size=nil, &block)
           data = sort_without_nil(&block)
           size.nil? ? data.last : data[data.count-size..-1].reverse
         end
 
-        # Returns the index of the maximum value present in the vector.
+        # Returns the maximum value present in the vector, with an optional object block.
+        #
+        # @example
+        #
+        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j])
+        #   #=>
+        #   #   #<Daru::Vector(3)>
+        #   #       t   Tyrion
+        #   #       d   Daenerys
+        #   #       j   Jon Starkgaryen
+        #
+        #   dv.max_by
+        #   #=> "Tyrion"
+        #
+        #   dv.max_by(2) { |i| i.size }
+        #   #=> ["Jon Starkgaryen","Daenerys"]
+        def max_by(size=nil, &block)
+          data = sort_without_nil(by: true, &block)
+          size.nil? ? data.last : data[data.count-size..-1].reverse
+        end
+
+        # Returns the index of the maximum value present in the vector, with an optional
+        # comparator block.
         #
         # @example
         #
@@ -106,16 +125,36 @@ module Daru
         #
         #   dv.index_of_max(2) { |a,b| a.size <=> b.size }
         #   #=> [:j, :d]
-        #
-        #   dv.max(2) { |i| i.size }
-        #   #=> [:j, :d]
         def index_of_max(size=nil,&block)
           dv   = reject_values(nil)
           vals = max(size, &block)
           vals.is_a?(Array) ? (vals.map { |x| dv.index_of(x) }) : dv.index_of(vals)
         end
 
-        # Returns the minimum value present in the vector.
+        # Returns the index of the maximum value present in the vector, with an optional
+        # object block.
+        #
+        # @example
+        #
+        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j])
+        #   #=>
+        #   #   #<Daru::Vector(3)>
+        #   #       t   Tyrion
+        #   #       d   Daenerys
+        #   #       j   Jon Starkgaryen
+        #
+        #   dv.index_of_max_by
+        #   #=> :t
+        #
+        #   dv.index_of_max_by(2) { |i| i.size }
+        #   #=> [:j, :d]
+        def index_of_max_by(size=nil,&block)
+          dv   = reject_values(nil)
+          vals = max_by(size, &block)
+          vals.is_a?(Array) ? (vals.map { |x| dv.index_of(x) }) : dv.index_of(vals)
+        end
+
+        # Returns the minimum value present in the vector, with an optional comparator block.
         #
         # @example
         #
@@ -131,15 +170,34 @@ module Daru
         #
         #   dv.min(2) { |a,b| a.size <=> b.size }
         #   #=> ["Tyrion","Daenerys"]
-        #
-        #   dv.min(2) { |i| i.size }
-        #   #=> ["Tyrion","Daenerys"]
         def min(size=nil, &block)
           data = sort_without_nil(&block)
           size.nil? ? data.first : data[0..size-1]
         end
 
-        # Returns the index of the minimum value present in the vector.
+        # Returns the minimum value present in the vector, with an optional object block.
+        #
+        # @example
+        #
+        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j])
+        #   #=>
+        #   #   #<Daru::Vector(3)>
+        #   #       t   Tyrion
+        #   #       d   Daenerys
+        #   #       j   Jon Starkgaryen
+        #
+        #   dv.min_by
+        #   #=> "Daenerys"
+        #
+        #   dv.min_by(2) { |i| i.size }
+        #   #=> ["Tyrion","Daenerys"]
+        def min_by(size=nil, &block)
+          data = sort_without_nil(by: true, &block)
+          size.nil? ? data.first : data[0..size-1]
+        end
+
+        # Returns the index of the minimum value present in the vector, with an optional
+        # comparator block.
         #
         # @example
         #
@@ -155,12 +213,32 @@ module Daru
         #
         #   dv.index_of_min(2) { |a,b| a.size <=> b.size }
         #   #=> [:t, :d]
-        #
-        #   dv.index_of_min(2) { |i| i.size }
-        #   #=> [:t, :d]
         def index_of_min(size=nil,&block)
           dv   = reject_values(nil)
           vals = min(size, &block)
+          vals.is_a?(Array) ? (vals.map { |x| dv.index_of(x) }) : dv.index_of(vals)
+        end
+
+        # Returns the index of the minimum value present in the vector, with an optional
+        # object block.
+        #
+        # @example
+        #
+        #   dv = Daru::Vector.new (["Tyrion", "Daenerys", "Jon Starkgaryen"]), index: Daru::Index.new([:t, :d, :j])
+        #   #=>
+        #   #   #<Daru::Vector(3)>
+        #   #       t   Tyrion
+        #   #       d   Daenerys
+        #   #       j   Jon Starkgaryen
+        #
+        #   dv.index_of_min_by
+        #   #=> :d
+        #
+        #   dv.index_of_min(2) { |i| i.size }
+        #   #=> [:t, :d]
+        def index_of_min_by(size=nil,&block)
+          dv   = reject_values(nil)
+          vals = min_by(size, &block)
           vals.is_a?(Array) ? (vals.map { |x| dv.index_of(x) }) : dv.index_of(vals)
         end
 
@@ -771,10 +849,6 @@ module Daru
         alias :ss :sum_of_squares
         alias :percentil :percentile
         alias :se :standard_error
-        alias :max_by :max
-        alias :min_by :min
-        alias :index_of_max_by :index_of_max
-        alias :index_of_min_by :index_of_min
 
         private
 
@@ -836,12 +910,12 @@ module Daru
           out.collect { |i| valid[i] }
         end
 
-        def sort_without_nil(&block)
+        def sort_without_nil(by: nil, &block)
           dv = reject_values(nil)
 
           return dv.sort.to_a unless block_given?
-          return dv.sort_by(&block) if block.parameters.count == 1 # Object block like { |x| x.size }
-          dv.sort(&block).to_a # Comparative block like { |a,b| a.size <=> b.size }
+          return dv.sort(&block).to_a unless by # Comparative block like { |a,b| a.size <=> b.size }
+          dv.sort_by(&block) # Object block like { |x| x.size }
         end
       end
     end
