@@ -1279,7 +1279,7 @@ module Daru
     def vector_sum vecs=nil, skipnil=false
       vecs ||= numeric_vectors
       sum = Daru::Vector.new [0]*@size, index: @index, name: @name, dtype: @dtype
-      self.replace_nils(0) if skipnil
+      replace_nils(0) if skipnil
       vecs.inject(sum) { |memo, n| memo + self[n] }
     end
 
