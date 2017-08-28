@@ -3195,7 +3195,7 @@ describe Daru::DataFrame do
     end
 
     it "ignores nils if skipnil is true" do
-      expect(@df.vector_sum(nil, skipnil: true)).to eq(Daru::Vector.new [13, 15, 26, 25, 28, 35])
+      expect(@df.vector_sum skipnil: true).to eq(Daru::Vector.new [13, 15, 26, 25, 28, 35])
     end
 
     it "calculates partial vector sum" do

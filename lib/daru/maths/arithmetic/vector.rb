@@ -42,7 +42,7 @@ module Daru
           recode { |e| e.round(precision) unless e.nil? }
         end
 
-        def add_skipnils other
+        def add_skipnil other
           index = (@index.to_a | other.index.to_a)
           elements = index.map do |idx|
             this = self.index.include?(idx) ? self[idx] : nil

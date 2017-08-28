@@ -1270,14 +1270,62 @@ module Daru
 
     alias :last :tail
 
-    # Returns a vector with sum of all vectors specified in the argument.
-    # If vecs parameter is empty, sum all numeric vector.
-    def vector_sum vecs=nil, opts={skipnil: false}
+    # Sum all numeric/specified vectors in the DataFrame.
+    #
+    # Returns a new vector that's a containing a sum of all numeric
+    # or specified vectors of the DataFrame. By default, if the vector
+    # contains a nil, the sum is nil.
+    # With :skipnil argument set to true, nil values are assumed to be
+    # 0 (zero) and the sum vector is returned.
+    #
+    # @param opts [Array] List of vectors to sum. Default is nil in which case
+    #   all numeric vectors are summed.
+    #
+    # @param opts [Boolean] :skipnil Consider nils as 0. Default is false.
+    #
+    # @return Vector with sum of all vectors specified in the argument.
+    #   If vecs parameter is empty, sum all numeric vector.
+    #
+    # @example
+    #    df = Daru::DataFrame.new({
+    #       a: [1, 2, nil],
+    #       b: [2, 1, 3],
+    #       c: [1, 1, 1]
+    #     })
+    #    => #<Daru::DataFrame(3x3)>
+    #           a   b   c
+    #       0   1   2   1
+    #       1   2   1   1
+    #       2 nil   3   1
+    #    df.vector_sum [:a, :c]
+    #    => #<Daru::Vector(3)>
+    #       0   2
+    #       1   3
+    #       2 nil
+    #    df.vector_sum
+    #    => #<Daru::Vector(3)>
+    #       0   4
+    #       1   4
+    #       2 nil
+    #    df.vector_sum skipnil: true
+    #    => #<Daru::Vector(3)>
+    #           c
+    #       0   4
+    #       1   4
+    #       2   4
+    #
+    def vector_sum(*args)
+      defaults = {vecs: nil, skipnil: false}
+      options = args.last.is_a?(::Hash) ? args.pop : {}
+      options = defaults.merge(options)
+      vecs = args[0] || options[:vecs]
+      skipnil = args[1] || options[:skipnil]
+
       vecs ||= numeric_vectors
       sum = Daru::Vector.new [0]*@size, index: @index, name: @name, dtype: @dtype
       vecs.inject(sum) do |memo, n|
-        if opts[:skipnil]
-          self[n].add_skipnils(memo)
+        if skipnil
+          self[n].add_skipnil(memo)
         else
           memo + self[n]
         end
