@@ -42,6 +42,18 @@ module Daru
           recode { |e| e.round(precision) unless e.nil? }
         end
 
+        # Add specified vector. Treat nil as 0.
+        #
+        # @example
+        #
+        #    v0 = Daru::Vector.new [1, 2, nil]
+        #    v1 = Daru::Vector.new [2, 1, 3]
+        #    irb> v0.add_skipnil v1
+        #    => #<Daru::Vector(3)>
+        #       0   3
+        #       1   3
+        #       2   3
+        #
         def add_skipnil other
           index = (@index.to_a | other.index.to_a)
           elements = index.map do |idx|

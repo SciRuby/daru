@@ -3198,6 +3198,10 @@ describe Daru::DataFrame do
       expect(@df.vector_sum skipnil: true).to eq(Daru::Vector.new [13, 15, 26, 25, 28, 35])
     end
 
+    it "ignores nils vectors are specified and skipnil is true" do
+      expect(@df.vector_sum [:a1, :b1], skipnil: true).to eq(Daru::Vector.new [1, 3, 4, 5, 6, 2])
+    end
+
     it "calculates partial vector sum" do
       a = @df.vector_sum([:a1, :a2])
       b = @df.vector_sum([:b1, :b2])
