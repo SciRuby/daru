@@ -1797,6 +1797,24 @@ describe Daru::DataFrame do
     end
   end
 
+  context '#replace_nils' do
+    subject do
+      Daru::DataFrame.new({
+        a: [1,    2,          3,   nil,        Float::NAN, nil, 1,   7],
+        b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   8],
+        c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
+      })
+    end
+
+    context 'replaces nil values' do
+      before { subject.replace_nils(0) }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'a.to_a') { is_expected.to eq [1, 2, 3, 0, Float::NAN, 0, 1, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a,  :b, 0, Float::NAN, 0, 3, 5, 8] }
+      its(:'c.to_a') { is_expected.to eq ['a', Float::NAN, 3, 4, 3, 5, 0, 7] }
+    end
+  end
+
   context "#clone" do
     it "returns a view of the whole dataframe" do
       cloned = @data_frame.clone
@@ -3200,6 +3218,10 @@ describe Daru::DataFrame do
 
       expect(a).to eq(Daru::Vector.new [11, 12, 23, 24, 25, nil])
       expect(b).to eq(Daru::Vector.new [nil, 3, 3, nil, 3, 5])
+    end
+
+    it "calculates vector sum with skipnil flag true" do
+      expect(@df.vector_sum nil, true).to eq(Daru::Vector.new [13, 15, 26, 25, 28, 35])
     end
   end
 

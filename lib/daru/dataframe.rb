@@ -661,6 +661,10 @@ module Daru
       self
     end
 
+    def replace_nils replacement
+      replace_values nil, replacement
+    end
+
     # Iterate over each index of the DataFrame.
     def each_index &block
       return to_enum(:each_index) unless block_given?
@@ -1272,10 +1276,10 @@ module Daru
 
     # Returns a vector with sum of all vectors specified in the argument.
     # If vecs parameter is empty, sum all numeric vector.
-    def vector_sum vecs=nil
+    def vector_sum vecs=nil, skipnil=false
       vecs ||= numeric_vectors
       sum = Daru::Vector.new [0]*@size, index: @index, name: @name, dtype: @dtype
-
+      replace_nils(0) if skipnil
       vecs.inject(sum) { |memo, n| memo + self[n] }
     end
 
