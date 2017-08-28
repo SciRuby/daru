@@ -311,7 +311,11 @@ describe Daru::Vector do
 
       context "#proportions" do
         it "calculates proportions" do
-          @dv.proportions
+          actual_proportions = {
+            array: {323=>0.1,11=>0.1,555=>0.1,666=>0.2,234=>0.1,21=>0.1,343=>0.1,1=>0.1,2=>0.1},
+            gsl: {323.0=>0.1, 11.0=>0.1, 555.0=>0.1, 666.0=>0.2, 234.0=>0.1, 21.0=>0.1, 343.0=>0.1, 1.0=>0.1, 2.0=>0.1}
+          }
+          expect(@dv.proportions).to eq(actual_proportions[dtype])
         end
       end
 

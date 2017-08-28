@@ -1596,7 +1596,7 @@ describe Daru::DataFrame, "categorical" do
       Daru::DataFrame.new({
         a: [1, 2, 3, 4, 5],
         b: ['first', 'second', 'first', 'second', 'third'],
-        c: ['a', 'b', 'a', 'b', 'c']
+        c: ['a', 'b', 'a', 'b', nil]
       })
     end
     before { df.to_category :b, :c }
@@ -1605,6 +1605,10 @@ describe Daru::DataFrame, "categorical" do
     it { is_expected.to be_a Daru::DataFrame }
     its(:'b.type') { is_expected.to eq :category }
     its(:'c.type') { is_expected.to eq :category }
+    its(:'a.count') { is_expected.to eq 5 }
+    its(:'c.count') { is_expected.to eq 5 }
+    it { expect(df.c.count('a')).to eq 2 }
+    it { expect(df.c.count(nil)).to eq 1 }
   end
 
   context "#interact_code" do

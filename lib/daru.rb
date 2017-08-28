@@ -105,6 +105,7 @@ require 'date'
 require 'daru/version.rb'
 
 require 'open-uri'
+require 'backports/2.1.0/array/to_h'
 
 require 'daru/index/index.rb'
 require 'daru/index/multi_index.rb'
@@ -124,5 +125,3 @@ require 'daru/core/merge.rb'
 
 require 'daru/date_time/offsets.rb'
 require 'daru/date_time/index.rb'
-
-require 'backports'
