@@ -1272,11 +1272,16 @@ module Daru
 
     # Returns a vector with sum of all vectors specified in the argument.
     # If vecs parameter is empty, sum all numeric vector.
-    def vector_sum vecs=nil
+    def vector_sum vecs=nil, opts={skipnil: false}
       vecs ||= numeric_vectors
       sum = Daru::Vector.new [0]*@size, index: @index, name: @name, dtype: @dtype
-
-      vecs.inject(sum) { |memo, n| memo + self[n] }
+      vecs.inject(sum) do |memo, n|
+        if opts[:skipnil]
+          self[n].add_skipnils(memo)
+        else
+          memo + self[n]
+        end
+      end
     end
 
     # Calculate mean of the rows of the dataframe.

@@ -42,6 +42,18 @@ module Daru
           recode { |e| e.round(precision) unless e.nil? }
         end
 
+        def add_skipnils other
+          index = (@index.to_a | other.index.to_a)
+          elements = index.map do |idx|
+            this = self.index.include?(idx) ? self[idx] : nil
+            that = other.index.include?(idx) ? other[idx] : nil
+            this = 0 if this.nil?
+            that = 0 if that.nil?
+            this && that ? this + that : nil
+          end
+          Daru::Vector.new(elements, name: @name, index: index)
+        end
+
         private
 
         def math_unary_op operation
