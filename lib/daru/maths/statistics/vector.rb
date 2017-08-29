@@ -83,10 +83,10 @@ module Daru
         #   dv.max(2) { |a,b| a.size <=> b.size }
         #   #=> ["Jon Starkgaryen","Daenerys"]
         def max(size=nil, &block)
-          data = reject_values(*Daru::MISSING_VALUES).to_a
-          if RUBY_VERSION >= '2.2' then data.max(size, &block)
-          else data.sort(&block).reverse[size.nil? ? 0 : (0..size-1)]
-          end
+          data           = reject_values(*Daru::MISSING_VALUES).to_a
+          range          = size.nil? ? 0 : (0..size-1)
+          default_method = RUBY_VERSION >= '2.2'
+          default_method ? data.max(size, &block) : data.sort(&block).reverse[range]
         end
 
         # Returns the maximum value present in the vector, with an optional object block.
@@ -106,10 +106,10 @@ module Daru
         #   dv.max_by(2) { |i| i.size }
         #   #=> ["Jon Starkgaryen","Daenerys"]
         def max_by(size=nil, &block)
-          data = reject_values(*Daru::MISSING_VALUES).to_a
-          if RUBY_VERSION >= '2.2' then data.max_by(size, &block || ->(i) { i })
-          else data.sort_by(&block || ->(i) { i }).reverse[size.nil? ? 0 : (0..size-1)]
-          end
+          data           = reject_values(*Daru::MISSING_VALUES).to_a
+          range          = size.nil? ? 0 : (0..size-1)
+          default_method = RUBY_VERSION >= '2.2'
+          default_method ? data.max_by(size, &block || ->(i) { i }) : data.sort_by(&block || ->(i) { i }).reverse[range]
         end
 
         # Returns the index of the maximum value present in the vector, with an optional
@@ -175,10 +175,10 @@ module Daru
         #   dv.min(2) { |a,b| a.size <=> b.size }
         #   #=> ["Tyrion","Daenerys"]
         def min(size=nil, &block)
-          data = reject_values(*Daru::MISSING_VALUES).to_a
-          if RUBY_VERSION >= '2.2' then data.min(size, &block)
-          else data.sort(&block)[size.nil? ? 0 : (0..size-1)]
-          end
+          data           = reject_values(*Daru::MISSING_VALUES).to_a
+          range          = size.nil? ? 0 : (0..size-1)
+          default_method = RUBY_VERSION >= '2.2'
+          default_method ? data.min(size, &block) : data.sort(&block)[range]
         end
 
         # Returns the minimum value present in the vector, with an optional object block.
@@ -198,10 +198,10 @@ module Daru
         #   dv.min_by(2) { |i| i.size }
         #   #=> ["Tyrion","Daenerys"]
         def min_by(size=nil, &block)
-          data = reject_values(*Daru::MISSING_VALUES).to_a
-          if RUBY_VERSION >= '2.2' then data.min_by(size, &block || ->(i) { i })
-          else data.sort_by(&block || ->(i) { i })[size.nil? ? 0 : (0..size-1)]
-          end
+          data           = reject_values(*Daru::MISSING_VALUES).to_a
+          range          = size.nil? ? 0 : (0..size-1)
+          default_method = RUBY_VERSION >= '2.2'
+          default_method ? data.min_by(size, &block || ->(i) { i }) : data.sort_by(&block || ->(i) { i })[range]
         end
 
         # Returns the index of the minimum value present in the vector, with an optional
