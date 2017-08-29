@@ -59,7 +59,7 @@ module Daru
         #          2 nil
         #          3 nil
         #
-        #    irb> v0.add v1
+        #    irb> v0.add v1, skipnil: true
         #    =>  #<Daru::Vector(4)>
         #          0   3
         #          1   3
