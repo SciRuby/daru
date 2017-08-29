@@ -78,6 +78,24 @@ describe Daru::Vector do
     end
   end
 
+  context "#add" do
+
+    it "adds two vectors with nils as 0 if skipnil is true" do
+      expect(@with_md1.add(@with_md2, skipnil: true)).to eq(Daru::Vector.new(
+        [1, 7, 3, 3, 1, 7],
+        name: :missing,
+        index: [:a, :b, :c, :corona, :obi, :wan]))
+    end
+
+    it "adds two vectors same as :+ if skipnil is false" do
+      expect(@with_md1.add(@with_md2, skipnil: false)).to eq(Daru::Vector.new(
+        [nil, 7, nil, nil, nil, 7],
+        name: :missing,
+        index: [:a, :b, :c, :corona, :obi, :wan]))
+    end
+
+  end
+
   context "#abs" do
     it "calculates abs value" do
       @with_md1.abs

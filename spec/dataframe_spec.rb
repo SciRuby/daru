@@ -3183,23 +3183,27 @@ describe Daru::DataFrame do
 
   context "#vector_sum" do
     before do
-      a1 = Daru::Vector.new [1, 2, 3, 4, 5, nil]
-      a2 = Daru::Vector.new [10, 10, 20, 20, 20, 30]
-      b1 = Daru::Vector.new [nil, 1, 1, 1, 1, 2]
-      b2 = Daru::Vector.new [2, 2, 2, nil, 2, 3]
+      a1 = Daru::Vector.new [1, 2, 3, 4, 5, nil, nil]
+      a2 = Daru::Vector.new [10, 10, 20, 20, 20, 30, nil]
+      b1 = Daru::Vector.new [nil, 1, 1, 1, 1, 2, nil]
+      b2 = Daru::Vector.new [2, 2, 2, nil, 2, 3, nil]
       @df = Daru::DataFrame.new({ :a1 => a1, :a2 => a2, :b1 => b1, :b2 => b2 })
     end
 
     it "calculates complete vector sum" do
-      expect(@df.vector_sum).to eq(Daru::Vector.new [nil, 15, 26, nil, 28, nil])
+      expect(@df.vector_sum).to eq(Daru::Vector.new [nil, 15, 26, nil, 28, nil, nil])
+    end
+
+    it "ignores nils if skipnil is true" do
+      expect(@df.vector_sum skipnil: true).to eq(Daru::Vector.new [13, 15, 26, 25, 28, 35, 0])
     end
 
     it "calculates partial vector sum" do
       a = @df.vector_sum([:a1, :a2])
       b = @df.vector_sum([:b1, :b2])
 
-      expect(a).to eq(Daru::Vector.new [11, 12, 23, 24, 25, nil])
-      expect(b).to eq(Daru::Vector.new [nil, 3, 3, nil, 3, 5])
+      expect(a).to eq(Daru::Vector.new [11, 12, 23, 24, 25, nil, nil])
+      expect(b).to eq(Daru::Vector.new [nil, 3, 3, nil, 3, 5, nil])
     end
   end
 
