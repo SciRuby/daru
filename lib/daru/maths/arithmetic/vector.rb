@@ -42,28 +42,32 @@ module Daru
           recode { |e| e.round(precision) unless e.nil? }
         end
 
-        # Add specified vector. Treat nil as 0.
+        # Add specified vector.
+        #
+        # @param [Daru::Vector] The vector thats added to this.
+        # @param opts [Boolean] :skipnil if true treats nils as 0.
         #
         # @example
         #
-        #    v0 = Daru::Vector.new [1, 2, nil]
-        #    v1 = Daru::Vector.new [2, 1, 3]
-        #    irb> v0.add_skipnil v1
-        #    => #<Daru::Vector(3)>
-        #       0   3
-        #       1   3
-        #       2   3
+        #    v0 = Daru::Vector.new [1, 2, nil, nil]
+        #    v1 = Daru::Vector.new [2, 1, 3, nil]
         #
-        def add_skipnil other
-          index = (@index.to_a | other.index.to_a)
-          elements = index.map do |idx|
-            this = self.index.include?(idx) ? self[idx] : nil
-            that = other.index.include?(idx) ? other[idx] : nil
-            this = 0 if this.nil?
-            that = 0 if that.nil?
-            this && that ? this + that : nil
-          end
-          Daru::Vector.new(elements, name: @name, index: index)
+        #    irb> v0.add v1
+        #    =>  #<Daru::Vector(4)>
+        #          0   3
+        #          1   3
+        #          2 nil
+        #          3 nil
+        #
+        #    irb> v0.add v1
+        #    =>  #<Daru::Vector(4)>
+        #          0   3
+        #          1   3
+        #          2   3
+        #          3   0
+        #
+        def add other, opts={}
+          v2v_binary :+, other, skipnil: opts.fetch(:skipnil, false)
         end
 
         private
@@ -86,18 +90,26 @@ module Daru
             name: @name, index: @index
         end
 
-        def v2v_binary operation, other
+        def v2v_binary operation, other, opts={}
           # FIXME: why the sorting?.. - zverok, 2016-05-18
           index = (@index.to_a | other.index.to_a).sort
 
           elements = index.map do |idx|
             this = self.index.include?(idx) ? self[idx] : nil
             that = other.index.include?(idx) ? other[idx] : nil
-
+            this, that = zero_nil_args(this, that, opts.fetch(:skipnil, false))
             this && that ? this.send(operation, that) : nil
           end
 
           Daru::Vector.new(elements, name: @name, index: index)
+        end
+
+        def zero_nil_args(this, that, skipnil)
+          if skipnil
+            this = 0 if this.nil?
+            that = 0 if that.nil?
+          end
+          [this, that]
         end
       end
     end

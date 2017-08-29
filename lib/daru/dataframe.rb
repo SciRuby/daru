@@ -1323,13 +1323,7 @@ module Daru
 
       vecs ||= numeric_vectors
       sum = Daru::Vector.new [0]*@size, index: @index, name: @name, dtype: @dtype
-      vecs.inject(sum) do |memo, n|
-        if skipnil
-          self[n].add_skipnil(memo)
-        else
-          memo + self[n]
-        end
-      end
+      vecs.inject(sum) { |memo, n| self[n].add(memo, skipnil: skipnil) }
     end
 
     # Calculate mean of the rows of the dataframe.
