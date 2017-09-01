@@ -86,16 +86,6 @@ module Daru
   create_has_library :gruff
 end
 
-{'spreadsheet' => '~>1.1.1', 'mechanize' => '~>2.7.5'}.each do |name, version|
-  begin
-    gem name, version
-    require name
-  rescue LoadError
-    Daru.error "\nInstall the #{name} gem version #{version} for using"\
-    " #{name} functions."
-  end
-end
-
 autoload :CSV, 'csv'
 require 'matrix'
 require 'forwardable'
@@ -103,6 +93,8 @@ require 'erb'
 require 'date'
 
 require 'daru/version.rb'
+
+require 'daru/io'
 
 require 'open-uri'
 require 'backports/2.1.0/array/to_h'

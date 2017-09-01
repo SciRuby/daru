@@ -3880,60 +3880,6 @@ describe Daru::DataFrame do
     end
   end
 
-  context '#to_json' do
-    let(:df) { Daru::DataFrame.new({a: [1,2,3], b: [3,4,5], c: [6,7,8]}, index: [:one, :two, :three], name: 'test')}
-    subject { JSON.parse(json) }
-
-    context 'with index' do
-      let(:json) { df.to_json(false) }
-      # FIXME: is it most reasonable we can do?.. -- zverok
-      # For me, more resonable thing would be something like
-      #
-      # [
-      #   {"index" => "one"  , "a"=>1, "b"=>3, "c"=>6},
-      #   {"index" => "two"  , "a"=>2, "b"=>4, "c"=>7},
-      #   {"index" => "three", "a"=>3, "b"=>5, "c"=>8}
-      # ]
-      #
-      # Or maybe
-      #
-      # [
-      #   ["one"  , {"a"=>1, "b"=>3, "c"=>6}],
-      #   ["two"  , {"a"=>2, "b"=>4, "c"=>7}],
-      #   ["three", {"a"=>3, "b"=>5, "c"=>8}]
-      # ]
-      #
-      # Or even
-      #
-      # {
-      #   "one"   => {"a"=>1, "b"=>3, "c"=>6},
-      #   "two"   => {"a"=>2, "b"=>4, "c"=>7},
-      #   "three" => {"a"=>3, "b"=>5, "c"=>8}
-      # }
-      #
-      it { is_expected.to eq(
-        [
-          [
-            {"a"=>1, "b"=>3, "c"=>6},
-            {"a"=>2, "b"=>4, "c"=>7},
-            {"a"=>3, "b"=>5, "c"=>8}
-          ],
-          ["one", "two", "three"]
-        ]
-      )}
-    end
-
-    context 'without index' do
-      let(:json) { df.to_json(true) }
-      it { is_expected.to eq(
-        [
-          {"a"=>1, "b"=>3, "c"=>6},
-          {"a"=>2, "b"=>4, "c"=>7},
-          {"a"=>3, "b"=>5, "c"=>8}
-        ]
-      )}
-    end
-  end
 
   context '#create_sql' do
     let(:df) { Daru::DataFrame.new({
