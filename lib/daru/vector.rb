@@ -760,6 +760,44 @@ module Daru
       self
     end
 
+    # Rolling fillna
+    # replace all Float::NAN and NIL values with the preceeding or following value
+    #
+    # @param [Symbol] (:forward, :backward) whether replacement value is preceeding or following
+    #
+    # @example
+    #
+    # dv = Daru::Vector.new([1, 2, 1, 4, nil, Float::NAN, 3, nil, Float::NAN])
+    #
+    # 2.3.3 :068 > dv.rolling_fillna(:forward)
+    # => #<Daru::Vector(9)>
+    # 0   1
+    # 1   2
+    # 2   1
+    # 3   4
+    # 4   4
+    # 5   4
+    # 6   3
+    # 7   3
+    # 8   3
+    #
+    def rolling_fillna!(direction=:forward)
+      missing_idxs = indexes(*Daru::MISSING_VALUES)
+      missing_idxs.each do |idx|
+        repl_idx = idx
+        while (missing_idxs.include?(repl_idx) && (repl_idx > -2 || repl_idx <= self.size))
+          repl_idx = direction == :forward ? repl_idx - 1 : repl_idx + 1
+        end
+        repl = (repl_idx == -1 || repl_idx == self.size) ? 0 : self[repl_idx]
+        self[idx] = repl
+      end
+    end
+
+    # Non-destructive version of rolling_fillna!
+    def rolling_fillna(direction=:forward)
+      dup.rolling_fillna!
+    end
+
     # Lags the series by `k` periods.
     #
     # Lags the series by `k` periods, "shifting" data and inserting `nil`s

@@ -661,6 +661,52 @@ module Daru
       self
     end
 
+    # Rolling fillna
+    # replace all Float::NAN and NIL values with the preceeding or following value
+    #
+    # @param [Symbol] (:forward, :backward) whether replacement value is preceeding or following
+    #
+    # @example
+    #
+    # df = Daru::DataFrame.new({
+    #  a: [1,    2,          3,   nil,        Float::NAN, nil, 1,   7],
+    #  b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   nil],
+    #  c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
+    # })
+    #
+    # => #<Daru::DataFrame(8x3)>
+    #      a   b   c
+    #  0   1   a   a
+    #  1   2   b NaN
+    #  2   3 nil   3
+    #  3 nil NaN   4
+    #  4 NaN nil   3
+    #  5 nil   3   5
+    #  6   1   5 nil
+    #  7   7 nil   7
+    #
+    # 2.3.3 :068 > df.rolling_fillna(:forward)
+    # => #<Daru::DataFrame(8x3)>
+    #      a   b   c
+    #  0   1   a   a
+    #  1   2   b   a
+    #  2   3   b   3
+    #  3   3   b   4
+    #  4   3   b   3
+    #  5   3   3   5
+    #  6   1   5   5
+    #  7   7   5   7
+    #
+    def rolling_fillna!(direction=:forward)
+      @data.each { |vec| vec.rolling_fillna!(direction) }
+    end
+
+    def rolling_fillna(direction=:forward)
+      dup.tap do |df|
+        df.each_vector { |vec| vec.rolling_fillna!(direction) }
+      end
+    end
+
     # Iterate over each index of the DataFrame.
     def each_index &block
       return to_enum(:each_index) unless block_given?
