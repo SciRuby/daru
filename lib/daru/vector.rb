@@ -788,7 +788,6 @@ module Daru
         valid_idxs = valid_idxs.reverse
         comparator = :<
       else
-        valid_idxs = valid_idxs
         comparator = :>
       end
       missing_idxs.each do |idx|
