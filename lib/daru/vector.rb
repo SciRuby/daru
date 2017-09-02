@@ -794,7 +794,7 @@ module Daru
 
     # Non-destructive version of rolling_fillna!
     def rolling_fillna(direction=:forward)
-      dup.rolling_fillna!
+      dup.rolling_fillna!(direction)
     end
 
     # Lags the series by `k` periods.
