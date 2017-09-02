@@ -171,6 +171,13 @@ describe Daru::DataFrame do
         expect(df.a)      .to eq([1,2,3,4,5].dv(:a, df.index))
       end
 
+      it "initializes from a Hash and preserves default order" do
+        df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]},
+          index: [:one, :two, :three, :four, :five])
+
+        expect(df.vectors).to eq(Daru::Index.new [:b, :a])
+      end
+
       it "initializes from a Hash of Vectors" do
         va = Daru::Vector.new([1,2,3,4,5], index: [:one, :two, :three, :four, :five])
         vb = Daru::Vector.new([11,12,13,14,15], index: [:one, :two, :three, :four, :five])
@@ -228,7 +235,7 @@ describe Daru::DataFrame do
         df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]})
 
         expect(df.index)  .to eq(Daru::Index.new [0,1,2,3,4])
-        expect(df.vectors).to eq(Daru::Index.new [:a, :b])
+        expect(df.vectors).to eq(Daru::Index.new [:b, :a])
       end
 
       it "aligns indexes properly" do
@@ -3391,7 +3398,8 @@ describe Daru::DataFrame do
       ev_b  = Daru::Vector.new [1, 1, 0]
       ev_c  = Daru::Vector.new [0, 1, 1]
       df2 = Daru::DataFrame.new({
-        :_id => ev_id, 'a' => ev_a, 'b' => ev_b, 'c' => ev_c })
+        :_id => ev_id, 'a' => ev_a, 'b' => ev_b, 'c' => ev_c },
+        order: ['a', 'b', 'c', :_id])
 
       expect(df2).to eq(df)
     end

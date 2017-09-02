@@ -2454,7 +2454,7 @@ module Daru
     end
 
     def create_vectors_index_with vectors, source
-      vectors = source.keys.sort_by(&:to_s) if vectors.nil?
+      vectors = source.keys if vectors.nil?
 
       @vectors =
         if vectors.is_a?(Index) || vectors.is_a?(MultiIndex)
