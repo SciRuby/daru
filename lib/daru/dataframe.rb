@@ -2066,23 +2066,26 @@ module Daru
       index_tuples = Array(@index).uniq
       # if length of index_tuple is less than 2 then add one colmn of index,
       # otherwise some error in slicing df using vector and index.
-      insert_index = ->(x, i) { (Array(x).size >= 2) ? x : Array(x) + [i] }
+      insert_index = ->(x, i) { Array(x).size >= 2 ? x : Array(x) + [i] }
       @index = Daru::Index.new(
-        Array(@index).map.with_index {|x, i| insert_index.call(x, i)})
+        Array(@index).map.with_index { |x, i| insert_index.call(x, i) }
+        )
       update_data Array(@data), Array(@vectors)
       options.keys.each do |vec|
         do_this_on_vec = options[vec]
         colmn_value << if @vectors.include?(vec)
                          apply_method_on_colmns(
-                          vec, index_tuples, do_this_on_vec)
+                            vec, index_tuples, do_this_on_vec
+                          )
                        else
                          apply_method_on_df(
-                          index_tuples, do_this_on_vec)
+                            index_tuples, do_this_on_vec
+                          )
                        end
       end
-
       Daru::DataFrame.new(
-        colmn_value, index: index_tuples, order: options.keys)
+        colmn_value, index: index_tuples, order: options.keys
+      )
     end
 
 
@@ -2107,7 +2110,7 @@ module Daru
     def apply_method_on_df index_tuples, method
       rows = []
       index_tuples.each do |indexes|
-        slice = self.row[*indexes]
+        slice = row[*indexes]
         rows << method.call(slice)
       end
       rows

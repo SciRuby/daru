@@ -506,7 +506,8 @@ describe Daru::Core::GroupBy do
       it { is_expected.to eq Daru::DataFrame.new({
         salary: [1100, 2200, 1300],
         month: ['June/July', 'June/July', 'June/July']},
-        index: ['Jane', 'John', 'Mark'])
+        index: ['Jane', 'John', 'Mark'],
+        order: [:salary, :month])
       }
     end
 
@@ -521,7 +522,7 @@ describe Daru::Core::GroupBy do
       it { is_expected.to eq Daru::DataFrame.new({
         salary: [1100, 2200, 1300],
         month: ['June/July', 'June/July', 'June/July'],
-        mean_salar: [550, 1100, 650],
+        mean_salary: [550.0, 1100.0, 650.0],
         periods: [2, 2, 2]},
         index: ['Jane', 'John', 'Mark'], order: [:salary, :month,
                                                 :mean_salary, :periods]) }

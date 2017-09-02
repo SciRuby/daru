@@ -1,6 +1,6 @@
 module Daru
   module Core
-    class GroupBy # rubocop:disable Metrics/ClassLength
+    class GroupBy
       attr_reader :groups, :df
 
       # Iterate over each group created by group_by. A DataFrame is yielded in
@@ -244,7 +244,7 @@ module Daru
       end
 
       def summarize(options={})
-        @df.index.remove_layer (@df.index.levels.size - 1)
+        @df.index = @df.index.remove_layer(@df.index.levels.size - 1)
         @df.summarize(options)
       end
 
