@@ -760,6 +760,44 @@ module Daru
       self
     end
 
+    # Rolling fillna
+    # replace all Float::NAN and NIL values with the preceeding or following value
+    #
+    # @param [Symbol] (:forward, :backward) whether replacement value is preceeding or following
+    #
+    # @example
+    #
+    # dv = Daru::Vector.new([1, 2, 1, 4, nil, Float::NAN, 3, nil, Float::NAN])
+    #
+    # 2.3.3 :068 > dv.rolling_fillna(:forward)
+    # => #<Daru::Vector(9)>
+    # 0   1
+    # 1   2
+    # 2   1
+    # 3   4
+    # 4   4
+    # 5   4
+    # 6   3
+    # 7   3
+    # 8   3
+    #
+    def rolling_fillna!(direction=:forward)
+      enum = direction == :forward ? index : index.reverse_each
+      last_valid_value = 0
+      enum.each do |idx|
+        if valid_value?(self[idx])
+          last_valid_value = self[idx]
+        else
+          self[idx] = last_valid_value
+        end
+      end
+    end
+
+    # Non-destructive version of rolling_fillna!
+    def rolling_fillna(direction=:forward)
+      dup.rolling_fillna!(direction)
+    end
+
     # Lags the series by `k` periods.
     #
     # Lags the series by `k` periods, "shifting" data and inserting `nil`s
@@ -1435,6 +1473,11 @@ module Daru
         @nan_positions = size.times.select do |i|
           @data[i].respond_to?(:nan?) && @data[i].nan?
         end
+    end
+
+    # Helper method returning validity of arbitrary value
+    def valid_value?(v)
+      v.respond_to?(:nan?) && v.nan? || v.nil? ? false : true
     end
 
     def initialize_vector source, opts

@@ -1804,6 +1804,32 @@ describe Daru::DataFrame do
     end
   end
 
+  context '#rolling_fillna!' do
+    subject do
+      Daru::DataFrame.new({
+        a: [1,    2,          3,   nil,        Float::NAN, nil, 1,   7],
+        b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   nil],
+        c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
+      })
+    end
+
+    context 'rolling_fillna! forwards' do
+      before { subject.rolling_fillna!(:forward) }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'a.to_a') { is_expected.to eq [1, 2, 3, 3, 3, 3, 1, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a,  :b, :b, :b, :b, 3, 5, 5] }
+      its(:'c.to_a') { is_expected.to eq ['a', 'a', 3, 4, 3, 5, 5, 7] }
+    end
+
+    context 'rolling_fillna! backwards' do
+      before { subject.rolling_fillna!(:backward) }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'a.to_a') { is_expected.to eq [1, 2, 3, 1, 1, 1, 1, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a, :b, 3, 3, 3, 3, 5, 0] }
+      its(:'c.to_a') { is_expected.to eq ['a', 3, 3, 4, 3, 5, 7, 7] }
+    end
+  end
+
   context "#clone" do
     it "returns a view of the whole dataframe" do
       cloned = @data_frame.clone
