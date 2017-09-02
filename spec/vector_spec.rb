@@ -1782,7 +1782,7 @@ describe Daru::Vector do
     end
 
     context 'rolling_fillna! backwards' do
-      before { subject.rolling_fillna!(dir: :backward) }
+      before { subject.rolling_fillna!(direction: :backward) }
       its(:to_a) { is_expected.to eq [1, 2, 1, 4, 3, 3, 3, 0, 0] }
     end
   end

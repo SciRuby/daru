@@ -783,12 +783,11 @@ module Daru
     #
     def rolling_fillna!(direction=:forward)
       missing_idxs = indexes(*Daru::MISSING_VALUES)
+      valid_idxs = Array(0...dv.size) - missing_idxs
+      valid_idxs = (direction == :forward) ? valid_idxs.reverse : valid_idxs
       missing_idxs.each do |idx|
-        repl_idx = idx
-        while (missing_idxs.include?(repl_idx) && (repl_idx > -2 || repl_idx <= self.size))
-          repl_idx = direction == :forward ? repl_idx - 1 : repl_idx + 1
-        end
-        repl = (repl_idx == -1 || repl_idx == self.size) ? 0 : self[repl_idx]
+        repl_idx = (direction == :forward) ? valid_idxs.find { |i| i < idx } : valid_idxs.find { |i| i > idx }
+        repl = repl_idx ? self[repl_idx] : 0
         self[idx] = repl
       end
     end
