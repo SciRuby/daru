@@ -702,9 +702,7 @@ module Daru
     end
 
     def rolling_fillna(direction=:forward)
-      dup.tap do |df|
-        df.each_vector { |vec| vec.rolling_fillna!(direction) }
-      end
+      dup.rolling_fillna!(direction)
     end
 
     # Iterate over each index of the DataFrame.
