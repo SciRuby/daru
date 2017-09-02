@@ -784,9 +784,15 @@ module Daru
     def rolling_fillna!(direction=:forward)
       missing_idxs = indexes(*Daru::MISSING_VALUES)
       valid_idxs = Array(0...dv.size) - missing_idxs
-      valid_idxs = (direction == :forward) ? valid_idxs.reverse : valid_idxs
+      if (direction == :forward)
+        valid_idxs = valid_idxs.reverse
+        comparator = :<
+      else
+        valid_idxs = valid_idxs
+        comparator = :>
+      end
       missing_idxs.each do |idx|
-        repl_idx = (direction == :forward) ? valid_idxs.find { |i| i < idx } : valid_idxs.find { |i| i > idx }
+        repl_idx = valid_idxs.find { |i| i.public_send(comparator, idx) }
         repl = repl_idx ? self[repl_idx] : 0
         self[idx] = repl
       end
