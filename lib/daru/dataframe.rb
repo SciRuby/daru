@@ -2062,15 +2062,15 @@ module Daru
     end
 
     def summarize(options={})
-      index_tuples = Array(@index).uniq
+      # TODO: fix below issue.
       # if length of index_tuple is less than 2 then add one colmn of index,
       # otherwise some error in slicing df using vector and index.
-      insert_index = ->(x, i) { Array(x).size >= 2 ? x : Array(x) + [i] }
-      @index = Daru::Index.new(
-        Array(@index).map.with_index { |x, i| insert_index.call(x, i) }
-      )
+      # insert_index = ->(x, i) { Array(x).size >= 2 ? x : Array(x) + [i] }
+      # @index = Daru::Index.new(
+      #   Array(@index).map.with_index { |x, i| insert_index.call(x, i) }
+      # )
       update_data Array(@data), Array(@vectors)
-      colmn_value = summarized_colmn_value(options)
+      colmn_value, index_tuples = summarized_colmn_value(options)
       Daru::DataFrame.new(
         colmn_value, index: index_tuples, order: options.keys
       )
@@ -2666,6 +2666,7 @@ module Daru
 
     def summarized_colmn_value(options)
       colmn_value = []
+      index_tuples = Array(@index).uniq
       options.keys.each do |vec|
         do_this_on_vec = options[vec]
         colmn_value << if @vectors.include?(vec)
@@ -2678,7 +2679,7 @@ module Daru
                          )
                        end
       end
-      colmn_value
+      [colmn_value, index_tuples]
     end
 
     # coerce ranges, integers and array in appropriate ways
