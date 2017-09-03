@@ -1795,6 +1795,17 @@ describe Daru::Vector do
       before { subject.rolling_fillna!(:forward) }
       its(:to_a) { is_expected.to eq [0, 0, 0, 0, 0] }
     end
+
+    context 'with non-default index' do
+      subject do
+        Daru::Vector.new(
+          [Float::NAN, 2, 1, 4, nil, Float::NAN, 3, nil, Float::NAN],
+          index: %w[a b c d e f g h i]
+        )
+      end
+      before { subject.rolling_fillna!(direction: :backward) }
+      it { is_expected.to eq Daru::Vector.new([2, 2, 1, 4, 3, 3, 3, 0, 0], index: %w[a b c d e f g h i]) }
+    end
   end
 
   context "#type" do

@@ -782,13 +782,14 @@ module Daru
     # 8   3
     #
     def rolling_fillna!(direction=:forward)
-      missing_idxs = indexes(*Daru::MISSING_VALUES)
-      valid_idxs = Array(0...dv.size) - missing_idxs
-      valid_idxs, comp = direction == :forward ? [valid_idxs.reverse, :<] : [valid_idxs, :>]
-      missing_idxs.each do |idx|
-        repl_idx = valid_idxs.find { |i| i.public_send(comp, idx) }
-        repl = repl_idx ? self[repl_idx] : 0
-        self[idx] = repl
+      enum = direction == :forward ? index : index.reverse_each
+      last_valid_value = 0
+      enum.each do |idx|
+        if valid_value?(self[idx])
+          last_valid_value = self[idx]
+        else
+          self[idx] = last_valid_value
+        end
       end
     end
 
@@ -1472,6 +1473,11 @@ module Daru
         @nan_positions = size.times.select do |i|
           @data[i].respond_to?(:nan?) && @data[i].nan?
         end
+    end
+
+    # Helper method for rolling_fillna
+    def valid_value?(v)
+      v.respond_to?(:nan?) && v.nan? || v.nil? ? false : true
     end
 
     def initialize_vector source, opts
