@@ -2200,9 +2200,7 @@ module Daru
         rescue IndexError
           raise IndexError, "Specified vector #{names.first} does not exist"
         end
-
         return @data[pos] if pos.is_a?(Numeric)
-
         names = pos
       end
 
