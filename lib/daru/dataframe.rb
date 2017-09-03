@@ -2061,7 +2061,7 @@ module Daru
       res
     end
 
-    def summarize(options={})
+    def aggregate(options={})
       # TODO: fix below issue.
       # if length of index_tuple is less than 2 then add one colmn of index,
       # otherwise some error in slicing df using vector and index.
@@ -2070,12 +2070,11 @@ module Daru
       #   Array(@index).map.with_index { |x, i| insert_index.call(x, i) }
       # )
       update_data Array(@data), Array(@vectors)
-      colmn_value, index_tuples = summarized_colmn_value(options)
+      colmn_value, index_tuples = aggregated_colmn_value(options)
       Daru::DataFrame.new(
         colmn_value, index: index_tuples, order: options.keys
       )
     end
-
 
     private
 
@@ -2662,7 +2661,7 @@ module Daru
       end
     end
 
-    def summarized_colmn_value(options)
+    def aggregated_colmn_value(options)
       colmn_value = []
       index_tuples = Array(@index).uniq
       options.keys.each do |vec|

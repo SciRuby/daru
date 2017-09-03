@@ -466,14 +466,14 @@ describe Daru::Core::GroupBy do
     it { is_expected.to eq Daru::DataFrame.new({num: [6]}, index: ['a']) }
   end
 
-  context '#summarize' do
+  context '#aggregate' do
     let(:dataframe) { Daru::DataFrame.new({
       employee: %w[John Jane Mark John Jane Mark],
       month: %w[June June June July July July],
       salary: [1000, 500, 700, 1200, 600, 600]})
     }
-    context 'group and summarize sum for particular single vector' do
-      subject { dataframe.group_by([:employee]).summarize(salary: :sum) }
+    context 'group and aggregate sum for particular single vector' do
+      subject { dataframe.group_by([:employee]).aggregate(salary: :sum) }
 
       it { is_expected.to eq Daru::DataFrame.new({
               salary: [1100, 2200, 1300]},
@@ -481,9 +481,9 @@ describe Daru::Core::GroupBy do
       }
     end
 
-    context 'group and summarize sum for two vectors' do
+    context 'group and aggregate sum for two vectors' do
       subject {
-        dataframe.group_by([:employee, :month]).summarize(salary: :sum) }
+        dataframe.group_by([:employee, :month]).aggregate(salary: :sum) }
 
       it { is_expected.to eq Daru::DataFrame.new({
               salary: [600, 500, 1200, 1000, 600, 700]},
@@ -498,8 +498,8 @@ describe Daru::Core::GroupBy do
       )}
     end
 
-    context 'group and summarize sum and lambda function for vectors' do
-      subject { dataframe.group_by([:employee]).summarize(
+    context 'group and aggregate sum and lambda function for vectors' do
+      subject { dataframe.group_by([:employee]).aggregate(
         salary: :sum,
         month: ->(vec) { vec.to_a.join('/') }) }
 
@@ -511,8 +511,8 @@ describe Daru::Core::GroupBy do
       }
     end
 
-    context 'group and summarize sum and lambda functions on dataframe' do
-      subject { dataframe.group_by([:employee]).summarize(
+    context 'group and aggregate sum and lambda functions on dataframe' do
+      subject { dataframe.group_by([:employee]).aggregate(
         salary: :sum,
         month: ->(vec) { vec.to_a.join('/') },
         mean_salary: ->(df) { df.salary.mean },

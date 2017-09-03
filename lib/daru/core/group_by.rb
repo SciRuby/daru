@@ -243,9 +243,9 @@ module Daru
         @df.inspect
       end
 
-      def summarize(options={})
+      def aggregate(options={})
         @df.index = @df.index.remove_layer(@df.index.levels.size - 1)
-        @df.summarize(options)
+        @df.aggregate(options)
       end
 
       private
