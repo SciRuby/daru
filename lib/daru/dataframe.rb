@@ -2062,13 +2062,6 @@ module Daru
     end
 
     def aggregate(options={})
-      # TODO: fix below issue.
-      # if length of index_tuple is less than 2 then add one colmn of index,
-      # otherwise some error in slicing df using vector and index.
-      # insert_index = ->(x, i) { Array(x).size >= 2 ? x : Array(x) + [i] }
-      # @index = Daru::Index.new(
-      #   Array(@index).map.with_index { |x, i| insert_index.call(x, i) }
-      # )
       update_data Array(@data), Array(@vectors)
       colmn_value, index_tuples = aggregated_colmn_value(options)
       Daru::DataFrame.new(
@@ -2079,7 +2072,7 @@ module Daru
     private
 
     # Do the `method` (`method` can be :sum, :mean, :std, :median, etc or
-    # lambda/function/Proc), on the column.
+    # lambda/Proc), on the column.
     def apply_method_on_colmns colmn, index_tuples, method
       rows = []
       index_tuples.each do |indexes|
