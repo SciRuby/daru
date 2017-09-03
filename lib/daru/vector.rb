@@ -1475,7 +1475,7 @@ module Daru
         end
     end
 
-    # Helper method for rolling_fillna
+    # Helper method returning validity of arbitrary value
     def valid_value?(v)
       v.respond_to?(:nan?) && v.nan? || v.nil? ? false : true
     end
