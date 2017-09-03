@@ -2061,7 +2061,7 @@ module Daru
       res
     end
 
-    # Function to use for aggregating the data
+    # Function to use for aggregating the data.
     #
     # @param options [Hash] options for column, you want in resultant dataframe
     #
@@ -2106,6 +2106,8 @@ module Daru
     #           b         12
     #           c          1
     #
+    # Note: `GroupBy` class `aggregate` method uses this `aggregate` method
+    # internally.
     def aggregate(options={})
       colmn_value, index_tuples = aggregated_colmn_value(options)
       Daru::DataFrame.new(
@@ -2120,7 +2122,8 @@ module Daru
     def apply_method_on_colmns colmn, index_tuples, method
       rows = []
       index_tuples.each do |indexes|
-        slice = self[colmn][*indexes]
+        # If single element then also make it vector.
+        slice = Daru::Vector.new(Array self[colmn][*indexes])
         case method
         when Symbol
           rows << (slice.is_a?(Daru::Vector) ? slice.send(method) : slice)

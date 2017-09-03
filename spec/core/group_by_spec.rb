@@ -527,5 +527,53 @@ describe Daru::Core::GroupBy do
         index: ['Jane', 'John', 'Mark'], order: [:salary, :month,
                                                 :mean_salary, :periods]) }
     end
+
+    context 'group_by and aggregate on mixed MultiIndex' do
+      let(:df) { Daru::DataFrame.new(
+                    name: ['Ram','Krishna','Ram','Krishna','Krishna'],
+                    visited: [
+                      'Hyderabad', 'Delhi', 'Mumbai', 'Raipur', 'Banglore']
+                 )
+                }
+      let(:df_mixed) { Daru::DataFrame.new(
+                    name: ['Krishna','Ram','Krishna','Krishna'],
+                    visited: [
+                      'Delhi', 'Mumbai', 'Raipur', 'Banglore']
+                 )
+                }
+      it 'group_by' do
+        expect(df.group_by(:name).df).to eq(
+          Daru::DataFrame.new({
+            visited: ['Delhi', 'Raipur', 'Banglore', 'Hyderabad', 'Mumbai']},
+            index: Daru::MultiIndex.from_tuples(
+                [['Krishna', 1], ['Krishna', 3], ['Krishna', 4],
+                ['Ram', 0], ['Ram', 2]]
+            )
+          )
+        )
+      end
+
+      it 'group_by and aggregate' do
+        expect(
+          df.group_by(:name).aggregate(
+            visited: -> (vec){vec.to_a.join(',')})).to eq(
+              Daru::DataFrame.new({
+                visited: ['Delhi,Raipur,Banglore', 'Hyderabad,Mumbai']},
+                index: ['Krishna', 'Ram']
+              )
+          )
+      end
+
+      it 'group_by and aggregate when anyone index is not multiple times' do
+        expect(
+          df_mixed.group_by(:name).aggregate(
+            visited: -> (vec){vec.to_a.join(',')})).to eq(
+              Daru::DataFrame.new({
+                visited: ['Delhi,Raipur,Banglore', 'Mumbai']},
+                index: ['Krishna', 'Ram']
+              )
+          )
+      end
+    end
   end
 end
