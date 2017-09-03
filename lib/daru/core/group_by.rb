@@ -243,6 +243,8 @@ module Daru
         @df.inspect
       end
 
+      # `group_by` is using Daru::DataFrame#aggregate
+      #
       def aggregate(options={})
         @df.index = @df.index.remove_layer(@df.index.levels.size - 1)
         @df.aggregate(options)
