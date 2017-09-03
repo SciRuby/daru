@@ -2062,7 +2062,6 @@ module Daru
     end
 
     def aggregate(options={})
-      update_data Array(@data), Array(@vectors)
       colmn_value, index_tuples = aggregated_colmn_value(options)
       Daru::DataFrame.new(
         colmn_value, index: index_tuples, order: options.keys
@@ -2072,7 +2071,7 @@ module Daru
     private
 
     # Do the `method` (`method` can be :sum, :mean, :std, :median, etc or
-    # lambda/Proc), on the column.
+    # lambda), on the column.
     def apply_method_on_colmns colmn, index_tuples, method
       rows = []
       index_tuples.each do |indexes|

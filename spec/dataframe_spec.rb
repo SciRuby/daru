@@ -3892,6 +3892,24 @@ describe Daru::DataFrame do
     end
   end
 
+  context '#aggregate' do
+    let(:cat_idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
+    let(:df) { Daru::DataFrame.new(num: [52,12,07,17,01], cat_index: cat_idx) }
+    let(:df_cat_idx) {
+      Daru::DataFrame.new({num: [52,12,07,17,01]}, index: cat_idx) }
+
+    it 'lambda function on particular column' do
+      expect(df.aggregate(num_100_times: ->(df) { df.num*100 })).to eq(
+          Daru::DataFrame.new(num_100_times: [5200, 1200, 700, 1700, 100])
+        )
+    end
+    it 'aggregate sum on particular column' do
+      expect(df_cat_idx.aggregate(num: :sum)).to eq(
+          Daru::DataFrame.new({num: [76, 12, 1]}, index: [:a, :b, :c])
+        )
+    end
+  end
+
   context '#create_sql' do
     let(:df) { Daru::DataFrame.new({
         a: [1,2,3],
