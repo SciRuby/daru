@@ -30,11 +30,11 @@ describe Daru::Vector do
       end
 
       context "#max_by" do
-        it "returns max value" do
-          expect(dv.max_by).to eq("Tyrion")
+        it "raises error without object block" do
+          expect { dv.max_by }.to raise_error(ArgumentError)
         end
-        it "returns N max values" do
-          expect(dv.max_by(2)).to eq(["Tyrion","Jon Starkgaryen"])
+        it "raises error without object block when N is given" do
+          expect { dv.max_by(2) }.to raise_error(ArgumentError)
         end
         it "returns max value, sorted by object block input" do
           expect(dv.max_by { |x| x.size }).to eq("Jon Starkgaryen")
@@ -60,11 +60,11 @@ describe Daru::Vector do
       end
 
       context "#index_of_max_by" do
-        it "returns index_of_max value" do
-          expect(dv.index_of_max_by).to eq(:t)
+        it "raises error without object block" do
+          expect { dv.index_of_max_by }.to raise_error(ArgumentError)
         end
-        it "returns N index_of_max values" do
-          expect(dv.index_of_max_by(2)).to eq([:t, :j])
+        it "raises error without object block when N is given" do
+          expect { dv.index_of_max_by(2) }.to raise_error(ArgumentError)
         end
         it "returns index_of_max value, sorted by object block input" do
           expect(dv.index_of_max_by { |x| x.size }).to eq(:j)
@@ -90,11 +90,11 @@ describe Daru::Vector do
       end
 
       context "#min_by" do
-        it "returns min value" do
-          expect(dv.min_by).to eq("Daenerys")
+        it "raises error without object block" do
+          expect { dv.min_by }.to raise_error(ArgumentError)
         end
-        it "returns N min values" do
-          expect(dv.min_by(2)).to eq(["Daenerys","Jon Starkgaryen"])
+        it "raises error without object block when N is given" do
+          expect { dv.min_by(2) }.to raise_error(ArgumentError)
         end
         it "returns min value, sorted by object block input" do
           expect(dv.min_by { |x| x.size }).to eq("Tyrion")
@@ -120,11 +120,11 @@ describe Daru::Vector do
       end
 
       context "#index_of_min_by" do
-        it "returns index of min value" do
-          expect(dv.index_of_min_by).to eq(:d)
+        it "raises error without object block" do
+          expect { dv.index_of_min_by }.to raise_error(ArgumentError)
         end
-        it "returns N index of min values" do
-          expect(dv.index_of_min_by(2)).to eq([:d, :j])
+        it "raises error without object block when N is given" do
+          expect { dv.index_of_min_by(2) }.to raise_error(ArgumentError)
         end
         it "returns index of min value, sorted by object block input" do
           expect(dv.index_of_min_by { |x| x.size }).to eq(:t)
