@@ -288,8 +288,8 @@ module Daru
 
       def init_groups_df tuples, names
         multi_index_tuples = []
-        @keys = tuples.uniq.sort(&TUPLE_SORTER)
-        @keys.each do |key|
+        keys = tuples.uniq.sort(&TUPLE_SORTER)
+        keys.each do |key|
           indices = all_indices_for(tuples, key)
           @groups[key] = indices
           indices.each do |indice|

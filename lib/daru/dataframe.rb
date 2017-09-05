@@ -2123,7 +2123,7 @@ module Daru
       rows = []
       index_tuples.each do |indexes|
         # If single element then also make it vector.
-        slice = Daru::Vector.new(Array self[colmn][*indexes])
+        slice = Daru::Vector.new(Array(self[colmn][*indexes]))
         case method
         when Symbol
           rows << (slice.is_a?(Daru::Vector) ? slice.send(method) : slice)
