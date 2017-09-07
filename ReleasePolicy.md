@@ -1,6 +1,6 @@
 # Gem Release Policy
 
-Applicable to Daru > 0.16
+Applicable to Daru > 0.1.6
 
 ## Versioning
 
