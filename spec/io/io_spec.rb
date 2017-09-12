@@ -58,6 +58,16 @@ describe Daru::IO do
           expect(df_local).to eq(df_remote)
         end
       end
+
+      it "allows block to process read data" do
+        df = Daru::DataFrame.from_csv 'spec/fixtures/macd_data.csv', {
+          headers: true,
+          header_converters: CSV::HeaderConverters[:symbol]
+        }
+        expect(df.vectors).to all(be_a(Symbol))
+        expect(df.vectors).to include(:macd_12_26_9, :macd_6_13_4, :macdhist_12_26_9, :macdhist_6_13_4, :macdsig_12_26_9, :macdsig_6_13_4, :price)
+      end
+
     end
 
     context "#write_csv" do
