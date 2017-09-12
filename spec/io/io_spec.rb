@@ -59,13 +59,37 @@ describe Daru::IO do
         end
       end
 
-      it "allows block to process read data" do
+      it "allows options to process header" do
         df = Daru::DataFrame.from_csv 'spec/fixtures/macd_data.csv', {
           headers: true,
           header_converters: CSV::HeaderConverters[:symbol]
         }
         expect(df.vectors).to all(be_a(Symbol))
         expect(df.vectors).to include(:macd_12_26_9, :macd_6_13_4, :macdhist_12_26_9, :macdhist_6_13_4, :macdsig_12_26_9, :macdsig_6_13_4, :price)
+      end
+
+      it "allows block to process rows" do
+        df = Daru::DataFrame.from_csv('spec/fixtures/block_processing.csv') do |row|
+          if row[0] == 'date' # skip header
+            row
+          else
+            [ Date.parse(row[0])+1, row[1].to_i + 1 ]
+          end
+        end
+        expect(df['date']).to all(be_a(Date))
+        expect(df['date'][0]).to eq(Date.parse('2016-01-11'))
+        expect(df['count'][0]).to eq(1)
+      end
+
+      it "allows block to process rows with headers=true" do
+        df = Daru::DataFrame.from_csv('spec/fixtures/block_processing.csv', headers: true) do |hash|
+          hash[:date] = hash[:date].map { |d| Date.parse(d)+1 }
+          hash[:count] = hash[:count].map { |c| c+1 }
+          hash
+        end
+        expect(df[:date]).to all(be_a(Date))
+        expect(df[:date][0]).to eq(Date.parse('2016-01-11'))
+        expect(df[:count][0]).to eq(1)
       end
 
     end
