@@ -21,6 +21,11 @@ module Daru
         #   df = Daru::DataFrame.new({a:['A', 'B', 'C', 'D', 'E'], b:[10,20,30,40,50]})
         #   df.plot type: :bar, x: :a, y: :b
         def plot opts={}, &block
+          unless opts[:x]
+            opts[:x] = :_index
+            self.[]=(:_index, @index.to_a)
+          end
+
           if opts[:categorized]
             plot_with_category(opts, &block)
           else
