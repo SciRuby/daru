@@ -15,6 +15,7 @@ matrix:
 script:
   - bundle exec rspec
   - bundle exec rubocop
+  - yard-junk
 
 install:
   - gem install bundler
