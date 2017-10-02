@@ -1587,6 +1587,22 @@ describe Daru::DataFrame do
       }
     end
 
+    context 'with mulitiindex DF' do
+      subject(:data_frame) {
+        Daru::DataFrame.new({b: [11,12,13], a: [1,2,3],
+          c: [11,22,33]}, order: [:a, :b, :c],
+          index: Daru::MultiIndex.from_tuples([[:one, :two], [:one, :three], [:two, :four]]))
+      }
+
+      before { data_frame.add_row [100,200,300], [:two, :five] }
+
+      it { is_expected.to eq(Daru::DataFrame.new({
+          b: [11,12,13,200], a: [1,2,3,100],
+          c: [11,22,33,300]}, order: [:a, :b, :c],
+          index: Daru::MultiIndex.from_tuples([[:one, :two], [:one, :three], [:two, :four], [:two, :five]])))
+      }
+    end
+
     it "allows adding rows after making empty DF by specfying only order" do
       df = Daru::DataFrame.new({}, order: [:a, :b, :c])
       df.add_row [1,2,3]
