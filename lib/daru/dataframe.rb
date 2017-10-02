@@ -533,7 +533,7 @@ module Daru
     end
 
     def add_row row, index=nil
-      self.row[index || @size] = row
+      self.row[*(index || @size)] = row
     end
 
     def add_vector n, vector
