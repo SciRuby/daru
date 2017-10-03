@@ -90,8 +90,8 @@ module Daru
       # Initialize one of the subclasses of DateOffsetType with the number of the times
       # the offset should be applied, which is the supplied as the argument.
       #
-      # @param n [Integer] The number of times an offset should be applied.
-      def initialize n=1
+      # @yieldparam n [Integer] The number of times an offset should be applied.
+      def initialize n = 1
         @n = n
       end
 

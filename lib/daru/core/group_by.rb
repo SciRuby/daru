@@ -203,8 +203,6 @@ module Daru
 
       # Iteratively applies a function to the values in a group and accumulates the result.
       # @param init (nil) The initial value of the accumulator.
-      # @param block [Proc] A proc or lambda that accepts two arguments.  The first argument
-      #                     is the accumulated result.  The second argument is a DataFrame row.
       # @example Usage of reduce
       #   df = Daru::DataFrame.new({
       #     a: ['a','b'] * 3,

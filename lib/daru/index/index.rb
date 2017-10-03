@@ -90,7 +90,7 @@ module Daru
     end
 
     # Returns true if all arguments are either a valid category or position
-    # @param [Array<object>] *indexes categories or positions
+    # @param indexes [Array<object>] categories or positions
     # @return [true, false]
     # @example
     #   idx.valid? :a, 2
@@ -104,7 +104,7 @@ module Daru
     # Returns positions given indexes or positions
     # @note If the arugent is both a valid index and a valid position,
     #   it will treated as valid index
-    # @param [Array<object>] *indexes indexes or positions
+    # @param indexes [Array<object>] indexes or positions
     # @example
     #   x = Daru::Index.new [:a, :b, :c]
     #   x.pos :a, 1
@@ -136,7 +136,7 @@ module Daru
 
     # Takes positional values and returns subset of the self
     #   capturing the indexes at mentioned positions
-    # @param [Array<Integer>] positional values
+    # @param positions [Array<Integer>] positional values
     # @return [object] index object
     # @example
     #   idx = Daru::Index.new [:a, :b, :c]
@@ -218,7 +218,7 @@ module Daru
     # Return vector of booleans with value at ith position is either
     # true or false depending upon whether index value at position i is equal to
     # any of the values passed in the argument or not
-    # @param [Array] *indexes values to equate with
+    # @param indexes [Array] values to equate with
     # @return [Daru::Vector] vector of boolean values
     # @example
     #   dv = Daru::Index.new [1, 2, 3, :one, 'one']
@@ -258,7 +258,7 @@ module Daru
 
     # Provide an Index for sub vector produced
     #
-    # @param input_indexes [Array] the input by user to index the vector
+    # @option args [Array] the input by user to index the vector
     # @return [Object] the Index object for sub vector produced
     def conform(*)
       self
