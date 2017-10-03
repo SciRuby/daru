@@ -91,7 +91,7 @@ module Daru
       # the offset should be applied, which is the supplied as the argument.
       #
       # @yieldparam n [Integer] The number of times an offset should be applied.
-      def initialize n = 1
+      def initialize n=1
         @n = n
       end
 
