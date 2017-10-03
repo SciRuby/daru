@@ -11,6 +11,9 @@ rvm:
 matrix:
   fast_finish:
     true
+  exclude:
+  - rvm: '2.0'
+    script: bundle exec yard-junk
 
 script:
   - bundle exec rspec
