@@ -78,7 +78,6 @@ EOF
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'gruff'
   spec.add_development_dependency 'webmock'
-  spec.add_development_dependency 'yard-junk', '~>0.0.7'
 
   if RUBY_VERSION < '2.1.0'
     spec.add_development_dependency 'nokogiri', '<= 1.6.8.1'
