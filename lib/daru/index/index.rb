@@ -258,7 +258,7 @@ module Daru
 
     # Provide an Index for sub vector produced
     #
-    # @option args [Array] the input by user to index the vector
+    # @option * [Array] the input by user to index the vector
     # @return [Object] the Index object for sub vector produced
     def conform(*)
       self

@@ -41,35 +41,35 @@ module Daru
         #   Calculate cumulative sum of each numeric Vector
         # @!method standardize
         #   Standardize each Vector
-        # @!method acf
+        # @!method acf(max_lags)
         #   Calculate Autocorrelation coefficient
-        #   @yieldparam [Integer] max_lags (nil) Number of initial lags
-        # @!method ema
+        #   @param max_lags [Integer] (nil) Number of initial lags
+        # @!method ema(n,wilder)
         #   Calculate exponential moving average.
-        #   @yieldparam [Integer] n (10) Loopback length.
-        #   @yieldparam [TrueClass, FalseClass, NilClass] wilder (false) If true,
+        #   @param n [Integer] (10) Loopback length.
+        #   @param wilder [TrueClass, FalseClass, NilClass] (false) If true,
         #     1/n value is  used for smoothing; if false, uses 2/(n+1) value.
-        # @!method rolling_mean
+        # @!method rolling_mean(n)
         #   Calculate moving averages
-        #   @yieldparam [Integer] n (10) Loopback length. Default to 10.
-        # @!method rolling_median
+        #   @param n [Integer] (10) Loopback length. Default to 10.
+        # @!method rolling_median(n)
         #   Calculate moving median
-        #   @yieldparam [Integer] n (10) Loopback length. Default to 10.
-        # @!method rolling_max
+        #   @param n [Integer] (10) Loopback length. Default to 10.
+        # @!method rolling_max(n)
         #   Calculate moving max
-        #   @yieldparam [Integer] n (10) Loopback length. Default to 10.
-        # @!method rolling_min
+        #   @param n [Integer] (10) Loopback length. Default to 10.
+        # @!method rolling_min(n)
         #   Calculate moving min
-        #   @yieldparam [Integer] n (10) Loopback length. Default to 10.
-        # @!method rolling_count
+        #   @param n [Integer] (10) Loopback length. Default to 10.
+        # @!method rolling_count(n)
         #   Calculate moving non-missing count
-        #   @yieldparam [Integer] n (10) Loopback length. Default to 10.
-        # @!method rolling_std
+        #   @param n [Integer] (10) Loopback length. Default to 10.
+        # @!method rolling_std(n)
         #   Calculate moving standard deviation
-        #   @yieldparam [Integer] n (10) Loopback length. Default to 10.
-        # @!method rolling_variance
+        #   @param n [Integer] (10) Loopback length. Default to 10.
+        # @!method rolling_variance(n)
         #   Calculate moving variance
-        #   @yieldparam [Integer] n (10) Loopback length. Default to 10.
+        #   @param n [Integer] (10) Loopback length. Default to 10.
         %i[
           cumsum standardize acf ema rolling_mean rolling_median rolling_max
           rolling_min rolling_count rolling_std rolling_variance rolling_sum

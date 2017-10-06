@@ -1078,9 +1078,9 @@ module Daru
       dup.tap { |df| df.keep_vector_if(&block) }
     end
 
-    # Test each row with one or more tests. Each test is a Proc with the form
-    # @overload *Proc.new {|row| row[:age] > 0}*
-    #
+    # Test each row with one or more tests.
+    # @param tests [Proc]  Each test is a Proc with the form
+    #                      *Proc.new {|row| row[:age] > 0}*
     # The function returns an array with all errors.
     #
     # FIXME: description here is too sparse. As far as I can get,
