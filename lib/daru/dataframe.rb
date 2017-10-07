@@ -737,11 +737,11 @@ module Daru
     #  2   3   c
     #  3   4   d
     #
-    def unique(vecs=[])
-      vectors = vecs.empty? ? self.vectors.map(&:to_s) : vecs
-      grouped = self.group_by(vectors)
+    def uniq(vtrs=[])
+      vecs = vtrs.empty? ? vectors.map(&:to_s) : vtrs
+      grouped = group_by(vecs)
       indexes = grouped.groups.values.map { |v| v[0] }
-      self.row[*indexes]
+      row[*indexes]
     end
 
     # Iterate over each index of the DataFrame.

@@ -1820,24 +1820,30 @@ describe Daru::DataFrame do
     end
   end
 
-  context 'unique' do
-    subject do
-      Daru::DataFrame.new({
-        a: [1, 2, 3, 4, 3, 5],
-        b: ['a', 'b', 'c', 'd', 'c', 'c']
-      })
+  describe 'uniq' do
+    let(:df) do
+      Daru::DataFrame.from_csv 'spec/fixtures/duplicates.csv'
     end
 
     context 'with no args' do
-      before { subject.unique }
-      its(:'a.to_a') { is_expected.to eq [1, 2, 3, 4, 5] }
-      its(:'b.to_a') { is_expected.to eq ['a', 'b', 'c', 'd', 'c'] }
+      it do
+        result = df.uniq
+        expect(result.shape.first).to eq 30
+      end
     end
 
     context 'given a vector' do
-      before { subject.unique(:b) }
-      its(:'a.to_a') { is_expected.to eq [1, 2, 3, 4] }
-      its(:'b.to_a') { is_expected.to eq ['a', 'b', 'c', 'd'] }
+      it do
+        result = df.uniq("color")
+        expect(result.shape.first).to eq 2
+      end
+    end
+
+    context 'given an array of vectors' do
+      it do
+        result = df.uniq(["color", "director_name"])
+        expect(result.shape.first).to eq 29
+      end
     end
   end
 
