@@ -1828,13 +1828,13 @@ describe Daru::DataFrame do
       })
     end
 
-    context 'with no args'
+    context 'with no args' do
       before { subject.unique }
       its(:'a.to_a') { is_expected.to eq [1, 2, 3, 4, 5] }
       its(:'b.to_a') { is_expected.to eq ['a', 'b', 'c', 'd', 'c'] }
     end
 
-    context 'given a vector'
+    context 'given a vector' do
       before { subject.unique(:b) }
       its(:'a.to_a') { is_expected.to eq [1, 2, 3, 4] }
       its(:'b.to_a') { is_expected.to eq ['a', 'b', 'c', 'd'] }
