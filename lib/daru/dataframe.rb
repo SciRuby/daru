@@ -705,6 +705,7 @@ module Daru
       dup.rolling_fillna!(direction)
     end
 
+    # Return unique rows by vector specified or all vectors
     def unique(vecs=[])
       vectors = vecs.empty? ? self.vectors.map(&:to_s) : vecs
       grouped = self.group_by(vectors)
