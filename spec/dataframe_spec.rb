@@ -1820,6 +1820,27 @@ describe Daru::DataFrame do
     end
   end
 
+  context 'unique' do
+    subject do
+      Daru::DataFrame.new({
+        a: [1, 2, 3, 4, 3, 5],
+        b: ['a', 'b', 'c', 'd', 'c', 'c']
+      })
+    end
+
+    context 'with no args'
+      before { subject.unique }
+      its(:'a.to_a') { is_expected.to eq [1, 2, 3, 4, 5] }
+      its(:'b.to_a') { is_expected.to eq ['a', 'b', 'c', 'd', 'c'] }
+    end
+
+    context 'given a vector'
+      before { subject.unique(:b) }
+      its(:'a.to_a') { is_expected.to eq [1, 2, 3, 4] }
+      its(:'b.to_a') { is_expected.to eq ['a', 'b', 'c', 'd'] }
+    end
+  end
+
   context '#rolling_fillna!' do
     subject do
       Daru::DataFrame.new({
