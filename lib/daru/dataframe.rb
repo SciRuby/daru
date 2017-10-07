@@ -706,6 +706,37 @@ module Daru
     end
 
     # Return unique rows by vector specified or all vectors
+    #
+    # @param [String][Symbol][Array] Vector name or array of vector names that should be considered
+    #
+    # @example
+    #
+    # => #<Daru::DataFrame(6x2)>
+    #      a   b
+    #  0   1   a
+    #  1   2   b
+    #  2   3   c
+    #  3   4   d
+    #  2   3   c
+    #  3   4   f
+    #
+    # 2.3.3 :> df.unique
+    # => #<Daru::DataFrame(5x2)>
+    #      a   b
+    #  0   1   a
+    #  1   2   b
+    #  2   3   c
+    #  3   4   d
+    #  3   4   f
+    #
+    # 2.3.3 :> df.unique(:a)
+    # => #<Daru::DataFrame(5x2)>
+    #      a   b
+    #  0   1   a
+    #  1   2   b
+    #  2   3   c
+    #  3   4   d
+    #
     def unique(vecs=[])
       vectors = vecs.empty? ? self.vectors.map(&:to_s) : vecs
       grouped = self.group_by(vectors)
