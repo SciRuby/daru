@@ -12,8 +12,12 @@ module Daru
       end
 
       TUPLE_SORTER = lambda do |a, b|
-        if a && b
-          a.compact <=> b.compact
+        if a.compact! && b.compact!
+          if a.length == b.length
+            a <=> b
+          else
+            a.length > b.length ? 1 : -1
+          end
         else
           a ? 1 : -1
         end
