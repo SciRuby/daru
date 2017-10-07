@@ -706,7 +706,7 @@ module Daru
     end
 
     def unique(vecs=[])
-      vectors = vecs.empty? self.vectors.map(&:to_s) : vectors
+      vectors = vecs.empty? ? self.vectors.map(&:to_s) : vecs
       grouped = self.group_by(vectors)
       indexes = grouped.groups.values.map { |v| v[0] }
       self.row[*indexes]
