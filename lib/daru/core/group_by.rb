@@ -16,7 +16,7 @@ module Daru
           if c.length == d.length
             c <=> d
           else
-            c.length > d.length ? 1 : -1
+            c.length < d.length ? 1 : -1
           end
         else
           c ? 1 : -1
