@@ -18,7 +18,7 @@ module Daru
           a_comp_len = a_comp.length
           b_comp_len = b_comp.length
           if a_comp_len == b_comp_len
-            a_comp <=> b_comp
+            a_comp <=> b_comp || 0
           else
             a_comp_len > b_comp_len ? 1 : -1
           end
