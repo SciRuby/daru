@@ -705,6 +705,13 @@ module Daru
       dup.rolling_fillna!(direction)
     end
 
+    def unique(vecs=[])
+      vectors = vecs.empty? self.vectors.map(&:to_s) : vectors
+      grouped = self.group_by(vectors)
+      indexes = grouped.groups.values.map { |v| v[0] }
+      self.row[*indexes]
+    end
+
     # Iterate over each index of the DataFrame.
     def each_index &block
       return to_enum(:each_index) unless block_given?
