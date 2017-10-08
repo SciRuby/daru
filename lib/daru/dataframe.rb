@@ -14,36 +14,81 @@ module Daru
     extend Gem::Deprecate
 
     class << self
-      # Load data from a CSV file. Specify an optional block to grab the CSV
-      # object and pre-condition it (for example use the `convert` or
-      # `header_convert` methods).
+      # Load data from a CSV file.
       #
-      # == Arguments
+      # Load data from a CSV file. Options such as `headers`
+      # and `header_converters` can be used to process the headers.
       #
-      # * path - Local path / Remote URL of the file to load specified as a String.
+      # Accepts the same options as the Daru::DataFrame constructor
+      # and CSV.open(). Uses specified options to eventually construct
+      # the resulting DataFrame.
+      # For example, if the columns in your CSV file are separated by
+      # something other that commas, you can use the `:col_sep` option.
+      # If you want to convert numeric values to numbers and not keep
+      # them as strings, you can use the `:converters` option and set
+      # it to `:numeric`.
       #
-      # == Options
-      #
-      # Accepts the same options as the Daru::DataFrame constructor and CSV.open()
-      # and uses those to eventually construct the resulting DataFrame.
-      #
-      # == Verbose Description
-      #
-      # You can specify all the options to the `.from_csv` function that you
-      # do to the Ruby `CSV.read()` function, since this is what is used internally.
-      #
-      # For example, if the columns in your CSV file are separated by something
-      # other that commas, you can use the `:col_sep` option. If you want to
-      # convert numeric values to numbers and not keep them as strings, you can
-      # use the `:converters` option and set it to `:numeric`.
-      #
-      # The `.from_csv` function uses the following defaults for reading CSV files
-      # (that are passed into the `CSV.read()` function):
+      # The `DataFrame#from_csv` function uses the following defaults
+      # for reading CSV files (that are passed into the `CSV.read()`
+      # function):
       #
       #   {
       #     :col_sep           => ',',
       #     :converters        => :numeric
       #   }
+      #
+      # A block can optionally be specified to pre-process the data
+      # read from the file.
+      #
+      # @param path [String] can be used to specify a local path
+      #   or remte URL of the file to load.
+      #
+      # @param opts can be the same as the options specified for
+      #   `CSV.open`.
+      #
+      # @return [Daru::DataFrame] a new `DataFrame` created from the
+      # data contained in the CSV file. Data & headers are adjusted
+      # based on `CSV.open` options or block if provided.
+      #
+      # @example Create `DataFrame` with optional block.
+      #
+      # df = Daru::DataFrame.from_csv('data.csv') do |row|
+      #       if row[0] == 'date' # skip header
+      #     row
+      #       else
+      #       [ Date.parse(row[0])+1, row[1].to_i + 1 ]
+      #       end
+      # end
+      #  => #<Daru::DataFrame(8x2)>
+      #                   date      count
+      #           0 2016-01-11          1
+      #           1 2016-01-12          2
+      #           2 2016-01-13          3
+      #           3 2016-01-14          4
+      #           4 2016-01-15          5
+      #           5 2016-01-16          6
+      #           6 2016-01-17          7
+      #           7 2016-01-18          8
+      #
+      # @example Create a `DataFrame` with optional block. Process
+      #   data using headers.
+      #
+      # df = Daru::DataFrame.from_csv('data.csv', headers: true) do |hash|
+      #       hash[:date] = hash[:date].map { |d| Date.parse(d)+1 }
+      #     hash
+      # end
+      #
+      #  => #<Daru::DataFrame(8x2)>
+      #                   date      count
+      #           0 2016-01-11          0
+      #           1 2016-01-12          1
+      #           2 2016-01-13          2
+      #           3 2016-01-14          3
+      #           4 2016-01-15          4
+      #           5 2016-01-16          5
+      #           6 2016-01-17          6
+      #           7 2016-01-18          7
+      #
       def from_csv path, opts={}, &block
         Daru::IO.from_csv path, opts, &block
       end
