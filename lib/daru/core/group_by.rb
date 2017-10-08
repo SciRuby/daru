@@ -40,7 +40,7 @@ module Daru
         #   #  => {4=>["test"], 2=>["me"], 6=>["please"]}
         #
         # - zverok, 2016-09-12
-        init_groups_df tuples, names, sort_tuples
+        init_groups_df tuples, names
       end
 
       # Get a Daru::Vector of the size of each group.
