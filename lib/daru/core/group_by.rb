@@ -13,15 +13,7 @@ module Daru
 
       TUPLE_SORTER = lambda do |a, b|
         if a && b
-          a_comp = a.compact
-          b_comp = b.compact
-          a_comp_len = a_comp.length
-          b_comp_len = b_comp.length
-          if a_comp_len == b_comp_len
-            a_comp <=> b_comp
-          else
-            a_comp_len > b_comp_len ? 1 : -1
-          end
+          a.compact <=> b.compact
         else
           a ? 1 : -1
         end
@@ -33,6 +25,7 @@ module Daru
         @context = context
         vectors = names.map { |vec| context[vec].to_a }
         tuples  = vectors[0].zip(*vectors[1..-1])
+        sort_tuples = !@non_group_vectors.empty?
         # FIXME: It feels like we don't want to sort here. Ruby's #group_by
         # never sorts:
         #
@@ -40,7 +33,7 @@ module Daru
         #   #  => {4=>["test"], 2=>["me"], 6=>["please"]}
         #
         # - zverok, 2016-09-12
-        init_groups_df tuples, names
+        init_groups_df tuples, names, sort_tuples
       end
 
       # Get a Daru::Vector of the size of each group.
@@ -253,9 +246,9 @@ module Daru
 
       private
 
-      def init_groups_df tuples, names
+      def init_groups_df tuples, names, sort_tuples
         multi_index_tuples = []
-        keys = tuples.uniq.sort(&TUPLE_SORTER)
+        keys = sort_tuples ? tuples.uniq.sort(&TUPLE_SORTER) : tuples.uniq
         keys.each do |key|
           indices = all_indices_for(tuples, key)
           @groups[key] = indices
