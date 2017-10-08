@@ -11,20 +11,14 @@ module Daru
         end
       end
 
-      TUPLE_SORTER = lambda do |a, b|
-        if a && b
-          a_comp = a.compact
-          b_comp = b.compact
-          a_comp_len = a_comp.length
-          b_comp_len = b_comp.length
-          if a_comp_len == b_comp_len
-            a_comp <=> b_comp || 0
-          else
-            0
-          end
-        else
-          a ? 1 : -1
-        end
+      TUPLE_SORTER = lambda do |left, right|
+        return -1 unless right
+        return 1 unless left
+
+        left = left.compact
+        right = right.compact
+        return left <=> right || 0 if left.length == right.length
+        left.length <=> right.length
       end
 
       def initialize context, names
@@ -211,8 +205,8 @@ module Daru
 
       # Iteratively applies a function to the values in a group and accumulates the result.
       # @param init (nil) The initial value of the accumulator.
-      # @param block [Proc] A proc or lambda that accepts two arguments.  The first argument
-      #                     is the accumulated result.  The second argument is a DataFrame row.
+      # @yieldparam block [Proc] A proc or lambda that accepts two arguments.  The first argument
+      #                          is the accumulated result.  The second argument is a DataFrame row.
       # @example Usage of reduce
       #   df = Daru::DataFrame.new({
       #     a: ['a','b'] * 3,
@@ -249,6 +243,47 @@ module Daru
 
       def inspect
         @df.inspect
+      end
+
+      # Function to use for aggregating the data.
+      # `group_by` is using Daru::DataFrame#aggregate
+      #
+      # @param options [Hash] options for column, you want in resultant dataframe
+      #
+      # @return [Daru::DataFrame]
+      #
+      # @example
+      #
+      #   df = Daru::DataFrame.new(
+      #     name: ['Ram','Krishna','Ram','Krishna','Krishna'],
+      #     visited: ['Hyderabad', 'Delhi', 'Mumbai', 'Raipur', 'Banglore'])
+      #
+      #   => #<Daru::DataFrame(5x2)>
+      #                   name   visited
+      #            0       Ram Hyderabad
+      #            1   Krishna     Delhi
+      #            2       Ram    Mumbai
+      #            3   Krishna    Raipur
+      #            4   Krishna  Banglore
+      #
+      #   df.group_by(:name)
+      #   => #<Daru::DataFrame(5x1)>
+      #                          visited
+      #      Krishna         1     Delhi
+      #                      3    Raipur
+      #                      4  Banglore
+      #          Ram         0 Hyderabad
+      #                      2    Mumbai
+      #
+      #   df.group_by(:name).aggregate(visited: -> (vec){vec.to_a.join(',')})
+      #   => #<Daru::DataFrame(2x1)>
+      #                  visited
+      #       Krishna Delhi,Raipur,Banglore
+      #           Ram Hyderabad,Mumbai
+      #
+      def aggregate(options={})
+        @df.index = @df.index.remove_layer(@df.index.levels.size - 1)
+        @df.aggregate(options)
       end
 
       private
