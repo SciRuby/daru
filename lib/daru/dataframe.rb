@@ -2234,43 +2234,43 @@ module Daru
     # @return [Daru::DataFrame]
     #
     # @example
-    # df = Daru::DataFrame.new(
-    #    {col: [:a, :b, :c, :d, :e], num: [52,12,07,17,01]})
-    # => #<Daru::DataFrame(5x2)>
-    #      col num
-    #    0   a  52
-    #    1   b  12
-    #    2   c   7
-    #    3   d  17
-    #    4   e   1
+    #   df = Daru::DataFrame.new(
+    #      {col: [:a, :b, :c, :d, :e], num: [52,12,07,17,01]})
+    #   => #<Daru::DataFrame(5x2)>
+    #        col num
+    #      0   a  52
+    #      1   b  12
+    #      2   c   7
+    #      3   d  17
+    #      4   e   1
     #
-    #  df.aggregate(num_100_times: ->(df) { df.num*100 })
-    # => #<Daru::DataFrame(5x1)>
-    #             num_100_ti
-    #           0       5200
-    #           1       1200
-    #           2        700
-    #           3       1700
-    #           4        100
+    #    df.aggregate(num_100_times: ->(df) { df.num*100 })
+    #   => #<Daru::DataFrame(5x1)>
+    #               num_100_ti
+    #             0       5200
+    #             1       1200
+    #             2        700
+    #             3       1700
+    #             4        100
     #
-    # When we have duplicate index :
+    #   When we have duplicate index :
     #
-    # idx = Daru::CategoricalIndex.new [:a, :b, :a, :a, :c]
-    # df = Daru::DataFrame.new({num: [52,12,07,17,01]}, index: idx)
-    # => #<Daru::DataFrame(5x1)>
-    #      num
-    #    a  52
-    #    b  12
-    #    a   7
-    #    a  17
-    #    c   1
+    #   idx = Daru::CategoricalIndex.new [:a, :b, :a, :a, :c]
+    #   df = Daru::DataFrame.new({num: [52,12,07,17,01]}, index: idx)
+    #   => #<Daru::DataFrame(5x1)>
+    #        num
+    #      a  52
+    #      b  12
+    #      a   7
+    #      a  17
+    #      c   1
     #
-    # df.aggregate(num: :mean)
-    # => #<Daru::DataFrame(3x1)>
-    #                    num
-    #           a 25.3333333
-    #           b         12
-    #           c          1
+    #   df.aggregate(num: :mean)
+    #   => #<Daru::DataFrame(3x1)>
+    #                      num
+    #             a 25.3333333
+    #             b         12
+    #             c          1
     #
     # Note: `GroupBy` class `aggregate` method uses this `aggregate` method
     # internally.

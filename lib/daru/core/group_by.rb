@@ -252,32 +252,32 @@ module Daru
       #
       # @example
       #
-      # df = Daru::DataFrame.new(
-      #   name: ['Ram','Krishna','Ram','Krishna','Krishna'],
-      #   visited: ['Hyderabad', 'Delhi', 'Mumbai', 'Raipur', 'Banglore'])
+      #   df = Daru::DataFrame.new(
+      #     name: ['Ram','Krishna','Ram','Krishna','Krishna'],
+      #     visited: ['Hyderabad', 'Delhi', 'Mumbai', 'Raipur', 'Banglore'])
       #
-      # => #<Daru::DataFrame(5x2)>
-      #                 name   visited
-      #          0       Ram Hyderabad
-      #          1   Krishna     Delhi
-      #          2       Ram    Mumbai
-      #          3   Krishna    Raipur
-      #          4   Krishna  Banglore
+      #   => #<Daru::DataFrame(5x2)>
+      #                   name   visited
+      #            0       Ram Hyderabad
+      #            1   Krishna     Delhi
+      #            2       Ram    Mumbai
+      #            3   Krishna    Raipur
+      #            4   Krishna  Banglore
       #
-      # df.group_by(:name)
-      # => #<Daru::DataFrame(5x1)>
-      #                        visited
-      #    Krishna         1     Delhi
-      #                    3    Raipur
-      #                    4  Banglore
-      #        Ram         0 Hyderabad
-      #                    2    Mumbai
+      #   df.group_by(:name)
+      #   => #<Daru::DataFrame(5x1)>
+      #                          visited
+      #      Krishna         1     Delhi
+      #                      3    Raipur
+      #                      4  Banglore
+      #          Ram         0 Hyderabad
+      #                      2    Mumbai
       #
-      # df.group_by(:name).aggregate(visited: -> (vec){vec.to_a.join(',')})
-      # => #<Daru::DataFrame(2x1)>
-      #                visited
-      #     Krishna Delhi,Raipur,Banglore
-      #         Ram Hyderabad,Mumbai
+      #   df.group_by(:name).aggregate(visited: -> (vec){vec.to_a.join(',')})
+      #   => #<Daru::DataFrame(2x1)>
+      #                  visited
+      #       Krishna Delhi,Raipur,Banglore
+      #           Ram Hyderabad,Mumbai
       #
       def aggregate(options={})
         @df.index = @df.index.remove_layer(@df.index.levels.size - 1)
