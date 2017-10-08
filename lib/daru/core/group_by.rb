@@ -11,20 +11,14 @@ module Daru
         end
       end
 
-      TUPLE_SORTER = lambda do |a, b|
-        if a && b
-          a_comp = a.compact
-          b_comp = b.compact
-          a_comp_len = a_comp.length
-          b_comp_len = b_comp.length
-          if a_comp_len == b_comp_len
-            a_comp <=> b_comp || 0
-          else
-            0
-          end
-        else
-          a ? 1 : -1
-        end
+      TUPLE_SORTER = lambda do |left, right|
+        return -1 if !right
+        return 1 if !left
+
+        left = left.compact
+        right = right.compact
+        return left <=> right || 0 if left.length == right.length
+        left.length <=> right.length
       end
 
       def initialize context, names
