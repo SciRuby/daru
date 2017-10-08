@@ -706,7 +706,7 @@ module Daru
 
     # Return unique rows by vector specified or all vectors
     #
-    # @param vector_names [String][Symbol] that should be considered
+    # @param other [String][Symbol] vector names(s) that should be considered
     #
     # @example
     #
