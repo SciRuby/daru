@@ -467,8 +467,18 @@ describe Daru::Core::GroupBy do
   end
 
   context 'when dataframe tuples contain nils in mismatching positions' do
+
+    let(:df){
+      Daru::DataFrame.new(
+        {
+          'string1' => ["Color", "Color", "Color", "Color", nil, "Color", "Color", " Black and White"],
+          'string2' => ["Test", "test2", nil, "test3", nil, "test", "test3", "test5"],
+          'num' => [1, nil, 3, 4, 5, 6, 7, nil]
+        }
+      )
+    }
+
     it 'groups by without errors' do
-      df = Daru::DataFrame.from_csv 'spec/fixtures/duplicates.csv'
       expect { df.group_by(df.vectors.map(&:to_s)) }.to_not raise_error(ArgumentError)
     end
   end
