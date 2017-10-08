@@ -700,28 +700,28 @@ module Daru
 
         # @!method rolling_mean
         #   Calculate rolling average
-        #   @param [Integer] n (10) Loopback length
+        #   @yieldparam [Integer] n (10) Loopback length
         # @!method rolling_median
         #   Calculate rolling median
-        #   @param [Integer] n (10) Loopback length
+        #   @yieldparam [Integer] n (10) Loopback length
         # @!method rolling_count
         #   Calculate rolling non-missing count
-        #   @param [Integer] n (10) Loopback length
+        #   @yieldparam [Integer] n (10) Loopback length
         # @!method rolling_max
         #   Calculate rolling max value
-        #   @param [Integer] n (10) Loopback length
+        #   @yieldparam [Integer] n (10) Loopback length
         # @!method rolling_min
         #   Calculate rolling min value
-        #   @param [Integer] n (10) Loopback length
+        #   @yieldparam [Integer] n (10) Loopback length
         # @!method rolling_sum
         #   Calculate rolling sum
-        #   @param [Integer] n (10) Loopback length
+        #   @yieldparam [Integer] n (10) Loopback length
         # @!method rolling_std
         #   Calculate rolling standard deviation
-        #   @param [Integer] n (10) Loopback length
+        #   @yieldparam [Integer] n (10) Loopback length
         # @!method rolling_variance
         #   Calculate rolling variance
-        #   @param [Integer] n (10) Loopback length
+        #   @yieldparam [Integer] n (10) Loopback length
         %i[count mean median max min sum std variance].each do |meth|
           define_method("rolling_#{meth}".to_sym) do |n=10|
             rolling(meth, n)

@@ -84,7 +84,7 @@ module Daru
       # Read a dataframe from AR::Relation
       #
       # @param relation [ActiveRecord::Relation] An AR::Relation object from which data is loaded
-      # @params fields [Array] Field names to be loaded (optional)
+      # @param fields [Array] Field names to be loaded (optional)
       #
       # @return A dataframe containing the data loaded from the relation
       #
@@ -386,7 +386,7 @@ module Daru
     end
 
     # Retrive rows by positions
-    # @param [Array<Integer>] *positions positions of rows to retrive
+    # @param [Array<Integer>] positions of rows to retrive
     # @return [Daru::Vector, Daru::DataFrame] vector for single position and dataframe for multiple positions
     # @example
     #   df = Daru::DataFrame.new({
@@ -416,7 +416,7 @@ module Daru
 
     # Set rows by positions
     # @param [Array<Integer>] positions positions of rows to set
-    # @vector [Array, Daru::Vector] vector vector to be assigned
+    # @param [Array, Daru::Vector] vector vector to be assigned
     # @example
     #   df = Daru::DataFrame.new({
     #     a: [1, 2, 3],
@@ -449,7 +449,7 @@ module Daru
     end
 
     # Retrive vectors by positions
-    # @param [Array<Integer>] *positions positions of vectors to retrive
+    # @param [Array<Integer>] positions of vectors to retrive
     # @return [Daru::Vector, Daru::DataFrame] vector for single position and dataframe for multiple positions
     # @example
     #   df = Daru::DataFrame.new({
@@ -608,7 +608,7 @@ module Daru
 
     # Returns a dataframe in which rows with any of the mentioned values
     #   are ignored.
-    # @param [Array] *values values to reject to form the new dataframe
+    # @param [Array] values to reject to form the new dataframe
     # @return [Daru::DataFrame] Data Frame with only rows which doesn't
     #   contain the mentioned values
     # @example
@@ -664,38 +664,37 @@ module Daru
     # Rolling fillna
     # replace all Float::NAN and NIL values with the preceeding or following value
     #
-    # @param [Symbol] (:forward, :backward) whether replacement value is preceeding or following
+    # @param direction [Symbol] (:forward, :backward) whether replacement value is preceeding or following
     #
     # @example
+    #   df = Daru::DataFrame.new({
+    #    a: [1,    2,          3,   nil,        Float::NAN, nil, 1,   7],
+    #    b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   nil],
+    #    c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
+    #   })
     #
-    # df = Daru::DataFrame.new({
-    #  a: [1,    2,          3,   nil,        Float::NAN, nil, 1,   7],
-    #  b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   nil],
-    #  c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
-    # })
+    #   => #<Daru::DataFrame(8x3)>
+    #        a   b   c
+    #    0   1   a   a
+    #    1   2   b NaN
+    #    2   3 nil   3
+    #    3 nil NaN   4
+    #    4 NaN nil   3
+    #    5 nil   3   5
+    #    6   1   5 nil
+    #    7   7 nil   7
     #
-    # => #<Daru::DataFrame(8x3)>
-    #      a   b   c
-    #  0   1   a   a
-    #  1   2   b NaN
-    #  2   3 nil   3
-    #  3 nil NaN   4
-    #  4 NaN nil   3
-    #  5 nil   3   5
-    #  6   1   5 nil
-    #  7   7 nil   7
-    #
-    # 2.3.3 :068 > df.rolling_fillna(:forward)
-    # => #<Daru::DataFrame(8x3)>
-    #      a   b   c
-    #  0   1   a   a
-    #  1   2   b   a
-    #  2   3   b   3
-    #  3   3   b   4
-    #  4   3   b   3
-    #  5   3   3   5
-    #  6   1   5   5
-    #  7   7   5   7
+    #   2.3.3 :068 > df.rolling_fillna(:forward)
+    #   => #<Daru::DataFrame(8x3)>
+    #        a   b   c
+    #    0   1   a   a
+    #    1   2   b   a
+    #    2   3   b   3
+    #    3   3   b   4
+    #    4   3   b   3
+    #    5   3   3   5
+    #    6   1   5   5
+    #    7   7   5   7
     #
     def rolling_fillna!(direction=:forward)
       @data.each { |vec| vec.rolling_fillna!(direction) }
@@ -1079,9 +1078,9 @@ module Daru
       dup.tap { |df| df.keep_vector_if(&block) }
     end
 
-    # Test each row with one or more tests. Each test is a Proc with the form
-    # *Proc.new {|row| row[:age] > 0}*
-    #
+    # Test each row with one or more tests.
+    # @param tests [Proc]  Each test is a Proc with the form
+    #                      *Proc.new {|row| row[:age] > 0}*
     # The function returns an array with all errors.
     #
     # FIXME: description here is too sparse. As far as I can get,
@@ -1183,7 +1182,7 @@ module Daru
     deprecate :flawed?, :include_values?, 2016, 10
 
     # Check if any of given values occur in the data frame
-    # @param [Array] *values values to check for
+    # @param [Array] values to check for
     # @return [true, false] true if any of the given values occur in the
     #   dataframe, false otherwise
     # @example
@@ -1322,10 +1321,10 @@ module Daru
     # With :skipnil argument set to true, nil values are assumed to be
     # 0 (zero) and the sum vector is returned.
     #
-    # @param opts [Array] List of vectors to sum. Default is nil in which case
+    # @param args [Array] List of vectors to sum. Default is nil in which case
     #   all numeric vectors are summed.
     #
-    # @param opts [Boolean] :skipnil Consider nils as 0. Default is false.
+    # @option opts [Boolean] :skipnil Consider nils as 0. Default is false.
     #
     # @return Vector with sum of all vectors specified in the argument.
     #   If vecs parameter is empty, sum all numeric vector.
@@ -1529,7 +1528,7 @@ module Daru
 
     # Reassign vectors with a new index of type Daru::Index or any of its subclasses.
     #
-    # @param [Daru::Index] idx The new index object on which the vectors are to
+    # @param new_index [Daru::Index] idx The new index object on which the vectors are to
     #   be indexed. Must of the same size as ncols.
     # @example Reassigning vectors of a DataFrame
     #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [:a,:b,:c,:d], c: [11,22,33,44]})
@@ -1615,9 +1614,9 @@ module Daru
     # Sorts a dataframe (ascending/descending) in the given pripority sequence of
     # vectors, with or without a block.
     #
-    # @param order [Array] The order of vector names in which the DataFrame
+    # @param vector_order [Array] The order of vector names in which the DataFrame
     #   should be sorted.
-    # @param [Hash] opts The options to sort with.
+    # @param opts [Hash] opts The options to sort with.
     # @option opts [TrueClass,FalseClass,Array] :ascending (true) Sort in ascending
     #   or descending order. Specify Array corresponding to *order* for multiple
     #   sort orders.
@@ -2137,7 +2136,7 @@ module Daru
     end
 
     # Converts the specified non category type vectors to category type vectors
-    # @param [Array] *names names of non category type vectors to be converted
+    # @param [Array] names of non category type vectors to be converted
     # @return [Daru::DataFrame] data frame in which specified vectors have been
     #   converted to category type
     # @example

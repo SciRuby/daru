@@ -344,7 +344,7 @@ module Daru
 
     # Retreive a slice or a an individual index number from the index.
     #
-    # @param [String, DateTime] Specify a date partially (as a String) or
+    # @param key [String, DateTime] Specify a date partially (as a String) or
     #   completely to retrieve.
     def [] *key
       return slice(*key) if key.size != 1

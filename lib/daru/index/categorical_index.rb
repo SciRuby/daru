@@ -45,7 +45,7 @@ module Daru
     # Returns positions given categories or positions
     # @note If the argument does not a valid category it treats it as position
     #   value and return it as it is.
-    # @param [Array<object>] *indexes categories or positions
+    # @param indexes [Array<object>] categories or positions
     # @example
     #   x = Daru::CategoricalIndex.new [:a, 1, :a, 1, :c]
     #   x.pos :a, 1
@@ -145,7 +145,7 @@ module Daru
     end
 
     # Return subset given categories or positions
-    # @param [Array<object>] *indexes categories or positions
+    # @param indexes [Array<object>] categories or positions
     # @return [Daru::CategoricalIndex] subset of the self containing the
     #   mentioned categories or positions
     # @example
@@ -161,7 +161,7 @@ module Daru
 
     # Takes positional values and returns subset of the self
     #   capturing the categories at mentioned positions
-    # @param [Array<Integer>] positional values
+    # @param positions [Array<Integer>] positional values
     # @return [object] index object
     # @example
     #   idx = Daru::CategoricalIndex.new [:a, :b, :a, :b, :c]
@@ -178,7 +178,7 @@ module Daru
     end
 
     # Add specified index values to the index object
-    # @param [Array<object>] *indexes index values to add
+    # @param indexes [Array<object>] index values to add
     # @return [Daru::CategoricalIndex] index object with added values
     # @example
     #   idx = Daru::CategoricalIndex.new [:a, :b, :a, :b, :c]

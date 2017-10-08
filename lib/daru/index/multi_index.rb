@@ -152,7 +152,7 @@ module Daru
     # Returns positions given indexes or positions
     # @note If the arugent is both a valid index and a valid position,
     #   it will treated as valid index
-    # @param [Array<object>] *indexes indexes or positions
+    # @param indexes [Array<object>] indexes or positions
     # @example
     #   idx = Daru::MultiIndex.from_tuples [[:a, :one], [:a, :two], [:b, :one], [:b, :two]]
     #   idx.pos :a
@@ -177,7 +177,7 @@ module Daru
 
     # Takes positional values and returns subset of the self
     #   capturing the indexes at mentioned positions
-    # @param [Array<Integer>] positional values
+    # @param positions [Array<Integer>] positional values
     # @return [object] index object
     # @example
     #   idx = Daru::MultiIndex.from_tuples [[:a, :one], [:a, :two], [:b, :one], [:b, :two]]

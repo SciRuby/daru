@@ -44,7 +44,7 @@ module Daru
 
         # Add specified vector.
         #
-        # @param [Daru::Vector] The vector thats added to this.
+        # @param other [Daru::Vector] The vector thats added to this.
         # @param opts [Boolean] :skipnil if true treats nils as 0.
         #
         # @example

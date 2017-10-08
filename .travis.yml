@@ -9,12 +9,17 @@ rvm:
   - '2.4.0'
 
 matrix:
+  allow_failures:
+    - rvm: '2.0'
   fast_finish:
     true
 
 script:
+  - bundle add yard-junk
+  - bundle install
   - bundle exec rspec
   - bundle exec rubocop
+  - bundle exec yard-junk
 
 install:
   - gem install bundler
