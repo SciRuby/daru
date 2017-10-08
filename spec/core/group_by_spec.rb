@@ -465,4 +465,11 @@ describe Daru::Core::GroupBy do
 
     it { is_expected.to eq Daru::DataFrame.new({num: [6]}, index: ['a']) }
   end
+
+  context 'when dataframe tuples contain nils in mismatching positions' do
+    it 'groups by without errors' do
+      df = Daru::DataFrame.from_csv 'spec/fixtures/duplicates.csv'
+      expect { df.group_by(df.vectors.map(&:to_s)) }.to_not raise_error(ArgumentError)
+    end
+  end
 end

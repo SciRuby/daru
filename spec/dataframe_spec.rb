@@ -1846,13 +1846,6 @@ describe Daru::DataFrame do
     end
   end
 
-  context 'Tuple Sorter' do
-    it 'sorts data frames with nils' do
-      df = Daru::DataFrame.from_csv 'spec/fixtures/duplicates.csv'
-      expect { df.group_by(df.vectors.map(&:to_s)) }.to_not raise_error(ArgumentError)
-    end
-  end
-
   context "#clone" do
     it "returns a view of the whole dataframe" do
       cloned = @data_frame.clone
