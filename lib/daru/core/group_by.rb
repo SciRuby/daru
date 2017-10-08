@@ -12,8 +12,8 @@ module Daru
       end
 
       TUPLE_SORTER = lambda do |left, right|
-        return -1 if !right
-        return 1 if !left
+        return -1 unless right
+        return 1 unless left
 
         left = left.compact
         right = right.compact
