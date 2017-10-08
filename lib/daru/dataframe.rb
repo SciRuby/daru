@@ -706,7 +706,7 @@ module Daru
 
     # Return unique rows by vector specified or all vectors
     #
-    # @param [String][Symbol][Array] Vector name or array of vector names that should be considered
+    # @param [String][Symbol] Vector name(s) that should be considered
     #
     # @example
     #
@@ -736,8 +736,8 @@ module Daru
     #  2   3   c
     #  3   4   d
     #
-    def uniq(vtrs=[])
-      vecs = vtrs.empty? ? vectors.map(&:to_s) : vtrs
+    def uniq(*vtrs)
+      vecs = vtrs.empty? ? vectors.map(&:to_s) : Array(vtrs)
       grouped = group_by(vecs)
       indexes = grouped.groups.values.map { |v| v[0] }.sort
       row[*indexes]

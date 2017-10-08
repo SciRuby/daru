@@ -1841,7 +1841,7 @@ describe Daru::DataFrame do
 
     context 'given an array of vectors' do
       it do
-        result = df.uniq(["color", "director_name"])
+        result = df.uniq("color", "director_name")
         expect(result.shape.first).to eq 29
       end
     end
