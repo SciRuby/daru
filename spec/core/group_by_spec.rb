@@ -482,4 +482,115 @@ describe Daru::Core::GroupBy do
       expect { df.group_by(df.vectors.map(&:to_s)) }.to_not raise_error(ArgumentError)
     end
   end
+  
+  context '#aggregate' do
+    let(:dataframe) { Daru::DataFrame.new({
+      employee: %w[John Jane Mark John Jane Mark],
+      month: %w[June June June July July July],
+      salary: [1000, 500, 700, 1200, 600, 600]})
+    }
+    context 'group and aggregate sum for particular single vector' do
+      subject { dataframe.group_by([:employee]).aggregate(salary: :sum) }
+
+      it { is_expected.to eq Daru::DataFrame.new({
+              salary: [1100, 2200, 1300]},
+              index: ['Jane', 'John', 'Mark'])
+      }
+    end
+
+    context 'group and aggregate sum for two vectors' do
+      subject {
+        dataframe.group_by([:employee, :month]).aggregate(salary: :sum) }
+
+      it { is_expected.to eq Daru::DataFrame.new({
+              salary: [600, 500, 1200, 1000, 600, 700]},
+              index: Daru::MultiIndex.from_tuples([
+                  ['Jane', 'July'],
+                  ['Jane', 'June'],
+                  ['John', 'July'],
+                  ['John', 'June'],
+                  ['Mark', 'July'],
+                  ['Mark', 'June']
+                ])
+      )}
+    end
+
+    context 'group and aggregate sum and lambda function for vectors' do
+      subject { dataframe.group_by([:employee]).aggregate(
+        salary: :sum,
+        month: ->(vec) { vec.to_a.join('/') }) }
+
+      it { is_expected.to eq Daru::DataFrame.new({
+        salary: [1100, 2200, 1300],
+        month: ['June/July', 'June/July', 'June/July']},
+        index: ['Jane', 'John', 'Mark'],
+        order: [:salary, :month])
+      }
+    end
+
+    context 'group and aggregate sum and lambda functions on dataframe' do
+      subject { dataframe.group_by([:employee]).aggregate(
+        salary: :sum,
+        month: ->(vec) { vec.to_a.join('/') },
+        mean_salary: ->(df) { df.salary.mean },
+        periods: ->(df) { df.size }
+      )}
+
+      it { is_expected.to eq Daru::DataFrame.new({
+        salary: [1100, 2200, 1300],
+        month: ['June/July', 'June/July', 'June/July'],
+        mean_salary: [550.0, 1100.0, 650.0],
+        periods: [2, 2, 2]},
+        index: ['Jane', 'John', 'Mark'], order: [:salary, :month,
+                                                :mean_salary, :periods]) }
+    end
+
+    context 'group_by and aggregate on mixed MultiIndex' do
+      let(:df) { Daru::DataFrame.new(
+                    name: ['Ram','Krishna','Ram','Krishna','Krishna'],
+                    visited: [
+                      'Hyderabad', 'Delhi', 'Mumbai', 'Raipur', 'Banglore']
+                 )
+                }
+      let(:df_mixed) { Daru::DataFrame.new(
+                    name: ['Krishna','Ram','Krishna','Krishna'],
+                    visited: [
+                      'Delhi', 'Mumbai', 'Raipur', 'Banglore']
+                 )
+                }
+      it 'group_by' do
+        expect(df.group_by(:name).df).to eq(
+          Daru::DataFrame.new({
+            visited: ['Delhi', 'Raipur', 'Banglore', 'Hyderabad', 'Mumbai']},
+            index: Daru::MultiIndex.from_tuples(
+                [['Krishna', 1], ['Krishna', 3], ['Krishna', 4],
+                ['Ram', 0], ['Ram', 2]]
+            )
+          )
+        )
+      end
+
+      it 'group_by and aggregate' do
+        expect(
+          df.group_by(:name).aggregate(
+            visited: -> (vec){vec.to_a.join(',')})).to eq(
+              Daru::DataFrame.new({
+                visited: ['Delhi,Raipur,Banglore', 'Hyderabad,Mumbai']},
+                index: ['Krishna', 'Ram']
+              )
+          )
+      end
+
+      it 'group_by and aggregate when anyone index is not multiple times' do
+        expect(
+          df_mixed.group_by(:name).aggregate(
+            visited: -> (vec){vec.to_a.join(',')})).to eq(
+              Daru::DataFrame.new({
+                visited: ['Delhi,Raipur,Banglore', 'Mumbai']},
+                index: ['Krishna', 'Ram']
+              )
+          )
+      end
+    end
+  end
 end

@@ -2228,7 +2228,87 @@ module Daru
       res
     end
 
+    # Function to use for aggregating the data.
+    #
+    # @param options [Hash] options for column, you want in resultant dataframe
+    #
+    # @return [Daru::DataFrame]
+    #
+    # @example
+    # df = Daru::DataFrame.new(
+    #    {col: [:a, :b, :c, :d, :e], num: [52,12,07,17,01]})
+    # => #<Daru::DataFrame(5x2)>
+    #      col num
+    #    0   a  52
+    #    1   b  12
+    #    2   c   7
+    #    3   d  17
+    #    4   e   1
+    #
+    #  df.aggregate(num_100_times: ->(df) { df.num*100 })
+    # => #<Daru::DataFrame(5x1)>
+    #             num_100_ti
+    #           0       5200
+    #           1       1200
+    #           2        700
+    #           3       1700
+    #           4        100
+    #
+    # When we have duplicate index :
+    #
+    # idx = Daru::CategoricalIndex.new [:a, :b, :a, :a, :c]
+    # df = Daru::DataFrame.new({num: [52,12,07,17,01]}, index: idx)
+    # => #<Daru::DataFrame(5x1)>
+    #      num
+    #    a  52
+    #    b  12
+    #    a   7
+    #    a  17
+    #    c   1
+    #
+    # df.aggregate(num: :mean)
+    # => #<Daru::DataFrame(3x1)>
+    #                    num
+    #           a 25.3333333
+    #           b         12
+    #           c          1
+    #
+    # Note: `GroupBy` class `aggregate` method uses this `aggregate` method
+    # internally.
+    def aggregate(options={})
+      colmn_value, index_tuples = aggregated_colmn_value(options)
+      Daru::DataFrame.new(
+        colmn_value, index: index_tuples, order: options.keys
+      )
+    end
+
     private
+
+    # Do the `method` (`method` can be :sum, :mean, :std, :median, etc or
+    # lambda), on the column.
+    def apply_method_on_colmns colmn, index_tuples, method
+      rows = []
+      index_tuples.each do |indexes|
+        # If single element then also make it vector.
+        slice = Daru::Vector.new(Array(self[colmn][*indexes]))
+        case method
+        when Symbol
+          rows << (slice.is_a?(Daru::Vector) ? slice.send(method) : slice)
+        when Proc
+          rows << method.call(slice)
+        end
+      end
+      rows
+    end
+
+    def apply_method_on_df index_tuples, method
+      rows = []
+      index_tuples.each do |indexes|
+        slice = row[*indexes]
+        rows << method.call(slice)
+      end
+      rows
+    end
 
     def headers
       Daru::Index.new(Array(index.name) + @vectors.to_a)
@@ -2326,9 +2406,7 @@ module Daru
         rescue IndexError
           raise IndexError, "Specified vector #{names.first} does not exist"
         end
-
         return @data[pos] if pos.is_a?(Numeric)
-
         names = pos
       end
 
@@ -2545,9 +2623,7 @@ module Daru
       @index   = Index.coerce(index || source[0].size)
       @vectors = Index.coerce(vectors)
 
-      @data = @vectors.each_with_index.map do |_vec,idx|
-        Daru::Vector.new(source[idx], index: @index, name: vectors[idx])
-      end
+      update_data source, vectors
     end
 
     def initialize_from_array_of_vectors source, vectors, index, opts
@@ -2794,6 +2870,30 @@ module Daru
       else
         Daru::Vector.new vector
       end
+    end
+
+    def update_data source, vectors
+      @data = @vectors.each_with_index.map do |_vec,idx|
+        Daru::Vector.new(source[idx], index: @index, name: vectors[idx])
+      end
+    end
+
+    def aggregated_colmn_value(options)
+      colmn_value = []
+      index_tuples = Array(@index).uniq
+      options.keys.each do |vec|
+        do_this_on_vec = options[vec]
+        colmn_value << if @vectors.include?(vec)
+                         apply_method_on_colmns(
+                           vec, index_tuples, do_this_on_vec
+                         )
+                       else
+                         apply_method_on_df(
+                           index_tuples, do_this_on_vec
+                         )
+                       end
+      end
+      [colmn_value, index_tuples]
     end
 
     # coerce ranges, integers and array in appropriate ways
