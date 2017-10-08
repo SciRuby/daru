@@ -740,7 +740,7 @@ module Daru
     def uniq(vtrs=[])
       vecs = vtrs.empty? ? vectors.map(&:to_s) : vtrs
       grouped = group_by(vecs)
-      indexes = grouped.groups.values.map { |v| v[0] }
+      indexes = grouped.groups.values.map { |v| v[0] }.sort
       row[*indexes]
     end
 
