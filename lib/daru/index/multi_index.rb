@@ -239,6 +239,15 @@ module Daru
       end
     end
 
+    def remove_layer layer_index
+      @levels.delete_at(layer_index)
+      @labels.delete_at(layer_index)
+      @name.delete_at(layer_index) unless @name.nil?
+
+      # CategoricalIndex is used , to allow duplicate indexes.
+      @levels.size == 1 ? Daru::CategoricalIndex.new(to_a.flatten) : self
+    end
+
     # Array `name` must have same length as levels and labels.
     def validate_name names, levels
       error_msg = "'names' and 'levels' should be of same size. Size of the "\
