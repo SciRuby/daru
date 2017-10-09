@@ -304,7 +304,7 @@ module Daru
         start_idx = @relation_hash[start]
         en_idx    = @relation_hash[en]
 
-        @keys[start_idx..en_idx]
+        keys[start_idx..en_idx]
       end
     end
 
