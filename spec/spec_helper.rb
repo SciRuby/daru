@@ -9,6 +9,7 @@ require 'pry-byebug'
 require 'nokogiri'
 require 'gruff'
 require 'webmock/rspec'
+require 'saharspec/its/call'
 
 def mri?
   RUBY_ENGINE == 'ruby'

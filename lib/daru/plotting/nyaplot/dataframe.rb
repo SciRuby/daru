@@ -16,7 +16,7 @@ module Daru
         # * +:x+ - Vector to be used for X co-ordinates.
         # * +:y+ - Vector to be used for Y co-ordinates.
         #
-        # == Usage
+        # @example
         #   # Simple bar chart
         #   df = Daru::DataFrame.new({a:['A', 'B', 'C', 'D', 'E'], b:[10,20,30,40,50]})
         #   df.plot type: :bar, x: :a, y: :b

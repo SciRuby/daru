@@ -1,180 +1,179 @@
 require 'spec_helper.rb'
 
-describe Daru::Index do
-  context ".new" do
-    it "creates an Index object if Index-like data is supplied" do
-      i = Daru::Index.new [:one, 'one', 1, 2, :two]
-      expect(i.class).to eq(Daru::Index)
-      expect(i.to_a) .to eq([:one, 'one', 1, 2, :two])
+RSpec.describe Daru::Index do
+  describe '.new' do
+    subject { described_class.new(data) }
+
+    context 'with one-level array' do
+      let(:data) { [:one, 'one', 1, 2, :two] }
+
+      it { is_expected.to be_a described_class }
+      its(:name) { is_expected.to be_nil }
+      its(:to_a) { is_expected.to eq data }
+
+      context 'named' do
+        subject { described_class.new data, name: 'index_name'  }
+
+        its(:name) { is_expected.to eq 'index_name' }
+      end
     end
 
-    it "creates a MultiIndex if tuples are supplied" do
-      i = Daru::Index.new([
+    context 'with array of tuples' do
+      let(:data) { [
         [:b,:one,:bar],
         [:b,:two,:bar],
         [:b,:two,:baz],
         [:b,:one,:foo]
-      ])
+      ] }
 
-      expect(i.class).to eq(Daru::MultiIndex)
-      expect(i.levels).to eq([[:b], [:one, :two], [:bar, :baz, :foo]])
-      expect(i.labels).to eq([[0,0,0,0],[0,1,1,0],[0,0,1,2]])
+      it { is_expected.to be_a Daru::MultiIndex }
+      its(:levels) { is_expected.to eq [[:b], [:one, :two], [:bar, :baz, :foo]] }
+      its(:labels) { is_expected.to eq [[0,0,0,0],[0,1,1,0],[0,0,1,2]] }
     end
 
-    it "creates DateTimeIndex if date-like objects specified" do
-      i = Daru::Index.new([
-        DateTime.new(2012,2,4), DateTime.new(2012,2,5), DateTime.new(2012,2,6)])
-      expect(i.class).to eq(Daru::DateTimeIndex)
-      expect(i.to_a).to eq([DateTime.new(2012,2,4), DateTime.new(2012,2,5), DateTime.new(2012,2,6)])
-      expect(i.frequency).to eq('D')
-    end
+    context 'with array of dates' do
+      let(:data) { [DateTime.new(2012,2,4), DateTime.new(2012,2,5), DateTime.new(2012,2,6)] }
 
-    context "create an Index with name" do
-      context 'if no name is set' do
-        subject { Daru::Index.new [:a, :b, :c]  }
-        its(:name) { is_expected.to be_nil }
-      end
-
-      context 'correctly return the index name' do
-        subject { Daru::Index.new [:a, :b, :c], name: 'index_name'  }
-        its(:name) { is_expected.to eq 'index_name' }
-      end
-
-      context "set new index name" do
-        subject {
-          Daru::Index.new([:a, :b, :c], name: 'index_name') }
-        before { subject.name = 'new_name'}
-        its(:name) { is_expected.to eq 'new_name' }
-      end
+      it { is_expected.to be_a Daru::DateTimeIndex }
+      its(:to_a) { is_expected.to eq [DateTime.new(2012,2,4), DateTime.new(2012,2,5), DateTime.new(2012,2,6)] }
+      its(:frequency) { is_expected.to eq 'D' }
     end
   end
 
-  context "#initialize" do
-    it "creates an Index from Array" do
-      idx = Daru::Index.new ['speaker', 'mic', 'guitar', 'amp']
+  describe '#initialize' do
+    subject { described_class.new data }
 
-      expect(idx.to_a).to eq(['speaker', 'mic', 'guitar', 'amp'])
+    context 'from Array' do
+      let(:data) { ['speaker', 'mic', 'guitar', 'amp'] }
+
+      its(:to_a) { is_expected.to eq data }
     end
 
-    it "creates an Index from Range" do
-      idx = Daru::Index.new 1..5
+    context 'from Range' do
+      let(:data) { 1..5 }
 
-      expect(idx).to eq(Daru::Index.new [1, 2, 3, 4, 5])
+      its(:to_a) { is_expected.to eq [1, 2, 3, 4, 5] }
     end
 
-    it "raises ArgumentError on invalid input type" do
-      expect { Daru::Index.new 'foo' }.to raise_error ArgumentError
-    end
+    context 'from non-Enumerable' do
+      let(:data) { 'foo' }
 
-    it "accepts all sorts of objects for Indexing" do
-      idx = Daru::Index.new [:a, 'a', :hello, '23', 23]
-
-      expect(idx.to_a).to eq([:a, 'a', :hello, '23', 23])
+      its_call { is_expected.to raise_error ArgumentError }
     end
   end
 
-  context '#key' do
-    subject(:idx) { Daru::Index.new ['speaker', 'mic', 'guitar', 'amp'] }
 
+  subject(:index) { described_class.new %w[speaker mic guitar amp] }
+
+  its(:keys) { are_expected.to eq %w[speaker mic guitar amp] }
+  its(:size) { is_expected.to eq 4 }
+
+  describe 'Enumerable' do
+    it { is_expected.to be_a Enumerable }
+    its(:'each.to_a') { is_expected.to eq index.to_a }
+  end
+
+  describe '#inspect' do
+    subject { index.inspect }
+
+    context 'small index' do
+      let(:index) { described_class.new %w[one two three] }
+      it { is_expected.to eq "#<Daru::Index(3): {one, two, three}>" }
+    end
+
+    context 'large index' do
+      let(:index) { described_class.new 'a'..'z'  }
+      it { is_expected.to eq "#<Daru::Index(26): {a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t ... z}>" }
+    end
+
+    context 'named index' do
+      let(:index) { described_class.new ['one', 'two', 'three'], name: 'number'  }
+      it { is_expected.to eq "#<Daru::Index(3): number {one, two, three}>" }
+    end
+  end
+
+  describe '#==' do
+    it { is_expected.to eq described_class.new %w[speaker mic guitar amp] }
+    it { is_expected.not_to eq %w[speaker mic guitar amp] }
+    it { is_expected.not_to eq described_class.new %w[speaker mic guitar amp], name: 'other' }
+    it { is_expected.not_to eq described_class.new %w[speaker guitar mic amp] }
+  end
+
+  describe '#key' do
     it 'returns key by position' do
-      expect(idx.key(2)).to eq 'guitar'
+      expect(index.key(2)).to eq 'guitar'
     end
 
     it 'returns nil on too large pos' do
-      expect(idx.key(20)).to be_nil
+      expect(index.key(20)).to be_nil
     end
 
     it 'returns nil on wrong arg type' do
-      expect(idx.key(nil)).to be_nil
+      expect(index.key(nil)).to be_nil
     end
   end
 
-  context '#sort' do
+  describe '#sort' do
     let(:asc) { index.sort }
     let(:desc) { index.sort(ascending: false) }
 
     context 'string index' do
-      let(:index) { Daru::Index.new ['mic', 'amp', 'guitar', 'speaker'] }
-      specify { expect(asc).to eq Daru::Index.new ['amp', 'guitar', 'mic',
-       'speaker'] }
-      specify { expect(desc).to eq Daru::Index.new ['speaker', 'mic', 'guitar',
-       'amp'] }
+      specify { expect(asc).to eq described_class.new %w[amp guitar mic speaker] }
+      specify { expect(desc).to eq described_class.new %w[speaker mic guitar amp] }
     end
 
     context 'number index' do
-      let(:index) { Daru::Index.new [100, 99, 101, 1, 2]  }
+      let(:index) { described_class.new [100, 99, 101, 1, 2]  }
+
       specify { expect(asc).to eq Daru::Index.new [1, 2, 99, 100, 101] }
       specify { expect(desc).to eq Daru::Index.new [101, 100, 99, 2, 1] }
     end
   end
 
-  context "#size" do
-    it "correctly returns the size of the index" do
-      idx = Daru::Index.new ['speaker', 'mic', 'guitar', 'amp']
-
-      expect(idx.size).to eq(4)
-    end
-  end
-
-  context "#valid?" do
-    let(:idx) { Daru::Index.new [:a, :b, :c] }
-
+  describe '#valid?' do
     context "single index" do
-      it { expect(idx.valid? 2).to eq true }
-      it { expect(idx.valid? :d).to eq false }
+      it { expect(index.valid? 2).to eq true }
+      it { expect(index.valid? 'piano').to eq false }
     end
 
     context "multiple indexes" do
-      it { expect(idx.valid? :a, 1).to eq true }
-      it { expect(idx.valid? :a, 3).to eq false }
+      it { expect(index.valid? 'guitar', 1).to eq true }
+      it { expect(index.valid? 'guitar', 8).to eq false }
     end
   end
 
-  context '#inspect' do
-    context 'small index' do
-      subject { Daru::Index.new ['one', 'two', 'three']  }
-      its(:inspect) { is_expected.to eq "#<Daru::Index(3): {one, two, three}>" }
+  describe '#&' do
+    let(:left) { described_class.new %i[miles geddy eric] }
+
+    subject { left & right }
+
+    context 'with other Index' do
+      let(:right) { described_class.new %i[geddy richie miles] }
+
+      it { is_expected.to eq described_class.new %i[miles geddy] }
     end
 
-    context 'large index' do
-      subject { Daru::Index.new ('a'..'z').to_a  }
-      its(:inspect) { is_expected.to eq "#<Daru::Index(26): {a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t ... z}>" }
-    end
-
-    context 'index with name' do
-      subject { Daru::Index.new ['one', 'two', 'three'], name: 'number'  }
-      its(:inspect) { is_expected.to eq "#<Daru::Index(3): number {one, two, three}>" }
-    end
-  end
-
-  context "#&" do
-    before :each do
-      @left = Daru::Index.new [:miles, :geddy, :eric]
-      @right = Daru::Index.new [:geddy, :richie, :miles]
-    end
-
-    it "intersects 2 indexes and returns an Index" do
-      expect(@left & @right).to eq([:miles, :geddy].to_index)
-    end
-
-    it "intersects an Index and an Array to return an Index" do
-      expect(@left & [:bob, :geddy, :richie]).to eq([:geddy].to_index)
+    context 'with Array' do
+      let(:right) { %i[bob geddy richie] }
+      it { is_expected.to eq described_class.new %i[geddy] }
     end
   end
 
   context "#|" do
-    before :each do
-      @left = Daru::Index.new [:miles, :geddy, :eric]
-      @right = Daru::Index.new [:bob, :jimi, :richie]
+    let(:left) { described_class.new %i[miles geddy eric] }
+
+    subject { left | right }
+
+    context 'with other Index' do
+      let(:right) { described_class.new %i[bob geddy richie] }
+
+      it { is_expected.to eq described_class.new %i[miles geddy eric bob richie] }
     end
 
-    it "unions 2 indexes and returns an Index" do
-      expect(@left | @right).to eq([:miles, :geddy, :eric, :bob, :jimi, :richie].to_index)
-    end
+    context 'with Array' do
+      let(:right) { %i[bob geddy richie] }
 
-    it "unions an Index and an Array to return an Index" do
-      expect(@left | [:bob, :jimi, :richie]).to eq([:miles, :geddy, :eric,
-        :bob, :jimi, :richie].to_index)
+      it { is_expected.to eq described_class.new %i[miles geddy eric bob richie] }
     end
   end
 
@@ -324,21 +323,6 @@ describe Daru::Index do
     end
   end
 
-  # This context validate Daru::Index is like an enumerable.
-  # #map and #select are samples and we do not need tests all
-  # enumerable methods.
-  context "Enumerable" do
-    let(:idx) { Daru::Index.new ['speaker', 'mic', 'guitar', 'amp'] }
-
-    context "#map" do
-      it { expect(idx.map(&:upcase)).to eq(['SPEAKER', 'MIC', 'GUITAR', 'AMP']) }
-    end
-
-    context "select" do
-      it { expect(idx.select {|w| w[0] == 'g' }).to eq(['guitar']) }
-    end
-  end
-
   context "#is_values" do
     let(:klass) { Daru::Vector }
     let(:idx) { described_class.new [:one, 'one', 1, 2, 'two', nil, [1, 2]] }
@@ -386,6 +370,5 @@ describe Daru::Index do
         it { is_expected.to eq klass.new(answer) }
       end
     end
-
   end
 end

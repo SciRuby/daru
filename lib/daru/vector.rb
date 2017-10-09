@@ -171,7 +171,7 @@ module Daru
     # * +:missing_values+ - An Array of the values that are to be treated as 'missing'.
     # nil is the default missing value.
     #
-    # == Usage
+    # @example
     #
     #   vecarr = Daru::Vector.new [1,2,3,4], index: [:a, :e, :i, :o]
     #   vechsh = Daru::Vector.new({a: 1, e: 2, i: 3, o: 4})
@@ -713,7 +713,8 @@ module Daru
 
     # Returns a hash of Vectors, defined by the different values
     # defined on the fields
-    # Example:
+    #
+    # @example
     #
     #  a=Daru::Vector.new(["a,b","c,d","a,b"])
     #  a.split_by_separator
@@ -1144,11 +1145,11 @@ module Daru
     # over each resample.
     # +estimators+ could be
     # a) Hash with variable names as keys and lambdas as  values
-    #   a.bootstrap(:log_s2=>lambda {|v| Math.log(v.variance)},1000)
+    #   `a.bootstrap(:log_s2=>lambda {|v| Math.log(v.variance)},1000)`
     # b) Array with names of method to bootstrap
-    #   a.bootstrap([:mean, :sd],1000)
+    #   `a.bootstrap([:mean, :sd],1000)`
     # c) A single method to bootstrap
-    #   a.jacknife(:mean, 1000)
+    #   `a.jacknife(:mean, 1000)`
     # If s is nil, is set to vector size by default.
     #
     # Returns a DataFrame where each vector is a vector
@@ -1175,11 +1176,11 @@ module Daru
     # Returns a dataset with jacknife delete-+k+ +estimators+
     # +estimators+ could be:
     # a) Hash with variable names as keys and lambdas as values
-    #   a.jacknife(:log_s2=>lambda {|v| Math.log(v.variance)})
+    #   `a.jacknife(:log_s2=>lambda {|v| Math.log(v.variance)})`
     # b) Array with method names to jacknife
-    #   a.jacknife([:mean, :sd])
+    #   `a.jacknife([:mean, :sd])`
     # c) A single method to jacknife
-    #   a.jacknife(:mean)
+    #   `a.jacknife(:mean)`
     # +k+ represent the block size for block jacknife. By default
     # is set to 1, for classic delete-one jacknife.
     #

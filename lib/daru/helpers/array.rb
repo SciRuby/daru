@@ -4,7 +4,8 @@ module Daru
 
     # Recode repeated values on an array, adding the number of repetition
     # at the end
-    # Example:
+    #
+    # @example
     #   a=%w{a b c c d d d e}
     #   a.recode_repeated
     #   => ["a","b","c_1","c_2","d_1","d_2","d_3","e"]

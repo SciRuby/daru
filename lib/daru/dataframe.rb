@@ -276,7 +276,7 @@ module Daru
     # the source, or if the passed Daru::Vectors have different indexes.
     # Default to *true*.
     #
-    # == Usage
+    # @example
     #
     #   df = Daru::DataFrame.new
     #   # =>
@@ -1146,7 +1146,7 @@ module Daru
     # The calculation will be eval'ed, so you can put any variable
     # or expression valid on ruby.
     #
-    # For example:
+    # @example
     #   a = Daru::Vector.new [1,2]
     #   b = Daru::Vector.new [3,4]
     #   ds = Daru::DataFrame.new({:a => a,:b => b})
@@ -1393,7 +1393,7 @@ module Daru
     #
     # * vectors - An Array contatining names of vectors to group by.
     #
-    # == Usage
+    # @example
     #
     #   df = Daru::DataFrame.new({
     #     a: %w{foo bar foo bar   foo bar foo foo},
@@ -2055,7 +2055,7 @@ module Daru
     # * dbh - DBI database connection object.
     # * query - Query string.
     #
-    # == Usage
+    # @example
     #
     #  ds = Daru::DataFrame.new({:id=>Daru::Vector.new([1,2,3]), :name=>Daru::Vector.new(["a","b","c"])})
     #  dbh = DBI.connect("DBI:Mysql:database:localhost", "user", "password")
@@ -2088,7 +2088,7 @@ module Daru
 
     # Change dtypes of vectors by supplying a hash of :vector_name => :new_dtype
     #
-    # == Usage
+    # @example
     #   df = Daru::DataFrame.new({a: [1,2,3], b: [1,2,3], c: [1,2,3]})
     #   df.recast a: :nmatrix, c: :nmatrix
     def recast opts={}
