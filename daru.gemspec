@@ -27,28 +27,10 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.post_install_message = <<-EOF
-*************************************************************************
-Thank you for installing daru!
+  # TODO: Add temp post-install message on incompatibilities when v.1.0 will be released.
+  # spec.post_install_message =
 
-  oOOOOOo
- ,|    oO
-//|     |
-\\\\|     |
- `|     |
-  `-----`
-
-
-Hope you love daru! For enhanced interactivity and better visualizations,
-consider using gnuplotrb and nyaplot with iruby. For statistics use the
-statsample family.
-
-Read the README for interesting use cases and examples.
-
-Cheers!
-*************************************************************************
-EOF
-
+  spec.required_ruby_version = '>= 2.1.0'
 
   spec.add_runtime_dependency 'backports'
 
@@ -78,13 +60,8 @@ EOF
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'gruff'
   spec.add_development_dependency 'webmock'
+  spec.add_development_dependency 'nokogiri'
+  spec.add_development_dependency 'saharspec'
 
-  if RUBY_VERSION < '2.1.0'
-    spec.add_development_dependency 'nokogiri', '<= 1.6.8.1'
-  else
-    spec.add_development_dependency 'nokogiri'
-  end
-  if RUBY_VERSION >= '2.2.5'
-    spec.add_development_dependency 'guard-rspec'
-  end
+  spec.add_development_dependency 'guard-rspec' if RUBY_VERSION >= '2.2.5'
 end

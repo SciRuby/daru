@@ -1,5 +1,5 @@
 module Daru
-  class MultiIndex < Index # rubocop:disable Metrics/ClassLength
+  class MultiIndex < Index
     def each(&block)
       to_a.each(&block)
     end

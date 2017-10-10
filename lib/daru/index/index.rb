@@ -1,5 +1,7 @@
+require 'forwardable'
+
 module Daru
-  class Index # rubocop:disable Metrics/ClassLength
+  class Index
     include Enumerable
     # It so happens that over riding the .new method in a super class also
     # tampers with the default .new method for class that inherit from the
@@ -9,8 +11,10 @@ module Daru
     # Object) is once again the default .new for the subclass.
     # Refer http://blog.sidu.in/2007/12/rubys-new-as-factory.html
     class << self
+      # @private
       alias :__new__ :new
 
+      # @private
       def inherited subclass
         class << subclass
           alias :new :__new__
@@ -18,6 +22,7 @@ module Daru
       end
     end
 
+    # @private
     # We over-ride the .new method so that any sort of Index can be generated
     # from Daru::Index based on the types of arguments supplied.
     def self.new *args, &block
@@ -36,15 +41,13 @@ module Daru
       maybe_index.is_a?(Index) ? maybe_index : Daru::Index.new(maybe_index)
     end
 
-    def each(&block)
-      return to_enum(:each) unless block_given?
+    extend Forwardable
 
-      @relation_hash.each_key(&block)
-      self
-    end
-
-    attr_reader :relation_hash, :size
-    attr_accessor :name
+    # Optional name of the index.
+    # @return [String]
+    attr_reader :name
+    attr_writer :name # TODO: deprecate
+    def_delegators :@relation_hash, :keys, :size, :empty?, :include?
 
     # @example
     #
@@ -63,19 +66,35 @@ module Daru
     #
     #   idx = Daru::Index.new [:one, 'one', 1, 2, :two], name: "index_name"
     #   => #<Daru::Index(5): index_name {one, one, 1, 2, two}>
-    def initialize index, opts={}
+    def initialize index, name: nil
       index = guess_index index
       @relation_hash = index.each_with_index.to_h.freeze
-      @keys = @relation_hash.keys
-      @size = @relation_hash.size
-      @name = opts[:name]
+      @name = name
     end
 
-    def ==(other)
-      return false if self.class != other.class || other.size != @size
+    # @param threshold [Integer] Maximum number of values to show
+    # @return [String]
+    def inspect threshold=20
+      name_part = @name ? "#{@name} " : ''
+      if size <= threshold
+        "#<#{self.class}(#{size}): #{name_part}{#{to_a.join(', ')}}>"
+      else
+        "#<#{self.class}(#{size}): #{name_part}{#{to_a.first(threshold).join(', ')} ... #{to_a.last}}>"
+      end
+    end
 
-      @relation_hash.keys == other.to_a &&
-        @relation_hash.values == other.relation_hash.values
+    # Two indexes are equal only if their data, order and names are equal.
+    #
+    # @return [Boolean]
+    def ==(other)
+      self.class == other.class && relation_hash == other.relation_hash && name == other.name
+    end
+
+    def each(&block)
+      return to_enum(:each) unless block_given?
+
+      @relation_hash.each_key(&block)
+      self
     end
 
     def [](key, *rest)
@@ -90,6 +109,9 @@ module Daru
     end
 
     # Returns true if all arguments are either a valid category or position
+    #
+    # FIXME: Why do we need this? "Category or position" feels smelly.
+    #
     # @param indexes [Array<object>] categories or positions
     # @return [true, false]
     # @example
@@ -102,7 +124,8 @@ module Daru
     end
 
     # Returns positions given indexes or positions
-    # @note If the arugent is both a valid index and a valid position,
+    #
+    # @note If the argument is both a valid index and a valid position,
     #   it will treated as valid index
     # @param indexes [Array<object>] indexes or positions
     # @example
@@ -152,65 +175,33 @@ module Daru
       end
     end
 
-    def inspect threshold=20
-      name_part = @name ? "#{@name} " : ''
-      if size <= threshold
-        "#<#{self.class}(#{size}): #{name_part}{#{to_a.join(', ')}}>"
-      else
-        "#<#{self.class}(#{size}): #{name_part}{#{to_a.first(threshold).join(', ')} ... #{to_a.last}}>"
-      end
-    end
-
-    def slice *args
-      start = args[0]
-      en = args[1]
-
-      start_idx = @relation_hash[start]
-      en_idx    = @relation_hash[en]
-
-      if start_idx.nil?
-        nil
-      elsif en_idx.nil?
-        Array(start_idx..size-1)
-      else
-        Array(start_idx..en_idx)
-      end
-    end
-
-    def subset_slice *args
-      start = args[0]
-      en = args[1]
-
-      if start.is_a?(Integer) && en.is_a?(Integer)
-        Index.new @keys[start..en]
-      else
-        start_idx = @relation_hash[start]
-        en_idx    = @relation_hash[en]
-        Index.new @keys[start_idx..en_idx]
-      end
-    end
-
     # Produce new index from the set union of two indexes.
+    #
+    # @param other [Daru::Index]
+    # @return [Daru::Index]
     def |(other)
       Index.new(to_a | other.to_a)
     end
 
     # Produce a new index from the set intersection of two indexes
+    #
+    # @param other [Daru::Index]
+    # @return [Daru::Index]
     def & other
       Index.new(to_a & other.to_a)
     end
 
+    # Returns "raw" list of values in index.
+    #
+    # @return [Array]
     def to_a
       @relation_hash.keys
     end
 
+    # FIXME: why do we need it? What it means? Why it has no docs?
     def key(value)
       return nil unless value.is_a?(Numeric)
-      @keys[value]
-    end
-
-    def include? index
-      @relation_hash.key? index
+      relation_hash.keys[value]
     end
 
     # @note Do not use it to check for Float::NAN as
@@ -232,10 +223,6 @@ module Daru
     def is_values(*indexes) # rubocop:disable Style/PredicateName
       bool_array = @relation_hash.keys.map { |r| indexes.include?(r) }
       Daru::Vector.new(bool_array)
-    end
-
-    def empty?
-      @relation_hash.empty?
     end
 
     def dup
@@ -272,27 +259,24 @@ module Daru
     # Sorts a `Index`, according to its values. Defaults to ascending order
     # sorting.
     #
-    # @param [Hash] opts the options for sort method.
-    # @option opts [Boolean] :ascending False, to get descending order.
+    # @param [Boolean] ascending Pass `false` to get descending order.
     #
     # @return [Index] sorted `Index` according to its values.
     #
     # @example
     #   di = Daru::Index.new [100, 99, 101, 1, 2]
-    #   # Say you want to sort in descending order
-    #   di.sort(ascending: false) #=> Daru::Index.new [101, 100, 99, 2, 1]
-    #   # Say you want to sort in ascending order
     #   di.sort #=> Daru::Index.new [1, 2, 99, 100, 101]
-    def sort opts={}
-      opts = {ascending: true}.merge(opts)
-      if opts[:ascending]
-        new_index, = @relation_hash.sort.transpose
-      else
-        new_index, = @relation_hash.sort.reverse.transpose
-      end
+    #   di.sort(ascending: false) #=> Daru::Index.new [101, 100, 99, 2, 1]
+    def sort ascending: true
+      new_index, = ascending ? @relation_hash.sort.transpose : @relation_hash.sort.reverse.transpose
 
       self.class.new(new_index)
     end
+
+    protected
+
+    # Used in ==
+    attr_reader :relation_hash
 
     private
 
@@ -315,12 +299,12 @@ module Daru
       en      = rng.end
 
       if start.is_a?(Integer) && en.is_a?(Integer)
-        @keys[start..en]
+        relation_hash.keys[start..en]
       else
         start_idx = @relation_hash[start]
         en_idx    = @relation_hash[en]
 
-        @keys[start_idx..en_idx]
+        keys[start_idx..en_idx]
       end
     end
 
@@ -371,6 +355,35 @@ module Daru
         key
       else
         raise IndexError, "Specified index #{key.inspect} does not exist"
+      end
+    end
+
+    def slice *args
+      start = args[0]
+      en = args[1]
+
+      start_idx = @relation_hash[start]
+      en_idx    = @relation_hash[en]
+
+      if start_idx.nil?
+        nil
+      elsif en_idx.nil?
+        Array(start_idx..size-1)
+      else
+        Array(start_idx..en_idx)
+      end
+    end
+
+    def subset_slice *args
+      start = args[0]
+      en = args[1]
+
+      if start.is_a?(Integer) && en.is_a?(Integer)
+        Index.new relation_hash.keys[start..en]
+      else
+        start_idx = @relation_hash[start]
+        en_idx    = @relation_hash[en]
+        Index.new relation_hash.keys[start_idx..en_idx]
       end
     end
   end
