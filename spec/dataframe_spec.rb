@@ -1820,6 +1820,33 @@ describe Daru::DataFrame do
     end
   end
 
+  describe 'uniq' do
+    let(:df) do
+      Daru::DataFrame.from_csv 'spec/fixtures/duplicates.csv'
+    end
+
+    context 'with no args' do
+      it do
+        result = df.uniq
+        expect(result.shape.first).to eq 30
+      end
+    end
+
+    context 'given a vector' do
+      it do
+        result = df.uniq("color")
+        expect(result.shape.first).to eq 2
+      end
+    end
+
+    context 'given an array of vectors' do
+      it do
+        result = df.uniq("color", "director_name")
+        expect(result.shape.first).to eq 29
+      end
+    end
+  end
+
   context '#rolling_fillna!' do
     subject do
       Daru::DataFrame.new({
