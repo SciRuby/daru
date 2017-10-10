@@ -240,7 +240,7 @@ module Daru
     end
 
     # Retrive rows by positions
-    # @param [Array<Integer>] *positions positions of rows to retrive
+    # @param [Array<Integer>] positions of rows to retrive
     # @return [Daru::Vector, Daru::DataFrame] vector for single position and dataframe for multiple positions
     # @example
     #   df = Daru::DataFrame.new({
@@ -270,7 +270,7 @@ module Daru
 
     # Set rows by positions
     # @param [Array<Integer>] positions positions of rows to set
-    # @vector [Array, Daru::Vector] vector vector to be assigned
+    # @param [Array, Daru::Vector] vector vector to be assigned
     # @example
     #   df = Daru::DataFrame.new({
     #     a: [1, 2, 3],
@@ -303,7 +303,7 @@ module Daru
     end
 
     # Retrive vectors by positions
-    # @param [Array<Integer>] *positions positions of vectors to retrive
+    # @param [Array<Integer>] positions of vectors to retrive
     # @return [Daru::Vector, Daru::DataFrame] vector for single position and dataframe for multiple positions
     # @example
     #   df = Daru::DataFrame.new({
@@ -387,7 +387,7 @@ module Daru
     end
 
     def add_row row, index=nil
-      self.row[index || @size] = row
+      self.row[*(index || @size)] = row
     end
 
     def add_vector n, vector
@@ -462,7 +462,7 @@ module Daru
 
     # Returns a dataframe in which rows with any of the mentioned values
     #   are ignored.
-    # @param [Array] *values values to reject to form the new dataframe
+    # @param [Array] values to reject to form the new dataframe
     # @return [Daru::DataFrame] Data Frame with only rows which doesn't
     #   contain the mentioned values
     # @example
@@ -513,6 +513,88 @@ module Daru
     def replace_values old_values, new_value
       @data.each { |vec| vec.replace_values old_values, new_value }
       self
+    end
+
+    # Rolling fillna
+    # replace all Float::NAN and NIL values with the preceeding or following value
+    #
+    # @param direction [Symbol] (:forward, :backward) whether replacement value is preceeding or following
+    #
+    # @example
+    #   df = Daru::DataFrame.new({
+    #    a: [1,    2,          3,   nil,        Float::NAN, nil, 1,   7],
+    #    b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   nil],
+    #    c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
+    #   })
+    #
+    #   => #<Daru::DataFrame(8x3)>
+    #        a   b   c
+    #    0   1   a   a
+    #    1   2   b NaN
+    #    2   3 nil   3
+    #    3 nil NaN   4
+    #    4 NaN nil   3
+    #    5 nil   3   5
+    #    6   1   5 nil
+    #    7   7 nil   7
+    #
+    #   2.3.3 :068 > df.rolling_fillna(:forward)
+    #   => #<Daru::DataFrame(8x3)>
+    #        a   b   c
+    #    0   1   a   a
+    #    1   2   b   a
+    #    2   3   b   3
+    #    3   3   b   4
+    #    4   3   b   3
+    #    5   3   3   5
+    #    6   1   5   5
+    #    7   7   5   7
+    #
+    def rolling_fillna!(direction=:forward)
+      @data.each { |vec| vec.rolling_fillna!(direction) }
+    end
+
+    def rolling_fillna(direction=:forward)
+      dup.rolling_fillna!(direction)
+    end
+
+    # Return unique rows by vector specified or all vectors
+    #
+    # @param vtrs [String][Symbol] vector names(s) that should be considered
+    #
+    # @example
+    #
+    #    => #<Daru::DataFrame(6x2)>
+    #         a   b
+    #     0   1   a
+    #     1   2   b
+    #     2   3   c
+    #     3   4   d
+    #     2   3   c
+    #     3   4   f
+    #
+    #    2.3.3 :> df.unique
+    #    => #<Daru::DataFrame(5x2)>
+    #         a   b
+    #     0   1   a
+    #     1   2   b
+    #     2   3   c
+    #     3   4   d
+    #     3   4   f
+    #
+    #    2.3.3 :> df.unique(:a)
+    #    => #<Daru::DataFrame(5x2)>
+    #         a   b
+    #     0   1   a
+    #     1   2   b
+    #     2   3   c
+    #     3   4   d
+    #
+    def uniq(*vtrs)
+      vecs = vtrs.empty? ? vectors.map(&:to_s) : Array(vtrs)
+      grouped = group_by(vecs)
+      indexes = grouped.groups.values.map { |v| v[0] }.sort
+      row[*indexes]
     end
 
     # Iterate over each index of the DataFrame.
@@ -889,9 +971,9 @@ module Daru
       dup.tap { |df| df.keep_vector_if(&block) }
     end
 
-    # Test each row with one or more tests. Each test is a Proc with the form
-    # *Proc.new {|row| row[:age] > 0}*
-    #
+    # Test each row with one or more tests.
+    # @param tests [Proc]  Each test is a Proc with the form
+    #                      *Proc.new {|row| row[:age] > 0}*
     # The function returns an array with all errors.
     #
     # FIXME: description here is too sparse. As far as I can get,
@@ -993,7 +1075,7 @@ module Daru
     deprecate :flawed?, :include_values?, 2016, 10
 
     # Check if any of given values occur in the data frame
-    # @param [Array] *values values to check for
+    # @param [Array] values to check for
     # @return [true, false] true if any of the given values occur in the
     #   dataframe, false otherwise
     # @example
@@ -1124,13 +1206,60 @@ module Daru
 
     alias :last :tail
 
-    # Returns a vector with sum of all vectors specified in the argument.
-    # If vecs parameter is empty, sum all numeric vector.
-    def vector_sum vecs=nil
+    # Sum all numeric/specified vectors in the DataFrame.
+    #
+    # Returns a new vector that's a containing a sum of all numeric
+    # or specified vectors of the DataFrame. By default, if the vector
+    # contains a nil, the sum is nil.
+    # With :skipnil argument set to true, nil values are assumed to be
+    # 0 (zero) and the sum vector is returned.
+    #
+    # @param args [Array] List of vectors to sum. Default is nil in which case
+    #   all numeric vectors are summed.
+    #
+    # @option opts [Boolean] :skipnil Consider nils as 0. Default is false.
+    #
+    # @return Vector with sum of all vectors specified in the argument.
+    #   If vecs parameter is empty, sum all numeric vector.
+    #
+    # @example
+    #    df = Daru::DataFrame.new({
+    #       a: [1, 2, nil],
+    #       b: [2, 1, 3],
+    #       c: [1, 1, 1]
+    #     })
+    #    => #<Daru::DataFrame(3x3)>
+    #           a   b   c
+    #       0   1   2   1
+    #       1   2   1   1
+    #       2 nil   3   1
+    #    df.vector_sum [:a, :c]
+    #    => #<Daru::Vector(3)>
+    #       0   2
+    #       1   3
+    #       2 nil
+    #    df.vector_sum
+    #    => #<Daru::Vector(3)>
+    #       0   4
+    #       1   4
+    #       2 nil
+    #    df.vector_sum skipnil: true
+    #    => #<Daru::Vector(3)>
+    #           c
+    #       0   4
+    #       1   4
+    #       2   4
+    #
+    def vector_sum(*args)
+      defaults = {vecs: nil, skipnil: false}
+      options = args.last.is_a?(::Hash) ? args.pop : {}
+      options = defaults.merge(options)
+      vecs = args[0] || options[:vecs]
+      skipnil = args[1] || options[:skipnil]
+
       vecs ||= numeric_vectors
       sum = Daru::Vector.new [0]*@size, index: @index, name: @name, dtype: @dtype
-
-      vecs.inject(sum) { |memo, n| memo + self[n] }
+      vecs.inject(sum) { |memo, n| self[n].add(memo, skipnil: skipnil) }
     end
 
     # Calculate mean of the rows of the dataframe.
@@ -1292,7 +1421,7 @@ module Daru
 
     # Reassign vectors with a new index of type Daru::Index or any of its subclasses.
     #
-    # @param [Daru::Index] idx The new index object on which the vectors are to
+    # @param new_index [Daru::Index] idx The new index object on which the vectors are to
     #   be indexed. Must of the same size as ncols.
     # @example Reassigning vectors of a DataFrame
     #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [:a,:b,:c,:d], c: [11,22,33,44]})
@@ -1378,9 +1507,9 @@ module Daru
     # Sorts a dataframe (ascending/descending) in the given pripority sequence of
     # vectors, with or without a block.
     #
-    # @param order [Array] The order of vector names in which the DataFrame
+    # @param vector_order [Array] The order of vector names in which the DataFrame
     #   should be sorted.
-    # @param [Hash] opts The options to sort with.
+    # @param opts [Hash] opts The options to sort with.
     # @option opts [TrueClass,FalseClass,Array] :ascending (true) Sort in ascending
     #   or descending order. Specify Array corresponding to *order* for multiple
     #   sort orders.
@@ -1849,7 +1978,7 @@ module Daru
     end
 
     # Converts the specified non category type vectors to category type vectors
-    # @param [Array] *names names of non category type vectors to be converted
+    # @param [Array] names of non category type vectors to be converted
     # @return [Daru::DataFrame] data frame in which specified vectors have been
     #   converted to category type
     # @example
@@ -1940,7 +2069,87 @@ module Daru
       res
     end
 
+    # Function to use for aggregating the data.
+    #
+    # @param options [Hash] options for column, you want in resultant dataframe
+    #
+    # @return [Daru::DataFrame]
+    #
+    # @example
+    #   df = Daru::DataFrame.new(
+    #      {col: [:a, :b, :c, :d, :e], num: [52,12,07,17,01]})
+    #   => #<Daru::DataFrame(5x2)>
+    #        col num
+    #      0   a  52
+    #      1   b  12
+    #      2   c   7
+    #      3   d  17
+    #      4   e   1
+    #
+    #    df.aggregate(num_100_times: ->(df) { df.num*100 })
+    #   => #<Daru::DataFrame(5x1)>
+    #               num_100_ti
+    #             0       5200
+    #             1       1200
+    #             2        700
+    #             3       1700
+    #             4        100
+    #
+    #   When we have duplicate index :
+    #
+    #   idx = Daru::CategoricalIndex.new [:a, :b, :a, :a, :c]
+    #   df = Daru::DataFrame.new({num: [52,12,07,17,01]}, index: idx)
+    #   => #<Daru::DataFrame(5x1)>
+    #        num
+    #      a  52
+    #      b  12
+    #      a   7
+    #      a  17
+    #      c   1
+    #
+    #   df.aggregate(num: :mean)
+    #   => #<Daru::DataFrame(3x1)>
+    #                      num
+    #             a 25.3333333
+    #             b         12
+    #             c          1
+    #
+    # Note: `GroupBy` class `aggregate` method uses this `aggregate` method
+    # internally.
+    def aggregate(options={})
+      colmn_value, index_tuples = aggregated_colmn_value(options)
+      Daru::DataFrame.new(
+        colmn_value, index: index_tuples, order: options.keys
+      )
+    end
+
     private
+
+    # Do the `method` (`method` can be :sum, :mean, :std, :median, etc or
+    # lambda), on the column.
+    def apply_method_on_colmns colmn, index_tuples, method
+      rows = []
+      index_tuples.each do |indexes|
+        # If single element then also make it vector.
+        slice = Daru::Vector.new(Array(self[colmn][*indexes]))
+        case method
+        when Symbol
+          rows << (slice.is_a?(Daru::Vector) ? slice.send(method) : slice)
+        when Proc
+          rows << method.call(slice)
+        end
+      end
+      rows
+    end
+
+    def apply_method_on_df index_tuples, method
+      rows = []
+      index_tuples.each do |indexes|
+        slice = row[*indexes]
+        rows << method.call(slice)
+      end
+      rows
+    end
 
     def headers
       Daru::Index.new(Array(index.name) + @vectors.to_a)
@@ -2038,9 +2247,7 @@ module Daru
         rescue IndexError
           raise IndexError, "Specified vector #{names.first} does not exist"
         end
-
         return @data[pos] if pos.is_a?(Numeric)
-
         names = pos
       end
 
@@ -2210,7 +2417,7 @@ module Daru
     end
 
     def create_vectors_index_with vectors, source
-      vectors = source.keys.sort_by(&:to_s) if vectors.nil?
+      vectors = source.keys if vectors.nil?
 
       @vectors =
         if vectors.is_a?(Index) || vectors.is_a?(MultiIndex)
@@ -2257,9 +2464,7 @@ module Daru
       @index   = Index.coerce(index || source[0].size)
       @vectors = Index.coerce(vectors)
 
-      @data = @vectors.each_with_index.map do |_vec,idx|
-        Daru::Vector.new(source[idx], index: @index, name: vectors[idx])
-      end
+      update_data source, vectors
     end
 
     def initialize_from_array_of_vectors source, vectors, index, opts
@@ -2506,6 +2711,30 @@ module Daru
       else
         Daru::Vector.new vector
       end
+    end
+
+    def update_data source, vectors
+      @data = @vectors.each_with_index.map do |_vec,idx|
+        Daru::Vector.new(source[idx], index: @index, name: vectors[idx])
+      end
+    end
+
+    def aggregated_colmn_value(options)
+      colmn_value = []
+      index_tuples = Array(@index).uniq
+      options.keys.each do |vec|
+        do_this_on_vec = options[vec]
+        colmn_value << if @vectors.include?(vec)
+                         apply_method_on_colmns(
+                           vec, index_tuples, do_this_on_vec
+                         )
+                       else
+                         apply_method_on_df(
+                           index_tuples, do_this_on_vec
+                         )
+                       end
+      end
+      [colmn_value, index_tuples]
     end
 
     # coerce ranges, integers and array in appropriate ways

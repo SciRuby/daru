@@ -115,7 +115,7 @@ module Daru
     end
 
     # Associates a category to the vector.
-    # @param [Array] *new_categories new categories to be associated
+    # @param [Array] new_categories new categories to be associated
     # @example
     #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
     #   dv.add_category :b
@@ -172,7 +172,7 @@ module Daru
     end
 
     # Returns vector for indexes/positions specified
-    # @param [Array] *indexes indexes/positions for which values has to be retrived
+    # @param [Array] indexes for which values has to be retrived
     # @note Since it accepts both indexes and postions. In case of collision,
     #   arguement will be treated as index
     # @return vector containing values specified at specified indexes/positions
@@ -201,7 +201,7 @@ module Daru
     end
 
     # Returns vector for positions specified.
-    # @param [Array] *positions positions at which values to be retrived.
+    # @param [Array] positions at which values to be retrived.
     # @return vector containing values specified at specified positions
     # @example
     #   dv = Daru::Vector.new [:a, 1, :a, 1, :c], type: :category
@@ -228,7 +228,7 @@ module Daru
 
     # Modifies values at specified indexes/positions.
     # @note In order to add a new category you need to associate it via #add_category
-    # @param [Array] *indexes indexes/positions at which to modify value
+    # @param [Array] indexes at which to modify value
     # @param [object] val value to assign at specific indexes/positions
     # @return modified vector
     # @example
@@ -589,7 +589,7 @@ module Daru
     alias :gteq :mteq
 
     # For querying the data
-    # @param [object] arel like query syntax
+    # @param bool_array [object] arel like query syntax
     # @return [Daru::Vector] Vector which makes the conditions true
     # @example
     #   dv = Daru::Vector.new ['I', 'II', 'I', 'III', 'I', 'II'],
@@ -663,7 +663,7 @@ module Daru
     end
 
     # Check if any one of mentioned values occur in the vector
-    # @param [Array] *values values to check for
+    # @param [Array] values to check for
     # @return [true, false] returns true if any one of specified values
     #   occur in the vector
     # @example
@@ -675,7 +675,7 @@ module Daru
     end
 
     # Return a vector with specified values removed
-    # @param [Array] *values values to reject from resultant vector
+    # @param [Array] values to reject from resultant vector
     # @return [Daru::Vector] vector with specified values removed
     # @example
     #   dv = Daru::Vector.new [1, 2, nil, Float::NAN], type: :category
@@ -694,7 +694,7 @@ module Daru
     end
 
     # Count the number of values specified
-    # @param [Array] *values values to count for
+    # @param [Array] values to count for
     # @return [Integer] the number of times the values mentioned occurs
     # @example
     #   dv = Daru::Vector.new [1, 2, 1, 2, 3, 4, nil, nil]
@@ -707,7 +707,7 @@ module Daru
     end
 
     # Return indexes of values specified
-    # @param [Array] *values values to find indexes for
+    # @param [Array] values to find indexes for
     # @return [Array] array of indexes of values specified
     # @example
     #   dv = Daru::Vector.new [1, 2, nil, Float::NAN], index: 11..14

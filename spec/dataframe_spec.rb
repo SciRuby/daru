@@ -171,6 +171,13 @@ describe Daru::DataFrame do
         expect(df.a)      .to eq([1,2,3,4,5].dv(:a, df.index))
       end
 
+      it "initializes from a Hash and preserves default order" do
+        df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]},
+          index: [:one, :two, :three, :four, :five])
+
+        expect(df.vectors).to eq(Daru::Index.new [:b, :a])
+      end
+
       it "initializes from a Hash of Vectors" do
         va = Daru::Vector.new([1,2,3,4,5], index: [:one, :two, :three, :four, :five])
         vb = Daru::Vector.new([11,12,13,14,15], index: [:one, :two, :three, :four, :five])
@@ -228,7 +235,7 @@ describe Daru::DataFrame do
         df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5]})
 
         expect(df.index)  .to eq(Daru::Index.new [0,1,2,3,4])
-        expect(df.vectors).to eq(Daru::Index.new [:a, :b])
+        expect(df.vectors).to eq(Daru::Index.new [:b, :a])
       end
 
       it "aligns indexes properly" do
@@ -1580,6 +1587,22 @@ describe Daru::DataFrame do
       }
     end
 
+    context 'with mulitiindex DF' do
+      subject(:data_frame) {
+        Daru::DataFrame.new({b: [11,12,13], a: [1,2,3],
+          c: [11,22,33]}, order: [:a, :b, :c],
+          index: Daru::MultiIndex.from_tuples([[:one, :two], [:one, :three], [:two, :four]]))
+      }
+
+      before { data_frame.add_row [100,200,300], [:two, :five] }
+
+      it { is_expected.to eq(Daru::DataFrame.new({
+          b: [11,12,13,200], a: [1,2,3,100],
+          c: [11,22,33,300]}, order: [:a, :b, :c],
+          index: Daru::MultiIndex.from_tuples([[:one, :two], [:one, :three], [:two, :four], [:two, :five]])))
+      }
+    end
+
     it "allows adding rows after making empty DF by specfying only order" do
       df = Daru::DataFrame.new({}, order: [:a, :b, :c])
       df.add_row [1,2,3]
@@ -1794,6 +1817,59 @@ describe Daru::DataFrame do
       its(:'a.to_a') { is_expected.to eq [10, 2, 3, nil, Float::NAN, nil, 10, 7] }
       its(:'b.to_a') { is_expected.to eq [:a,  :b, nil, Float::NAN, nil, 3, 10, 8] }
       its(:'c.to_a') { is_expected.to eq ['a', Float::NAN, 3, 4, 3, 10, nil, 7] }
+    end
+  end
+
+  describe 'uniq' do
+    let(:df) do
+      Daru::DataFrame.from_csv 'spec/fixtures/duplicates.csv'
+    end
+
+    context 'with no args' do
+      it do
+        result = df.uniq
+        expect(result.shape.first).to eq 30
+      end
+    end
+
+    context 'given a vector' do
+      it do
+        result = df.uniq("color")
+        expect(result.shape.first).to eq 2
+      end
+    end
+
+    context 'given an array of vectors' do
+      it do
+        result = df.uniq("color", "director_name")
+        expect(result.shape.first).to eq 29
+      end
+    end
+  end
+
+  context '#rolling_fillna!' do
+    subject do
+      Daru::DataFrame.new({
+        a: [1,    2,          3,   nil,        Float::NAN, nil, 1,   7],
+        b: [:a,  :b,          nil, Float::NAN, nil,        3,   5,   nil],
+        c: ['a',  Float::NAN, 3,   4,          3,          5,   nil, 7]
+      })
+    end
+
+    context 'rolling_fillna! forwards' do
+      before { subject.rolling_fillna!(:forward) }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'a.to_a') { is_expected.to eq [1, 2, 3, 3, 3, 3, 1, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a,  :b, :b, :b, :b, 3, 5, 5] }
+      its(:'c.to_a') { is_expected.to eq ['a', 'a', 3, 4, 3, 5, 5, 7] }
+    end
+
+    context 'rolling_fillna! backwards' do
+      before { subject.rolling_fillna!(:backward) }
+      it { is_expected.to be_a Daru::DataFrame }
+      its(:'a.to_a') { is_expected.to eq [1, 2, 3, 1, 1, 1, 1, 7] }
+      its(:'b.to_a') { is_expected.to eq [:a, :b, 3, 3, 3, 3, 5, 0] }
+      its(:'c.to_a') { is_expected.to eq ['a', 3, 3, 4, 3, 5, 7, 7] }
     end
   end
 
@@ -3183,23 +3259,27 @@ describe Daru::DataFrame do
 
   context "#vector_sum" do
     before do
-      a1 = Daru::Vector.new [1, 2, 3, 4, 5, nil]
-      a2 = Daru::Vector.new [10, 10, 20, 20, 20, 30]
-      b1 = Daru::Vector.new [nil, 1, 1, 1, 1, 2]
-      b2 = Daru::Vector.new [2, 2, 2, nil, 2, 3]
+      a1 = Daru::Vector.new [1, 2, 3, 4, 5, nil, nil]
+      a2 = Daru::Vector.new [10, 10, 20, 20, 20, 30, nil]
+      b1 = Daru::Vector.new [nil, 1, 1, 1, 1, 2, nil]
+      b2 = Daru::Vector.new [2, 2, 2, nil, 2, 3, nil]
       @df = Daru::DataFrame.new({ :a1 => a1, :a2 => a2, :b1 => b1, :b2 => b2 })
     end
 
     it "calculates complete vector sum" do
-      expect(@df.vector_sum).to eq(Daru::Vector.new [nil, 15, 26, nil, 28, nil])
+      expect(@df.vector_sum).to eq(Daru::Vector.new [nil, 15, 26, nil, 28, nil, nil])
+    end
+
+    it "ignores nils if skipnil is true" do
+      expect(@df.vector_sum skipnil: true).to eq(Daru::Vector.new [13, 15, 26, 25, 28, 35, 0])
     end
 
     it "calculates partial vector sum" do
       a = @df.vector_sum([:a1, :a2])
       b = @df.vector_sum([:b1, :b2])
 
-      expect(a).to eq(Daru::Vector.new [11, 12, 23, 24, 25, nil])
-      expect(b).to eq(Daru::Vector.new [nil, 3, 3, nil, 3, 5])
+      expect(a).to eq(Daru::Vector.new [11, 12, 23, 24, 25, nil, nil])
+      expect(b).to eq(Daru::Vector.new [nil, 3, 3, nil, 3, 5, nil])
     end
   end
 
@@ -3387,7 +3467,8 @@ describe Daru::DataFrame do
       ev_b  = Daru::Vector.new [1, 1, 0]
       ev_c  = Daru::Vector.new [0, 1, 1]
       df2 = Daru::DataFrame.new({
-        :_id => ev_id, 'a' => ev_a, 'b' => ev_b, 'c' => ev_c })
+        :_id => ev_id, 'a' => ev_a, 'b' => ev_b, 'c' => ev_c },
+        order: ['a', 'b', 'c', :_id])
 
       expect(df2).to eq(df)
     end
@@ -3880,6 +3961,24 @@ describe Daru::DataFrame do
     end
   end
 
+
+  context '#aggregate' do
+    let(:cat_idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
+    let(:df) { Daru::DataFrame.new(num: [52,12,07,17,01], cat_index: cat_idx) }
+    let(:df_cat_idx) {
+      Daru::DataFrame.new({num: [52,12,07,17,01]}, index: cat_idx) }
+
+    it 'lambda function on particular column' do
+      expect(df.aggregate(num_100_times: ->(df) { df.num*100 })).to eq(
+          Daru::DataFrame.new(num_100_times: [5200, 1200, 700, 1700, 100])
+        )
+    end
+    it 'aggregate sum on particular column' do
+      expect(df_cat_idx.aggregate(num: :sum)).to eq(
+          Daru::DataFrame.new({num: [76, 12, 1]}, index: [:a, :b, :c])
+        )
+    end
+  end
 
   context '#create_sql' do
     let(:df) { Daru::DataFrame.new({

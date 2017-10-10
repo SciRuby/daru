@@ -26,6 +26,12 @@ daru makes it easy and intuitive to process data predominantly through 2 data st
 * Quickly reducing data with pivot tables for quick data summary.
 * Import and export data from and to Excel, CSV, SQL Databases, ActiveRecord and plain text files.
 
+## Installation
+
+```console
+$ gem install daru
+```
+
 ## Notebooks
 
 #### Notebooks on most use cases

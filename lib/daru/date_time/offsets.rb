@@ -86,7 +86,7 @@ module Daru
 
   module Offsets
     class DateOffsetType < DateOffset
-      # @method initialize
+      # @!method initialize(n)
       # Initialize one of the subclasses of DateOffsetType with the number of the times
       # the offset should be applied, which is the supplied as the argument.
       #

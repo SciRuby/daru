@@ -1769,6 +1769,45 @@ describe Daru::Vector do
     end
   end
 
+  context '#rolling_fillna!' do
+    subject do
+      Daru::Vector.new(
+        [Float::NAN, 2, 1, 4, nil, Float::NAN, 3, nil, Float::NAN]
+      )
+    end
+
+    context 'rolling_fillna! forwards' do
+      before { subject.rolling_fillna!(:forward) }
+      its(:to_a) { is_expected.to eq [0, 2, 1, 4, 4, 4, 3, 3, 3] }
+    end
+
+    context 'rolling_fillna! backwards' do
+      before { subject.rolling_fillna!(direction: :backward) }
+      its(:to_a) { is_expected.to eq [2, 2, 1, 4, 3, 3, 3, 0, 0] }
+    end
+
+    context 'all invalid vector' do
+      subject do
+        Daru::Vector.new(
+          [Float::NAN, Float::NAN, Float::NAN, Float::NAN, Float::NAN]
+        )
+      end
+      before { subject.rolling_fillna!(:forward) }
+      its(:to_a) { is_expected.to eq [0, 0, 0, 0, 0] }
+    end
+
+    context 'with non-default index' do
+      subject do
+        Daru::Vector.new(
+          [Float::NAN, 2, 1, 4, nil, Float::NAN, 3, nil, Float::NAN],
+          index: %w[a b c d e f g h i]
+        )
+      end
+      before { subject.rolling_fillna!(direction: :backward) }
+      it { is_expected.to eq Daru::Vector.new([2, 2, 1, 4, 3, 3, 3, 0, 0], index: %w[a b c d e f g h i]) }
+    end
+  end
+
   context "#type" do
     before(:each) do
       @numeric    = Daru::Vector.new([1,2,3,4,5])
