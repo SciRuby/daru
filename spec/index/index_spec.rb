@@ -1,6 +1,13 @@
 require 'spec_helper.rb'
 
 describe Daru::Index do
+  context "Marshalling" do
+    it "" do
+      i = Daru::Index.new([:a, :b, :c, :d, :e])
+      expect(Marshal.load(Marshal.dump(i))).to eq(i)
+    end
+  end
+
   context ".new" do
     it "creates an Index object if Index-like data is supplied" do
       i = Daru::Index.new [:one, 'one', 1, 2, :two]

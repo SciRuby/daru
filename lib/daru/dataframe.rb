@@ -1908,7 +1908,9 @@ module Daru
 
     # Use marshalling to save dataframe to a file.
     def save filename
-      Daru::IO.save self, filename
+      fp = File.open(filename, 'w')
+      Marshal.dump(self, fp)
+      fp.close
     end
 
     def _dump(_depth)
