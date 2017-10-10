@@ -163,7 +163,7 @@ describe Daru::DataFrame do
     it "saves df to a file" do
       outfile = Tempfile.new('dataframe.df')
       @data_frame.save(outfile.path)
-      a = Daru::IO.load(outfile.path)
+      a = Daru::DataFrame.load(outfile.path)
       expect(a).to eq(@data_frame)
     end
   end
