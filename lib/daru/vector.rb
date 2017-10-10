@@ -1346,15 +1346,6 @@ module Daru
       Daru::Vector.new(([nil]*size), name: @name, index: @index.dup)
     end
 
-    # Save the vector to a file
-    #
-    # == Arguments
-    #
-    # * filename - Path of file where the vector is to be saved
-    def save filename
-      Daru::IO.save self, filename
-    end
-
     def _dump(*) # :nodoc:
       Marshal.dump(
         data:           @data.to_a,
@@ -1369,6 +1360,25 @@ module Daru
       self
     end
     # :nocov:
+
+    # Save the vector to a file
+    #
+    # == Arguments
+    #
+    # * filename - Path of file where the vector is to be saved
+    def save filename
+      fp = File.open(filename, 'w')
+      Marshal.dump(self, fp)
+      fp.close
+    end
+
+    def self.load filename
+      return false unless File.exist? filename
+
+      o = false
+      File.open(filename, 'r') { |fp| o = Marshal.load(fp) }
+      o
+    end
 
     alias :dv :daru_vector
 

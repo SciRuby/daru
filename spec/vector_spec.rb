@@ -24,7 +24,7 @@ describe Daru::Vector do
                 dtype: dtype)
             outfile = Tempfile.new('vector.vec')
             vector.save(outfile.path)
-            expect(Daru::IO.load(outfile.path)).to eq(vector)
+            expect(Daru::Vector.load(outfile.path)).to eq(vector)
           end
         end
       end

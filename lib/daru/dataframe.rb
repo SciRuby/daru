@@ -1912,6 +1912,14 @@ module Daru
       fp.close
     end
 
+    def self.load filename
+      return false unless File.exist? filename
+
+      o = false
+      File.open(filename, 'r') { |fp| o = Marshal.load(fp) }
+      o
+    end
+
     def _dump(_depth)
       Marshal.dump(
         data:  @data,
