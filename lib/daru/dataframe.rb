@@ -1824,14 +1824,15 @@ module Daru
 
       new_fields = (@vectors.to_a + other_df.vectors.to_a)
       new_fields = ArrayHelper.recode_repeated(new_fields)
-
-      DataFrame.new({}, order: new_fields).tap do |df_new|
+      temp = DataFrame.new({}, order: new_fields).tap do |df_new|
         (0...nrows).each do |i|
           df_new.add_row row[i].to_a + other_df.row[i].to_a
         end
 
         df_new.update
       end
+      temp.index= @index.to_a if @index.to_a == other_df.index.to_a
+      temp
     end
 
     # Join 2 DataFrames with SQL style joins. Currently supports inner, left
