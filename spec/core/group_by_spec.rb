@@ -466,6 +466,23 @@ describe Daru::Core::GroupBy do
     it { is_expected.to eq Daru::DataFrame.new({num: [6]}, index: ['a']) }
   end
 
+  context 'when dataframe tuples contain nils in mismatching positions' do
+
+    let(:df){
+      Daru::DataFrame.new(
+        {
+          'string1' => ["Color", "Color", "Color", "Color", nil, "Color", "Color", " Black and White"],
+          'string2' => ["Test", "test2", nil, "test3", nil, "test", "test3", "test5"],
+          'num' => [1, nil, 3, 4, 5, 6, 7, nil]
+        }
+      )
+    }
+
+    it 'groups by without errors' do
+      expect { df.group_by(df.vectors.map(&:to_s)) }.to_not raise_error(ArgumentError)
+    end
+  end
+  
   context '#aggregate' do
     let(:dataframe) { Daru::DataFrame.new({
       employee: %w[John Jane Mark John Jane Mark],

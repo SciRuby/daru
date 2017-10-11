@@ -704,6 +704,45 @@ module Daru
       dup.rolling_fillna!(direction)
     end
 
+    # Return unique rows by vector specified or all vectors
+    #
+    # @param vtrs [String][Symbol] vector names(s) that should be considered
+    #
+    # @example
+    #
+    #    => #<Daru::DataFrame(6x2)>
+    #         a   b
+    #     0   1   a
+    #     1   2   b
+    #     2   3   c
+    #     3   4   d
+    #     2   3   c
+    #     3   4   f
+    #
+    #    2.3.3 :> df.unique
+    #    => #<Daru::DataFrame(5x2)>
+    #         a   b
+    #     0   1   a
+    #     1   2   b
+    #     2   3   c
+    #     3   4   d
+    #     3   4   f
+    #
+    #    2.3.3 :> df.unique(:a)
+    #    => #<Daru::DataFrame(5x2)>
+    #         a   b
+    #     0   1   a
+    #     1   2   b
+    #     2   3   c
+    #     3   4   d
+    #
+    def uniq(*vtrs)
+      vecs = vtrs.empty? ? vectors.map(&:to_s) : Array(vtrs)
+      grouped = group_by(vecs)
+      indexes = grouped.groups.values.map { |v| v[0] }.sort
+      row[*indexes]
+    end
+
     # Iterate over each index of the DataFrame.
     def each_index &block
       return to_enum(:each_index) unless block_given?
