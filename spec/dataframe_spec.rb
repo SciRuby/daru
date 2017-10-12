@@ -3246,12 +3246,11 @@ describe Daru::DataFrame do
 
     context "preserves indices for dataframes with same index" do
       index = ['one','two','three']
-      ds1 = Daru::DataFrame.new({ 'a' => [1, 2, 3], 'b' => [3, 4, 5] }, index: index)
-      ds2 = Daru::DataFrame.new({ 'c' => [4, 5, 6], 'd' => [7, 8, 9] }, index: index)
-      exp = Daru::DataFrame.new({ 'a' => [1, 2, 3], 'b' => [3, 4, 5],
-                                  'c' => [4, 5, 6], 'd' => [7, 8, 9] }, index: index)
+      let(:df1) { Daru::DataFrame.new({ 'a' => [1, 2, 3], 'b' => [3, 4, 5] }, index: index) }
+      let(:df2) { Daru::DataFrame.new({ 'c' => [4, 5, 6], 'd' => [7, 8, 9] }, index: index) }
+      subject { df1.merge df2 }
 
-      it { expect(ds1.merge(ds2)).to eq(exp) }
+      it { expect(subject.index.to_a).to eq index }
     end
   end
 
