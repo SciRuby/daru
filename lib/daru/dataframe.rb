@@ -1831,7 +1831,7 @@ module Daru
 
         df_new.update
       end
-      temp.index= @index.to_a if @index.to_a == other_df.index.to_a
+      temp.index= @index if @index == other_df.index
       temp
     end
 
