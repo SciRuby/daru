@@ -2,7 +2,7 @@ module Daru
   module Plotting
     module DataFrame
       module GruffLibrary
-        def plot opts={}
+        def plot(opts={})
           type = opts[:type] || :bar
           size = opts[:size] || 500
           x = extract_x_vector opts[:x]
@@ -24,11 +24,11 @@ module Daru
 
         private
 
-        def process_type type, categorized
+        def process_type(type, categorized)
           type == :scatter && categorized ? :scatter_categorized : type
         end
 
-        def line_plot size, x, y
+        def line_plot(size, x, y)
           plot = Gruff::Line.new size
           plot.labels = size.times.to_a.zip(x).to_h
           y.each do |vec|
@@ -37,7 +37,7 @@ module Daru
           plot
         end
 
-        def bar_plot size, x, y
+        def bar_plot(size, x, y)
           plot = Gruff::Bar.new size
           plot.labels = size.times.to_a.zip(x).to_h
           y.each do |vec|
@@ -46,7 +46,7 @@ module Daru
           plot
         end
 
-        def scatter_plot size, x, y
+        def scatter_plot(size, x, y)
           plot = Gruff::Scatter.new size
           y.each do |vec|
             plot.data vec.name || :vector, x, vec.to_a
@@ -54,7 +54,7 @@ module Daru
           plot
         end
 
-        def scatter_with_category size, x, y, opts
+        def scatter_with_category(size, x, y, opts)
           x = Daru::Vector.new x
           y = y.first
           plot = Gruff::Scatter.new size
@@ -66,11 +66,11 @@ module Daru
           plot
         end
 
-        def extract_x_vector x_name
+        def extract_x_vector(x_name)
           x_name && self[x_name].to_a || index.to_a
         end
 
-        def extract_y_vectors y_names
+        def extract_y_vectors(y_names)
           y_names =
             case y_names
             when nil

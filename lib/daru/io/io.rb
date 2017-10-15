@@ -38,7 +38,7 @@ module Daru
     class << self
       # Functions for loading/writing Excel files.
 
-      def from_excel path, opts={}
+      def from_excel(path, opts={})
         opts = {
           worksheet_id: 0
         }.merge opts
@@ -58,7 +58,7 @@ module Daru
         df
       end
 
-      def dataframe_write_excel dataframe, path, _opts={}
+      def dataframe_write_excel(dataframe, path, _opts={})
         book   = Spreadsheet::Workbook.new
         sheet  = book.create_worksheet
         format = Spreadsheet::Format.new color: :blue, weight: :bold
@@ -75,7 +75,7 @@ module Daru
       end
 
       # Functions for loading/writing CSV files
-      def from_csv path, opts={}
+      def from_csv(path, opts={})
         daru_options, opts = from_csv_prepare_opts opts
         # Preprocess headers for detecting and correcting repetition in
         # case the :headers option is not specified.
@@ -89,7 +89,7 @@ module Daru
         Daru::DataFrame.new(hsh,daru_options)
       end
 
-      def dataframe_write_csv dataframe, path, opts={}
+      def dataframe_write_csv(dataframe, path, opts={})
         options = {
           converters: :numeric
         }.merge(opts)
@@ -119,7 +119,7 @@ module Daru
         SqlDataSource.make_dataframe(db, query)
       end
 
-      def dataframe_write_sql ds, dbh, table
+      def dataframe_write_sql(ds, dbh, table)
         require 'dbi'
         query = "INSERT INTO #{table} ("+ds.vectors.to_a.join(',')+') VALUES ('+(['?']*ds.vectors.size).join(',')+')'
         sth   = dbh.prepare(query)
@@ -154,7 +154,7 @@ module Daru
 
       # Loading data from plain text files
 
-      def from_plaintext filename, fields
+      def from_plaintext(filename, fields)
         ds = Daru::DataFrame.new({}, order: fields)
         fp = File.open(filename,'r')
         fp.each_line do |line|
@@ -168,13 +168,13 @@ module Daru
       end
 
       # Loading and writing Marshalled DataFrame/Vector
-      def save klass, filename
+      def save(klass, filename)
         fp = File.open(filename, 'w')
         Marshal.dump(klass, fp)
         fp.close
       end
 
-      def load filename
+      def load(filename)
         if File.exist? filename
           o = false
           File.open(filename, 'r') { |fp| o = Marshal.load(fp) }
@@ -184,7 +184,7 @@ module Daru
         end
       end
 
-      def from_html path, opts
+      def from_html(path, opts)
         page = Mechanize.new.get(path)
         page.search('table').map { |table| html_parse_table table }
             .keep_if { |table| html_search table, opts[:match] }
@@ -200,7 +200,7 @@ module Daru
 
       DARU_OPT_KEYS = %i[clone order index name].freeze
 
-      def from_csv_prepare_opts opts
+      def from_csv_prepare_opts(opts)
         opts[:col_sep]           ||= ','
         opts[:skip_blanks]       ||= true
         opts[:converters]        ||= [:numeric]

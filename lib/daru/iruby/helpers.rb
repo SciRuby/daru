@@ -20,7 +20,7 @@ module Daru
       # It does [:a, nil, nil, :b, nil, :c] # =>
       #         [[:a,3], nil, nil, [:b,2], nil, :c]
       # Needed by tuples_with_colspans/rowspans, which we need for pretty HTML
-      def nils_counted array
+      def nils_counted(array)
         grouped = [[array.first]]
         array[1..-1].each do |val|
           if val

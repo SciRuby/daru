@@ -17,7 +17,7 @@ module Daru
         end
       end
 
-      def initialize left_df, right_df, opts={}
+      def initialize(left_df, right_df, opts={})
         init_opts(opts)
         validate_on!(left_df, right_df)
         key_sanitizer = ->(h) { sanitize_merge_keys(h.values_at(*on)) }
@@ -81,7 +81,7 @@ module Daru
         merge_keys.map { |v| v.nil? ? NilSorter.new : v }
       end
 
-      def df_to_a df
+      def df_to_a(df)
         # FIXME: much faster than "native" DataFrame#to_a. Should not be
         h = df.to_h
         keys = h.keys
@@ -100,11 +100,11 @@ module Daru
         ]
       end
 
-      def guard_keys keys, duplicates, num
+      def guard_keys(keys, duplicates, num)
         keys.map { |v| [v, guard_duplicate(v, duplicates, num)] }.to_h
       end
 
-      def guard_duplicate val, duplicates, num
+      def guard_duplicate(val, duplicates, num)
         duplicates.include?(val) ? :"#{val}_#{num}" : val
       end
 
@@ -184,7 +184,7 @@ module Daru
         (k1 <=> k2) == -1
       end
 
-      def merge_rows lrow, rrow
+      def merge_rows(lrow, rrow)
         left_keys
           .map { |from, to| [to, lrow[from]] }.to_h
           .merge(on.map { |col| [col, lrow[col]] }.to_h)
@@ -192,7 +192,7 @@ module Daru
           .merge(right_keys.map { |from, to| [to, rrow[from]] }.to_h)
       end
 
-      def expand_row row, renamings
+      def expand_row(row, renamings)
         renamings
           .map { |from, to| [to, row[from]] }.to_h
           .merge(on.map { |col| [col, row[col]] }.to_h)
@@ -250,7 +250,7 @@ module Daru
 
     module Merge
       class << self
-        def join df1, df2, opts={}
+        def join(df1, df2, opts={})
           MergeFrame.new(df1, df2, opts).join
         end
       end

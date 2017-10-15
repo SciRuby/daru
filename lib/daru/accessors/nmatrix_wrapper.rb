@@ -24,7 +24,7 @@ if Daru.has_nmatrix?
 
         attr_reader :size, :data, :nm_dtype
 
-        def initialize vector, context, nm_dtype=:int32
+        def initialize(vector, context, nm_dtype=:int32)
           # To avoid arrays with nils throwing TypeError for nil nm_dtype
           nm_dtype = :object if nm_dtype.nil? && vector.any?(&:nil?)
           @size = vector.size
@@ -34,12 +34,12 @@ if Daru.has_nmatrix?
           # init with twice the storage for reducing the need to resize
         end
 
-        def [] *index
+        def [](*index)
           return @data[*index] if index[0] < @size
           nil
         end
 
-        def []= index, value
+        def []=(index, value)
           raise ArgumentError, "Index #{index} does not exist" if
             index > @size && index < @data.size
           resize     if index >= @data.size
@@ -50,24 +50,24 @@ if Daru.has_nmatrix?
         end
 
         # :nocov:
-        def == other
+        def ==(other)
           @data[0...@size] == other[0...@size] and @size == other.size
         end
         # :nocov:
 
-        def delete_at index
+        def delete_at(index)
           arry = @data.to_a
           arry.delete_at index
           @data = NMatrix.new [(2*@size-1)], arry, dtype: @nm_dtype
           @size -= 1
         end
 
-        def index key
+        def index(key)
           @data.to_a.index key
         end
 
         # :nocov:
-        def << element
+        def <<(element)
           resize if @size >= @data.size
           self[@size] = element
         end
@@ -81,7 +81,7 @@ if Daru.has_nmatrix?
           NMatrixWrapper.new @data[0...@size].to_a, @context, @nm_dtype
         end
 
-        def resize size=@size*2
+        def resize(size=@size*2)
           raise ArgumentError, 'Size must be greater than current size' if size < @size
 
           @data = NMatrix.new [size], @data.to_a, dtype: @nm_dtype

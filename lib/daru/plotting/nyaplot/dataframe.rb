@@ -20,7 +20,7 @@ module Daru
         #   # Simple bar chart
         #   df = Daru::DataFrame.new({a:['A', 'B', 'C', 'D', 'E'], b:[10,20,30,40,50]})
         #   df.plot type: :bar, x: :a, y: :b
-        def plot opts={}, &block
+        def plot(opts={}, &block)
           if opts[:categorized]
             plot_with_category(opts, &block)
           else
@@ -30,7 +30,7 @@ module Daru
 
         private
 
-        def plot_without_category opts
+        def plot_without_category(opts)
           options = {type: :scatter}.merge(opts)
 
           plot = Nyaplot::Plot.new
@@ -51,7 +51,7 @@ module Daru
           plot
         end
 
-        def plot_with_category opts
+        def plot_with_category(opts)
           case type = opts[:type]
           when :scatter, :line
             plot = Nyaplot::Plot.new
@@ -73,7 +73,7 @@ module Daru
           end
         end
 
-        def create_categorized_diagrams plot, cat_dv, x, y, type
+        def create_categorized_diagrams(plot, cat_dv, x, y, type)
           cat_dv.categories.map do |cat|
             x_vec = self[x].where(cat_dv.eq cat)
             y_vec = self[y].where(cat_dv.eq cat)
@@ -84,7 +84,7 @@ module Daru
           end
         end
 
-        def apply_variant_to_diagrams diagrams, category_opts, type
+        def apply_variant_to_diagrams(diagrams, category_opts, type)
           method = category_opts[:method]
           cat_dv = self[category_opts[:by]]
           # If user has mentioned custom color, size, shape use them
@@ -103,12 +103,12 @@ module Daru
         end
 
         SHAPES = %w[circle triangle-up diamond square triangle-down cross].freeze
-        def get_shape type
+        def get_shape(type)
           validate_type type, :scatter
           SHAPES.cycle
         end
 
-        def get_size type
+        def get_size(type)
           validate_type type, :scatter
           (50..550).step(100).cycle
         end
@@ -117,21 +117,21 @@ module Daru
           Nyaplot::Colors.qual.cycle
         end
 
-        def get_stroke_width type
+        def get_stroke_width(type)
           validate_type type, :line
           (2..16).step(2).cycle
         end
 
-        def validate_type type, *types
+        def validate_type(type, *types)
           raise ArgumentError, "Invalid option for #{type} type" unless
             types.include? type
         end
 
-        def single_diagram? options
+        def single_diagram?(options)
           options[:x] && options[:x].is_a?(Symbol)
         end
 
-        def plot_regular_diagrams plot, opts
+        def plot_regular_diagrams(plot, opts)
           if single_diagram? opts
             add_single_diagram plot, opts
           else
@@ -139,12 +139,12 @@ module Daru
           end
         end
 
-        def plot_box_diagram plot
+        def plot_box_diagram(plot)
           numeric = only_numerics(clone: false).reject_values(*Daru::MISSING_VALUES)
           plot.add_with_df(numeric.to_nyaplotdf, :box, *numeric.vectors.to_a)
         end
 
-        def add_single_diagram plot, options
+        def add_single_diagram(plot, options)
           args = [
             to_nyaplotdf,
             options[:type],
@@ -156,7 +156,7 @@ module Daru
           plot.add_with_df(*args)
         end
 
-        def add_multiple_diagrams plot, options
+        def add_multiple_diagrams(plot, options)
           types  = extract_option :type, options
           x_vecs = extract_option :x, options
           y_vecs = extract_option :y, options
@@ -170,7 +170,7 @@ module Daru
           end
         end
 
-        def extract_option opt, options
+        def extract_option(opt, options)
           if options[opt]
             o = options[opt]
             o.is_a?(Array) ? o : [o]

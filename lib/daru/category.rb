@@ -25,7 +25,7 @@ module Daru
     #   #   2   a
     #   #   3   1
     #   #   4   c
-    def initialize_category data, opts={}
+    def initialize_category(data, opts={})
       @type = :category
       initialize_core_attributes data
 
@@ -55,12 +55,12 @@ module Daru
     end
 
     # FIXME: Why?..
-    def rename new_name
+    def rename(new_name)
       @name = new_name
       self
     end
 
-    def plotting_library= lib
+    def plotting_library=(lib)
       case lib
       when :gruff, :nyaplot
         @plotting_library = lib
@@ -134,7 +134,7 @@ module Daru
     #   # => 2
     #   dv.count
     #   # => 5
-    def count category=UNDEFINED
+    def count(category=UNDEFINED)
       return @cat_hash.values.map(&:size).inject(&:+) if category == UNDEFINED # count all
       raise ArgumentError, "Invalid category #{category}" unless
         categories.include?(category)
@@ -153,7 +153,7 @@ module Daru
     #   #   b   0
     #   #   c   1
     #   #   1   2
-    def frequencies type=:count
+    def frequencies(type=:count)
       counts = @cat_hash.values.map(&:size)
       values =
         case type
@@ -187,7 +187,7 @@ module Daru
     #   # => #<Daru::Vector(2)>
     #   #   a   a
     #   #   b   1
-    def [] *indexes
+    def [](*indexes)
       positions = @index.pos(*indexes)
       return category_from_position(positions) if positions.is_a? Integer
 
@@ -210,7 +210,7 @@ module Daru
     #   #   1   1
     #   #   2   a
     #   #   3   1
-    def at *positions
+    def at(*positions)
       original_positions = positions
       positions = coerce_positions(*positions)
       validate_positions(*positions)
@@ -241,7 +241,7 @@ module Daru
     #   #   2   a
     #   #   3   1
     #   #   4   c
-    def []= *indexes, val
+    def []=(*indexes, val)
       positions = @index.pos(*indexes)
 
       if positions.is_a? Numeric
@@ -265,7 +265,7 @@ module Daru
     #   #   2   a
     #   #   3   1
     #   #   4   c
-    def set_at positions, val
+    def set_at(positions, val)
       validate_positions(*positions)
       positions.map { |pos| modify_category_at pos, val }
       self
@@ -298,7 +298,7 @@ module Daru
     #   dv.ordered = true
     #   dv.ordered?
     #   # => true
-    def ordered= bool
+    def ordered=(bool)
       @ordered = bool
     end
 
@@ -324,7 +324,7 @@ module Daru
     #   dv.categories = [:a, :b, :c, 1]
     #   dv.categories
     #   # => [:a, :b, :c, 1]
-    def categories= cat_with_order
+    def categories=(cat_with_order)
       validate_categories(cat_with_order)
       add_extra_categories(cat_with_order - categories)
       order_with cat_with_order
@@ -346,7 +346,7 @@ module Daru
     #   #   2   b
     #   #   3   1
     #   #   4   c
-    def rename_categories old_to_new
+    def rename_categories(old_to_new)
       old_categories = categories
       data = to_a.map do |cat|
         old_to_new.include?(cat) ? old_to_new[cat] : cat
@@ -458,7 +458,7 @@ module Daru
     #   dv.coding_scheme = :deviation
     #   dv.coding_scheme
     #   # => :deviation
-    def coding_scheme= scheme
+    def coding_scheme=(scheme)
       raise ArgumentError, "Unknown or unsupported coding scheme #{scheme}." unless
         CODING_SCHEMES.include? scheme
       @coding_scheme = scheme
@@ -482,7 +482,7 @@ module Daru
     #   #       2      0      0
     #   #       3      1      0
     #   #       4      0      1
-    def contrast_code opts={}
+    def contrast_code(opts={})
       if opts[:user_defined]
         user_defined_coding(opts[:user_defined])
       else
@@ -500,7 +500,7 @@ module Daru
     #     index: 1..5
     #   dv == other
     #   # => false
-    def == other
+    def ==(other)
       size == other.size &&
         to_a == other.to_a &&
         index == other.index
@@ -531,7 +531,7 @@ module Daru
     #   #   a   1
     #   #   b   2
     #   #   c   3
-    def reorder! order
+    def reorder!(order)
       raise ArgumentError, 'Invalid order specified' unless
         order.sort == size.times.to_a
       # TODO: Room for optimization
@@ -553,7 +553,7 @@ module Daru
     #   #   a   1
     #   #   b   2
     #   #   c   3
-    def reindex! idx
+    def reindex!(idx)
       idx = Daru::Index.new idx unless idx.is_a? Daru::Index
       raise ArgumentError, 'Invalid index specified' unless
         idx.to_a.sort == index.to_a.sort
@@ -598,7 +598,7 @@ module Daru
     #   # => #<Daru::Vector(2)>
     #   #   1  II
     #   #   5  II
-    def where bool_array
+    def where(bool_array)
       Daru::Core::Query.vector_where self, bool_array
     end
 
@@ -656,7 +656,7 @@ module Daru
     #   #   a   1
     #   #   b   2
     #   #   c   3
-    def index= idx
+    def index=(idx)
       @index = coerce_index idx
     end
 
@@ -733,7 +733,7 @@ module Daru
     #   #   1   2
     #   #   2 nil
     #   #   3 nil
-    def replace_values old_values, new_value
+    def replace_values(old_values, new_value)
       old_values = [old_values] unless old_values.is_a? Array
       rename_hash = old_values.map { |v| [v, new_value] }.to_h
       rename_categories rename_hash
@@ -746,16 +746,16 @@ module Daru
 
     private
 
-    def validate_categories input_categories
+    def validate_categories(input_categories)
       raise ArgumentError, 'Input categories and speculated categories mismatch' unless
         (categories - input_categories).empty?
     end
 
-    def add_extra_categories extra_categories
+    def add_extra_categories(extra_categories)
       extra_categories.each { |cat| @cat_hash[cat] = [] }
     end
 
-    def initialize_core_attributes data
+    def initialize_core_attributes(data)
       # Create a hash to map each category to positional indexes
       categories = data.each_with_index.group_by(&:first)
       @cat_hash = categories.map { |cat, group| [cat, group.map(&:last)] }.to_h
@@ -771,11 +771,11 @@ module Daru
       self.plotting_library = Daru.plotting_library
     end
 
-    def category_from_position position
+    def category_from_position(position)
       cat_from_int @array[position]
     end
 
-    def assert_ordered operation
+    def assert_ordered(operation)
       # TODO: Change ArgumentError to something more expressive
       return if ordered?
 
@@ -783,7 +783,7 @@ module Daru
         'To make the categorical data ordered, use #ordered = true'\
     end
 
-    def dummy_coding full
+    def dummy_coding(full)
       categories = @cat_hash.keys
       categories.delete(base_category) unless full
 
@@ -796,13 +796,13 @@ module Daru
         order: create_names(categories)
     end
 
-    def dummy_code positions
+    def dummy_code(positions)
       code = Array.new(size, 0)
       positions.each { |pos| code[pos] = 1 }
       code
     end
 
-    def simple_coding full
+    def simple_coding(full)
       categories = @cat_hash.keys
       categories.delete(base_category) unless full
 
@@ -815,7 +815,7 @@ module Daru
         order: create_names(categories)
     end
 
-    def simple_code positions
+    def simple_code(positions)
       n = @cat_hash.keys.size.to_f
       code = Array.new(size, -1/n)
       positions.each { |pos| code[pos] = (n-1)/n }
@@ -834,7 +834,7 @@ module Daru
         order: create_names(categories)
     end
 
-    def helmert_code index
+    def helmert_code(index)
       n = (categories.size - index).to_f
 
       @array.map do |cat_index|
@@ -860,7 +860,7 @@ module Daru
         order: create_names(categories)
     end
 
-    def deviation_code index
+    def deviation_code(index)
       last = categories.size - 1
       @array.map do |cat_index|
         case cat_index
@@ -871,19 +871,19 @@ module Daru
       end
     end
 
-    def user_defined_coding df
+    def user_defined_coding(df)
       Daru::DataFrame.rows (Array.new(size) { |pos| df.row[at(pos)].to_a }),
         index: @index,
         order: df.vectors.to_a
     end
 
-    def create_names categories
+    def create_names(categories)
       categories.map do |cat|
         name.is_a?(Symbol) ? "#{name}_#{cat}".to_sym : "#{name}_#{cat}"
       end
     end
 
-    def coerce_index index
+    def coerce_index(index)
       index =
         case index
         when Daru::MultiIndex, Daru::CategoricalIndex, Daru::Index
@@ -901,7 +901,7 @@ module Daru
       index
     end
 
-    def validate_index index
+    def validate_index(index)
       # Change to SizeError
       return unless size != index.size
 
@@ -909,7 +909,7 @@ module Daru
         "size of vector (#{size})"
     end
 
-    def modify_category_at pos, category
+    def modify_category_at(pos, category)
       unless categories.include? category
         raise ArgumentError, "Invalid category #{category}, "\
           'to add a new category use #add_category'
@@ -920,7 +920,7 @@ module Daru
       @cat_hash[category] << pos
     end
 
-    def order_with new
+    def order_with(new)
       if new.to_set != categories.to_set
         raise ArgumentError, 'The contents of new and old order must be the same.'
       end
@@ -934,11 +934,11 @@ module Daru
       end
     end
 
-    def cat_from_int int
+    def cat_from_int(int)
       @cat_hash.keys[int]
     end
 
-    def int_from_cat cat
+    def int_from_cat(cat)
       @cat_hash.keys.index cat
     end
   end

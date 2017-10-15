@@ -1,7 +1,7 @@
 module Daru
   module Formatters
     class Table
-      def self.format data, options={}
+      def self.format(data, options={})
         new(data, options[:headers], options[:row_headers])
           .format(options[:threshold], options[:spacing])
       end
@@ -16,7 +16,7 @@ module Daru
       DEFAULT_SPACING = 10
       DEFAULT_THRESHOLD = 15
 
-      def format threshold=nil, spacing=nil
+      def format(threshold=nil, spacing=nil)
         rows = build_rows(threshold || DEFAULT_THRESHOLD)
 
         formatter = construct_formatter rows, spacing || DEFAULT_SPACING
@@ -26,7 +26,7 @@ module Daru
 
       private
 
-      def build_rows threshold # rubocop:disable Metrics/AbcSize
+      def build_rows(threshold) # rubocop:disable Metrics/AbcSize
         @row_headers.first(threshold).zip(@data).map do |(r, datarow)|
           [*[r].flatten.map(&:to_s), *(datarow || []).map(&method(:pretty_to_s))]
         end.tap do |rows|
@@ -39,7 +39,7 @@ module Daru
         end
       end
 
-      def construct_formatter rows, spacing
+      def construct_formatter(rows, spacing)
         width = rows.flatten.map(&:size).max || 0
         width = [3, width].max # not less than 'nil'
         width = [width, spacing].min # not more than max width

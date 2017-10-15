@@ -1,6 +1,11 @@
 require 'forwardable'
 
 module Daru
+  # Index is ordered, uniq set of labels, that is used througout Daru as an axis for other data types
+  # ({Vector} and {DataFrame}).
+  #
+  #
+  #
   class Index
     include Enumerable
     # It so happens that over riding the .new method in a super class also
@@ -15,7 +20,7 @@ module Daru
       alias :__new__ :new
 
       # @private
-      def inherited subclass
+      def inherited(subclass)
         class << subclass
           alias :new :__new__
         end
@@ -25,7 +30,7 @@ module Daru
     # @private
     # We over-ride the .new method so that any sort of Index can be generated
     # from Daru::Index based on the types of arguments supplied.
-    def self.new *args, &block
+    def self.new(*args, &block)
       # FIXME: I'm not sure this clever trick really deserves our attention.
       # Most of common ruby libraries just avoid it in favor of usual
       # factor method, like `Index.create`. When `Index.new(...).class != Index`
@@ -37,7 +42,7 @@ module Daru
         allocate.tap { |i| i.send :initialize, *args, &block }
     end
 
-    def self.coerce maybe_index
+    def self.coerce(maybe_index)
       maybe_index.is_a?(Index) ? maybe_index : Daru::Index.new(maybe_index)
     end
 
@@ -49,32 +54,26 @@ module Daru
     attr_writer :name # TODO: deprecate
     def_delegators :@relation_hash, :keys, :size, :empty?, :include?
 
+    # @param index [#to_a, Integer, nil] Values of index labels, or size of index, or nothing, to
+    #   construct an empty index.
+    # @param name [String] Optional index name
+    #
     # @example
     #
-    #   idx = Daru::Index.new [:one, 'one', 1, 2, :two]
-    #   => #<Daru::Index(5): {one, one, 1, 2, two}>
+    #   idx = Daru::Index.new [2014, 2016, 2017]
+    #   # => #<Daru::Index(3): {2014, 2016, 2017}>
     #
-    #   # set the name
-    #
-    #   idx.name = "index_name"
-    #   => "index_name"
-    #
-    #   idx
-    #   => #<Daru::Index(5): index_name {one, one, 1, 2, two}>
-    #
-    #   # set the name during initialization
-    #
-    #   idx = Daru::Index.new [:one, 'one', 1, 2, :two], name: "index_name"
-    #   => #<Daru::Index(5): index_name {one, one, 1, 2, two}>
-    def initialize index, name: nil
+    #   idx = Daru::Index.new 2015..2017, name: 'year'
+    #   # => #<Daru::Index(3): year {2015, 2016, 2017}>
+    def initialize(index, name: nil)
       index = guess_index index
       @relation_hash = index.each_with_index.to_h.freeze
       @name = name
     end
 
-    # @param threshold [Integer] Maximum number of values to show
+    # @param threshold [Integer] Maximum number of values to inspect.
     # @return [String]
-    def inspect threshold=20
+    def inspect(threshold=20)
       name_part = @name ? "#{@name} " : ''
       if size <= threshold
         "#<#{self.class}(#{size}): #{name_part}{#{to_a.join(', ')}}>"
@@ -83,7 +82,7 @@ module Daru
       end
     end
 
-    # Two indexes are equal only if their data, order and names are equal.
+    # Two indexes are equal only if their data, order, and names are equal.
     #
     # @return [Boolean]
     def ==(other)
@@ -97,6 +96,9 @@ module Daru
       self
     end
 
+    # Get a single value, or subset of index values, by key, position, range and several.
+    #
+    #
     def [](key, *rest)
       case
       when key.is_a?(Range)
@@ -108,7 +110,7 @@ module Daru
       end
     end
 
-    # Returns true if all arguments are either a valid category or position
+    # Returns true if all arguments are either a valid category or position.
     #
     # FIXME: Why do we need this? "Category or position" feels smelly.
     #
@@ -119,11 +121,11 @@ module Daru
     #   # => true
     #   idx.valid? 3
     #   # => false
-    def valid? *indexes
+    def valid?(*indexes)
       indexes.all? { |i| to_a.include?(i) || (i.is_a?(Numeric) && i < size) }
     end
 
-    # Returns positions given indexes or positions
+    # Returns positions given indexes or positions.
     #
     # @note If the argument is both a valid index and a valid position,
     #   it will treated as valid index
@@ -132,7 +134,7 @@ module Daru
     #   x = Daru::Index.new [:a, :b, :c]
     #   x.pos :a, 1
     #   # => [0, 1]
-    def pos *indexes
+    def pos(*indexes)
       indexes = preprocess_range(indexes.first) if indexes.first.is_a? Range
 
       if indexes.size == 1
@@ -142,7 +144,7 @@ module Daru
       end
     end
 
-    def subset *indexes
+    def subset(*indexes)
       if indexes.first.is_a? Range
         start = indexes.first.begin
         en = indexes.first.end
@@ -165,7 +167,7 @@ module Daru
     #   idx = Daru::Index.new [:a, :b, :c]
     #   idx.at 0, 1
     #   # => #<Daru::Index(2): {a, b}>
-    def at *positions
+    def at(*positions)
       positions = preprocess_positions(*positions)
       validate_positions(*positions)
       if positions.is_a? Integer
@@ -187,7 +189,7 @@ module Daru
     #
     # @param other [Daru::Index]
     # @return [Daru::Index]
-    def & other
+    def &(other)
       Index.new(to_a & other.to_a)
     end
 
@@ -229,7 +231,7 @@ module Daru
       Daru::Index.new @relation_hash.keys
     end
 
-    def add *indexes
+    def add(*indexes)
       Daru::Index.new(to_a + indexes)
     end
 
@@ -237,7 +239,7 @@ module Daru
       Marshal.dump(relation_hash: @relation_hash)
     end
 
-    def self._load data
+    def self._load(data)
       h = Marshal.load data
 
       Daru::Index.new(h[:relation_hash].keys)
@@ -267,7 +269,7 @@ module Daru
     #   di = Daru::Index.new [100, 99, 101, 1, 2]
     #   di.sort #=> Daru::Index.new [1, 2, 99, 100, 101]
     #   di.sort(ascending: false) #=> Daru::Index.new [101, 100, 99, 2, 1]
-    def sort ascending: true
+    def sort(ascending: true)
       new_index, = ascending ? @relation_hash.sort.transpose : @relation_hash.sort.reverse.transpose
 
       self.class.new(new_index)
@@ -280,7 +282,7 @@ module Daru
 
     private
 
-    def guess_index index
+    def guess_index(index)
       case index
       when nil
         []
@@ -294,7 +296,7 @@ module Daru
       end
     end
 
-    def preprocess_range rng
+    def preprocess_range(rng)
       start   = rng.begin
       en      = rng.end
 
@@ -308,15 +310,15 @@ module Daru
       end
     end
 
-    def by_range rng
+    def by_range(rng)
       slice rng.begin, rng.end
     end
 
-    def by_multi_key *key
+    def by_multi_key(*key)
       key.map { |k| by_single_key k }
     end
 
-    def by_single_key key
+    def by_single_key(key)
       if @relation_hash.key?(key)
         @relation_hash[key]
       else
@@ -325,7 +327,7 @@ module Daru
     end
 
     # Raises IndexError when one of the positions is an invalid position
-    def validate_positions *positions
+    def validate_positions(*positions)
       positions = [positions] if positions.is_a? Integer
       positions.each do |pos|
         raise IndexError, "#{pos} is not a valid position." if pos >= size || pos < -size
@@ -333,7 +335,7 @@ module Daru
     end
 
     # Preprocess ranges, integers and array in appropriate ways
-    def preprocess_positions *positions
+    def preprocess_positions(*positions)
       if positions.size == 1
         case positions.first
         when Integer
@@ -348,7 +350,7 @@ module Daru
       end
     end
 
-    def numeric_pos key
+    def numeric_pos(key)
       if @relation_hash.key?(key)
         @relation_hash[key]
       elsif key.is_a?(Numeric) && (key < size && key >= -size)
@@ -358,7 +360,7 @@ module Daru
       end
     end
 
-    def slice *args
+    def slice(*args)
       start = args[0]
       en = args[1]
 
@@ -374,7 +376,7 @@ module Daru
       end
     end
 
-    def subset_slice *args
+    def subset_slice(*args)
       start = args[0]
       en = args[1]
 

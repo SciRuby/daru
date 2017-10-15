@@ -40,7 +40,7 @@ module Daru
         # +methods+ - An array with aggregation methods specified as symbols to
         # be applied to vectors. Default is [:count, :mean, :std, :max,
         # :min]. Methods will be applied in the specified order.
-        def describe methods=nil
+        def describe(methods=nil)
           methods ||= %i[count mean std min max]
           description = methods.map { |m| send(m) }
           Daru::Vector.new(description, index: methods, name: :statistics)
@@ -378,7 +378,7 @@ module Daru
         # retrieves number of instances where block returns true. If other
         # values given, retrieves the frequency for this value. If no value
         # given, counts the number of non-nil elements in the Vector.
-        def count value=false, &block
+        def count(value=false, &block)
           if block_given?
             @data.select(&block).count
           elsif value
@@ -397,12 +397,12 @@ module Daru
           Daru::Vector.new(values)
         end
 
-        def proportion value=1
+        def proportion(value=1)
           frequencies[value].quo(size - count_values(*Daru::MISSING_VALUES)).to_f
         end
 
         # Sample variance with denominator (N-1)
-        def variance_sample m=nil
+        def variance_sample(m=nil)
           m ||= mean
           if @data.respond_to? :variance_sample
             @data.variance_sample m
@@ -412,7 +412,7 @@ module Daru
         end
 
         # Population variance with denominator (N)
-        def variance_population m=nil
+        def variance_population(m=nil)
           m ||= mean
           if @data.respond_to? :variance_population
             @data.variance_population m
@@ -422,13 +422,13 @@ module Daru
         end
 
         # Sample covariance with denominator (N-1)
-        def covariance_sample other
+        def covariance_sample(other)
           size == other.size or raise ArgumentError, 'size of both the vectors must be equal'
           covariance_sum(other) / (size - count_values(*Daru::MISSING_VALUES) - 1)
         end
 
         # Population covariance with denominator (N)
-        def covariance_population other
+        def covariance_population(other)
           size == other.size or raise ArgumentError, 'size of both the vectors must be equal'
           covariance_sum(other) / (size - count_values(*Daru::MISSING_VALUES))
         end
@@ -440,7 +440,7 @@ module Daru
           }
         end
 
-        def standard_deviation_population m=nil
+        def standard_deviation_population(m=nil)
           m ||= mean
           if @data.respond_to? :standard_deviation_population
             @data.standard_deviation_population(m)
@@ -449,7 +449,7 @@ module Daru
           end
         end
 
-        def standard_deviation_sample m=nil
+        def standard_deviation_sample(m=nil)
           m ||= mean
           if @data.respond_to? :standard_deviation_sample
             @data.standard_deviation_sample m
@@ -459,7 +459,7 @@ module Daru
         end
 
         # Calculate skewness using (sigma(xi - mean)^3)/((N)*std_dev_sample^3)
-        def skew m=nil
+        def skew(m=nil)
           if @data.respond_to? :skew
             @data.skew
           else
@@ -469,7 +469,7 @@ module Daru
           end
         end
 
-        def kurtosis m=nil
+        def kurtosis(m=nil)
           if @data.respond_to? :kurtosis
             @data.kurtosis
           else
@@ -479,7 +479,7 @@ module Daru
           end
         end
 
-        def average_deviation_population m=nil
+        def average_deviation_population(m=nil)
           must_be_numeric!
           m ||= mean
           reject_values(*Daru::MISSING_VALUES).data.inject(0) { |memo, val|
@@ -536,7 +536,7 @@ module Daru
         #
         # * use_population - Pass as *true* if you want to use population
         # standard deviation instead of sample standard deviation.
-        def standardize use_population=false
+        def standardize(use_population=false)
           m ||= mean
           sd = use_population ? sdp : sds
           return Daru::Vector.new([nil]*size) if m.nil? || sd == 0.0
@@ -545,7 +545,7 @@ module Daru
         end
 
         # :nocov:
-        def box_cox_transformation lambda # :nodoc:
+        def box_cox_transformation(lambda) # :nodoc:
           must_be_numeric!
 
           recode do |x|
@@ -632,7 +632,7 @@ module Daru
         #   #   t	   0.0
         #   #   i	   0.3333333333333333
         #   #   k          0.25
-        def percent_change periods=1
+        def percent_change(periods=1)
           must_be_numeric!
 
           prev = nil
@@ -689,7 +689,7 @@ module Daru
         #            # => [0.69, 0.23, 0.44, 0.71, ...]
         #   # first 9 observations are nil
         #   ts.rolling(:mean)    # => [ ... nil, 0.484... , 0.445... , 0.513 ... , ... ]
-        def rolling function, n=10
+        def rolling(function, n=10)
           Daru::Vector.new(
             [nil] * (n - 1) +
             (0..(size - n)).map do |i|
@@ -949,7 +949,7 @@ module Daru
           numeric? or raise TypeError, 'Vector must be numeric'
         end
 
-        def covariance_sum other
+        def covariance_sum(other)
           self_mean = mean
           other_mean = other.mean
           @data
@@ -989,7 +989,7 @@ module Daru
           end
         end
 
-        def raw_sample_without_replacement sample
+        def raw_sample_without_replacement(sample)
           valid = indexes(*Daru::MISSING_VALUES).empty? ? self : reject_values(*Daru::MISSING_VALUES)
           raise ArgumentError, "Sample size couldn't be greater than n" if
             sample > valid.size

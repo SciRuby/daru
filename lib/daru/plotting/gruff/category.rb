@@ -2,7 +2,7 @@ module Daru
   module Plotting
     module Category
       module GruffLibrary
-        def plot opts={}
+        def plot(opts={})
           type = opts[:type] || :bar
           size = opts[:size] || 500
           case type
@@ -17,7 +17,7 @@ module Daru
 
         private
 
-        def category_bar_plot size, method
+        def category_bar_plot(size, method)
           plot = Gruff::Bar.new size
           method ||= :count
           dv = frequencies(method)
@@ -26,7 +26,7 @@ module Daru
           plot
         end
 
-        def category_pie_plot size, method
+        def category_pie_plot(size, method)
           plot = Gruff::Pie.new size
           method ||= :count
           frequencies(method).each_with_index do |data, index|
@@ -35,7 +35,7 @@ module Daru
           plot
         end
 
-        def category_sidebar_plot size, method
+        def category_sidebar_plot(size, method)
           plot = Gruff::SideBar.new size
           plot.labels = {0 => (name.to_s || 'vector')}
           method ||= :count

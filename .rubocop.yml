@@ -176,14 +176,6 @@ Style/RescueModifier:
 Style/Alias:
   Enabled: false
 
-# FIXME: should decide about this.
-# Personally I prefer (as most of Ruby community) to use parens, but
-# we also can enforce style to NOT using them. Yet it definitely should
-# be only one style. Current codebase uses ~400 method defs without and
-# ~ 100 method defs with them. - zverok, 2016-05-07
-Style/MethodDefParentheses:
-  Enabled: false
-
 # Should be fixed, but require change of public API --------------------
 
 # Bans methods like `has_missing_data?`, `is_number?` and so on - started

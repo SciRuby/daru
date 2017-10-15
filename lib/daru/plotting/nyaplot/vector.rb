@@ -16,7 +16,7 @@ module Daru
         #     plot.title "My first plot"
         #     plot.width 1200
         #   end
-        def plot opts={}
+        def plot(opts={})
           options = {
             type: :scatter
           }.merge(opts)
@@ -31,7 +31,7 @@ module Daru
 
         private
 
-        def create_diagram plot, type, x_axis
+        def create_diagram(plot, type, x_axis)
           case type
           when :box, :histogram
             plot.add(type, @data.to_a)
