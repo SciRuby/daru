@@ -1200,14 +1200,16 @@ module Daru
     # +regexp+ matching with the given array.
     #
     # @param Regexp A regular matching expression. For example, +/weeks/+.
-    # @return [Array] Conatining either +nil+ or integer values, according to the match with the given +regexp+
-    # @example
-    #   dv = Daru::Vector.new ['3 days', '5 weeks', '2 weeks']
-    #   dv.match /weeks/
     #
-    #   # => [nil, 2, 2]
+    # @return [Array] Conatining either +nil+ or integer values, according to the match with the given +regexp+
+    #
+    # @example
+    #   dv = Daru::Vector.new(['3 days', '5 weeks', '2 weeks'])
+    #   dv.match(/weeks/)
+    #
+    #   # => [false, true, true]
     def match(regexp)
-      @data.map { |x| x =~ regexp }
+      @data.map { |value| !!(value =~ regexp) }
     end
 
     # Creates a new vector consisting only of non-nil data

@@ -2074,10 +2074,14 @@ describe Daru::Vector do
   end
 
   context '#match' do
-      it 'returns matching array for a given regexp' do
-        dv = Daru::Vector.new ['3 days', '5 weeks', '2 weeks']
-        expect(dv.match /weeks/).to eq [nil, 2, 2]
-      end
+    subject { dv.match(regexp) }
+
+    context 'returns matching array for a given regexp' do
+      let(:dv)     { Daru::Vector.new ['3 days', '5 weeks', '2 weeks'] }
+      let(:regexp) { /weeks/ }
+
+      it { is_expected.to eq([false, true, true]) }
+    end
   end
   
   context '#method_missing' do
