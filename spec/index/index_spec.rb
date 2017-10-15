@@ -1,6 +1,10 @@
 require 'spec_helper.rb'
 
 RSpec.describe Daru::Index do
+  def method_call(object, method)
+    ->(*arg) { object.send(method, *arg) }
+  end
+
   describe '.new' do
     subject { described_class.new(data) }
 
@@ -104,17 +108,11 @@ RSpec.describe Daru::Index do
   end
 
   describe '#key' do
-    it 'returns key by position' do
-      expect(index.key(2)).to eq 'guitar'
-    end
+    subject { method_call(index, :key) }
 
-    it 'returns nil on too large pos' do
-      expect(index.key(20)).to be_nil
-    end
-
-    it 'returns nil on wrong arg type' do
-      expect(index.key(nil)).to be_nil
-    end
+    its([2]) { is_expected.to eq 'guitar' }
+    its([20]) { is_expected.to be_nil }
+    its([nil]) { is_expected.to be_nil }
   end
 
   describe '#sort' do
@@ -135,14 +133,16 @@ RSpec.describe Daru::Index do
   end
 
   describe '#valid?' do
+    subject { method_call(index, :valid?) }
+
     context 'single index' do
-      it { expect(index.valid?(2)).to eq true }
-      it { expect(index.valid?('piano')).to eq false }
+      its([2]) { is_expected.to eq true }
+      its(['piano']) { is_expected.to eq false }
     end
 
     context 'multiple indexes' do
-      it { expect(index.valid?('guitar', 1)).to eq true }
-      it { expect(index.valid?('guitar', 8)).to eq false }
+      its(['guitar', 1]) { is_expected.to eq true }
+      its(['guitar', 8]) { is_expected.to eq false }
     end
   end
 
@@ -182,208 +182,87 @@ RSpec.describe Daru::Index do
     end
   end
 
-  context '#[]' do
-    before do
-      @id = described_class.new %i[one two three four five six seven]
-      @mixed_id = described_class.new ['a','b','c',:d,:a,8,3,5]
+  describe '#[]' do
+    subject { method_call(index, :[]) }
+
+    its(['mic'..'amp']) { is_expected.to eq [1, 2, 3] }
+    its(%w[amp mic speaker]) { is_expected.to eq [3, 1, 0] }
+
+    context 'first index is not valid' do
+      its(['foo'..'bar']) { is_expected.to be_nil }
     end
 
-    it 'works with ranges' do
-      expect(@id[:two..:five]).to eq([1, 2, 3, 4])
-
-      expect(@mixed_id['a'..'c']).to eq([0, 1, 2])
-
-      # returns nil if first index is invalid
-      # expect(@mixed_id.slice('d', 5)).to be_nil
-
-      # returns positions till the end if first index is present
-      # expect(@mixed_id.slice('c', 6)).to eq([2, 3, 4, 5, 6, 7])
+    context 'first index is valid, second is not' do
+      its(['mic'..'bar']) { is_expected.to eq [1, 2, 3] }
     end
 
-    it 'returns multiple keys if specified multiple indices' do
-      expect(@id[:one, :two, :four, :five]).to eq([0, 1, 3, 4])
-      expect(@mixed_id[0,5,3,2]).to eq([nil, 7, 6, nil])
+    context 'invalid' do
+      its(['piano']) { is_expected.to be_nil }
     end
 
-    it 'returns nil for invalid indexes' do
-      expect(@id[:four]).to eq(3)
-      expect(@id[3]).to be_nil
-    end
+    context 'mixed type index' do
+      let(:index) { described_class.new ['a','b','c',:d,:a,8,3,5] }
 
-    it 'returns correct index position for mixed index' do
-      expect(@mixed_id[8]).to eq(5)
-      expect(@mixed_id['c']).to eq(2)
+      its(['a'..'c']) { is_expected.to eq [0, 1, 2] }
+      its([0,5,3,2]) { is_expected.to eq([nil, 7, 6, nil]) }
     end
   end
 
   context '#pos' do
-    let(:idx) { described_class.new [:a, :b, 1, 2] }
+    subject { method_call(index, :pos) }
 
-    context 'single index' do
-      it { expect(idx.pos(:a)).to eq 0 }
+    let(:index) { described_class.new [:a, :b, 1, 2] }
+
+    context 'by index' do
+      its([:a]) { is_expected.to eq 0 }
+      its([:a, 1]) { is_expected.to eq [0, 2] }
     end
 
-    context 'multiple indexes' do
-      subject { idx.pos :a, 1 }
-
-      it { is_expected.to be_a Array }
-      its(:size) { is_expected.to eq 2 }
-      it { is_expected.to eq [0, 2] }
+    context 'by position' do
+      its([0]) { is_expected.to eq 0 }
+      its([0, 3]) { is_expected.to eq [0, 3] }
     end
 
-    context 'single positional index' do
-      it { expect(idx.pos(0)).to eq 0 }
-    end
-
-    context 'multiple positional index' do
-      subject { idx.pos 0, 3 }
-
-      it { is_expected.to be_a Array }
-      its(:size) { is_expected.to eq 2 }
-      it { is_expected.to eq [0, 3] }
-    end
-
-    context 'range' do
-      subject { idx.pos 1..3 }
-
-      it { is_expected.to be_a Array }
-      its(:size) { is_expected.to eq 3 }
-      it { is_expected.to eq [1, 2, 3] }
-    end
+    its([1..3]) { is_expected.to eq [1, 2, 3] }
   end
 
   context '#subset' do
+    subject { method_call(idx, :subset) }
+
     let(:idx) { described_class.new [:a, :b, 1, 2] }
 
-    context 'multiple indexes' do
-      subject { idx.subset :a, 1 }
-
-      it { is_expected.to be_a described_class }
-      its(:size) { is_expected.to eq 2 }
-      its(:to_a) { is_expected.to eq [:a, 1] }
-    end
-
-    context 'multiple positional indexes' do
-      subject { idx.subset 0, 3 }
-
-      it { is_expected.to be_a described_class }
-      its(:size) { is_expected.to eq 2 }
-      its(:to_a) { is_expected.to eq [:a, 2] }
-    end
-
-    context 'range' do
-      subject { idx.subset 1..3 }
-
-      it { is_expected.to be_a described_class }
-      its(:size) { is_expected.to eq 3 }
-      its(:to_a) { is_expected.to eq [:b, 1, 2] }
-    end
+    its([:a, 1]) { is_expected.to eq described_class.new [:a, 1] }
+    its([0, 3]) { is_expected.to eq described_class.new [:a, 2] }
+    its([1..3]) { is_expected.to eq described_class.new [:b, 1, 2] }
   end
 
   context '#at' do
+    subject(:at) { method_call(idx, :at) }
+
     let(:idx) { described_class.new [:a, :b, 1] }
 
-    context 'single position' do
-      it { expect(idx.at(1)).to eq :b }
-    end
-
-    context 'multiple positions' do
-      subject { idx.at 1, 2 }
-
-      it { is_expected.to be_a described_class }
-      its(:size) { is_expected.to eq 2 }
-      its(:to_a) { is_expected.to eq [:b, 1] }
-    end
-
-    context 'range' do
-      subject { idx.at 1..2 }
-
-      it { is_expected.to be_a described_class }
-      its(:size) { is_expected.to eq 2 }
-      its(:to_a) { is_expected.to eq [:b, 1] }
-    end
-
-    context 'range with negative integer' do
-      subject { idx.at 1..-1 }
-
-      it { is_expected.to be_a described_class }
-      its(:size) { is_expected.to eq 2 }
-      its(:to_a) { is_expected.to eq [:b, 1] }
-    end
-
-    context 'rangle with single element' do
-      subject { idx.at 1..1 }
-
-      it { is_expected.to be_a described_class }
-      its(:size) { is_expected.to eq 1 }
-      its(:to_a) { is_expected.to eq [:b] }
-    end
-
-    context 'invalid position' do
-      it { expect { idx.at 3 }.to raise_error IndexError }
-    end
-
-    context 'invalid positions' do
-      it { expect { idx.at 2, 3 }.to raise_error IndexError }
-    end
+    its([1]) { is_expected.to eq :b }
+    its([1, 2]) { is_expected.to eq described_class.new [:b, 1] }
+    its([1..2]) { is_expected.to eq described_class.new [:b, 1] }
+    its([1..-1]) { is_expected.to eq described_class.new [:b, 1] }
+    its([1..1]) { is_expected.to eq described_class.new [:b] }
+    it { expect { at.call(3) }.to raise_error IndexError }
+    it { expect { at.call(2, 3) }.to raise_error IndexError }
   end
 
   context '#is_values' do
-    let(:klass) { Daru::Vector }
+    subject { method_call(idx, :is_values) }
+
     let(:idx) { described_class.new [:one, 'one', 1, 2, 'two', nil, [1, 2]] }
 
-    context 'no arguments' do
-      let(:answer) { [false, false, false, false, false, false, false] }
+    its([]) { is_expected.to eq Daru::Vector.new([false, false, false, false, false, false, false]) }
+    its(['one']) { is_expected.to eq Daru::Vector.new([false, true, false, false, false, false, false]) }
+    its([2, :one]) { is_expected.to eq Daru::Vector.new([true, false, false, true, false, false, false]) }
+    its(['one', 1]) { is_expected.to eq Daru::Vector.new([false, true, true, false, false, false, false]) }
+    its(['two', nil]) { is_expected.to eq Daru::Vector.new([false, false, false, false, true, true, false]) }
 
-      it { expect(idx.is_values).to eq klass.new(answer) }
-    end
-
-    context 'single arguments' do
-      let(:answer) { [false, true, false, false, false, false, false] }
-
-      it { expect(idx.is_values('one')).to eq klass.new(answer) }
-    end
-
-    context 'multiple arguments' do
-      context 'symbol and number as argument' do
-        subject { idx.is_values 2, :one }
-
-        let(:answer) { [true, false, false, true, false, false, false] }
-
-        it { is_expected.to be_a Daru::Vector }
-        its(:size) { is_expected.to eq 7 }
-        it { is_expected.to eq klass.new(answer) }
-      end
-
-      context 'string and number as argument' do
-        subject { idx.is_values('one', 1) }
-
-        let(:answer) { [false, true, true, false, false, false, false] }
-
-        it { is_expected.to be_a Daru::Vector }
-        its(:size) { is_expected.to eq 7 }
-        it { is_expected.to eq klass.new(answer) }
-      end
-
-      context 'nil is present in arguments' do
-        subject { idx.is_values('two', nil) }
-
-        let(:answer) { [false, false, false, false, true, true, false] }
-
-        it { is_expected.to be_a Daru::Vector }
-        its(:size) { is_expected.to eq 7 }
-        it { is_expected.to eq klass.new(answer) }
-      end
-
-      context 'subarray is present in arguments' do
-        subject { idx.is_values([1, 2]) }
-
-        let(:answer) { [false, false, false, false, false, false, true] }
-
-        it { is_expected.to be_a Daru::Vector }
-        its(:size) { is_expected.to eq 7 }
-        it { is_expected.to eq klass.new(answer) }
-      end
+    context 'subarray is present in arguments' do
+      its([[1, 2]]) { is_expected.to eq Daru::Vector.new([false, false, false, false, false, false, true]) }
     end
   end
 end

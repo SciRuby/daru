@@ -6,30 +6,8 @@
 # Note that changes in the inspected code, or installation of new
 # versions of RuboCop, may require this file to be generated again.
 
-# Offense count: 1
-# Cop supports --auto-correct.
-Layout/MultilineBlockLayout:
-  Exclude:
-    - 'spec/index/index_spec.rb'
-
-# Offense count: 1
-# Configuration parameters: CustomIncludeMethods.
-#RSpec/EmptyExampleGroup:
-  #Exclude:
-    #- 'spec/index/index_spec.rb'
-
-# Offense count: 8
-# Configuration parameters: AssignmentOnly.
-RSpec/InstanceVariable:
-  Exclude:
-    - 'spec/index/index_spec.rb'
-
-# Offense count: 4
-RSpec/MultipleExpectations:
-  Max: 2
-
 # Offense count: 5
 # Configuration parameters: Max.
-RSpec/NestedGroups:
-  Exclude:
-    - 'spec/index/index_spec.rb'
+#RSpec/NestedGroups:
+  #Exclude:
+    #- 'spec/index/index_spec.rb'

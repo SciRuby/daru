@@ -133,7 +133,10 @@ Style/BlockDelimiters:
   Enabled: false
 
 RSpec/EmptyExampleGroup:
-  CustomIncludeMethods: ['its_call']
+  CustomIncludeMethods: [its_call, its_map]
+
+RSpec/NestedGroups:
+  Enabled: false
 
 # Current preferred metrics --------------------------------------------
 # Better values are encouraged, but not required.
