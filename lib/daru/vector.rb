@@ -70,14 +70,6 @@ module Daru
         Daru::Vector.new(values)
       end
 
-      def _load(data) # :nodoc:
-        h = Marshal.load(data)
-        Daru::Vector.new(h[:data],
-          index: h[:index],
-          name: h[:name],
-          dtype: h[:dtype], missing_values: h[:missing_values])
-      end
-
       def coerce(data, options={})
         case data
         when Daru::Vector
@@ -1346,39 +1338,11 @@ module Daru
       Daru::Vector.new(([nil]*size), name: @name, index: @index.dup)
     end
 
-    def _dump(*) # :nodoc:
-      Marshal.dump(
-        data:           @data.to_a,
-        dtype:          @dtype,
-        name:           @name,
-        index:          @index
-      )
-    end
-
     # :nocov:
     def daru_vector(*)
       self
     end
     # :nocov:
-
-    # Save the vector to a file
-    #
-    # == Arguments
-    #
-    # * filename - Path of file where the vector is to be saved
-    def save filename
-      fp = File.open(filename, 'w')
-      Marshal.dump(self, fp)
-      fp.close
-    end
-
-    def self.load filename
-      return false unless File.exist? filename
-
-      o = false
-      File.open(filename, 'r') { |fp| o = Marshal.load(fp) }
-      o
-    end
 
     alias :dv :daru_vector
 

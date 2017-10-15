@@ -1905,38 +1905,6 @@ module Daru
 
     alias_method :name=, :rename
 
-    # Use marshalling to save dataframe to a file.
-    def save filename
-      fp = File.open(filename, 'w')
-      Marshal.dump(self, fp)
-      fp.close
-    end
-
-    def self.load filename
-      return false unless File.exist? filename
-
-      o = false
-      File.open(filename, 'r') { |fp| o = Marshal.load(fp) }
-      o
-    end
-
-    def _dump(_depth)
-      Marshal.dump(
-        data:  @data,
-        index: @index.to_a,
-        order: @vectors.to_a,
-        name:  @name
-      )
-    end
-
-    def self._load data
-      h = Marshal.load data
-      Daru::DataFrame.new(h[:data],
-        index: h[:index],
-        order: h[:order],
-        name:  h[:name])
-    end
-
     # Change dtypes of vectors by supplying a hash of :vector_name => :new_dtype
     #
     # @example

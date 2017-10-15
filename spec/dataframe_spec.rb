@@ -144,30 +144,6 @@ describe Daru::DataFrame do
     end
   end
 
-  context "Marshalling" do
-    it "" do
-      vector = Daru::Vector.new (0..100).collect { |_n| rand(100) }
-      dataframe = Daru::Vector.new({a: vector, b: vector, c: vector})
-      expect(Marshal.load(Marshal.dump(dataframe))).to eq(dataframe)
-    end
-  end
-
-  context "#save" do
-    before do
-      @data_frame = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
-        c: [11,22,33,44,55]},
-        order: [:a, :b, :c],
-        index: [:one, :two, :three, :four, :five])
-    end
-
-    it "saves df to a file" do
-      outfile = Tempfile.new('dataframe.df')
-      @data_frame.save(outfile.path)
-      a = Daru::DataFrame.load(outfile.path)
-      expect(a).to eq(@data_frame)
-    end
-  end
-
   context "#initialize" do
 
     it "initializes an empty DataFrame with no arguments" do

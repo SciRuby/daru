@@ -9,26 +9,6 @@ describe Daru::Vector do
           dtype: dtype, name: :common_all_dtypes)
       end
 
-      context "Marshalling" do
-        it "" do
-          vector = Daru::Vector.new (0..100).collect { |_n| rand(100) }
-          expect(Marshal.load(Marshal.dump(vector))).to eq(vector)
-        end
-      end
-
-      context "#save" do
-        ALL_DTYPES.each do |dtype|
-          it "saves to a file and returns the same Vector of type #{dtype}" do
-            vector = Daru::Vector.new(
-                [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99],
-                dtype: dtype)
-            outfile = Tempfile.new('vector.vec')
-            vector.save(outfile.path)
-            expect(Daru::Vector.load(outfile.path)).to eq(vector)
-          end
-        end
-      end
-
       context "#initialize" do
         before do
           @tuples = [
