@@ -33,7 +33,6 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = '>= 2.1.0'
 
   spec.add_runtime_dependency 'backports'
-  spec.add_runtime_dependency 'daru-io'
 
   # it is required by NMatrix, yet we want to specify clearly which minimal version is OK
   spec.add_runtime_dependency 'packable', '~> 1.3.9'
