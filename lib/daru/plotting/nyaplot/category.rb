@@ -2,7 +2,7 @@ module Daru
   module Plotting
     module Category
       module NyaplotLibrary
-        def plot opts
+        def plot(opts)
           case type = opts[:type]
           when :bar
             plot = Nyaplot::Plot.new
@@ -20,7 +20,7 @@ module Daru
 
         private
 
-        def set_yrange plot, method
+        def set_yrange(plot, method)
           case method
           when :percentage
             plot.yrange [0, 100]

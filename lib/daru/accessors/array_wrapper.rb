@@ -20,36 +20,36 @@ module Daru
       attr_accessor :size
       attr_reader   :data
 
-      def initialize vector, context
+      def initialize(vector, context)
         @data = vector.to_a
         @context = context
 
         set_size
       end
 
-      def [] *index
+      def [](*index)
         @data[*index]
       end
 
-      def []= index, value
+      def []=(index, value)
         @data[index] = value
         set_size
       end
 
-      def == other
+      def ==(other)
         @data == other
       end
 
-      def delete_at index
+      def delete_at(index)
         @data.delete_at index
         set_size
       end
 
-      def index *args, &block
+      def index(*args, &block)
         @data.index(*args, &block)
       end
 
-      def << element
+      def <<(element)
         @data << element
         set_size
       end

@@ -15,7 +15,7 @@ module Daru
     class << self
       # Create DataFrame by specifying rows as an Array of Arrays or Array of
       # Daru::Vector objects.
-      def rows source, opts={}
+      def rows(source, opts={})
         raise SizeError, 'All vectors must have same length' \
           unless source.all? { |v| v.size == source.first.size }
 
@@ -49,7 +49,7 @@ module Daru
       #    b  1   0
       #
       # Useful to process outputs from databases
-      def crosstab_by_assignation rows, columns, values
+      def crosstab_by_assignation(rows, columns, values)
         raise 'Three vectors should be equal size' if
           rows.size != columns.size || rows.size!=values.size
 
@@ -68,7 +68,7 @@ module Daru
 
       private
 
-      def guess_order source
+      def guess_order(source)
         case source.first
         when Vector # assume that all are Vectors
           source.first.index.to_a
@@ -77,7 +77,7 @@ module Daru
         end
       end
 
-      def from_vector_rows source, opts
+      def from_vector_rows(source, opts)
         index = source.map(&:name)
                       .each_with_index.map { |n, i| n || i }
         index = ArrayHelper.recode_repeated(index)
@@ -193,7 +193,7 @@ module Daru
     #    #    1   4  14  44
     #    #    2   5  15  55
 
-    def initialize source={}, opts={} # rubocop:disable Metrics/MethodLength
+    def initialize(source={}, opts={}) # rubocop:disable Metrics/MethodLength
       vectors, index = opts[:order], opts[:index] # FIXME: just keyword arges after Ruby 2.1
       @data = []
       @name = opts[:name]
@@ -215,7 +215,7 @@ module Daru
       self.plotting_library = Daru.plotting_library
     end
 
-    def plotting_library= lib
+    def plotting_library=(lib)
       case lib
       when :gruff, :nyaplot
         @plotting_library = lib
@@ -251,7 +251,7 @@ module Daru
     #   #       a   b
     #   #   1   2   b
     #   #   2   3   c
-    def row_at *positions
+    def row_at(*positions)
       original_positions = positions
       positions = coerce_positions(*positions, nrows)
       validate_positions(*positions, nrows)
@@ -282,7 +282,7 @@ module Daru
     #   #   0   x   x
     #   #   1   x   x
     #   #   2   3   c
-    def set_row_at positions, vector
+    def set_row_at(positions, vector)
       validate_positions(*positions, nrows)
       vector =
         if vector.is_a? Daru::Vector
@@ -315,7 +315,7 @@ module Daru
     #   #   0   1
     #   #   1   2
     #   #   2   3
-    def at *positions
+    def at(*positions)
       if AXES.include? positions.last
         axis = positions.pop
         return row_at(*positions) if axis == :row
@@ -350,7 +350,7 @@ module Daru
     #   #   0   x   a
     #   #   1   y   b
     #   #   2   z   c
-    def set_at positions, vector
+    def set_at(positions, vector)
       if positions.last == :row
         positions.pop
         return set_row_at(positions, vector)
@@ -385,11 +385,11 @@ module Daru
       dispatch_to_axis axis, :insert_or_modify, names, vector
     end
 
-    def add_row row, index=nil
+    def add_row(row, index=nil)
       self.row[*(index || @size)] = row
     end
 
-    def add_vector n, vector
+    def add_vector(n, vector)
       self[n] = vector
     end
 
@@ -408,8 +408,8 @@ module Daru
     #
     # * +vectors_to_dup+ - An Array specifying the names of Vectors to
     # be duplicated. Will duplicate the entire DataFrame if not specified.
-    def dup vectors_to_dup=nil
-      vectors_to_dup = @vectors.to_a unless vectors_to_dup
+    def dup(vectors_to_dup=nil)
+      vectors_to_dup ||= @vectors.to_a
 
       src = vectors_to_dup.map { |vec| @data[@vectors.pos(vec)].dup }
       new_order = Daru::Index.new(vectors_to_dup)
@@ -429,7 +429,7 @@ module Daru
     #
     # +vectors_to_clone+ - Names of vectors to clone. Optional. Will return
     # a view of the whole data frame otherwise.
-    def clone *vectors_to_clone
+    def clone(*vectors_to_clone)
       vectors_to_clone.flatten! if ArrayHelper.array_of?(vectors_to_clone, Array)
       vectors_to_clone = @vectors.to_a if vectors_to_clone.empty?
 
@@ -449,7 +449,7 @@ module Daru
 
     # Creates a new duplicate dataframe containing only rows
     # without a single missing value.
-    def dup_only_valid vecs=nil
+    def dup_only_valid(vecs=nil)
       rows_with_nil = @data.map { |vec| vec.indexes(*Daru::MISSING_VALUES) }
                            .inject(&:concat)
                            .uniq
@@ -509,7 +509,7 @@ module Daru
     #   #   16 NaN   3   5
     #   #   17   1   5 NaN
     #   #   18   7   8   7
-    def replace_values old_values, new_value
+    def replace_values(old_values, new_value)
       @data.each { |vec| vec.replace_values old_values, new_value }
       self
     end
@@ -597,7 +597,7 @@ module Daru
     end
 
     # Iterate over each index of the DataFrame.
-    def each_index &block
+    def each_index(&block)
       return to_enum(:each_index) unless block_given?
 
       @index.each(&block)
@@ -663,7 +663,7 @@ module Daru
     #
     # * +axis+ - The axis to iterate over. Can be :vector (or :column)
     # or :row. Default to :vector.
-    def each axis=:vector, &block
+    def each(axis=:vector, &block)
       dispatch_to_axis axis, :each, &block
     end
 
@@ -682,7 +682,7 @@ module Daru
     #
     # * +axis+ - The axis to iterate over. Can be :vector (or :column)
     # or :row. Default to :vector.
-    def collect axis=:vector, &block
+    def collect(axis=:vector, &block)
       dispatch_to_axis_pl axis, :collect, &block
     end
 
@@ -702,7 +702,7 @@ module Daru
     #
     # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
     # Default to :vector.
-    def map axis=:vector, &block
+    def map(axis=:vector, &block)
       dispatch_to_axis_pl axis, :map, &block
     end
 
@@ -714,7 +714,7 @@ module Daru
     #
     # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
     # Default to :vector.
-    def map! axis=:vector, &block
+    def map!(axis=:vector, &block)
       if %i[vector column].include?(axis)
         map_vectors!(&block)
       elsif axis == :row
@@ -739,7 +739,7 @@ module Daru
     #
     # * +axis+ - The axis to map over. Can be :vector (or :column) or :row.
     # Default to :vector.
-    def recode axis=:vector, &block
+    def recode(axis=:vector, &block)
       dispatch_to_axis_pl axis, :recode, &block
     end
 
@@ -771,7 +771,7 @@ module Daru
     #   df.filter(:row) do |row|
     #     row[:a] + row[:d] < 100
     #   end
-    def filter axis=:vector, &block
+    def filter(axis=:vector, &block)
       dispatch_to_axis_pl axis, :filter, &block
     end
 
@@ -796,7 +796,7 @@ module Daru
     end
 
     # Map each vector and return an Array.
-    def map_vectors &block
+    def map_vectors(&block)
       return to_enum(:map_vectors) unless block_given?
 
       @data.map(&block)
@@ -814,20 +814,20 @@ module Daru
     end
 
     # Map vectors alongwith the index.
-    def map_vectors_with_index &block
+    def map_vectors_with_index(&block)
       return to_enum(:map_vectors_with_index) unless block_given?
 
       each_vector_with_index.map(&block)
     end
 
     # Map each row
-    def map_rows &block
+    def map_rows(&block)
       return to_enum(:map_rows) unless block_given?
 
       each_row.map(&block)
     end
 
-    def map_rows_with_index &block
+    def map_rows_with_index(&block)
       return to_enum(:map_rows_with_index) unless block_given?
 
       each_row_with_index.map(&block)
@@ -845,13 +845,13 @@ module Daru
 
     # Retrieves a Daru::Vector, based on the result of calculation
     # performed on each row.
-    def collect_rows &block
+    def collect_rows(&block)
       return to_enum(:collect_rows) unless block_given?
 
       Daru::Vector.new(each_row.map(&block), index: @index)
     end
 
-    def collect_row_with_index &block
+    def collect_row_with_index(&block)
       return to_enum(:collect_row_with_index) unless block_given?
 
       Daru::Vector.new(each_row_with_index.map(&block), index: @index)
@@ -859,13 +859,13 @@ module Daru
 
     # Retrives a Daru::Vector, based on the result of calculation
     # performed on each vector.
-    def collect_vectors &block
+    def collect_vectors(&block)
       return to_enum(:collect_vectors) unless block_given?
 
       Daru::Vector.new(each_vector.map(&block), index: @vectors)
     end
 
-    def collect_vector_with_index &block
+    def collect_vector_with_index(&block)
       return to_enum(:collect_vector_with_index) unless block_given?
 
       Daru::Vector.new(each_vector_with_index.map(&block), index: @vectors)
@@ -892,7 +892,7 @@ module Daru
     # :nocov:
 
     # Delete a vector
-    def delete_vector vector
+    def delete_vector(vector)
       raise IndexError, "Vector #{vector} does not exist." unless @vectors.include?(vector)
 
       @data.delete_at @vectors[vector]
@@ -902,14 +902,14 @@ module Daru
     end
 
     # Deletes a list of vectors
-    def delete_vectors *vectors
+    def delete_vectors(*vectors)
       Array(vectors).each { |vec| delete_vector vec }
 
       self
     end
 
     # Delete a row
-    def delete_row index
+    def delete_row(index)
       idx = named_index_for index
 
       raise IndexError, "Index #{index} does not exist." unless @index.include? idx
@@ -948,7 +948,7 @@ module Daru
     end
 
     # creates a new vector with the data of a given field which the block returns true
-    def filter_vector vec, &block
+    def filter_vector(vec, &block)
       Daru::Vector.new(each_row.select(&block).map { |row| row[vec] })
     end
 
@@ -964,7 +964,7 @@ module Daru
 
     # Iterates over each vector and retains it in a new DataFrame if the block returns
     # true for that vector.
-    def filter_vectors &block
+    def filter_vectors(&block)
       return to_enum(:filter_vectors) unless block_given?
 
       dup.tap { |df| df.keep_vector_if(&block) }
@@ -1006,7 +1006,7 @@ module Daru
     #   # 4 555
     #   # 5 666
     #   # 6 777
-    def vector_by_calculation &block
+    def vector_by_calculation(&block)
       a = each_row.map { |r| r.instance_eval(&block) }
 
       Daru::Vector.new a, index: @index
@@ -1044,7 +1044,7 @@ module Daru
     #   ds = Daru::DataFrame.new({:a => a,:b => b})
     #   ds.compute("a+b")
     #   => Vector [4,6]
-    def compute text, &block
+    def compute(text, &block)
       return instance_eval(&block) if block_given?
       instance_eval(text)
     end
@@ -1055,7 +1055,7 @@ module Daru
     #
     # * +missing_values+ - An Array of the values that should be
     # treated as 'missing'. The default missing value is *nil*.
-    def missing_values_rows missing_values=[nil]
+    def missing_values_rows(missing_values=[nil])
       number_of_missing = each_row.map do |row|
         row.indexes(*missing_values).size
       end
@@ -1093,7 +1093,7 @@ module Daru
     # hashes with other values. If block provided, is used to provide the
     # values, with parameters +row+ of dataset, +current+ last hash on
     # hierarchy and +name+ of the key to include
-    def nest *tree_keys, &_block
+    def nest(*tree_keys, &_block)
       tree_keys = tree_keys[0] if tree_keys[0].is_a? Array
 
       each_row.each_with_object({}) do |row, current|
@@ -1111,7 +1111,7 @@ module Daru
       end
     end
 
-    def vector_count_characters vecs=nil
+    def vector_count_characters(vecs=nil)
       vecs ||= @vectors.to_a
 
       collect_rows do |row|
@@ -1141,7 +1141,7 @@ module Daru
     end
 
     # Check if a vector is present
-    def has_vector? vector
+    def has_vector?(vector)
       @vectors.include? vector
     end
 
@@ -1154,7 +1154,7 @@ module Daru
     #   df.any?(:row) do |row|
     #     row[:a] < 3 and row[:b] == 'b'
     #   end #=> true
-    def any? axis=:vector, &block
+    def any?(axis=:vector, &block)
       if %i[vector column].include?(axis)
         @data.any?(&block)
       elsif axis == :row
@@ -1176,7 +1176,7 @@ module Daru
     #   df.all?(:row) do |row|
     #     row[:a] < 10
     #   end #=> true
-    def all? axis=:vector, &block
+    def all?(axis=:vector, &block)
       if %i[vector column].include?(axis)
         @data.all?(&block)
       elsif axis == :row
@@ -1189,7 +1189,7 @@ module Daru
     # The first ten elements of the DataFrame
     #
     # @param [Fixnum] quantity (10) The number of elements to display from the top.
-    def head quantity=10
+    def head(quantity=10)
       row.at 0..(quantity-1)
     end
 
@@ -1198,7 +1198,7 @@ module Daru
     # The last ten elements of the DataFrame
     #
     # @param [Fixnum] quantity (10) The number of elements to display from the bottom.
-    def tail quantity=10
+    def tail(quantity=10)
       start = [-quantity, -size].max
       row.at start..-1
     end
@@ -1267,7 +1267,7 @@ module Daru
     #
     # * +max_missing+ - The maximum number of elements in the row that can be
     # zero for the mean calculation to happen. Default to 0.
-    def vector_mean max_missing=0
+    def vector_mean(max_missing=0)
       # FIXME: in vector_sum we preserve created vector dtype, but
       # here we are not. Is this by design or ...? - zverok, 2016-05-18
       mean_vec = Daru::Vector.new [0]*@size, index: @index, name: "mean_#{@name}"
@@ -1301,7 +1301,7 @@ module Daru
     #   # ["foo", "one", 3]=>[6],
     #   # ["foo", "three", 8]=>[7],
     #   # ["foo", "two", 3]=>[2, 4]}
-    def group_by *vectors
+    def group_by(*vectors)
       vectors.flatten!
       # FIXME: wouldn't it better to do vectors - @vectors here and
       # raise one error with all non-existent vector names?.. - zverok, 2016-05-18
@@ -1314,7 +1314,7 @@ module Daru
       Daru::Core::GroupBy.new(self, vectors)
     end
 
-    def reindex_vectors new_vectors
+    def reindex_vectors(new_vectors)
       unless new_vectors.is_a?(Daru::Index)
         raise ArgumentError, 'Must pass the new index of type Index or its '\
           "subclasses, not #{new_index.class}"
@@ -1332,7 +1332,7 @@ module Daru
 
     # Concatenate another DataFrame along corresponding columns.
     # If columns do not exist in both dataframes, they are filled with nils
-    def concat other_df
+    def concat(other_df)
       vectors = (@vectors.to_a + other_df.vectors.to_a).uniq
 
       data = vectors.map do |v|
@@ -1346,7 +1346,7 @@ module Daru
     # Additionally it tries to preserve the index. If the indices contain
     # common elements, #union will overwrite the according rows in the
     # first dataframe.
-    def union other_df
+    def union(other_df)
       index = (@index.to_a + other_df.index.to_a).uniq
       df = row[*(@index.to_a - other_df.index.to_a)]
 
@@ -1356,7 +1356,7 @@ module Daru
     end
 
     # Set a particular column as the new DF
-    def set_index new_index, opts={}
+    def set_index(new_index, opts={})
       raise ArgumentError, 'All elements in new index must be unique.' if
         @size != self[new_index].uniq.size
 
@@ -1388,7 +1388,7 @@ module Daru
     #   #         0        nil        nil
     #   #         a          1         11
     #   #         g        nil        nil
-    def reindex new_index
+    def reindex(new_index)
       unless new_index.is_a?(Daru::Index)
         raise ArgumentError, 'Must pass the new index of type Index or its '\
           "subclasses, not #{new_index.class}"
@@ -1411,11 +1411,9 @@ module Daru
     #   df.index = Daru::Index.new(['a','b','c','d'])
     #   df.index.to_a #=> ['a','b','c','d']
     #   df.row['a'].to_a #=> [1,11]
-    def index= idx
+    def index=(idx)
       @index = Index.coerce idx
       @data.each { |vec| vec.index = @index }
-
-      self
     end
 
     # Reassign vectors with a new index of type Daru::Index or any of its subclasses.
@@ -1428,7 +1426,7 @@ module Daru
     #
     #   df.vectors = Daru::Index.new([:foo, :bar, :baz])
     #   df.vectors.to_a #=> [:foo, :bar, :baz]
-    def vectors= new_index
+    def vectors=(new_index)
       unless new_index.is_a?(Daru::Index)
         raise ArgumentError, 'Can only reindex with Index and its subclasses'
       end
@@ -1442,7 +1440,6 @@ module Daru
       @data.zip(new_index.to_a).each do |vect, name|
         vect.name = name
       end
-      self
     end
 
     # Renames the vectors
@@ -1459,7 +1456,7 @@ module Daru
     #   df = Daru::DataFrame.new({ a: [1,2,3,4], b: [:a,:b,:c,:d], c: [11,22,33,44] })
     #   df.rename_vectors :a => :alpha, :c => :gamma
     #   df.vectors.to_a #=> [:alpha, :b, :gamma]
-    def rename_vectors name_map
+    def rename_vectors(name_map)
       existing_targets = name_map.reject { |k,v| k == v }.values & vectors.to_a
       delete_vectors(*existing_targets)
 
@@ -1483,8 +1480,8 @@ module Daru
     # Return a DataFrame of only the numerical Vectors. If clone: false
     # is specified as option, only a *view* of the Vectors will be
     # returned. Defaults to clone: true.
-    def only_numerics opts={}
-      cln = opts[:clone] == false ? false : true
+    def only_numerics(opts={})
+      cln = opts.fetch(:clone, true)
       arry = numeric_vectors.map { |v| self[v] }
 
       order = Index.new(numeric_vectors)
@@ -1586,7 +1583,7 @@ module Daru
     #   #      2          1        nil
     #   #      5          1        nil
 
-    def sort! vector_order, opts={}
+    def sort!(vector_order, opts={})
       raise ArgumentError, 'Required atleast one vector name' if vector_order.empty?
 
       # To enable sorting with categorical data,
@@ -1610,7 +1607,7 @@ module Daru
     end
 
     # Non-destructive version of #sort!
-    def sort vector_order, opts={}
+    def sort(vector_order, opts={})
       dup.sort! vector_order, opts
     end
 
@@ -1648,7 +1645,7 @@ module Daru
     #   #            [:e, :one] [:e, :two]
     #   #     [:bar]         18         26
     #   #     [:foo]         10         12
-    def pivot_table opts={}
+    def pivot_table(opts={})
       raise ArgumentError, 'Specify grouping index' if Array(opts[:index]).empty?
 
       index               = opts[:index]
@@ -1669,7 +1666,7 @@ module Daru
     # the vectors names are changed to x_1, x_2 ....
     #
     # @return {Daru::DataFrame}
-    def merge other_df # rubocop:disable Metrics/AbcSize
+    def merge(other_df) # rubocop:disable Metrics/AbcSize
       unless nrows == other_df.nrows
         raise ArgumentError,
           "Number of rows must be equal in this: #{nrows} and other: #{other_df.nrows}"
@@ -1677,12 +1674,11 @@ module Daru
 
       new_fields = (@vectors.to_a + other_df.vectors.to_a)
       new_fields = ArrayHelper.recode_repeated(new_fields)
-
       DataFrame.new({}, order: new_fields).tap do |df_new|
         (0...nrows).each do |i|
           df_new.add_row row[i].to_a + other_df.row[i].to_a
         end
-
+        df_new.index = @index if @index == other_df.index
         df_new.update
       end
     end
@@ -1898,7 +1894,7 @@ module Daru
     end
 
     # Rename the DataFrame.
-    def rename new_name
+    def rename(new_name)
       @name = new_name
       self
     end
@@ -1910,7 +1906,7 @@ module Daru
     # @example
     #   df = Daru::DataFrame.new({a: [1,2,3], b: [1,2,3], c: [1,2,3]})
     #   df.recast a: :nmatrix, c: :nmatrix
-    def recast opts={}
+    def recast(opts={})
       opts.each do |vector_name, dtype|
         self[vector_name].cast(dtype: dtype)
       end
@@ -1928,7 +1924,7 @@ module Daru
     end
 
     # Pretty print in a nice table format for the command line (irb/pry/iruby)
-    def inspect spacing=10, threshold=15
+    def inspect(spacing=10, threshold=15)
       name_part = @name ? ": #{@name} " : ''
 
       "#<#{self.class}#{name_part}(#{nrows}x#{ncols})>\n" +
@@ -1942,11 +1938,11 @@ module Daru
     end
 
     # Query a DataFrame by passing a Daru::Core::Query::BoolArray object.
-    def where bool_array
+    def where(bool_array)
       Daru::Core::Query.df_where self, bool_array
     end
 
-    def == other
+    def ==(other)
       self.class == other.class   &&
         @size    == other.size    &&
         @index   == other.index   &&
@@ -1966,7 +1962,7 @@ module Daru
     #   df.to_category :b
     #   df[:b].type
     #   # => :category
-    def to_category *names
+    def to_category(*names)
       names.each { |n| self[n] = self[n].to_category }
       self
     end
@@ -1990,7 +1986,7 @@ module Daru
       name.to_s.end_with?('=') || has_vector?(name) || super
     end
 
-    def interact_code vector_names, full
+    def interact_code(vector_names, full)
       dfs = vector_names.zip(full).map do |vec_name, f|
         self[vec_name].contrast_code(full: f).each.to_a
       end
@@ -2018,7 +2014,7 @@ module Daru
     #   # #<Daru::DataFrame: b (1x1)>
     #   #       a
     #   #   2   3]
-    def split_by_category cat_name
+    def split_by_category(cat_name)
       cat_dv = self[cat_name]
       raise ArguementError, "#{cat_name} is not a category vector" unless
         cat_dv.category?
@@ -2031,7 +2027,7 @@ module Daru
     end
 
     # returns array of row tuples at given index(s)
-    def access_row_tuples_by_indexs *indexes
+    def access_row_tuples_by_indexs(*indexes)
       positions = @index.pos(*indexes)
 
       return populate_row_for(positions) if positions.is_a? Numeric
@@ -2104,7 +2100,7 @@ module Daru
 
     # Do the `method` (`method` can be :sum, :mean, :std, :median, etc or
     # lambda), on the column.
-    def apply_method_on_colmns colmn, index_tuples, method
+    def apply_method_on_colmns(colmn, index_tuples, method)
       rows = []
       index_tuples.each do |indexes|
         # If single element then also make it vector.
@@ -2119,7 +2115,7 @@ module Daru
       rows
     end
 
-    def apply_method_on_df index_tuples, method
+    def apply_method_on_df(index_tuples, method)
       rows = []
       index_tuples.each do |indexes|
         slice = row[*indexes]
@@ -2136,7 +2132,7 @@ module Daru
       index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
     end
 
-    def convert_categorical_vectors names
+    def convert_categorical_vectors(names)
       names.map do |n|
         next unless self[n].category?
         old = [n, self[n]]
@@ -2145,11 +2141,11 @@ module Daru
       end.compact
     end
 
-    def restore_categorical_vectors old
+    def restore_categorical_vectors(old)
       old.each { |name, vector| self[name] = vector }
     end
 
-    def recursive_product dfs
+    def recursive_product(dfs)
       return dfs.first if dfs.size == 1
 
       left = dfs.first
@@ -2160,7 +2156,7 @@ module Daru
       end
     end
 
-    def should_be_vector! val
+    def should_be_vector!(val)
       return val if val.is_a?(Daru::Vector)
       raise TypeError, "Every iteration must return Daru::Vector not #{val.class}"
     end
@@ -2187,7 +2183,7 @@ module Daru
 
     AXES = %i[row vector].freeze
 
-    def extract_axis names, default=:vector
+    def extract_axis(names, default=:vector)
       if AXES.include?(names.last)
         names.pop
       else
@@ -2195,7 +2191,7 @@ module Daru
       end
     end
 
-    def access_vector *names
+    def access_vector(*names)
       if names.first.is_a?(Range)
         dup(@vectors.subset(names.first))
       elsif @vectors.is_a?(MultiIndex)
@@ -2205,7 +2201,7 @@ module Daru
       end
     end
 
-    def access_vector_multi_index *names
+    def access_vector_multi_index(*names)
       pos = @vectors[names]
 
       return @data[pos] if pos.is_a?(Integer)
@@ -2217,7 +2213,7 @@ module Daru
       Daru::DataFrame.new(new_vectors, index: @index, order: pos)
     end
 
-    def access_vector_single_index *names
+    def access_vector_single_index(*names)
       if names.count < 2
         begin
           pos = @vectors.is_a?(Daru::DateTimeIndex) ? @vectors[names.first] : @vectors.pos(names.first)
@@ -2235,7 +2231,7 @@ module Daru
                                        index: @index, name: @name)
     end
 
-    def access_row *indexes
+    def access_row(*indexes)
       positions = @index.pos(*indexes)
 
       if positions.is_a? Numeric
@@ -2250,11 +2246,11 @@ module Daru
       end
     end
 
-    def populate_row_for pos
+    def populate_row_for(pos)
       @data.map { |vector| vector.at(*pos) }
     end
 
-    def insert_or_modify_vector name, vector
+    def insert_or_modify_vector(name, vector)
       name = name[0] unless @vectors.is_a?(MultiIndex)
 
       if @index.empty?
@@ -2266,7 +2262,7 @@ module Daru
       end
     end
 
-    def assign_or_add_vector name, v
+    def assign_or_add_vector(name, v)
       # FIXME: fix this jugaad. need to make changes in Indexing itself.
       begin
         pos = @vectors[name]
@@ -2286,18 +2282,18 @@ module Daru
       end
     end
 
-    def assign_multiple_vectors pos, v
+    def assign_multiple_vectors(pos, v)
       pos.each do |p|
         @data[@vectors[p]] = v
       end
     end
 
-    def assign_or_add_vector_rough name, v
+    def assign_or_add_vector_rough(name, v)
       @vectors |= [name] unless @vectors.include?(name)
       @data[@vectors[name]] = v
     end
 
-    def insert_vector_in_empty name, vector
+    def insert_vector_in_empty(name, vector)
       vec = Vector.coerce(vector.to_a, name: coerce_name(name))
 
       @index = vec.index
@@ -2307,7 +2303,7 @@ module Daru
       @data.map! { |v| v.empty? ? v.reindex(@index) : v }
     end
 
-    def prepare_for_insert name, arg
+    def prepare_for_insert(name, arg)
       if arg.is_a? Daru::Vector
         prepare_vector_for_insert name, arg
       elsif arg.respond_to?(:to_a)
@@ -2317,7 +2313,7 @@ module Daru
       end
     end
 
-    def prepare_vector_for_insert name, vector
+    def prepare_vector_for_insert(name, vector)
       # so that index-by-index assignment is avoided when possible.
       return vector.dup if vector.index == @index
       Daru::Vector.new([], name: coerce_name(name), index: @index).tap { |v|
@@ -2327,18 +2323,18 @@ module Daru
       }
     end
 
-    def prepare_enum_for_insert name, enum
+    def prepare_enum_for_insert(name, enum)
       if @size != enum.size
         raise "Specified vector of length #{enum.size} cannot be inserted in DataFrame of size #{@size}"
       end
       Daru::Vector.new(enum, name: coerce_name(name), index: @index)
     end
 
-    def prepare_value_for_insert name, value
+    def prepare_value_for_insert(name, value)
       Daru::Vector.new(Array(value) * @size, name: coerce_name(name), index: @index)
     end
 
-    def insert_or_modify_row indexes, vector
+    def insert_or_modify_row(indexes, vector)
       vector = coerce_vector vector
 
       raise SizeError, 'Vector length should match row length' if
@@ -2383,7 +2379,7 @@ module Daru
       @size = @index.size
     end
 
-    def named_index_for index
+    def named_index_for(index)
       if @index.include? index
         index
       elsif @index.key index
@@ -2393,7 +2389,7 @@ module Daru
       end
     end
 
-    def create_vectors_index_with vectors, source
+    def create_vectors_index_with(vectors, source)
       vectors = source.keys if vectors.nil?
 
       @vectors =
@@ -2404,17 +2400,17 @@ module Daru
         end
     end
 
-    def all_vectors_have_equal_indexes? source
+    def all_vectors_have_equal_indexes?(source)
       idx = source.values[0].index
 
       source.values.all? { |vector| idx == vector.index }
     end
 
-    def coerce_name potential_name
+    def coerce_name(potential_name)
       potential_name.is_a?(Array) ? potential_name.join : potential_name
     end
 
-    def initialize_from_array source, vectors, index, opts
+    def initialize_from_array(source, vectors, index, opts)
       raise ArgumentError, 'All objects in data source should be same class' \
         unless source.map(&:class).uniq.size == 1
 
@@ -2432,7 +2428,7 @@ module Daru
       end
     end
 
-    def initialize_from_array_of_arrays source, vectors, index, _opts
+    def initialize_from_array_of_arrays(source, vectors, index, _opts)
       if source.size != vectors.size
         raise ArgumentError, "Number of vectors (#{vectors.size}) should " \
           "equal order size (#{source.size})"
@@ -2444,7 +2440,7 @@ module Daru
       update_data source, vectors
     end
 
-    def initialize_from_array_of_vectors source, vectors, index, opts
+    def initialize_from_array_of_vectors(source, vectors, index, opts)
       clone = opts[:clone] != false
       hsh = vectors.each_with_index.map do |name, idx|
         [name, source[idx]]
@@ -2452,7 +2448,7 @@ module Daru
       initialize(hsh, index: index, order: vectors, name: @name, clone: clone)
     end
 
-    def initialize_from_array_of_hashes source, vectors, index, _opts
+    def initialize_from_array_of_hashes(source, vectors, index, _opts)
       names =
         if vectors.nil?
           source[0].keys
@@ -2468,7 +2464,7 @@ module Daru
       end
     end
 
-    def initialize_from_hash source, vectors, index, opts
+    def initialize_from_hash(source, vectors, index, opts)
       create_vectors_index_with vectors, source
 
       if ArrayHelper.array_of?(source.values, Vector)
@@ -2478,7 +2474,7 @@ module Daru
       end
     end
 
-    def initialize_from_hash_with_vectors source, index, opts
+    def initialize_from_hash_with_vectors(source, index, opts)
       vectors_have_same_index = all_vectors_have_equal_indexes?(source)
 
       clone = opts[:clone] != false
@@ -2493,7 +2489,7 @@ module Daru
       end
     end
 
-    def deduce_index index, source, vectors_have_same_index
+    def deduce_index(index, source, vectors_have_same_index)
       if !index.nil?
         Index.coerce index
       elsif vectors_have_same_index
@@ -2507,7 +2503,7 @@ module Daru
       end
     end
 
-    def clone_vectors source, vectors_have_same_index
+    def clone_vectors(source, vectors_have_same_index)
       @vectors.map do |vector|
         # avoids matching indexes of vectors if all the supplied vectors
         # have the same index.
@@ -2523,7 +2519,7 @@ module Daru
       end
     end
 
-    def initialize_from_hash_with_arrays source, index, _opts
+    def initialize_from_hash_with_arrays(source, index, _opts)
       @index = Index.coerce(index || source.values[0].size)
 
       @vectors.each do |name|
@@ -2531,20 +2527,27 @@ module Daru
       end
     end
 
-    def sort_build_row vector_locs, by_blocks, ascending, handle_nils, r1, r2 # rubocop:disable  Metrics/ParameterLists
+    def sort_build_row(vector_locs, by_blocks, ascending, handle_nils, r1, r2) # rubocop:disable  Metrics/ParameterLists
       # Create an array to be used for comparison of two rows in sorting
       vector_locs
         .zip(by_blocks, ascending, handle_nils)
         .map do |vector_loc, by, asc, handle_nil|
         value = @data[vector_loc].data[asc ? r1 : r2]
 
-        value = by.call(value) rescue nil if by
+        # FIXME: dirty
+        if by
+          value = begin
+            by.call(value)
+          rescue NoMethodError
+            nil
+          end
+        end
 
         sort_handle_nils value, asc, handle_nil || !by
       end
     end
 
-    def sort_handle_nils value, asc, handle_nil
+    def sort_handle_nils(value, asc, handle_nil)
       case
       when !handle_nil
         value
@@ -2555,7 +2558,7 @@ module Daru
       end
     end
 
-    def sort_coerce_boolean opts, symbol, default, size
+    def sort_coerce_boolean(opts, symbol, default, size)
       val = opts[symbol]
       case val
       when true, false
@@ -2571,7 +2574,7 @@ module Daru
       end
     end
 
-    def sort_prepare_block vector_order, opts
+    def sort_prepare_block(vector_order, opts)
       ascending   = sort_coerce_boolean opts, :ascending, true, vector_order.size
       handle_nils = sort_coerce_boolean opts, :handle_nils, false, vector_order.size
 
@@ -2590,7 +2593,7 @@ module Daru
       end
     end
 
-    def verify_error_message row, test, id, i
+    def verify_error_message(row, test, id, i)
       description, fields, = test
       values =
         if fields.empty?
@@ -2601,7 +2604,7 @@ module Daru
       "#{i+1} [#{row[id]}]: #{description}#{values}"
     end
 
-    def prepare_pivot_values index, vectors, opts
+    def prepare_pivot_values(index, vectors, opts)
       case opts[:values]
       when nil # values not specified at all.
         (@vectors.to_a - (index | vectors)) & numeric_vector_names
@@ -2612,7 +2615,7 @@ module Daru
       end
     end
 
-    def make_pivot_hash grouped, vectors, values, aggregate_function
+    def make_pivot_hash(grouped, vectors, values, aggregate_function)
       grouped.groups.map { |n, _| [n, {}] }.to_h.tap do |super_hash|
         values.each do |value|
           grouped.groups.each do |group_name, row_numbers|
@@ -2630,7 +2633,7 @@ module Daru
       end
     end
 
-    def setup_pivot_aggregates super_hash, aggregate_function
+    def setup_pivot_aggregates(super_hash, aggregate_function)
       super_hash.each_value do |sub_hash|
         sub_hash.each do |group_name, aggregates|
           sub_hash[group_name] = Daru::Vector.new(aggregates).send(aggregate_function)
@@ -2638,7 +2641,7 @@ module Daru
       end
     end
 
-    def pivot_dataframe super_hash
+    def pivot_dataframe(super_hash)
       df_index   = Daru::MultiIndex.from_tuples super_hash.keys
       df_vectors = Daru::MultiIndex.from_tuples super_hash.values.flat_map(&:keys).uniq
 
@@ -2651,7 +2654,7 @@ module Daru
       end
     end
 
-    def one_to_many_components pattern
+    def one_to_many_components(pattern)
       re = Regexp.new pattern.gsub('%v','(.+?)').gsub('%n','(\\d+?)')
 
       vars, numbers =
@@ -2662,7 +2665,7 @@ module Daru
       [vars.uniq, numbers.map(&:to_i).sort.uniq]
     end
 
-    def one_to_many_row row, number, vars, pattern
+    def one_to_many_row(row, number, vars, pattern)
       vars
         .map { |v|
           name = pattern.sub('%v', v).sub('%n', number.to_s)
@@ -2671,7 +2674,7 @@ module Daru
     end
 
     # Raises IndexError when one of the positions is not a valid position
-    def validate_positions *positions, size
+    def validate_positions(*positions, size)
       positions = [positions] if positions.is_a? Integer
       positions.each do |pos|
         raise IndexError, "#{pos} is not a valid position." if pos >= size
@@ -2679,7 +2682,7 @@ module Daru
     end
 
     # Accepts hash, enumerable and vector and align it properly so it can be added
-    def coerce_vector vector
+    def coerce_vector(vector)
       case vector
       when Daru::Vector
         vector.reindex @vectors
@@ -2690,7 +2693,7 @@ module Daru
       end
     end
 
-    def update_data source, vectors
+    def update_data(source, vectors)
       @data = @vectors.each_with_index.map do |_vec,idx|
         Daru::Vector.new(source[idx], index: @index, name: vectors[idx])
       end
@@ -2699,7 +2702,7 @@ module Daru
     def aggregated_colmn_value(options)
       colmn_value = []
       index_tuples = Array(@index).uniq
-      options.keys.each do |vec|
+      options.each_key do |vec|
         do_this_on_vec = options[vec]
         colmn_value << if @vectors.include?(vec)
                          apply_method_on_colmns(
@@ -2715,7 +2718,7 @@ module Daru
     end
 
     # coerce ranges, integers and array in appropriate ways
-    def coerce_positions *positions, size
+    def coerce_positions(*positions, size)
       if positions.size == 1
         case positions.first
         when Integer

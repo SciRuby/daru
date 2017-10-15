@@ -1,7 +1,7 @@
 module Daru
   module Accessors
     class DataFrameByRow
-      def initialize data_frame
+      def initialize(data_frame)
         @data_frame = data_frame
       end
 
@@ -13,11 +13,11 @@ module Daru
         @data_frame[*names, :row] = vector
       end
 
-      def at *positions
+      def at(*positions)
         @data_frame.row_at(*positions)
       end
 
-      def set_at positions, vector
+      def set_at(positions, vector)
         @data_frame.set_row_at(positions, vector)
       end
     end

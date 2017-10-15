@@ -6,7 +6,7 @@ module Daru
       # Iterate over each group created by group_by. A DataFrame is yielded in
       # block.
       def each_group
-        groups.keys.each do |k|
+        groups.each_key do |k|
           yield get_group(k)
         end
       end
@@ -21,7 +21,7 @@ module Daru
         left.length <=> right.length
       end
 
-      def initialize context, names
+      def initialize(context, names)
         @groups = {}
         @non_group_vectors = context.vectors.to_a - names
         @context = context
@@ -79,7 +79,7 @@ module Daru
       #   #          0        foo        one          1         11
       #   #          7        foo      three          8         88
       #   #          2        foo        two          3         33
-      def head quantity=5
+      def head(quantity=5)
         select_groups_from :first, quantity
       end
 
@@ -102,7 +102,7 @@ module Daru
       #   #          6        foo        one          3         77
       #   #          7        foo      three          8         88
       #   #          4        foo        two          3         55
-      def tail quantity=5
+      def tail(quantity=5)
         select_groups_from :last, quantity
       end
 
@@ -192,7 +192,7 @@ module Daru
       #   ##<Daru::DataFrame:83258980 @name = 687ee3f6-8874-4899-97fa-9b31d84fa1d5 @size = 1>
       #   #                    a          b          c          d
       #   #         5        bar        two          6         66
-      def get_group group
+      def get_group(group)
         indexes   = @groups[group]
         elements  = @context.each_vector.map(&:to_a)
         transpose = elements.transpose
@@ -288,7 +288,7 @@ module Daru
 
       private
 
-      def init_groups_df tuples, names
+      def init_groups_df(tuples, names)
         multi_index_tuples = []
         keys = tuples.uniq.sort(&TUPLE_SORTER)
         keys.each do |key|
@@ -302,7 +302,7 @@ module Daru
         @df = resultant_context(multi_index_tuples, names) unless multi_index_tuples.empty?
       end
 
-      def select_groups_from method, quantity
+      def select_groups_from(method, quantity)
         selection     = @context
         rows, indexes = [], []
 
@@ -317,7 +317,7 @@ module Daru
         Daru::DataFrame.rows(rows, order: @context.vectors, index: indexes)
       end
 
-      def apply_method method_type, method
+      def apply_method(method_type, method)
         order = @non_group_vectors.select do |ngvec|
           method_type == :numeric && @context[ngvec].type == :numeric
         end
@@ -353,7 +353,7 @@ module Daru
         context_new
       end
 
-      def all_indices_for arry, element
+      def all_indices_for(arry, element)
         found, index, indexes = -1, -1, []
         while found
           found = arry[index+1..-1].index(element)

@@ -30,7 +30,7 @@ module Daru
       # == Options
       # :value
       # All the rest like .new
-      def new_with_size n, opts={}, &block
+      def new_with_size(n, opts={}, &block)
         value = opts.delete :value
         block ||= ->(_) { value }
         Daru::Vector.new Array.new(n, &block), opts
@@ -100,7 +100,7 @@ module Daru
       self
     end
 
-    def each_with_index &block
+    def each_with_index(&block)
       return to_enum(:each_with_index) unless block_given?
 
       @data.to_a.zip(@index.to_a).each(&block)
@@ -134,8 +134,6 @@ module Daru
     attr_reader :data
     # Ploting library being used for this vector
     attr_reader :plotting_library
-    # TODO: Make private.
-    attr_reader :nil_positions, :nan_positions
 
     # Create a Vector object.
     #
@@ -167,7 +165,7 @@ module Daru
     #
     #   vecarr = Daru::Vector.new [1,2,3,4], index: [:a, :e, :i, :o]
     #   vechsh = Daru::Vector.new({a: 1, e: 2, i: 3, o: 4})
-    def initialize source, opts={}
+    def initialize(source, opts={})
       if opts[:type] == :category
         # Initialize category type vector
         extend Daru::Category
@@ -178,7 +176,7 @@ module Daru
       end
     end
 
-    def plotting_library= lib
+    def plotting_library=(lib)
       case lib
       when :gruff, :nyaplot
         @plotting_library = lib
@@ -229,7 +227,7 @@ module Daru
     #   #   0   a
     #   #   1   b
     #   #   2   c
-    def at *positions
+    def at(*positions)
       # to be used to form index
       original_positions = positions
       positions = coerce_positions(*positions)
@@ -256,7 +254,7 @@ module Daru
     #   #   2   c
     #   #   3   d
     #   #   4   e
-    def set_at positions, val
+    def set_at(positions, val)
       validate_positions(*positions)
       positions.map { |pos| @data[pos] = val }
       update_position_cache
@@ -287,7 +285,7 @@ module Daru
 
     # Two vectors are equal if they have the exact same index values corresponding
     # with the exact same elements. Name is ignored.
-    def == other
+    def ==(other)
       case other
       when Daru::Vector
         @index == other.index && size == other.size &&
@@ -364,7 +362,7 @@ module Daru
     #   #    nil
     #   #  2   3
     #   #  4   5
-    def in other
+    def in(other)
       other = Hash[other.zip(Array.new(other.size, 0))]
       Daru::Core::Query::BoolArray.new(
         @data.each_with_object([]) do |d, memo|
@@ -409,15 +407,15 @@ module Daru
     #   # 11   5
     #   # 13   5
     #   # 15   1
-    def where bool_array
+    def where(bool_array)
       Daru::Core::Query.vector_where self, bool_array
     end
 
-    def head q=10
+    def head(q=10)
       self[0..(q-1)]
     end
 
-    def tail q=10
+    def tail(q=10)
       start = [size - q, 0].max
       self[start..(size-1)]
     end
@@ -475,7 +473,7 @@ module Daru
     end
 
     # Append an element to the vector by specifying the element and index
-    def concat element, index
+    def concat(element, index)
       raise IndexError, 'Expected new unique index' if @index.include? index
 
       @index |= [index]
@@ -491,7 +489,7 @@ module Daru
     # == Options
     #
     # * +:dtype+ - :array for Ruby Array. :nmatrix for NMatrix.
-    def cast opts={}
+    def cast(opts={})
       dt = opts[:dtype]
       raise ArgumentError, "Unsupported dtype #{opts[:dtype]}" unless %i[array nmatrix gsl].include?(dt)
 
@@ -499,12 +497,12 @@ module Daru
     end
 
     # Delete an element by value
-    def delete element
+    def delete(element)
       delete_at index_of(element)
     end
 
     # Delete element by index
-    def delete_at index
+    def delete_at(index)
       @data.delete_at @index[index]
       @index = Daru::Index.new(@index.to_a - [index])
 
@@ -544,7 +542,7 @@ module Daru
     end
 
     # Get index of element
-    def index_of element
+    def index_of(element)
       case dtype
       when :array then @index.key(@data.index { |x| x.eql? element })
       else @index.key @data.index(element)
@@ -559,11 +557,11 @@ module Daru
       Daru::Vector.new uniq_vector, name: @name, index: new_index, dtype: @dtype
     end
 
-    def any? &block
+    def any?(&block)
       @data.data.any?(&block)
     end
 
-    def all? &block
+    def all?(&block)
       @data.data.all?(&block)
     end
 
@@ -583,7 +581,7 @@ module Daru
     #   v = Daru::Vector.new ["My first guitar", "jazz", "guitar"]
     #   # Say you want to sort these strings by length.
     #   v.sort(ascending: false) { |a,b| a.length <=> b.length }
-    def sort opts={}, &block
+    def sort(opts={}, &block)
       opts = {ascending: true}.merge(opts)
 
       vector_index = resort_index(@data.each_with_index, opts, &block)
@@ -612,7 +610,7 @@ module Daru
     #   # Say you want to sort index in descending order
     #   dv.sort_by_index(ascending: false)
     #   #=> Daru::Vector.new [11, 12, 13], index: [23, 22, 21]
-    def sort_by_index opts={}
+    def sort_by_index(opts={})
       opts = {ascending: true}.merge(opts)
       _, new_order = resort_index(@index.each_with_index, opts).transpose
 
@@ -635,20 +633,20 @@ module Daru
     # Just sort the data and get an Array in return using Enumerable#sort.
     # Non-destructive.
     # :nocov:
-    def sorted_data &block
+    def sorted_data(&block)
       @data.to_a.sort(&block)
     end
     # :nocov:
 
     # Like map, but returns a Daru::Vector with the returned values.
-    def recode dt=nil, &block
+    def recode(dt=nil, &block)
       return to_enum(:recode) unless block_given?
 
       dup.recode! dt, &block
     end
 
     # Destructive version of recode!
-    def recode! dt=nil, &block
+    def recode!(dt=nil, &block)
       return to_enum(:recode!) unless block_given?
 
       @data.map!(&block).data
@@ -691,7 +689,7 @@ module Daru
     #   a.splitted
     #     =>
     #   [["a","b"],["c","d"],["a","b"],["d"]]
-    def splitted sep=','
+    def splitted(sep=',')
       @data.map do |s|
         if s.nil?
           nil
@@ -717,7 +715,7 @@ module Daru
     #      "c"=>#<Daru::Vector:0x7f2dbcc09b08
     #        @data=[0, 1, 1]>}
     #
-    def split_by_separator sep=','
+    def split_by_separator(sep=',')
       split_data = splitted sep
       split_data
         .flatten.uniq.compact.map do |key|
@@ -745,7 +743,7 @@ module Daru
     # == Arguments
     #
     # * +replacement+ - The value which should replace all nils
-    def replace_nils! replacement
+    def replace_nils!(replacement)
       indexes(*Daru::MISSING_VALUES).each do |idx|
         self[idx] = replacement
       end
@@ -817,7 +815,7 @@ module Daru
     #   ts.lag(2)   # => [nil, nil, 1, 2, 3]
     #   ts.lag(-1)  # => [2, 3, 4, 5, nil]
     #
-    def lag k=1
+    def lag(k=1)
       case k
       when 0 then dup
       when 1...size
@@ -837,7 +835,7 @@ module Daru
     end
 
     # Non-destructive version of #replace_nils!
-    def replace_nils replacement
+    def replace_nils(replacement)
       dup.replace_nils!(replacement)
     end
 
@@ -859,7 +857,7 @@ module Daru
     end
 
     # Returns *true* if an index exists
-    def has_index? index
+    def has_index?(index)
       @index.include? index
     end
 
@@ -873,7 +871,7 @@ module Daru
     # == Arguments
     #
     # * +axis+ - Specify whether you want a *:horizontal* or a *:vertical* matrix.
-    def to_matrix axis=:horizontal
+    def to_matrix(axis=:horizontal)
       if axis == :horizontal
         Matrix[to_a]
       elsif axis == :vertical
@@ -892,7 +890,7 @@ module Daru
     #   # =>
     #   # [
     #   #   [1, 2, 3] ]
-    def to_nmatrix axis=:horizontal
+    def to_nmatrix(axis=:horizontal)
       unless numeric? && !include?(nil)
         raise ArgumentError, 'Can not convert to nmatrix'\
           'because the vector is numeric'
@@ -1034,7 +1032,7 @@ module Daru
     end
 
     # Over rides original inspect for pretty printing in irb
-    def inspect spacing=20, threshold=15
+    def inspect(spacing=20, threshold=15)
       row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
 
       "#<#{self.class}(#{size})#{':category' if category?}>\n" +
@@ -1053,7 +1051,7 @@ module Daru
     #   index as an input to reorder the vector
     # @param [Daru::Index, Daru::MultiIndex] new_index new index to order with
     # @return [Daru::Vector] vector reindexed with new index
-    def reindex! new_index
+    def reindex!(new_index)
       values = []
       each_with_index do |val, i|
         values[new_index[i]] = val if new_index.include?(i)
@@ -1080,7 +1078,7 @@ module Daru
     #   #   a   1
     #   #   b   2
     #   #   c   3
-    def reorder! order
+    def reorder!(order)
       @index = @index.reorder order
       data_array = order.map { |i| @data[i] }
       @data = cast_vector_to @dtype, data_array, @nm_dtype
@@ -1089,17 +1087,17 @@ module Daru
     end
 
     # Non-destructive version of #reorder!
-    def reorder order
+    def reorder(order)
       dup.reorder! order
     end
 
     # Create a new vector with a different index, and preserve the indexing of
     # current elements.
-    def reindex new_index
+    def reindex(new_index)
       dup.reindex!(new_index)
     end
 
-    def index= idx
+    def index=(idx)
       idx = Index.coerce idx
 
       if idx.size != size
@@ -1112,13 +1110,12 @@ module Daru
       end
 
       @index = idx
-      self
     end
 
     # Give the vector a new name
     #
     # @param new_name [Symbol] The new name.
-    def rename new_name
+    def rename(new_name)
       @name = new_name
       self
     end
@@ -1220,7 +1217,7 @@ module Daru
     # Otherwise, a duplicate will be returned irrespective of
     # presence of missing data.
 
-    def only_valid as_a=:vector, _duplicate=true
+    def only_valid(as_a=:vector, _duplicate=true)
       # FIXME: Now duplicate is just ignored.
       #   There are no spec that fail on this case, so I'll leave it
       #   this way for now - zverok, 2016-05-07
@@ -1295,7 +1292,7 @@ module Daru
     end
 
     # Returns a Vector containing only missing data (preserves indexes).
-    def only_missing as_a=:vector
+    def only_missing(as_a=:vector)
       if as_a == :vector
         self[*indexes(*Daru::MISSING_VALUES)]
       elsif as_a == :array
@@ -1352,7 +1349,7 @@ module Daru
     #   If it is ordered, it can be sorted and min, max like functions would work
     # @option opts [Array] :categories set categories in the specified order
     # @return [Daru::Vector] vector with type category
-    def to_category opts={}
+    def to_category(opts={})
       dv = Daru::Vector.new to_a, type: :category, name: @name, index: @index
       dv.ordered = opts[:ordered] || false
       dv.categories = opts[:categories] if opts[:categories]
@@ -1393,7 +1390,7 @@ module Daru
     #   #       3   high
     #   #       4 medium
     #   #       5   high
-    def cut partitions, opts={}
+    def cut(partitions, opts={})
       close_at, labels = opts[:close_at] || :right, opts[:labels]
       partitions = partitions.to_a
       values = to_a.map { |val| cut_find_category partitions, val, close_at }
@@ -1438,15 +1435,11 @@ module Daru
     end
 
     def nil_positions
-      @nil_positions ||
-        @nil_positions = size.times.select { |i| @data[i].nil? }
+      @nil_positions ||= size.times.select { |i| @data[i].nil? }
     end
 
     def nan_positions
-      @nan_positions ||
-        @nan_positions = size.times.select do |i|
-          @data[i].respond_to?(:nan?) && @data[i].nan?
-        end
+      @nan_positions ||= size.times.select { |i| @data[i].respond_to?(:nan?) && @data[i].nan? }
     end
 
     # Helper method returning validity of arbitrary value
@@ -1454,7 +1447,7 @@ module Daru
       v.respond_to?(:nan?) && v.nan? || v.nil? ? false : true
     end
 
-    def initialize_vector source, opts
+    def initialize_vector(source, opts)
       index, source = parse_source(source, opts)
       set_name opts[:name]
 
@@ -1468,7 +1461,7 @@ module Daru
       self.plotting_library = Daru.plotting_library
     end
 
-    def parse_source source, opts
+    def parse_source(source, opts)
       if source.is_a?(Hash)
         [source.keys, source.values]
       else
@@ -1485,13 +1478,13 @@ module Daru
       end
     end
 
-    def guard_type_check value
+    def guard_type_check(value)
       @possibly_changed_type = true \
         if object? && (value.nil? || value.is_a?(Numeric)) ||
            numeric? && !value.is_a?(Numeric) && !value.nil?
     end
 
-    def split_value key, v
+    def split_value(key, v)
       case
       when v.nil?           then nil
       when v.include?(key)  then 1
@@ -1520,7 +1513,7 @@ module Daru
 
     # Note: To maintain sanity, this _MUST_ be the _ONLY_ place in daru where the
     # @param dtype [db_type] variable is set and the underlying data type of vector changed.
-    def cast_vector_to dtype, source=nil, nm_dtype=nil
+    def cast_vector_to(dtype, source=nil, nm_dtype=nil)
       source = @data.to_a if source.nil?
 
       new_vector =
@@ -1536,18 +1529,13 @@ module Daru
       new_vector
     end
 
-    def set_name name # rubocop:disable Style/AccessorMethodName
-      @name =
-        if name.is_a?(Numeric)  then name
-        elsif name.is_a?(Array) then name.join # in case of MultiIndex tuple
-        elsif name              then name # anything but Numeric or nil
-        else
-          nil
-        end
+    def set_name(name) # rubocop:disable Naming/AccessorMethodName
+      # Join in case of MultiIndex tuple
+      @name = name.is_a?(Array) ? name.join : name
     end
 
     # Raises IndexError when one of the positions is an invalid position
-    def validate_positions *positions
+    def validate_positions(*positions)
       positions = [positions] if positions.is_a? Integer
       positions.each do |pos|
         raise IndexError, "#{pos} is not a valid position." if pos >= size
@@ -1555,7 +1543,7 @@ module Daru
     end
 
     # coerce ranges, integers and array in appropriate ways
-    def coerce_positions *positions
+    def coerce_positions(*positions)
       if positions.size == 1
         case positions.first
         when Integer
@@ -1593,7 +1581,7 @@ module Daru
 
     # Works similar to #[]= but also insert the vector in case index is not valid
     # It is there only to be accessed by Daru::DataFrame and not meant for user.
-    def set indexes, val
+    def set(indexes, val)
       cast(dtype: :array) if val.nil? && dtype != :array
       guard_type_check(val)
 
@@ -1606,7 +1594,7 @@ module Daru
       update_position_cache
     end
 
-    def cut_find_category partitions, val, close_at
+    def cut_find_category(partitions, val, close_at)
       case close_at
       when :right
         right_index = partitions.index { |i| i > val }
@@ -1623,7 +1611,7 @@ module Daru
       end
     end
 
-    def cut_categories partitions, close_at
+    def cut_categories(partitions, close_at)
       case close_at
       when :right
         Array.new(partitions.size-1) do |left_index|
@@ -1636,7 +1624,7 @@ module Daru
       end
     end
 
-    def include_with_nan? array, value
+    def include_with_nan?(array, value)
       # Returns true if value is included in array.
       # Similar to include? but also works if value is Float::NAN
       if value.respond_to?(:nan?) && value.nan?
@@ -1651,7 +1639,7 @@ module Daru
       @nan_positions = nil
     end
 
-    def resort_index vector_index, opts
+    def resort_index(vector_index, opts)
       if block_given?
         vector_index.sort { |(lv, _li), (rv, _ri)| yield(lv, rv) }
       else

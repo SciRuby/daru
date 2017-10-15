@@ -66,7 +66,7 @@ module Daru
       end
     end
 
-    def plotting_library= lib
+    def plotting_library=(lib)
       case lib
       when :gruff, :nyaplot
         @plotting_library = lib
@@ -75,7 +75,7 @@ module Daru
       end
     end
 
-    def error msg
+    def error(msg)
       error_stream.puts msg if error_stream
     end
   end

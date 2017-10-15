@@ -39,7 +39,7 @@ if Daru.has_gsl?
           @data.variance_with_fixed_mean(m)
         end
 
-        def standard_deviation_population m
+        def standard_deviation_population(m)
           @data.sd_with_fixed_mean(m)
         end
 
@@ -67,7 +67,11 @@ if Daru.has_gsl?
 
         %i[mean min max prod sum].each do |method|
           define_method(method) do
-            compact.send(method.to_sym) rescue nil
+            begin
+              compact.send(method.to_sym)
+            rescue NoMethodError
+              nil
+            end
           end
         end
 
@@ -83,12 +87,12 @@ if Daru.has_gsl?
           self
         end
 
-        def initialize data, context
+        def initialize(data, context)
           @data = ::GSL::Vector.alloc(data)
           @context = context
         end
 
-        def []= index, element
+        def []=(index, element)
           if index == size
             push element
           else
@@ -96,15 +100,15 @@ if Daru.has_gsl?
           end
         end
 
-        def delete_at index
+        def delete_at(index)
           @data.delete_at index
         end
 
-        def index key
+        def index(key)
           @data.to_a.index key
         end
 
-        def push value
+        def push(value)
           @data = @data.concat value
           self
         end
@@ -115,7 +119,7 @@ if Daru.has_gsl?
           GSLWrapper.new(@data.to_a, @context)
         end
 
-        def == other
+        def ==(other)
           @data == other.data
         end
       end

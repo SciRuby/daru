@@ -3243,6 +3243,15 @@ describe Daru::DataFrame do
       it { expect(subject['a'].to_a).to eq [1, 2, 3] }
       it { expect(subject[:b].to_a).to eq [4, 5, 6] }
     end
+
+    context "preserves indices for dataframes with same index" do
+      let(:index) { ['one','two','three'] }
+      let(:df1) { Daru::DataFrame.new({ 'a' => [1, 2, 3], 'b' => [3, 4, 5] }, index: index) }
+      let(:df2) { Daru::DataFrame.new({ 'c' => [4, 5, 6], 'd' => [7, 8, 9] }, index: index) }
+      subject { df1.merge df2 }
+
+      its(:index) { is_expected.to eq Daru::Index.new(index) }
+    end
   end
 
   context "#vector_by_calculation" do

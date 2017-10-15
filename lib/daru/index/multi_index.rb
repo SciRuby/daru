@@ -76,7 +76,7 @@ module Daru
     #   #    c one
     #   #      two
     #
-    def initialize opts={}
+    def initialize(opts={})
       labels = opts[:labels]
       levels = opts[:levels]
 
@@ -102,7 +102,7 @@ module Daru
 
     private :incorrect_fields?
 
-    def self.from_arrays arrays
+    def self.from_arrays(arrays)
       levels = arrays.map { |e| e.uniq.sort_by(&:to_s) }
 
       labels = arrays.each_with_index.map do |arry, level_index|
@@ -113,11 +113,11 @@ module Daru
       MultiIndex.new labels: labels, levels: levels
     end
 
-    def self.from_tuples tuples
+    def self.from_tuples(tuples)
       from_arrays tuples.transpose
     end
 
-    def self.try_from_tuples tuples
+    def self.try_from_tuples(tuples)
       if tuples.respond_to?(:first) && tuples.first.is_a?(Array)
         from_tuples(tuples)
       else
@@ -125,7 +125,7 @@ module Daru
       end
     end
 
-    def [] *key
+    def [](*key)
       key.flatten!
       case
       when key[0].is_a?(Range)
@@ -141,7 +141,7 @@ module Daru
       end
     end
 
-    def valid? *indexes
+    def valid?(*indexes)
       # FIXME: This is perhaps not a good method
       pos(*indexes)
       return true
@@ -157,7 +157,7 @@ module Daru
     #   idx = Daru::MultiIndex.from_tuples [[:a, :one], [:a, :two], [:b, :one], [:b, :two]]
     #   idx.pos :a
     #   # => [0, 1]
-    def pos *indexes
+    def pos(*indexes)
       if indexes.first.is_a? Integer
         return indexes.first if indexes.size == 1
         return indexes
@@ -167,7 +167,7 @@ module Daru
       res.map { |i| self[i] }
     end
 
-    def subset *indexes
+    def subset(*indexes)
       if indexes.first.is_a? Integer
         MultiIndex.from_tuples(indexes.map { |index| key(index) })
       else
@@ -185,7 +185,7 @@ module Daru
     #   # => #<Daru::MultiIndex(2x2)>
     #   #   a one
     #   #     two
-    def at *positions
+    def at(*positions)
       positions = preprocess_positions(*positions)
       validate_positions(*positions)
       if positions.is_a? Integer
@@ -195,7 +195,7 @@ module Daru
       end
     end
 
-    def add *indexes
+    def add(*indexes)
       Daru::MultiIndex.from_tuples to_a << indexes
     end
 
@@ -204,15 +204,15 @@ module Daru
       self.class.from_tuples(new_order.map { |i| from[i] })
     end
 
-    def try_retrieve_from_integer int
+    def try_retrieve_from_integer(int)
       @levels[0].key?(int) ? retrieve_from_tuples([int]) : int
     end
 
-    def retrieve_from_range range
+    def retrieve_from_range(range)
       MultiIndex.from_tuples(range.map { |index| key(index) })
     end
 
-    def retrieve_from_tuples key
+    def retrieve_from_tuples(key)
       chosen = []
 
       key.each_with_index do |k, depth|
@@ -226,11 +226,11 @@ module Daru
       multi_index_from_multiple_selections(chosen)
     end
 
-    def multi_index_from_multiple_selections chosen
+    def multi_index_from_multiple_selections(chosen)
       MultiIndex.from_tuples(chosen.map { |e| key(e) })
     end
 
-    def find_all_indexes label, level_index, chosen
+    def find_all_indexes(label, level_index, chosen)
       if chosen.empty?
         label.each_with_index
              .select { |lbl, _| lbl == level_index }.map(&:last)
@@ -239,7 +239,7 @@ module Daru
       end
     end
 
-    def remove_layer layer_index
+    def remove_layer(layer_index)
       @levels.delete_at(layer_index)
       @labels.delete_at(layer_index)
       @name.delete_at(layer_index) unless @name.nil?
@@ -249,7 +249,7 @@ module Daru
     end
 
     # Array `name` must have same length as levels and labels.
-    def validate_name names, levels
+    def validate_name(names, levels)
       error_msg = "'names' and 'levels' should be of same size. Size of the "\
       "'name' array is #{names.size} and size of the MultiIndex 'levels' and "\
       "'labels' is #{labels.size}."
@@ -263,7 +263,7 @@ module Daru
     private :find_all_indexes, :multi_index_from_multiple_selections,
       :retrieve_from_range, :retrieve_from_tuples, :validate_name
 
-    def key index
+    def key(index)
       raise ArgumentError, "Key #{index} is too large" if index >= @labels[0].size
 
       @labels
@@ -275,15 +275,15 @@ module Daru
       MultiIndex.new levels: levels.dup, labels: labels
     end
 
-    def drop_left_level by=1
+    def drop_left_level(by=1)
       MultiIndex.from_arrays to_a.transpose[by..-1]
     end
 
-    def | other
+    def |(other)
       MultiIndex.from_tuples(to_a | other.to_a)
     end
 
-    def & other
+    def &(other)
       MultiIndex.from_tuples(to_a & other.to_a)
     end
 
@@ -291,7 +291,7 @@ module Daru
       @labels.flatten.empty? && @levels.all?(&:empty?)
     end
 
-    def include? tuple
+    def include?(tuple)
       return false unless tuple.is_a? Enumerable
       tuple.flatten.each_with_index
            .all? { |tup, i| @levels[i][tup] }
@@ -305,7 +305,7 @@ module Daru
       @levels.size
     end
 
-    def == other
+    def ==(other)
       self.class == other.class  &&
         labels   == other.labels &&
         levels   == other.levels
@@ -319,7 +319,7 @@ module Daru
       Array.new(size) { |i| i }
     end
 
-    def inspect threshold=20
+    def inspect(threshold=20)
       "#<Daru::MultiIndex(#{size}x#{width})>\n" +
         Formatters::Table.format([], headers: @name, row_headers: sparse_tuples, threshold: threshold)
     end
@@ -333,7 +333,7 @@ module Daru
     #
     # @param input_indexes [Array] the input by user to index the vector
     # @return [Object] the MultiIndex object for sub vector produced
-    def conform input_indexes
+    def conform(input_indexes)
       return self if input_indexes[0].is_a? Range
       drop_left_level input_indexes.size
     end

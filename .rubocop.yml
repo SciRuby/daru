@@ -1,14 +1,59 @@
+inherit_from: .rubocop_todo.yml
+require: rubocop-rspec
+
 AllCops:
   Include:
     - 'lib/**/*'
+    - 'spec/**/*'
   Exclude:
     - 'daru.gemspec'
     - 'Rakefile'
     - 'Gemfile'
     - 'Guardfile'
     - '**/*.erb'
-    - 'spec/*'
-    - 'spec/**/*'
+    - '**/*.csv'
+    - 'spec/fixtures/**/*'
+    # Remove one-by-one when specs are updated
+    - spec/accessors/array_wrapper_spec.rb
+    - spec/accessors/gsl_wrapper_spec.rb
+    - spec/accessors/nmatrix_wrapper_spec.rb
+    - spec/category_spec.rb
+    - spec/core/group_by_spec.rb
+    - spec/core/merge_spec.rb
+    - spec/core/query_spec.rb
+    - spec/daru_spec.rb
+    - spec/dataframe_spec.rb
+    - spec/date_time/data_spec.rb
+    - spec/date_time/index_spec.rb
+    - spec/date_time/offsets_spec.rb
+    - spec/extensions/rserve_spec.rb
+    - spec/extensions/which_dsl_spec.rb
+    - spec/formatters/table_formatter_spec.rb
+    - spec/helpers_spec.rb
+    - spec/index/categorical_index_spec.rb
+    - spec/index/multi_index_spec.rb
+    - spec/io/io_spec.rb
+    - spec/io/sql_data_source_spec.rb
+    - spec/iruby/dataframe_spec.rb
+    - spec/iruby/helpers_spec.rb
+    - spec/iruby/multi_index_spec.rb
+    - spec/iruby/vector_spec.rb
+    - spec/maths/arithmetic/dataframe_spec.rb
+    - spec/maths/arithmetic/vector_spec.rb
+    - spec/maths/statistics/dataframe_spec.rb
+    - spec/maths/statistics/vector_spec.rb
+    - spec/monkeys_spec.rb
+    - spec/plotting/gruff/category_spec.rb
+    - spec/plotting/gruff/dataframe_spec.rb
+    - spec/plotting/gruff/vector_spec.rb
+    - spec/plotting/nyaplot/category_spec.rb
+    - spec/plotting/nyaplot/dataframe_spec.rb
+    - spec/plotting/nyaplot/vector_spec.rb
+    - spec/shared/vector_display_spec.rb
+    - spec/spec_helper.rb
+    - spec/support/database_helper.rb
+    - spec/support/matchers.rb
+    - spec/vector_spec.rb
     - 'vendor/**/*'
     - 'benchmarks/*'
     - 'profile/*'
@@ -87,6 +132,12 @@ Style/PercentLiteralDelimiters:
 Style/BlockDelimiters:
   Enabled: false
 
+RSpec/EmptyExampleGroup:
+  CustomIncludeMethods: [its_call, its_map]
+
+RSpec/NestedGroups:
+  Enabled: false
+
 # Current preferred metrics --------------------------------------------
 # Better values are encouraged, but not required.
 Metrics/AbcSize:
@@ -98,9 +149,16 @@ Metrics/MethodLength:
 Metrics/CyclomaticComplexity:
   Max: 7
 
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+
 # TODO -----------------------------------------------------------------
 
 Style/Documentation:
+  Enabled: false
+
+RSpec/FilePath:
   Enabled: false
 
 # To discuss and decide ------------------------------------------------
@@ -118,19 +176,11 @@ Style/RescueModifier:
 Style/Alias:
   Enabled: false
 
-# FIXME: should decide about this.
-# Personally I prefer (as most of Ruby community) to use parens, but
-# we also can enforce style to NOT using them. Yet it definitely should
-# be only one style. Current codebase uses ~400 method defs without and
-# ~ 100 method defs with them. - zverok, 2016-05-07
-Style/MethodDefParentheses:
-  Enabled: false
-
 # Should be fixed, but require change of public API --------------------
 
 # Bans methods like `has_missing_data?`, `is_number?` and so on - started
 # with unnecessary has_ or is_.
-Style/PredicateName:
+Naming/PredicateName:
   Exclude:
     - 'lib/daru/dataframe.rb'
     - 'lib/daru/monkeys.rb'
