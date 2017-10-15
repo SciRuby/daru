@@ -710,7 +710,7 @@ describe Daru::Vector do
   end
 
   RSpec.shared_examples 'correct macd' do |*args|
-    let(:source) { Daru::DataFrame.from_csv('spec/fixtures/macd_data.csv') }
+    let(:source) { Daru::DataFrame.read_csv('spec/fixtures/macd_data.csv') }
 
     # skip initial records during compare as ema is sensitive to
     # period used.

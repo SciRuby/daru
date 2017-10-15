@@ -3,7 +3,6 @@ require 'daru/maths/arithmetic/dataframe.rb'
 require 'daru/maths/statistics/dataframe.rb'
 require 'daru/plotting/gruff.rb'
 require 'daru/plotting/nyaplot.rb'
-require 'daru/io/io.rb'
 
 module Daru
   class DataFrame # rubocop:disable Metrics/ClassLength
@@ -14,152 +13,6 @@ module Daru
     extend Gem::Deprecate
 
     class << self
-      # Load data from a CSV file. Specify an optional block to grab the CSV
-      # object and pre-condition it (for example use the `convert` or
-      # `header_convert` methods).
-      #
-      # == Arguments
-      #
-      # * path - Local path / Remote URL of the file to load specified as a String.
-      #
-      # == Options
-      #
-      # Accepts the same options as the Daru::DataFrame constructor and CSV.open()
-      # and uses those to eventually construct the resulting DataFrame.
-      #
-      # == Verbose Description
-      #
-      # You can specify all the options to the `.from_csv` function that you
-      # do to the Ruby `CSV.read()` function, since this is what is used internally.
-      #
-      # For example, if the columns in your CSV file are separated by something
-      # other that commas, you can use the `:col_sep` option. If you want to
-      # convert numeric values to numbers and not keep them as strings, you can
-      # use the `:converters` option and set it to `:numeric`.
-      #
-      # The `.from_csv` function uses the following defaults for reading CSV files
-      # (that are passed into the `CSV.read()` function):
-      #
-      #   {
-      #     :col_sep           => ',',
-      #     :converters        => :numeric
-      #   }
-      def from_csv(path, opts={}, &block)
-        Daru::IO.from_csv path, opts, &block
-      end
-
-      # Read data from an Excel file into a DataFrame.
-      #
-      # == Arguments
-      #
-      # * path - Path of the file to be read.
-      #
-      # == Options
-      #
-      # *:worksheet_id - ID of the worksheet that is to be read.
-      def from_excel(path, opts={}, &block)
-        Daru::IO.from_excel path, opts, &block
-      end
-
-      # Read a database query and returns a Dataset
-      #
-      # @param dbh [DBI::DatabaseHandle, String] A DBI connection OR Path to a SQlite3 database.
-      # @param query [String] The query to be executed
-      #
-      # @return A dataframe containing the data resulting from the query
-      #
-      # USE:
-      #
-      #  dbh = DBI.connect("DBI:Mysql:database:localhost", "user", "password")
-      #  Daru::DataFrame.from_sql(dbh, "SELECT * FROM test")
-      #
-      #  #Alternatively
-      #
-      #  require 'dbi'
-      #  Daru::DataFrame.from_sql("path/to/sqlite.db", "SELECT * FROM test")
-      def from_sql(dbh, query)
-        Daru::IO.from_sql dbh, query
-      end
-
-      # Read a dataframe from AR::Relation
-      #
-      # @param relation [ActiveRecord::Relation] An AR::Relation object from which data is loaded
-      # @param fields [Array] Field names to be loaded (optional)
-      #
-      # @return A dataframe containing the data loaded from the relation
-      #
-      # USE:
-      #
-      #   # When Post model is defined as:
-      #   class Post < ActiveRecord::Base
-      #     scope :active, -> { where.not(published_at: nil) }
-      #   end
-      #
-      #   # You can load active posts into a dataframe by:
-      #   Daru::DataFrame.from_activerecord(Post.active, :title, :published_at)
-      def from_activerecord(relation, *fields)
-        Daru::IO.from_activerecord relation, *fields
-      end
-
-      # Read the database from a plaintext file. For this method to work,
-      # the data should be present in a plain text file in columns. See
-      # spec/fixtures/bank2.dat for an example.
-      #
-      # == Arguments
-      #
-      # * path - Path of the file to be read.
-      # * fields - Vector names of the resulting database.
-      #
-      # == Usage
-      #
-      #   df = Daru::DataFrame.from_plaintext 'spec/fixtures/bank2.dat', [:v1,:v2,:v3,:v4,:v5,:v6]
-      def from_plaintext(path, fields)
-        Daru::IO.from_plaintext path, fields
-      end
-
-      # Read the table data from a remote html file. Please note that this module
-      # works only for static table elements on a HTML page, and won't work in
-      # cases where the data is being loaded into the HTML table by Javascript.
-      #
-      # By default - all <th> tag elements in the first proper row are considered
-      # as the order, and all the <th> tag elements in the first column are
-      # considered as the index.
-      #
-      # == Arguments
-      #
-      # * path [String] - URL of the target HTML file.
-      # * fields [Hash] -
-      #
-      #   +:match+ - A *String* to match and choose a particular table(s) from multiple tables of a HTML page.
-      #
-      #   +:order+ - An *Array* which would act as the user-defined order, to override the parsed *Daru::DataFrame*.
-      #
-      #   +:index+ - An *Array* which would act as the user-defined index, to override the parsed *Daru::DataFrame*.
-      #
-      #   +:name+ - A *String* that manually assigns a name to the scraped *Daru::DataFrame*, for user's preference.
-      #
-      # == Returns
-      # An Array of +Daru::DataFrame+s, with each dataframe corresponding to a
-      # HTML table on that webpage.
-      #
-      # == Usage
-      #   dfs = Daru::DataFrame.from_html("http://www.moneycontrol.com/", match: "Sun Pharma")
-      #   dfs.count
-      #   # => 4
-      #
-      #   dfs.first
-      #   #
-      #   # => <Daru::DataFrame(5x4)>
-      #   #          Company      Price     Change Value (Rs
-      #   #     0 Sun Pharma     502.60     -65.05   2,117.87
-      #   #     1   Reliance    1356.90      19.60     745.10
-      #   #     2 Tech Mahin     379.45     -49.70     650.22
-      #   #     3        ITC     315.85       6.75     621.12
-      #   #     4       HDFC    1598.85      50.95     553.91
-      def from_html(path, fields={})
-        Daru::IO.from_html path, fields
-      end
-
       # Create DataFrame by specifying rows as an Array of Arrays or Array of
       # Daru::Vector objects.
       def rows(source, opts={})
@@ -1987,16 +1840,6 @@ module Daru
       [each_row.map(&:to_h), @index.to_a]
     end
 
-    # Convert to json. If no_index is false then the index will NOT be included
-    # in the JSON thus created.
-    def to_json(no_index=true)
-      if no_index
-        to_a[0].to_json
-      else
-        to_a.to_json
-      end
-    end
-
     # Converts DataFrame to a hash (explicit) with keys as vector names and values as
     # the corresponding vectors.
     def to_h
@@ -2057,69 +1900,6 @@ module Daru
     end
 
     alias_method :name=, :rename
-
-    # Write this DataFrame to a CSV file.
-    #
-    # == Arguements
-    #
-    # * filename - Path of CSV file where the DataFrame is to be saved.
-    #
-    # == Options
-    #
-    # * convert_comma - If set to *true*, will convert any commas in any
-    # of the data to full stops ('.').
-    # All the options accepted by CSV.read() can also be passed into this
-    # function.
-    def write_csv(filename, opts={})
-      Daru::IO.dataframe_write_csv self, filename, opts
-    end
-
-    # Write this dataframe to an Excel Spreadsheet
-    #
-    # == Arguments
-    #
-    # * filename - The path of the file where the DataFrame should be written.
-    def write_excel(filename, opts={})
-      Daru::IO.dataframe_write_excel self, filename, opts
-    end
-
-    # Insert each case of the Dataset on the selected table
-    #
-    # == Arguments
-    #
-    # * dbh - DBI database connection object.
-    # * query - Query string.
-    #
-    # @example
-    #
-    #  ds = Daru::DataFrame.new({:id=>Daru::Vector.new([1,2,3]), :name=>Daru::Vector.new(["a","b","c"])})
-    #  dbh = DBI.connect("DBI:Mysql:database:localhost", "user", "password")
-    #  ds.write_sql(dbh,"test")
-    def write_sql(dbh, table)
-      Daru::IO.dataframe_write_sql self, dbh, table
-    end
-
-    # Use marshalling to save dataframe to a file.
-    def save(filename)
-      Daru::IO.save self, filename
-    end
-
-    def _dump(_depth)
-      Marshal.dump(
-        data:  @data,
-        index: @index.to_a,
-        order: @vectors.to_a,
-        name:  @name
-      )
-    end
-
-    def self._load(data)
-      h = Marshal.load data
-      Daru::DataFrame.new(h[:data],
-        index: h[:index],
-        order: h[:order],
-        name:  h[:name])
-    end
 
     # Change dtypes of vectors by supplying a hash of :vector_name => :new_dtype
     #
