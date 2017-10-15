@@ -54,7 +54,8 @@ module Daru
       self
     end
 
-    def name= new_name
+    # FIXME: Why?..
+    def rename new_name
       @name = new_name
       self
     end
@@ -73,8 +74,6 @@ module Daru
           'Supported libraries are :nyaplot and :gruff'
       end
     end
-
-    alias_method :rename, :name=
 
     # Returns an enumerator that enumerates on categorical data
     # @return [Enumerator] an enumerator that enumerates over data stored in vector
@@ -250,7 +249,6 @@ module Daru
       else
         positions.each { |pos| modify_category_at pos, val }
       end
-      self
     end
 
     # Modifies values at specified positions.

@@ -6,7 +6,7 @@ module Daru
       # Iterate over each group created by group_by. A DataFrame is yielded in
       # block.
       def each_group
-        groups.keys.each do |k|
+        groups.each_key do |k|
           yield get_group(k)
         end
       end

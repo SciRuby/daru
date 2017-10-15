@@ -1,5 +1,5 @@
 module Daru
-  # rubocop:disable Style/OpMethod
+  # rubocop:disable Naming/BinaryOperatorParameterName
 
   # Generic class for generating date offsets.
   class DateOffset
@@ -389,5 +389,5 @@ module Daru
     }.freeze
   end
 
-  # rubocop:enable Style/OpMethod
+  # rubocop:enable Naming/BinaryOperatorParameterName
 end

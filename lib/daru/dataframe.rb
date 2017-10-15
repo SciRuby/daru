@@ -556,7 +556,7 @@ module Daru
     # * +vectors_to_dup+ - An Array specifying the names of Vectors to
     # be duplicated. Will duplicate the entire DataFrame if not specified.
     def dup vectors_to_dup=nil
-      vectors_to_dup = @vectors.to_a unless vectors_to_dup
+      vectors_to_dup ||= @vectors.to_a
 
       src = vectors_to_dup.map { |vec| @data[@vectors.pos(vec)].dup }
       new_order = Daru::Index.new(vectors_to_dup)
@@ -1561,8 +1561,6 @@ module Daru
     def index= idx
       @index = Index.coerce idx
       @data.each { |vec| vec.index = @index }
-
-      self
     end
 
     # Reassign vectors with a new index of type Daru::Index or any of its subclasses.
@@ -1589,7 +1587,6 @@ module Daru
       @data.zip(new_index.to_a).each do |vect, name|
         vect.name = name
       end
-      self
     end
 
     # Renames the vectors
@@ -1631,7 +1628,7 @@ module Daru
     # is specified as option, only a *view* of the Vectors will be
     # returned. Defaults to clone: true.
     def only_numerics opts={}
-      cln = opts[:clone] == false ? false : true
+      cln = opts.fetch(:clone, true)
       arry = numeric_vectors.map { |v| self[v] }
 
       order = Index.new(numeric_vectors)
@@ -2758,7 +2755,14 @@ module Daru
         .map do |vector_loc, by, asc, handle_nil|
         value = @data[vector_loc].data[asc ? r1 : r2]
 
-        value = by.call(value) rescue nil if by
+        # FIXME: dirty
+        if by
+          value = begin
+            by.call(value)
+          rescue NoMethodError
+            nil
+          end
+        end
 
         sort_handle_nils value, asc, handle_nil || !by
       end
@@ -2919,7 +2923,7 @@ module Daru
     def aggregated_colmn_value(options)
       colmn_value = []
       index_tuples = Array(@index).uniq
-      options.keys.each do |vec|
+      options.each_key do |vec|
         do_this_on_vec = options[vec]
         colmn_value << if @vectors.include?(vec)
                          apply_method_on_colmns(

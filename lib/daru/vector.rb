@@ -142,8 +142,6 @@ module Daru
     attr_reader :data
     # Ploting library being used for this vector
     attr_reader :plotting_library
-    # TODO: Make private.
-    attr_reader :nil_positions, :nan_positions
 
     # Create a Vector object.
     #
@@ -1120,7 +1118,6 @@ module Daru
       end
 
       @index = idx
-      self
     end
 
     # Give the vector a new name
@@ -1464,15 +1461,11 @@ module Daru
     end
 
     def nil_positions
-      @nil_positions ||
-        @nil_positions = size.times.select { |i| @data[i].nil? }
+      @nil_positions ||= size.times.select { |i| @data[i].nil? }
     end
 
     def nan_positions
-      @nan_positions ||
-        @nan_positions = size.times.select do |i|
-          @data[i].respond_to?(:nan?) && @data[i].nan?
-        end
+      @nan_positions ||= size.times.select { |i| @data[i].respond_to?(:nan?) && @data[i].nan? }
     end
 
     # Helper method returning validity of arbitrary value
@@ -1562,14 +1555,9 @@ module Daru
       new_vector
     end
 
-    def set_name name # rubocop:disable Style/AccessorMethodName
-      @name =
-        if name.is_a?(Numeric)  then name
-        elsif name.is_a?(Array) then name.join # in case of MultiIndex tuple
-        elsif name              then name # anything but Numeric or nil
-        else
-          nil
-        end
+    def set_name name # rubocop:disable Naming/AccessorMethodName
+      # Join in case of MultiIndex tuple
+      @name = name.is_a?(Array) ? name.join : name
     end
 
     # Raises IndexError when one of the positions is an invalid position

@@ -67,7 +67,11 @@ if Daru.has_gsl?
 
         %i[mean min max prod sum].each do |method|
           define_method(method) do
-            compact.send(method.to_sym) rescue nil
+            begin
+              compact.send(method.to_sym)
+            rescue NoMethodError
+              nil
+            end
           end
         end
 
