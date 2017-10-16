@@ -228,7 +228,7 @@ module Daru
     end
 
     # Returns vector of values given positional values
-    # @param [Array<object>] *positions positional values
+    # @param positions [Array<object>] positional values
     # @return [object] vector
     # @example
     #   dv = Daru::Vector.new 'a'..'e'
@@ -252,7 +252,7 @@ module Daru
     end
 
     # Change value at given positions
-    # @param [Array<object>] *positions positional values
+    # @param positions [Array<object>] positional values
     # @param [object] val value to assign
     # @example
     #   dv = Daru::Vector.new 'a'..'e'
@@ -385,11 +385,11 @@ module Daru
     # comparator methods to obtain meaningful results. See this notebook for
     # a good overview of using #where.
     #
-    # @param [Daru::Core::Query::BoolArray, Array<TrueClass, FalseClass>] bool_arry The
+    # @param bool_array [Daru::Core::Query::BoolArray, Array<TrueClass, FalseClass>] The
     #   collection containing the true of false values. Each element in the Vector
     #   corresponding to a `true` in the bool_arry will be returned alongwith it's
     #   index.
-    # @exmaple Usage of #where.
+    # @example Usage of #where.
     #   vector = Daru::Vector.new([2,4,5,51,5,16,2,5,3,2,1,5,2,5,2,1,56,234,6,21])
     #
     #   # Simple logic statement passed to #where.
@@ -469,7 +469,7 @@ module Daru
     deprecate :flawed?, :include_values?, 2016, 10
 
     # Check if any one of mentioned values occur in the vector
-    # @param [Array] *values values to check for
+    # @param values  [Array] values to check for
     # @return [true, false] returns true if any one of specified values
     #   occur in the vector
     # @example
@@ -485,7 +485,7 @@ module Daru
     # Return vector of booleans with value at ith position is either
     # true or false depending upon whether value at position i is equal to
     # any of the values passed in the argument or not
-    # @param [Array] *values values to equate with
+    # @param values [Array] values to equate with
     # @return [Daru::Vector] vector of boolean values
     # @example
     #   dv = Daru::Vector.new [1, 2, 3, 2, 1]
@@ -778,6 +778,43 @@ module Daru
       self
     end
 
+    # Rolling fillna
+    # replace all Float::NAN and NIL values with the preceeding or following value
+    #
+    # @param direction [Symbol] (:forward, :backward) whether replacement value is preceeding or following
+    #
+    # @example
+    #  dv = Daru::Vector.new([1, 2, 1, 4, nil, Float::NAN, 3, nil, Float::NAN])
+    #
+    #   2.3.3 :068 > dv.rolling_fillna(:forward)
+    #   => #<Daru::Vector(9)>
+    #   0   1
+    #   1   2
+    #   2   1
+    #   3   4
+    #   4   4
+    #   5   4
+    #   6   3
+    #   7   3
+    #   8   3
+    #
+    def rolling_fillna!(direction=:forward)
+      enum = direction == :forward ? index : index.reverse_each
+      last_valid_value = 0
+      enum.each do |idx|
+        if valid_value?(self[idx])
+          last_valid_value = self[idx]
+        else
+          self[idx] = last_valid_value
+        end
+      end
+    end
+
+    # Non-destructive version of rolling_fillna!
+    def rolling_fillna(direction=:forward)
+      dup.rolling_fillna!(direction)
+    end
+
     # Lags the series by `k` periods.
     #
     # Lags the series by `k` periods, "shifting" data and inserting `nil`s
@@ -836,7 +873,7 @@ module Daru
     deprecate :n_valid, :count_values, 2016, 10
 
     # Count the number of values specified
-    # @param [Array] *values values to count for
+    # @param values [Array] values to count for
     # @return [Integer] the number of times the values mentioned occurs
     # @example
     #   dv = Daru::Vector.new [1, 2, 1, 2, 3, 4, nil, nil]
@@ -960,7 +997,7 @@ module Daru
     end
 
     # Create a summary of the Vector
-    # @params [Fixnum] indent_level
+    # @param indent_level [Fixnum] indent level
     # @return [String] String containing the summary of the Vector
     # @example
     #   dv = Daru::Vector.new [1, 2, 3]
@@ -1216,10 +1253,10 @@ module Daru
     #
     # == Arguments
     #
-    # @as_a [Symbol] Passing :array will return only the elements
+    # @param as_a [Symbol] Passing :array will return only the elements
     # as an Array. Otherwise will return a Daru::Vector.
     #
-    # @duplicate [Symbol] In case no missing data is found in the
+    # @param _duplicate [Symbol] In case no missing data is found in the
     # vector, setting this to false will return the same vector.
     # Otherwise, a duplicate will be returned irrespective of
     # presence of missing data.
@@ -1241,7 +1278,7 @@ module Daru
     deprecate :only_valid, :reject_values, 2016, 10
 
     # Return a vector with specified values removed
-    # @param [Array] *values values to reject from resultant vector
+    # @param values [Array] values to reject from resultant vector
     # @return [Daru::Vector] vector with specified values removed
     # @example
     #   dv = Daru::Vector.new [1, 2, nil, Float::NAN]
@@ -1263,7 +1300,7 @@ module Daru
     end
 
     # Return indexes of values specified
-    # @param [Array] *values values to find indexes for
+    # @param values [Array] values to find indexes for
     # @return [Array] array of indexes of values specified
     # @example
     #   dv = Daru::Vector.new [1, 2, nil, Float::NAN], index: 11..14
@@ -1471,6 +1508,11 @@ module Daru
         end
     end
 
+    # Helper method returning validity of arbitrary value
+    def valid_value?(v)
+      v.respond_to?(:nan?) && v.nan? || v.nil? ? false : true
+    end
+
     def initialize_vector source, opts
       index, source = parse_source(source, opts)
       set_name opts[:name]
@@ -1536,7 +1578,7 @@ module Daru
     end
 
     # Note: To maintain sanity, this _MUST_ be the _ONLY_ place in daru where the
-    # @dtype variable is set and the underlying data type of vector changed.
+    # @param dtype [db_type] variable is set and the underlying data type of vector changed.
     def cast_vector_to dtype, source=nil, nm_dtype=nil
       source = @data.to_a if source.nil?
 
