@@ -1,5 +1,5 @@
 module Daru
-  class CategoricalIndex < Index
+  class CategoricalIndex
     # Create a categorical index object.
     # @param indexes [Array<object>] array of indexes
     # @return [Daru::CategoricalIndex] categorical index

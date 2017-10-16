@@ -468,18 +468,6 @@ module Daru
       _shift(-distance)
     end
 
-    # :nocov:
-    def _dump(_depth)
-      Marshal.dump(data: to_a, freq: @offset)
-    end
-
-    def self._load(data)
-      h = Marshal.load data
-
-      Daru::DateTimeIndex.new(h[:data], freq: h[:freq])
-    end
-    # :nocov:
-
     # @!method year
     #   @return [Array<Integer>] Array containing year of each index.
     # @!method month
@@ -493,11 +481,7 @@ module Daru
     # @!method sec
     #   @return [Array<Integer>] Array containing seconds of each index.
     %i[year month day hour min sec].each do |meth|
-      define_method(meth) do
-        each_with_object([]) do |d, arr|
-          arr << d.send(meth)
-        end
-      end
+      define_method(meth) { map(&meth) }
     end
 
     # Check if a date exists in the index. Will be inferred from string in case

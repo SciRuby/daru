@@ -1,5 +1,5 @@
 module Daru
-  class MultiIndex < Index
+  class MultiIndex
     def each(&block)
       to_a.each(&block)
     end

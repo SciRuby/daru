@@ -75,7 +75,7 @@ RSpec.describe Daru::Index do
 
   describe 'Enumerable' do
     it { is_expected.to be_a Enumerable }
-    its(:'each.to_a') { is_expected.to eq index.to_a }
+    its(:'each.to_a') { is_expected.to eq %w[speaker mic guitar amp] }
   end
 
   describe '#inspect' do
@@ -208,7 +208,7 @@ RSpec.describe Daru::Index do
     end
   end
 
-  context '#pos' do
+  describe '#pos' do
     subject { method_call(index, :pos) }
 
     let(:index) { described_class.new [:a, :b, 1, 2] }
@@ -226,7 +226,7 @@ RSpec.describe Daru::Index do
     its([1..3]) { is_expected.to eq [1, 2, 3] }
   end
 
-  context '#subset' do
+  describe '#subset' do
     subject { method_call(idx, :subset) }
 
     let(:idx) { described_class.new [:a, :b, 1, 2] }
@@ -236,7 +236,7 @@ RSpec.describe Daru::Index do
     its([1..3]) { is_expected.to eq described_class.new [:b, 1, 2] }
   end
 
-  context '#at' do
+  describe '#at' do
     subject(:at) { method_call(idx, :at) }
 
     let(:idx) { described_class.new [:a, :b, 1] }
@@ -250,7 +250,7 @@ RSpec.describe Daru::Index do
     it { expect { at.call(2, 3) }.to raise_error IndexError }
   end
 
-  context '#is_values' do
+  describe '#is_values' do
     subject { method_call(idx, :is_values) }
 
     let(:idx) { described_class.new [:one, 'one', 1, 2, 'two', nil, [1, 2]] }
@@ -263,6 +263,18 @@ RSpec.describe Daru::Index do
 
     context 'subarray is present in arguments' do
       its([[1, 2]]) { is_expected.to eq Daru::Vector.new([false, false, false, false, false, false, true]) }
+    end
+  end
+
+  describe '#reorder' do
+    subject { index.reorder([3,0,1,2]) }
+
+    it { is_expected.to eq described_class.new %w[amp speaker mic guitar] }
+
+    context 'preserve name' do
+      let(:index) { described_class.new %w[speaker mic guitar amp], name: 'music' }
+
+      its(:name) { is_expected.to eq 'music' }
     end
   end
 end

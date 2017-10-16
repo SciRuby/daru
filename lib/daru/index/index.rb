@@ -4,7 +4,18 @@ module Daru
   # Index is ordered, uniq set of labels, that is used througout Daru as an axis for other data types
   # ({Vector} and {DataFrame}).
   #
+  # It provides fast and convenient mapping from labels to row indexes and slicing/selecting of
+  # subsets of data by labels and positions.
   #
+  # `Index` class represents the most simple kind of an index: simple value labels (most usually
+  # numbers, strings or symbols). `Daru` also includes more complicated and specialized indexes:
+  #
+  # * {MultiIndex}: each label is a **tuple** of values (for example
+  #   `[division, subdivision, department]`), provides level-based slicing (e.g. "all from this
+  #    subdivision").
+  # * {DateTimeIndex}: each label is a timestamp, provides additional functionality for slicing by
+  #   year or month, checking idex regularity and so on.
+  # * {CategoricalIndex}: special type of index, allowing repeating values (categories as an axis).
   #
   class Index
     include Enumerable
@@ -52,7 +63,6 @@ module Daru
     # @return [String]
     attr_reader :name
     attr_writer :name # TODO: deprecate
-    def_delegators :@relation_hash, :keys, :size, :empty?, :include?
 
     # @param index [#to_a, Integer, nil] Values of index labels, or size of index, or nothing, to
     #   construct an empty index.
@@ -70,6 +80,18 @@ module Daru
       @relation_hash = index.each_with_index.to_h.freeze
       @name = name
     end
+
+    def_delegators :@relation_hash, :keys, :size, :empty?, :include?
+    alias to_a keys
+
+    # @!method keys
+    #   Raw list of index labels.
+    #   @return [Array]
+    # @!method size
+    #   @return [Integer]
+    # @!method include?(value)
+    #   If index includes the value specified.
+    #   @return [Boolean]
 
     # @param threshold [Integer] Maximum number of values to inspect.
     # @return [String]
@@ -89,10 +111,11 @@ module Daru
       self.class == other.class && relation_hash == other.relation_hash && name == other.name
     end
 
+    # @return [self]
     def each(&block)
       return to_enum(:each) unless block_given?
 
-      @relation_hash.each_key(&block)
+      relation_hash.each_key(&block)
       self
     end
 
@@ -122,7 +145,7 @@ module Daru
     #   idx.valid? 3
     #   # => false
     def valid?(*indexes)
-      indexes.all? { |i| to_a.include?(i) || (i.is_a?(Numeric) && i < size) }
+      indexes.all? { |i| include?(i) || (i.is_a?(Integer) && i < size) }
     end
 
     # Returns positions given indexes or positions.
@@ -159,47 +182,6 @@ module Daru
       end
     end
 
-    # Takes positional values and returns subset of the self
-    #   capturing the indexes at mentioned positions
-    # @param positions [Array<Integer>] positional values
-    # @return [object] index object
-    # @example
-    #   idx = Daru::Index.new [:a, :b, :c]
-    #   idx.at 0, 1
-    #   # => #<Daru::Index(2): {a, b}>
-    def at(*positions)
-      positions = preprocess_positions(*positions)
-      validate_positions(*positions)
-      if positions.is_a? Integer
-        key(positions)
-      else
-        self.class.new positions.map(&method(:key))
-      end
-    end
-
-    # Produce new index from the set union of two indexes.
-    #
-    # @param other [Daru::Index]
-    # @return [Daru::Index]
-    def |(other)
-      Index.new(to_a | other.to_a)
-    end
-
-    # Produce a new index from the set intersection of two indexes
-    #
-    # @param other [Daru::Index]
-    # @return [Daru::Index]
-    def &(other)
-      Index.new(to_a & other.to_a)
-    end
-
-    # Returns "raw" list of values in index.
-    #
-    # @return [Array]
-    def to_a
-      @relation_hash.keys
-    end
-
     # FIXME: why do we need it? What it means? Why it has no docs?
     def key(value)
       return nil unless value.is_a?(Numeric)
@@ -227,35 +209,24 @@ module Daru
       Daru::Vector.new(bool_array)
     end
 
+    # @return [Index]
     def dup
-      Daru::Index.new @relation_hash.keys
+      # FIXME: name
+      Daru::Index.new keys
     end
 
     def add(*indexes)
       Daru::Index.new(to_a + indexes)
     end
 
-    def _dump(*)
-      Marshal.dump(relation_hash: @relation_hash)
-    end
-
-    def self._load(data)
-      h = Marshal.load data
-
-      Daru::Index.new(h[:relation_hash].keys)
-    end
-
-    # Provide an Index for sub vector produced
-    #
-    # @option * [Array] the input by user to index the vector
-    # @return [Object] the Index object for sub vector produced
+    # @private
+    # Used by MultiIndex#conform
     def conform(*)
       self
     end
 
-    def reorder(new_order)
-      from = to_a
-      self.class.new(new_order.map { |i| from[i] })
+    def values_at(*positions)
+      keys.values_at(*positions)
     end
 
     # Sorts a `Index`, according to its values. Defaults to ascending order
@@ -270,7 +241,7 @@ module Daru
     #   di.sort #=> Daru::Index.new [1, 2, 99, 100, 101]
     #   di.sort(ascending: false) #=> Daru::Index.new [101, 100, 99, 2, 1]
     def sort(ascending: true)
-      new_index, = ascending ? @relation_hash.sort.transpose : @relation_hash.sort.reverse.transpose
+      new_index, = ascending ? relation_hash.sort.transpose : relation_hash.sort.reverse.transpose
 
       self.class.new(new_index)
     end
@@ -323,30 +294,6 @@ module Daru
         @relation_hash[key]
       else
         nil
-      end
-    end
-
-    # Raises IndexError when one of the positions is an invalid position
-    def validate_positions(*positions)
-      positions = [positions] if positions.is_a? Integer
-      positions.each do |pos|
-        raise IndexError, "#{pos} is not a valid position." if pos >= size || pos < -size
-      end
-    end
-
-    # Preprocess ranges, integers and array in appropriate ways
-    def preprocess_positions(*positions)
-      if positions.size == 1
-        case positions.first
-        when Integer
-          positions.first
-        when Range
-          size.times.to_a[positions.first]
-        else
-          raise ArgumentError, 'Unkown position type.'
-        end
-      else
-        positions
       end
     end
 
