@@ -22,8 +22,8 @@ module Daru
         #   df.plot type: :bar, x: :a, y: :b
         def plot opts={}, &block
           unless opts[:x]
-            opts[:x] = :_index
-            self.[]=(:_index, @index.to_a)
+            opts[:x]      = :_index
+            self[:_index] = @index.to_a
           end
 
           if opts[:categorized]
