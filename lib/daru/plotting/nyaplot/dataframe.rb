@@ -21,9 +21,8 @@ module Daru
         #   df = Daru::DataFrame.new({a:['A', 'B', 'C', 'D', 'E'], b:[10,20,30,40,50]})
         #   df.plot type: :bar, x: :a, y: :b
         def plot opts={}, &block
-          unless opts[:x]
-            opts[:x]      = :_index
-            self[:_index] = @index.to_a
+          if x_axis_undefined?(opts)
+            set_index_as_default_x_axis(opts)
           end
 
           if opts[:categorized]
@@ -34,6 +33,15 @@ module Daru
         end
 
         private
+
+        def x_axis_undefined?(opts)
+          !(opts[:x] || opts.keys.any? { |k| k.to_s.match(/x\d+/) })
+        end
+
+        def set_index_as_default_x_axis(opts)
+          opts[:x]      = :_index
+          self[:_index] = @index.to_a
+        end
 
         def plot_without_category opts
           options = {type: :scatter}.merge(opts)
