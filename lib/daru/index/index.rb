@@ -1,7 +1,14 @@
 require 'forwardable'
+require_relative 'shared'
 
 module Daru
-  # Index is ordered, uniq set of labels, that is used througout Daru as an axis for other data types
+  def Daru.Index(values, name: nil)
+    MultiIndex.try_create(values, name: name) ||
+      DateTimeIndex.try_create(values, name: name) ||
+      Index.new(values, name: name)
+  end
+
+  # Index is ordered, uniq set of labels, that is used throughout Daru as an axis for other data types
   # ({Vector} and {DataFrame}).
   #
   # It provides fast and convenient mapping from labels to row indexes and slicing/selecting of
@@ -19,53 +26,19 @@ module Daru
   #
   class Index
     include Enumerable
-    # It so happens that over riding the .new method in a super class also
-    # tampers with the default .new method for class that inherit from the
-    # super class (Index in this case). Thus we first alias the original
-    # new method (from Object) to __new__ when the Index class is evaluated,
-    # and then we use an inherited hook such that the old new method (from
-    # Object) is once again the default .new for the subclass.
-    # Refer http://blog.sidu.in/2007/12/rubys-new-as-factory.html
-    class << self
-      # @private
-      alias :__new__ :new
-
-      # @private
-      def inherited(subclass)
-        class << subclass
-          alias :new :__new__
-        end
-      end
-    end
+    extend Forwardable
+    include IndexSharedBehavior
 
     # @private
-    # We over-ride the .new method so that any sort of Index can be generated
-    # from Daru::Index based on the types of arguments supplied.
-    def self.new(*args, &block)
-      # FIXME: I'm not sure this clever trick really deserves our attention.
-      # Most of common ruby libraries just avoid it in favor of usual
-      # factor method, like `Index.create`. When `Index.new(...).class != Index`
-      # it just leads to confusion and surprises. - zverok, 2016-05-18
-      source = args.first
-
-      MultiIndex.try_from_tuples(source) ||
-        DateTimeIndex.try_create(source) ||
-        allocate.tap { |i| i.send :initialize, *args, &block }
-    end
-
     def self.coerce(maybe_index)
       maybe_index.is_a?(Index) ? maybe_index : Daru::Index.new(maybe_index)
     end
 
-    extend Forwardable
-
     # Optional name of the index.
     # @return [String]
     attr_reader :name
-    attr_writer :name # TODO: deprecate
 
-    # @param index [#to_a, Integer, nil] Values of index labels, or size of index, or nothing, to
-    #   construct an empty index.
+    # @param values [Enumerable] List of index labels.
     # @param name [String] Optional index name
     #
     # @example
@@ -75,9 +48,9 @@ module Daru
     #
     #   idx = Daru::Index.new 2015..2017, name: 'year'
     #   # => #<Daru::Index(3): year {2015, 2016, 2017}>
-    def initialize(index, name: nil)
-      index = guess_index index
-      @relation_hash = index.each_with_index.to_h.freeze
+    def initialize(values, name: nil)
+      raise ArgumentError, "Index keys expected to be enumerable, #{values} got" unless values.respond_to?(:each)
+      @relation_hash = values.each.with_index.to_h.freeze
       @name = name
     end
 
@@ -119,23 +92,43 @@ module Daru
       self
     end
 
-    # Get a single value, or subset of index values, by key, position, range and several.
+    # Index value by position.
     #
+    # @param position [Integer] Position in index 0...index.size
+    # @return Lable at position, or nil if position is not numeric or outside the index size
+    def key(position)
+      return nil unless position.is_a?(Integer)
+      keys[position]
+    end
+
+    # @overload [](value)
+    #   @param value One value from index.
+    #   @return [Integer, nil] Position corresponding to value provided, or `nil` if it is not in index.
     #
-    def [](key, *rest)
+    # @overload [](range)
+    #   @param range [Range] Range of values from index.
+    #   @return [Array<Integer>, nil] Positions from first to last value of range. If last value is
+    #     not in index, positions from first value to the end of index is returned. If first value is
+    #     not in index, `nil` is returned.
+    #
+    # @overload [](*values)
+    #   @param values [Array] List of values from index.
+    #   @return [Array<Integer, nil>] For each value, either it corresponding position returned, or
+    #     `nil` if it was not found in index.
+    #
+    # @return [Integer, Array<Integer>, nil]
+    def [](*args)
       case
-      when key.is_a?(Range)
-        by_range key
-      when !rest.empty?
-        by_multi_key key, *rest
+      when args.first.is_a?(Range)
+        by_range args.first
+      when args.count > 1
+        by_multi_key *args
       else
-        by_single_key key
+        by_single_key args.first
       end
     end
 
     # Returns true if all arguments are either a valid category or position.
-    #
-    # FIXME: Why do we need this? "Category or position" feels smelly.
     #
     # @param indexes [Array<object>] categories or positions
     # @return [true, false]
@@ -144,55 +137,56 @@ module Daru
     #   # => true
     #   idx.valid? 3
     #   # => false
-    def valid?(*indexes)
-      indexes.all? { |i| include?(i) || (i.is_a?(Integer) && i < size) }
-    end
+    # def valid?(*indexes)
+    #   indexes.all? { |i| include?(i) || (0...size).include?(i) }
+    # end
 
     # Returns positions given indexes or positions.
     #
-    # @note If the argument is both a valid index and a valid position,
-    #   it will treated as valid index
-    # @param indexes [Array<object>] indexes or positions
+    # @note If any of arguments is a valid label, ALL arguments considered labels, this prohibits
+    #   any ambiguity.
+    # @param labels [Array<object>] indexes or positions
     # @example
     #   x = Daru::Index.new [:a, :b, :c]
     #   x.pos :a, 1
     #   # => [0, 1]
-    def pos(*indexes)
-      indexes = preprocess_range(indexes.first) if indexes.first.is_a? Range
-
-      if indexes.size == 1
-        numeric_pos indexes.first
-      else
-        indexes.map { |index| numeric_pos index }
-      end
+    # def pos(*indexes)
+    #   indexes = preprocess_range(indexes.first) if indexes.first.is_a? Range
+    #
+    #   if indexes.size == 1
+    #     numeric_pos indexes.first
+    #   else
+    #     indexes.map { |index| numeric_pos index }
+    #   end
+    # end
+    def pos(*labels)
+      by_labels = self[*labels]
+      # FIXME: fragile
+      by_labels.nil? || TypeCheck[Array, of: nil].match?(by_labels) ? preprocess_positions(labels) : by_labels
     end
 
-    def subset(*indexes)
-      if indexes.first.is_a? Range
-        start = indexes.first.begin
-        en = indexes.first.end
-
-        subset_slice start, en
-      elsif include? indexes.first
-        # Assume 'indexes' contain indexes not positions
-        Daru::Index.new indexes
-      else
-        # Assume 'indexes' contain positions not indexes
-        Daru::Index.new(indexes.map { |k| key k })
-      end
-    end
-
-    # FIXME: why do we need it? What it means? Why it has no docs?
-    def key(value)
-      return nil unless value.is_a?(Numeric)
-      relation_hash.keys[value]
-    end
+    # def subset(*indexes)
+    #   if indexes.first.is_a? Range
+    #     start = indexes.first.begin
+    #     en = indexes.first.end
+    #
+    #     subset_slice start, en
+    #   elsif include? indexes.first
+    #     # Assume 'indexes' contain indexes not positions
+    #     Daru::Index.new indexes
+    #   else
+    #     # Assume 'indexes' contain positions not indexes
+    #     Daru::Index.new(indexes.map { |k| key k })
+    #   end
+    # end
 
     # @note Do not use it to check for Float::NAN as
     #   Float::NAN == Float::NAN is false
-    # Return vector of booleans with value at ith position is either
+    #
+    # Return array of booleans with value at ith position is either
     # true or false depending upon whether index value at position i is equal to
-    # any of the values passed in the argument or not
+    # any of the values passed in the argument or not.
+    #
     # @param indexes [Array] values to equate with
     # @return [Daru::Vector] vector of boolean values
     # @example
@@ -205,8 +199,7 @@ module Daru
     #   #     3  false
     #   #     4  true
     def is_values(*indexes) # rubocop:disable Naming/PredicateName
-      bool_array = @relation_hash.keys.map { |r| indexes.include?(r) }
-      Daru::Vector.new(bool_array)
+      keys.map { |r| indexes.include?(r) }
     end
 
     # @return [Index]
@@ -215,18 +208,14 @@ module Daru
       Daru::Index.new keys
     end
 
-    def add(*indexes)
-      Daru::Index.new(to_a + indexes)
-    end
+    # def add(*indexes)
+    #   Daru::Index.new(to_a + indexes)
+    # end
 
     # @private
     # Used by MultiIndex#conform
     def conform(*)
       self
-    end
-
-    def values_at(*positions)
-      keys.values_at(*positions)
     end
 
     # Sorts a `Index`, according to its values. Defaults to ascending order
@@ -253,20 +242,6 @@ module Daru
 
     private
 
-    def guess_index(index)
-      case index
-      when nil
-        []
-      when Integer
-        index.times.to_a
-      when Enumerable
-        index.to_a
-      else
-        raise ArgumentError,
-          "Cannot create index from #{index.class} #{index.inspect}"
-      end
-    end
-
     def preprocess_range(rng)
       start   = rng.begin
       en      = rng.end
@@ -282,7 +257,9 @@ module Daru
     end
 
     def by_range(rng)
-      slice rng.begin, rng.end
+      begin_idx = relation_hash[rng.begin] or return nil
+      end_idx   = relation_hash[rng.end] or return (begin_idx...size).to_a
+      (rng.exclude_end? ? begin_idx...end_idx : begin_idx..end_idx).to_a
     end
 
     def by_multi_key(*key)

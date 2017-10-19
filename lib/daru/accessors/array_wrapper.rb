@@ -37,7 +37,14 @@ module Daru
       end
 
       def ==(other)
-        @data == other
+        case other
+        when Array
+          @data == other
+        when ArrayWrapper
+          @data == other.data
+        else
+          false
+        end
       end
 
       def delete_at(index)

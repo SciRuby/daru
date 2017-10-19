@@ -5,47 +5,6 @@ RSpec.describe Daru::Index do
     ->(*arg) { object.send(method, *arg) }
   end
 
-  describe '.new' do
-    subject { described_class.new(data) }
-
-    context 'with one-level array' do
-      let(:data) { [:one, 'one', 1, 2, :two] }
-
-      it { is_expected.to be_a described_class }
-      its(:name) { is_expected.to be_nil }
-      its(:to_a) { is_expected.to eq data }
-
-      context 'named' do
-        subject { described_class.new data, name: 'index_name' }
-
-        its(:name) { is_expected.to eq 'index_name' }
-      end
-    end
-
-    context 'with array of tuples' do
-      let(:data) {
-        [
-          %i[b one bar],
-          %i[b two bar],
-          %i[b two baz],
-          %i[b one foo]
-        ]
-      }
-
-      it { is_expected.to be_a Daru::MultiIndex }
-      its(:levels) { is_expected.to eq [[:b], %i[one two], %i[bar baz foo]] }
-      its(:labels) { is_expected.to eq [[0,0,0,0],[0,1,1,0],[0,0,1,2]] }
-    end
-
-    context 'with array of dates' do
-      let(:data) { [DateTime.new(2012,2,4), DateTime.new(2012,2,5), DateTime.new(2012,2,6)] }
-
-      it { is_expected.to be_a Daru::DateTimeIndex }
-      its(:to_a) { is_expected.to eq [DateTime.new(2012,2,4), DateTime.new(2012,2,5), DateTime.new(2012,2,6)] }
-      its(:frequency) { is_expected.to eq 'D' }
-    end
-  end
-
   describe '#initialize' do
     subject { described_class.new data }
 
@@ -112,7 +71,35 @@ RSpec.describe Daru::Index do
 
     its([2]) { is_expected.to eq 'guitar' }
     its([20]) { is_expected.to be_nil }
-    its([nil]) { is_expected.to be_nil }
+    its(['guitar']) { is_expected.to be_nil }
+  end
+
+  describe '#[]' do
+    subject { method_call(index, :[]) }
+
+    its(['mic'..'amp']) { is_expected.to eq [1, 2, 3] }
+    its(['mic'...'amp']) { is_expected.to eq [1, 2] }
+    its(['amp'..'mic']) { is_expected.to eq [] }
+    its(%w[amp mic speaker piano]) { is_expected.to eq [3, 1, 0, nil] }
+
+    context 'first index is not valid' do
+      its(['foo'..'bar']) { is_expected.to be_nil }
+    end
+
+    context 'first index is valid, second is not' do
+      its(['mic'..'bar']) { is_expected.to eq [1, 2, 3] }
+    end
+
+    context 'invalid' do
+      its(['piano']) { is_expected.to be_nil }
+    end
+
+    context 'mixed type index' do
+      let(:index) { described_class.new ['a','b','c',:d,:a,8,3,5] }
+
+      its(['a'..'c']) { is_expected.to eq [0, 1, 2] }
+      its([0,5,3,2]) { is_expected.to eq([nil, 7, 6, nil]) }
+    end
   end
 
   describe '#sort' do
@@ -132,7 +119,7 @@ RSpec.describe Daru::Index do
     end
   end
 
-  describe '#valid?' do
+  xdescribe '#valid?' do
     subject { method_call(index, :valid?) }
 
     context 'single index' do
@@ -164,7 +151,7 @@ RSpec.describe Daru::Index do
     end
   end
 
-  context '#|' do
+  describe '#|' do
     subject { left | right }
 
     let(:left) { described_class.new %i[miles geddy eric] }
@@ -182,51 +169,30 @@ RSpec.describe Daru::Index do
     end
   end
 
-  describe '#[]' do
-    subject { method_call(index, :[]) }
-
-    its(['mic'..'amp']) { is_expected.to eq [1, 2, 3] }
-    its(%w[amp mic speaker]) { is_expected.to eq [3, 1, 0] }
-
-    context 'first index is not valid' do
-      its(['foo'..'bar']) { is_expected.to be_nil }
-    end
-
-    context 'first index is valid, second is not' do
-      its(['mic'..'bar']) { is_expected.to eq [1, 2, 3] }
-    end
-
-    context 'invalid' do
-      its(['piano']) { is_expected.to be_nil }
-    end
-
-    context 'mixed type index' do
-      let(:index) { described_class.new ['a','b','c',:d,:a,8,3,5] }
-
-      its(['a'..'c']) { is_expected.to eq [0, 1, 2] }
-      its([0,5,3,2]) { is_expected.to eq([nil, 7, 6, nil]) }
-    end
-  end
-
   describe '#pos' do
     subject { method_call(index, :pos) }
 
     let(:index) { described_class.new [:a, :b, 1, 2] }
 
-    context 'by index' do
+    context 'by label' do
       its([:a]) { is_expected.to eq 0 }
       its([:a, 1]) { is_expected.to eq [0, 2] }
+
+      # it is treated as labels!
+      its([1..3]) { is_expected.to eq [2, 3] }
     end
 
     context 'by position' do
       its([0]) { is_expected.to eq 0 }
       its([0, 3]) { is_expected.to eq [0, 3] }
+      its([0..-1]) { is_expected.to eq [0, 1, 2, 3] }
     end
 
-    its([1..3]) { is_expected.to eq [1, 2, 3] }
+    context 'unknown value' do
+    end
   end
 
-  describe '#subset' do
+  xdescribe '#subset' do
     subject { method_call(idx, :subset) }
 
     let(:idx) { described_class.new [:a, :b, 1, 2] }
@@ -255,15 +221,12 @@ RSpec.describe Daru::Index do
 
     let(:idx) { described_class.new [:one, 'one', 1, 2, 'two', nil, [1, 2]] }
 
-    its([]) { is_expected.to eq Daru::Vector.new([false, false, false, false, false, false, false]) }
-    its(['one']) { is_expected.to eq Daru::Vector.new([false, true, false, false, false, false, false]) }
-    its([2, :one]) { is_expected.to eq Daru::Vector.new([true, false, false, true, false, false, false]) }
-    its(['one', 1]) { is_expected.to eq Daru::Vector.new([false, true, true, false, false, false, false]) }
-    its(['two', nil]) { is_expected.to eq Daru::Vector.new([false, false, false, false, true, true, false]) }
-
-    context 'subarray is present in arguments' do
-      its([[1, 2]]) { is_expected.to eq Daru::Vector.new([false, false, false, false, false, false, true]) }
-    end
+    its([]          ) { is_expected.to eq [false, false, false, false, false, false, false] }
+    its(['one']     ) { is_expected.to eq [false, true, false, false, false, false, false] }
+    its([2, :one]   ) { is_expected.to eq [true, false, false, true, false, false, false] }
+    its(['one', 1]  ) { is_expected.to eq [false, true, true, false, false, false, false] }
+    its(['two', nil]) { is_expected.to eq [false, false, false, false, true, true, false] }
+    its([[1, 2]]) { is_expected.to eq [false, false, false, false, false, false, true] }
   end
 
   describe '#reorder' do

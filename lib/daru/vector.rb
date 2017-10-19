@@ -199,29 +199,59 @@ module Daru
       end
     end
 
-    # Get one or more elements with specified index or a range.
+    # Get element(s) from vector by index values or numeric positions.
     #
-    # == Usage
-    #   # For vectors employing single layer Index
+    # The logic of deciding if it is index value or position is following:
+    # * if any of input values is present in index, all input values are decided to be values from
+    #   index (even if the values are positive integers);
+    # * if all of input values are positive integers, they are decided to be numeric positions;
+    # * otherwise, `IndexError` is raised.
     #
-    #   v[:one, :two] # => Daru::Vector with indexes :one and :two
-    #   v[:one]       # => Single element
-    #   v[:one..:three] # => Daru::Vector with indexes :one, :two and :three
+    # @overload [](label)
+    #   @param label Label from index.
+    #   @return One value from vector corresponding to this label.
+    # @overload [](position)
+    #   @note If index has this value, it is considered to be index label, not numeric position.
+    #   @example
+    #     vector = Vector.new(%[a b c], index: [1, 2, 3])
+    #     vector[0] # => a
+    #     vector[1] # => a, treated as label
+    #   @param position [Integer] Numeric position in vector.
+    #   @return One value from vector corresponding to this position.
+    # @overload [](*labels)
+    #   @param labels [Array] Labels from index.
+    #   @return [Array] Value from vector corresponding to these labels.
+    # @overload [](*positions)
+    #   @note If index has ANY of the provided values, ALL of them treated as index labels, not positions.
+    #   @param positions [Array<Integer>] Numeric positions in vector.
+    #   @return [Array] Values from vector corresponding to these positions.
+    # @overload [](labels_range)
+    #   @param labels_range [Range] Labels range from index.
+    #   @return Values corresponding to index part between range begin and end. If range end is not in
+    #     index, returns values from range begin to the vector end. If range begin is not in the index,
+    #     returns nil
+    # @overload [](positions_range)
+    #   @note If index has either range beginning, or range end, the range is considered to be index
+    #     labels, not numeric positions.
+    #   @param positions_range [Range<Integer>] Range of numeric positions in vector.
+    #   @return [Array] Values from vector corresponding to range.
     #
-    #   # For vectors employing hierarchial multi index
+    # @example
+    #   # TODO
     #
-    def [](*input_indexes)
+    def [](*labels_or_positions)
       # Get array of positions indexes
-      positions = @index.pos(*input_indexes)
+      positions = @index.pos(*labels_or_positions)
+      fail IndexError if !positions || positions.empty?
 
       # If one object is asked return it
-      return @data[positions] if positions.is_a? Numeric
+      return @data[positions] if positions.is_a? Integer
 
       # Form a new Vector using positional indexes
       Daru::Vector.new(
         positions.map { |loc| @data[loc] },
         name: @name,
-        index: @index.subset(*input_indexes), dtype: @dtype
+        index: @index.keys_at(*positions), dtype: @dtype
       )
     end
 
@@ -294,13 +324,7 @@ module Daru
     # Two vectors are equal if they have the exact same index values corresponding
     # with the exact same elements. Name is ignored.
     def ==(other)
-      case other
-      when Daru::Vector
-        @index == other.index && size == other.size &&
-          @index.all? { |index| self[index] == other[index] }
-      else
-        super
-      end
+      other.is_a?(Daru::Vector) && @index == other.index && @data == other.data
     end
 
     # !@method eq
@@ -1478,7 +1502,7 @@ module Daru
       set_name opts[:name]
 
       @data  = cast_vector_to(opts[:dtype] || :array, source, opts[:nm_dtype])
-      @index = Index.coerce(index || @data.size)
+      @index = Index.coerce(index || (@data.size.zero? ? [] : 0...@data.size))
 
       guard_sizes!
 
@@ -1587,7 +1611,7 @@ module Daru
     # Helper method for []=.
     # Assigs existing index to another value
     def modify_vector(indexes, val)
-      positions = @index.pos(*indexes)
+      positions = @index[*indexes]
 
       if positions.is_a? Numeric
         @data[positions] = val

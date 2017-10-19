@@ -51,7 +51,14 @@ if Daru.has_nmatrix?
 
         # :nocov:
         def ==(other)
-          @data[0...@size] == other[0...@size] and @size == other.size
+          case other
+          when @data.class
+            @data[0...@size] == other[0...@size] && @size == other.size
+          when self.class
+            @data[0...@size] == other.data[0...@size]
+          else
+            false
+          end
         end
         # :nocov:
 

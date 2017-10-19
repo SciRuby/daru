@@ -558,7 +558,7 @@ module Daru
     def dup(vectors_to_dup=nil)
       vectors_to_dup ||= @vectors.to_a
 
-      src = vectors_to_dup.map { |vec| @data[@vectors.pos(vec)].dup }
+      src = vectors_to_dup.map { |vec| @data[@vectors[vec]].dup }
       new_order = Daru::Index.new(vectors_to_dup)
 
       Daru::DataFrame.new src, order: new_order, index: @index.dup, name: @name, clone: true
@@ -2248,7 +2248,7 @@ module Daru
 
     # returns array of row tuples at given index(s)
     def access_row_tuples_by_indexs(*indexes)
-      positions = @index.pos(*indexes)
+      positions = @index[*indexes]
 
       return populate_row_for(positions) if positions.is_a? Numeric
 
@@ -2436,7 +2436,7 @@ module Daru
     def access_vector_single_index(*names)
       if names.count < 2
         begin
-          pos = @vectors.is_a?(Daru::DateTimeIndex) ? @vectors[names.first] : @vectors.pos(names.first)
+          pos = @vectors.is_a?(Daru::DateTimeIndex) ? @vectors[names.first] : @vectors[names.first]
         rescue IndexError
           raise IndexError, "Specified vector #{names.first} does not exist"
         end

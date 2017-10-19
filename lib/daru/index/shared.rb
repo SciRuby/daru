@@ -1,5 +1,10 @@
 module Daru
   module IndexSharedBehavior
+    # TODO: optimize
+    def keys_at(*positions)
+      positions.map(&method(:key))
+    end
+
     # Produce new index from the set union of two indexes.
     #
     # @param other [Daru::Index]
@@ -33,7 +38,7 @@ module Daru
     #
     def at(*positions)
       positions = preprocess_positions(positions).tap(&method(:validate_positions))
-      positions.is_a?(Integer) ? key(positions) : recreate(values_at(*positions))
+      positions.is_a?(Integer) ? key(positions) : recreate(keys_at(*positions))
     end
 
     # Changes order of index labels according to new positions provided
@@ -47,21 +52,24 @@ module Daru
     # @param positions [Array<Integer>]
     # @return [Index]
     def reorder(positions)
-      recreate(values_at(*positions), name: name)
+      recreate(keys_at(*positions), name: name)
     end
 
     private
 
     # Preprocess ranges, integers and array in appropriate ways
     def preprocess_positions(positions)
-      return positions unless positions.size == 1
+      unless positions.size == 1
+        return TypeCheck[Array, of: Integer] === positions ? positions : nil
+      end
+
       case (position = positions.first)
       when Integer
         position
-      when Range
+      when TypeCheck[Range, of: Integer]
         size.times.to_a[position] # Converts ranges, including 1..-1-alike ones, to list of valid positions
       else
-        raise ArgumentError, "Unkown position type #{pos}"
+        nil
       end
     end
 
