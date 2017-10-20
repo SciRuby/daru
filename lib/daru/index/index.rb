@@ -120,11 +120,11 @@ module Daru
     def [](*args)
       case
       when args.first.is_a?(Range)
-        by_range args.first
+        positions_by_range(args.first)
       when args.count > 1
-        by_multi_key *args
+        relation_hash.values_at(*args)
       else
-        by_single_key args.first
+        relation_hash[args.first]
       end
     end
 
@@ -160,9 +160,23 @@ module Daru
     #   end
     # end
     def pos(*labels)
-      by_labels = self[*labels]
-      # FIXME: fragile
-      by_labels.nil? || TypeCheck[Array, of: nil].match?(by_labels) ? preprocess_positions(labels) : by_labels
+      if fetch_from_labels?(labels)
+        self[*labels].tap { |result|
+          result.is_a?(Array) && (idx = result.index(nil)) and fail(IndexError, "Undefined index label: #{labels[idx].inspect}")
+        }
+      elsif TypeCheck[Array, of: Integer].match?(labels) || TypeCheck[Range, of: Integer].match?(labels.first)
+        preprocess_positions(labels).tap(&method(:validate_positions))
+      else
+        fail IndexError, "Undefined index label: #{labels.first.inspect}"
+      end
+    end
+
+    def fetch_from_labels?(labels)
+      if labels.first.is_a?(Range)
+        keys.include?(labels.first.begin) || keys.include?(labels.first.end)
+      else
+        (keys & labels).any?
+      end
     end
 
     # def subset(*indexes)
@@ -256,22 +270,10 @@ module Daru
       end
     end
 
-    def by_range(rng)
+    def positions_by_range(rng)
       begin_idx = relation_hash[rng.begin] or return nil
       end_idx   = relation_hash[rng.end] or return (begin_idx...size).to_a
       (rng.exclude_end? ? begin_idx...end_idx : begin_idx..end_idx).to_a
-    end
-
-    def by_multi_key(*key)
-      key.map { |k| by_single_key k }
-    end
-
-    def by_single_key(key)
-      if @relation_hash.key?(key)
-        @relation_hash[key]
-      else
-        nil
-      end
     end
 
     def numeric_pos(key)

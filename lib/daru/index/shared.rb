@@ -59,9 +59,7 @@ module Daru
 
     # Preprocess ranges, integers and array in appropriate ways
     def preprocess_positions(positions)
-      unless positions.size == 1
-        return TypeCheck[Array, of: Integer] === positions ? positions : nil
-      end
+      return positions unless positions.size == 1
 
       case (position = positions.first)
       when Integer
@@ -69,15 +67,15 @@ module Daru
       when TypeCheck[Range, of: Integer]
         size.times.to_a[position] # Converts ranges, including 1..-1-alike ones, to list of valid positions
       else
-        nil
+        fail IndexError, "Undefined position: #{position}"
       end
     end
 
     # Raises IndexError when one of the positions is an invalid position
     def validate_positions(positions)
-      min_invalid = Array(positions).select { |pos| pos >= size }.min
+      min_invalid = Array(positions).detect { |pos| pos >= size || pos < 0 }
 
-      raise IndexError, "Positions starting from #{min_invalid} are above index size" if min_invalid
+      raise IndexError, "Invalid index position: #{min_invalid}" if min_invalid
     end
 
     def recreate(*args)

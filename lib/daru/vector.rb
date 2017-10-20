@@ -242,7 +242,6 @@ module Daru
     def [](*labels_or_positions)
       # Get array of positions indexes
       positions = @index.pos(*labels_or_positions)
-      fail IndexError if !positions || positions.empty?
 
       # If one object is asked return it
       return @data[positions] if positions.is_a? Integer
@@ -266,8 +265,6 @@ module Daru
     #   #   1   b
     #   #   2   c
     def at(*positions)
-      # to be used to form index
-      original_positions = positions
       positions = coerce_positions(*positions)
       validate_positions(*positions)
 
@@ -275,7 +272,7 @@ module Daru
         @data[positions]
       else
         values = positions.map { |pos| @data[pos] }
-        Daru::Vector.new values, index: @index.at(*original_positions), dtype: dtype
+        Daru::Vector.new values, index: @index.keys_at(*positions), dtype: dtype
       end
     end
 
@@ -1594,24 +1591,21 @@ module Daru
 
     # coerce ranges, integers and array in appropriate ways
     def coerce_positions(*positions)
-      if positions.size == 1
-        case positions.first
-        when Integer
-          positions.first
-        when Range
-          size.times.to_a[positions.first]
-        else
-          raise ArgumentError, 'Unkown position type.'
-        end
+      return positions unless positions.size == 1
+      case positions.first
+      when Integer
+        positions.first
+      when Range
+        size.times.to_a[positions.first]
       else
-        positions
+        raise ArgumentError, 'Unkown position type.'
       end
     end
 
     # Helper method for []=.
     # Assigs existing index to another value
     def modify_vector(indexes, val)
-      positions = @index[*indexes]
+      positions = @index.pos(*indexes)
 
       if positions.is_a? Numeric
         @data[positions] = val

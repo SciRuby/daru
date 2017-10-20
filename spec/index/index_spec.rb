@@ -180,12 +180,28 @@ RSpec.describe Daru::Index do
 
       # it is treated as labels!
       its([1..3]) { is_expected.to eq [2, 3] }
+
+      it 'fails on one non-existent value' do
+        expect { index.pos(:c) }.to raise_error(IndexError, "Undefined index label: :c")
+      end
+
+      it 'fails on one of several values non-existent' do
+        expect { index.pos(:a, :c) }.to raise_error(IndexError, "Undefined index label: :c")
+      end
     end
 
     context 'by position' do
       its([0]) { is_expected.to eq 0 }
       its([0, 3]) { is_expected.to eq [0, 3] }
       its([0..-1]) { is_expected.to eq [0, 1, 2, 3] }
+
+      it 'fails on one non-existent position' do
+        expect { index.pos(6) }.to raise_error(IndexError, "Invalid index position: 6")
+      end
+
+      it 'fails on one of several values non-existent' do
+        expect { index.pos(0, 6) }.to raise_error(IndexError, "Invalid index position: 6")
+      end
     end
 
     context 'unknown value' do
