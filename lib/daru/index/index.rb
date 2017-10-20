@@ -2,12 +2,6 @@ require 'forwardable'
 require_relative 'shared'
 
 module Daru
-  def Daru.Index(values, name: nil)
-    MultiIndex.try_create(values, name: name) ||
-      DateTimeIndex.try_create(values, name: name) ||
-      Index.new(values, name: name)
-  end
-
   # Index is ordered, uniq set of labels, that is used throughout Daru as an axis for other data types
   # ({Vector} and {DataFrame}).
   #
@@ -22,12 +16,39 @@ module Daru
   #    subdivision").
   # * {DateTimeIndex}: each label is a timestamp, provides additional functionality for slicing by
   #   year or month, checking idex regularity and so on.
-  # * {CategoricalIndex}: special type of index, allowing repeating values (categories as an axis).
+  # * {CategoricalIndex}: list of possible labels limited to a closed set of categories.
   #
+  # @note
+  #   Any custom Index-like object should conform to this API:
+  #     * `initialize(labels, name:)`
+  #     * `[](label, or *labels, or range)`, returns `nil`s if something not found
+  #     * `pos(label, or *labels, or range, or position, or *positions, or range)`, raises `IndexError` is something not found
+  #     * `each { |label| ...`
+  #     * `include?(label)`
+  #     * TBD! This list is WIP!
+  #
+  #   Also, any data structures that use indexes, _should_ rely only on this interface, at least for
+  #   base functionality (not guarded by `if index.is_a?(ParticularIndexClass)`... which is a code
+  #   smell, BTW).
   class Index
     include Enumerable
     extend Forwardable
     include IndexSharedBehavior
+
+    # Homogenously create index, guessing type from data passed.
+    #
+    # * if each label is an array of values, it would be {MultiIndex};
+    # * if each label is `Time`, `Date`, or `DateTime`, it would be {DateTimeIndex};
+    # * otherwise, just {Index}.
+    #
+    # @param labels [Array]
+    # @param name Optional index name
+    # @return [Index, MultiIndex, DateTimeIndex]
+    def self.[](labels, name: nil)
+      MultiIndex.try_create(labels, name: name) ||
+        DateTimeIndex.try_create(labels, name: name) ||
+        Index.new(values, name: name)
+    end
 
     # @private
     def self.coerce(maybe_index)
@@ -62,8 +83,8 @@ module Daru
     #   @return [Array]
     # @!method size
     #   @return [Integer]
-    # @!method include?(value)
-    #   If index includes the value specified.
+    # @!method include?(label)
+    #   If index includes the label specified.
     #   @return [Boolean]
 
     # @param threshold [Integer] Maximum number of values to inspect.
@@ -92,7 +113,7 @@ module Daru
       self
     end
 
-    # Index value by position.
+    # Index label by position.
     #
     # @param position [Integer] Position in index 0...index.size
     # @return Lable at position, or nil if position is not numeric or outside the index size
@@ -120,7 +141,7 @@ module Daru
     def [](*args)
       case
       when args.first.is_a?(Range)
-        positions_by_range(args.first)
+        range2positions(args.first)
       when args.count > 1
         relation_hash.values_at(*args)
       else
@@ -141,24 +162,20 @@ module Daru
     #   indexes.all? { |i| include?(i) || (0...size).include?(i) }
     # end
 
-    # Returns positions given indexes or positions.
+    # Returns positions by labels or positions. Used by {Vector} and {DataFrame} to provide powerful
+    # `#[]` implementation, working both in `Hash`-like and `Array`-like ways (e.g. `vector[0]` and
+    # `vector['France']`).
     #
-    # @note If any of arguments is a valid label, ALL arguments considered labels, this prohibits
-    #   any ambiguity.
-    # @param labels [Array<object>] indexes or positions
     # @example
     #   x = Daru::Index.new [:a, :b, :c]
-    #   x.pos :a, 1
-    #   # => [0, 1]
-    # def pos(*indexes)
-    #   indexes = preprocess_range(indexes.first) if indexes.first.is_a? Range
+    #   x.pos(:a, :b) # => [0, 1]
+    #   x.pos(1..2)   # => [1, 2]
+    #   x.pos(:a, 1)  # => IndexError, you can't provide labels and positions at same time.
     #
-    #   if indexes.size == 1
-    #     numeric_pos indexes.first
-    #   else
-    #     indexes.map { |index| numeric_pos index }
-    #   end
-    # end
+    # @param labels [Range, Array, Object] Labels or positions. If any of arguments is a valid label,
+    #   ALL arguments considered labels, this prohibits any ambiguity.
+    # @return [Integer, Array<Integer>]
+    # @raise IndexError if any of values passed is not in index/is not valid position.
     def pos(*labels)
       if fetch_from_labels?(labels)
         self[*labels].tap { |result|
@@ -168,14 +185,6 @@ module Daru
         preprocess_positions(labels).tap(&method(:validate_positions))
       else
         fail IndexError, "Undefined index label: #{labels.first.inspect}"
-      end
-    end
-
-    def fetch_from_labels?(labels)
-      if labels.first.is_a?(Range)
-        keys.include?(labels.first.begin) || keys.include?(labels.first.end)
-      else
-        (keys & labels).any?
       end
     end
 
@@ -218,8 +227,7 @@ module Daru
 
     # @return [Index]
     def dup
-      # FIXME: name
-      Daru::Index.new keys
+      Daru::Index.new keys, name: name
     end
 
     # def add(*indexes)
@@ -256,6 +264,14 @@ module Daru
 
     private
 
+    def fetch_from_labels?(labels)
+      if labels.first.is_a?(Range)
+        keys.include?(labels.first.begin) || keys.include?(labels.first.end)
+      else
+        (keys & labels).any?
+      end
+    end
+
     def preprocess_range(rng)
       start   = rng.begin
       en      = rng.end
@@ -270,7 +286,7 @@ module Daru
       end
     end
 
-    def positions_by_range(rng)
+    def range2positions(rng)
       begin_idx = relation_hash[rng.begin] or return nil
       end_idx   = relation_hash[rng.end] or return (begin_idx...size).to_a
       (rng.exclude_end? ? begin_idx...end_idx : begin_idx..end_idx).to_a
