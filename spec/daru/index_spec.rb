@@ -1,10 +1,4 @@
-require 'spec_helper.rb'
-
 RSpec.describe Daru::Index do
-  def method_call(object, method)
-    ->(*arg) { object.send(method, *arg) }
-  end
-
   describe '#initialize' do
     subject { described_class.new data }
 

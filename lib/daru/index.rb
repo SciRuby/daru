@@ -20,13 +20,18 @@ module Daru
   #
   # @note
   #   Any custom Index-like object should conform to this API:
-  #     * `initialize(labels, name:)`
-  #     * `[](label, or *labels, or range)`, returns `nil`s if something not found
-  #     * `pos(label, or *labels, or range, or position, or *positions, or range)`,
-  #       raises `IndexError` is something not found
-  #     * `each { |label| ...`
-  #     * `include?(label)`
-  #     * TBD! This list is WIP!
+  #
+  #   * `#initialize(labels, name:)`
+  #   * `#pos(label, or *labels, or range, or position, or *positions, or range)`,
+  #     raises `IndexError` is something not found
+  #   * `#each { |label| ...`
+  #   * `#include?(label)`
+  #   * TBD! This list is WIP!
+  #
+  #   It is also nice (yet not strictly required) to provide:
+  #
+  #   * custom pretty `#inspect`;
+  #   * reasonable `#==`.
   #
   #   Also, any data structures that use indexes, _should_ rely only on this interface, at least for
   #   base functionality (not guarded by `if index.is_a?(ParticularIndexClass)`... which is a code

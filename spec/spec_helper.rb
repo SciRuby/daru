@@ -89,3 +89,7 @@ class String
 end
 
 Dir[File.expand_path('../support/**/*.rb', __FILE__)].each {|f| require f }
+
+def method_call(object, method)
+  ->(*arg) { object.send(method, *arg) }
+end

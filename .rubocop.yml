@@ -88,6 +88,8 @@ Style/EmptyElse:
 
 Metrics/LineLength:
   Max: 120
+  Exclude:
+    - 'spec/**/*'
 
 Metrics/ModuleLength:
   Max: 200
@@ -136,6 +138,9 @@ RSpec/EmptyExampleGroup:
   CustomIncludeMethods: [its_call, its_map]
 
 RSpec/NestedGroups:
+  Enabled: false
+
+RSpec/ExampleLength:
   Enabled: false
 
 # Current preferred metrics --------------------------------------------
