@@ -182,11 +182,11 @@ RSpec.describe Daru::Index do
       its([1..3]) { is_expected.to eq [2, 3] }
 
       it 'fails on one non-existent value' do
-        expect { index.pos(:c) }.to raise_error(IndexError, "Undefined index label: :c")
+        expect { index.pos(:c) }.to raise_error(IndexError, 'Undefined index label: :c')
       end
 
       it 'fails on one of several values non-existent' do
-        expect { index.pos(:a, :c) }.to raise_error(IndexError, "Undefined index label: :c")
+        expect { index.pos(:a, :c) }.to raise_error(IndexError, 'Undefined index label: :c')
       end
     end
 
@@ -196,15 +196,12 @@ RSpec.describe Daru::Index do
       its([0..-1]) { is_expected.to eq [0, 1, 2, 3] }
 
       it 'fails on one non-existent position' do
-        expect { index.pos(6) }.to raise_error(IndexError, "Invalid index position: 6")
+        expect { index.pos(6) }.to raise_error(IndexError, 'Invalid index position: 6')
       end
 
       it 'fails on one of several values non-existent' do
-        expect { index.pos(0, 6) }.to raise_error(IndexError, "Invalid index position: 6")
+        expect { index.pos(0, 6) }.to raise_error(IndexError, 'Invalid index position: 6')
       end
-    end
-
-    context 'unknown value' do
     end
   end
 
@@ -237,10 +234,10 @@ RSpec.describe Daru::Index do
 
     let(:idx) { described_class.new [:one, 'one', 1, 2, 'two', nil, [1, 2]] }
 
-    its([]          ) { is_expected.to eq [false, false, false, false, false, false, false] }
-    its(['one']     ) { is_expected.to eq [false, true, false, false, false, false, false] }
-    its([2, :one]   ) { is_expected.to eq [true, false, false, true, false, false, false] }
-    its(['one', 1]  ) { is_expected.to eq [false, true, true, false, false, false, false] }
+    its([]) { is_expected.to eq [false, false, false, false, false, false, false] }
+    its(['one']) { is_expected.to eq [false, true, false, false, false, false, false] }
+    its([2, :one]) { is_expected.to eq [true, false, false, true, false, false, false] }
+    its(['one', 1]) { is_expected.to eq [false, true, true, false, false, false, false] }
     its(['two', nil]) { is_expected.to eq [false, false, false, false, true, true, false] }
     its([[1, 2]]) { is_expected.to eq [false, false, false, false, false, false, true] }
   end

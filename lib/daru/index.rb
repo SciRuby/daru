@@ -1,5 +1,5 @@
 require 'forwardable'
-require_relative 'shared'
+require_relative 'index/shared'
 
 module Daru
   # Index is ordered, uniq set of labels, that is used throughout Daru as an axis for other data types
@@ -22,7 +22,8 @@ module Daru
   #   Any custom Index-like object should conform to this API:
   #     * `initialize(labels, name:)`
   #     * `[](label, or *labels, or range)`, returns `nil`s if something not found
-  #     * `pos(label, or *labels, or range, or position, or *positions, or range)`, raises `IndexError` is something not found
+  #     * `pos(label, or *labels, or range, or position, or *positions, or range)`,
+  #       raises `IndexError` is something not found
   #     * `each { |label| ...`
   #     * `include?(label)`
   #     * TBD! This list is WIP!
@@ -179,12 +180,13 @@ module Daru
     def pos(*labels)
       if fetch_from_labels?(labels)
         self[*labels].tap { |result|
-          result.is_a?(Array) && (idx = result.index(nil)) and fail(IndexError, "Undefined index label: #{labels[idx].inspect}")
+          result.is_a?(Array) && (idx = result.index(nil)) and
+            raise(IndexError, "Undefined index label: #{labels[idx].inspect}")
         }
       elsif TypeCheck[Array, of: Integer].match?(labels) || TypeCheck[Range, of: Integer].match?(labels.first)
         preprocess_positions(labels).tap(&method(:validate_positions))
       else
-        fail IndexError, "Undefined index label: #{labels.first.inspect}"
+        raise IndexError, "Undefined index label: #{labels.first.inspect}"
       end
     end
 

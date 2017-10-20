@@ -67,7 +67,7 @@ module Daru
       when TypeCheck[Range, of: Integer]
         size.times.to_a[position] # Converts ranges, including 1..-1-alike ones, to list of valid positions
       else
-        fail IndexError, "Undefined position: #{position}"
+        raise IndexError, "Undefined position: #{position}"
       end
     end
 

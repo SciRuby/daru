@@ -158,9 +158,6 @@ Metrics/BlockLength:
 Style/Documentation:
   Enabled: false
 
-RSpec/FilePath:
-  Enabled: false
-
 # To discuss and decide ------------------------------------------------
 
 # FIXME: in fact, rescue modifier is rarely a good choice.

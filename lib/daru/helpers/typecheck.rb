@@ -19,7 +19,7 @@ module Daru
       @size = size
     end
 
-    def ===(object)
+    def ===(object) # rubocop:disable Naming/BinaryOperatorParameterName
       object.is_a?(@class) && of(object) && size(object)
     end
 
@@ -27,6 +27,7 @@ module Daru
 
     private
 
+    # rubocop:disable Style/CaseEquality
     def of(object)
       return true if @of == NONE
       case object
@@ -35,9 +36,10 @@ module Daru
       when Enumerable
         object.count > 0 && object.all? { |o| @of === o }
       else
-        fail "Can't use of: option for TypeCheck with #{object}"
+        raise "Can't use of: option for TypeCheck with #{object}"
       end
     end
+    # rubocop:enable Style/CaseEquality
 
     def size(object)
       return true unless @size
