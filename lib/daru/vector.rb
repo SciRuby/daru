@@ -8,7 +8,17 @@ require 'daru/accessors/gsl_wrapper.rb'
 require 'daru/category.rb'
 
 module Daru
-  class Vector # rubocop:disable Metrics/ClassLength
+  # Vector is one-dimensional, non-unique, ordered list of values with labels and optional name.
+  #
+  # It is one of a base data structures of Daru, alongside with DataFrame (two-dimensional data
+  # table consisting of Vectors).
+  #
+  # Vector behaves like an Array (values in vector can be enumerated and addressed by numeric positions)
+  # and a Hash (addressed by labels in vector's Index) at the same time.
+  #
+  # TODO: This description should be extended and examples added.
+  #
+  class Vector
     include Enumerable
     include Daru::Maths::Arithmetic::Vector
     include Daru::Maths::Statistics::Vector
@@ -68,14 +78,6 @@ module Daru
           a.respond_to?(:to_a) ? a.to_a : a
         end.flatten
         Daru::Vector.new(values)
-      end
-
-      def _load(data) # :nodoc:
-        h = Marshal.load(data)
-        Daru::Vector.new(h[:data],
-          index: h[:index],
-          name: h[:name],
-          dtype: h[:dtype], missing_values: h[:missing_values])
       end
 
       def coerce(data, options={})
@@ -1364,24 +1366,6 @@ module Daru
       Daru::Vector.new(([nil]*size), name: @name, index: @index.dup)
     end
 
-    # Save the vector to a file
-    #
-    # == Arguments
-    #
-    # * filename - Path of file where the vector is to be saved
-    def save(filename)
-      Daru::IO.save self, filename
-    end
-
-    def _dump(*) # :nodoc:
-      Marshal.dump(
-        data:           @data.to_a,
-        dtype:          @dtype,
-        name:           @name,
-        index:          @index
-      )
-    end
-
     # :nocov:
     def daru_vector(*)
       self
@@ -1521,7 +1505,8 @@ module Daru
         cast(dtype: :array) # NM with nils seg faults
         @data.fill(nil, @data.size...@index.size)
       elsif @index.size < @data.size
-        raise IndexError, "Expected index size >= vector size. Index size : #{@index.size}, vector size : #{@data.size}"
+        raise ArgumentError,
+          "Expected index size >= vector size. Index size : #{@index.size}, vector size : #{@data.size}"
       end
     end
 

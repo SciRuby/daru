@@ -4,7 +4,7 @@ module Daru
     # is done inside the wrapper, so that native methods can be used for most of
     # the computationally intensive tasks.
     module Statistics
-      module Vector # rubocop:disable Metrics/ModuleLength
+      module Vector
         extend Gem::Deprecate
 
         def mean

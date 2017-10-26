@@ -1,5 +1,5 @@
 module Daru
-  module Category # rubocop:disable Metrics/ModuleLength
+  module Category
     UNDEFINED = Object.new.freeze
 
     attr_accessor :base_category

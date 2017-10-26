@@ -124,10 +124,12 @@ module Daru
     #
     # @param position [Integer] Position in index 0...index.size
     # @return Lable at position, or nil if position is not numeric or outside the index size
-    def key(position)
+    def label(position)
       return nil unless position.is_a?(Integer)
       keys[position]
     end
+
+    alias key label
 
     # @overload [](value)
     #   @param value One value from index.

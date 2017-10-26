@@ -92,10 +92,10 @@ Metrics/LineLength:
     - 'spec/**/*'
 
 Metrics/ModuleLength:
-  Max: 200
+  Enabled: false
 
 Metrics/ClassLength:
-  Max: 300
+  Enabled: false
 
 Style/ParallelAssignment:
   Enabled: false
