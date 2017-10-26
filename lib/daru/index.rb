@@ -26,6 +26,7 @@ module Daru
   #     raises `IndexError` is something not found
   #   * `#each { |label| ...`
   #   * `#include?(label)`
+  #   * `#label(position)` (aliased as `#key` by historical reasons)
   #   * TBD! This list is WIP!
   #
   #   It is also nice (yet not strictly required) to provide:
@@ -53,12 +54,12 @@ module Daru
     def self.[](labels, name: nil)
       MultiIndex.try_create(labels, name: name) ||
         DateTimeIndex.try_create(labels, name: name) ||
-        Index.new(values, name: name)
+        Index.new(labels, name: name)
     end
 
     # @private
     def self.coerce(maybe_index)
-      maybe_index.is_a?(Index) ? maybe_index : Daru::Index.new(maybe_index)
+      maybe_index.is_a?(Daru::IndexSharedBehavior) ? maybe_index : Daru::Index[maybe_index]
     end
 
     # Optional name of the index.

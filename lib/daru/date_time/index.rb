@@ -214,7 +214,7 @@ module Daru
     include Enumerable
     Helper = DateTimeIndexHelper
 
-    def self.try_create(source)
+    def self.try_create(source, *)
       new(source, freq: :infer) if TypeCheck[Array, of: ::DateTime].match?(source)
     end
 

@@ -146,9 +146,18 @@ RSpec.describe Daru::MultiIndex do
     end
   end
 
-  describe '#=='
+  describe '#==' do
+    it { is_expected.to eq described_class.new(data) }
+    it { is_expected.not_to eq described_class.new(data.reverse) }
+    it { is_expected.not_to eq Daru::Index.new(data.map(&:first)) }
+  end
 
-  describe '#[]'
+  describe '#label' do
+    subject { method_call(index, :label) }
+
+    its([3]) { is_expected.to eq %i[b two] }
+    its([20]) { is_expected.to be_nil }
+  end
 
   describe '#pos' do
     subject { method_call(index, :pos) }

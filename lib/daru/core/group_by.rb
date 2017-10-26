@@ -25,6 +25,7 @@ module Daru
         @groups = {}
         @non_group_vectors = context.vectors.to_a - names
         @context = context
+        p [names, context]
         vectors = names.map { |vec| context[vec].to_a }
         tuples  = vectors[0].zip(*vectors[1..-1])
         # FIXME: It feels like we don't want to sort here. Ruby's #group_by
@@ -343,7 +344,7 @@ module Daru
       end
 
       def resultant_context(multi_index_tuples, names)
-        multi_index = Daru::MultiIndex.from_tuples(multi_index_tuples)
+        multi_index = Daru::MultiIndex.new(multi_index_tuples)
         context_tmp = @context.dup.delete_vectors(*names)
         rows_tuples = context_tmp.access_row_tuples_by_indexs(
           *@groups.values.flatten!

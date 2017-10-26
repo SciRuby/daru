@@ -8,12 +8,21 @@ module Daru
     def_delegators :@labels, :size, :each
     alias to_a labels
 
+    def self.try_create(labels, name: nil)
+      return nil unless labels.count > 0 && labels.all? { |l| l.is_a?(Array) && l.size > 1 }
+      new(labels, name: name)
+    end
+
     def initialize(labels, name: nil)
       validate_labels(labels)
 
       @labels = labels.uniq
       @relations_hash = nested_relations_hash(labels.uniq)
       @name = name
+    end
+
+    def ==(other)
+      other.is_a?(self.class) && labels == other.labels
     end
 
     def width
@@ -24,6 +33,12 @@ module Daru
       "#<Daru::MultiIndex(#{size}x#{width})>\n" +
         Formatters::Table.format([], headers: @name, row_headers: sparse_tuples, threshold: threshold)
     end
+
+    def label(position)
+      labels[position]
+    end
+
+    alias key label
 
     def pos(*labels_or_positions)
       res = relations_hash.dig(*labels_or_positions)
@@ -41,22 +56,6 @@ module Daru
       end
     end
 
-    private
-
-    def positions_from_hash(hash)
-      hash.values.flat_map { |v| v.is_a?(Integer) ? v : positions_from_hash(v) }
-    end
-
-    def validate_labels(labels)
-      size_groups = labels.group_by(&:size)
-      size_groups.size == 1 or
-        raise ArgumentError, 'Different MultiIndex label sizes: ' +
-                             size_groups.map(&:last).map(&:first).map(&:inspect).join(', ')
-
-      size_groups.first.first < 2 and
-        raise ArgumentError, 'MultiIndex should contain at least 2 values in each label'
-    end
-
     # Return tuples with nils in place of repeating values, like this:
     #
     # [:a , :bar, :one]
@@ -70,6 +69,23 @@ module Daru
         left = cur.zip(prev).drop_while { |c, p| c == p }
         [nil] * (cur.size - left.size) + left.map(&:first)
       }
+    end
+
+    private
+
+    def positions_from_hash(hash)
+      hash.values.flat_map { |v| v.is_a?(Integer) ? v : positions_from_hash(v) }
+    end
+
+    def validate_labels(labels)
+      labels.empty? and raise ArgumentError, 'MultiIndex can not be created from empty labels'
+      size_groups = labels.group_by(&:size)
+      size_groups.size == 1 or
+        raise ArgumentError, 'Different MultiIndex label sizes: ' +
+                             size_groups.map(&:last).map(&:first).map(&:inspect).join(', ')
+
+      size_groups.first.first < 2 and
+        raise ArgumentError, 'MultiIndex should contain at least 2 values in each label'
     end
 
     def nested_relations_hash(arrays, start_idx=0)
