@@ -12,6 +12,7 @@ RSpec.describe Daru::MultiIndex do
     ]
   }
 
+  describe '.try_create'
   describe '#initialize' do
     subject { described_class.new data }
 

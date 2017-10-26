@@ -18,12 +18,12 @@ describe Daru::DataFrame do
       [:c,:two,:foo],
       [:c,:two,:bar]
     ]
-    @multi_index = Daru::MultiIndex.from_tuples(tuples)
+    @multi_index = Daru::MultiIndex.new(tuples)
 
     @vector_arry1 = [11,12,13,14,11,12,13,14,11,12,13,14]
     @vector_arry2 = [1,2,3,4,1,2,3,4,1,2,3,4]
 
-    @order_mi = Daru::MultiIndex.from_tuples([
+    @order_mi = Daru::MultiIndex.new([
       [:a,:one,:bar],
       [:a,:two,:baz],
       [:b,:two,:foo],
@@ -117,7 +117,7 @@ describe Daru::DataFrame do
           [13, 3, 13, 3],
           [14, 4, 14, 4]
         ]
-        index = Daru::MultiIndex.from_tuples([
+        index = Daru::MultiIndex.new([
           [:one,:bar],
           [:one,:baz],
           [:two,:foo],
@@ -414,19 +414,19 @@ describe Daru::DataFrame do
       it "aligns MultiIndexes properly" do
         pending
         mi_a = @order_mi
-        mi_b = Daru::MultiIndex.from_tuples([
+        mi_b = Daru::MultiIndex.new([
           [:b,:one,:foo],
           [:a,:one,:bar],
           [:b,:two,:foo],
           [:a,:one,:baz]
         ])
-        mi_sorted = Daru::MultiIndex.from_tuples([
+        mi_sorted = Daru::MultiIndex.new([
           [:a, :one, :bar],
           [:a, :one, :baz],
           [:b, :one, :foo],
           [:b, :two, :foo]
         ])
-        order = Daru::MultiIndex.from_tuples([
+        order = Daru::MultiIndex.new([
           [:pee, :que],
           [:pee, :poo]
         ])
@@ -504,7 +504,7 @@ describe Daru::DataFrame do
       end
 
       it "returns DataFrame when specified first layer of MultiIndex" do
-        sub_order = Daru::MultiIndex.from_tuples([
+        sub_order = Daru::MultiIndex.new([
           [:one, :bar],
           [:two, :baz]
           ])
@@ -632,7 +632,7 @@ describe Daru::DataFrame do
       end
 
       it "creates a new vector when full index specfied" do
-        order = Daru::MultiIndex.from_tuples([
+        order = Daru::MultiIndex.new([
           [:a,:one,:bar],
           [:a,:two,:baz],
           [:b,:two,:foo],
@@ -940,7 +940,7 @@ describe Daru::DataFrame do
 
     context Daru::MultiIndex do
       let (:idx) do
-        Daru::MultiIndex.from_tuples [
+        Daru::MultiIndex.new [
           [:a,:one,:bar],
           [:a,:one,:baz],
           [:b,:two,:bar],
@@ -1207,7 +1207,7 @@ describe Daru::DataFrame do
 
     context Daru::MultiIndex do
       let (:idx) do
-        Daru::MultiIndex.from_tuples [
+        Daru::MultiIndex.new [
           [:a,:one,:bar],
           [:a,:one,:baz],
           [:b,:two,:bar],
@@ -1451,7 +1451,7 @@ describe Daru::DataFrame do
       end
 
       it "returns a DataFrame whecn specifying numeric range" do
-        sub_index = Daru::MultiIndex.from_tuples([
+        sub_index = Daru::MultiIndex.new([
           [:a,:one,:bar],
           [:a,:one,:baz]
         ])
@@ -1469,7 +1469,7 @@ describe Daru::DataFrame do
       end
 
       it "returns DataFrame when specifying first layer of MultiIndex" do
-        sub_index = Daru::MultiIndex.from_tuples([
+        sub_index = Daru::MultiIndex.new([
           [:one,:bar],
           [:one,:baz],
           [:two,:foo],
@@ -1484,7 +1484,7 @@ describe Daru::DataFrame do
       end
 
       it "returns DataFrame when specifying first and second layer of MultiIndex" do
-        sub_index = Daru::MultiIndex.from_tuples([
+        sub_index = Daru::MultiIndex.new([
           [:bar],
           [:baz]
         ])
@@ -1591,7 +1591,7 @@ describe Daru::DataFrame do
       subject(:data_frame) {
         Daru::DataFrame.new({b: [11,12,13], a: [1,2,3],
           c: [11,22,33]}, order: [:a, :b, :c],
-          index: Daru::MultiIndex.from_tuples([[:one, :two], [:one, :three], [:two, :four]]))
+          index: Daru::MultiIndex.new([[:one, :two], [:one, :three], [:two, :four]]))
       }
 
       before { data_frame.add_row [100,200,300], [:two, :five] }
@@ -1599,7 +1599,7 @@ describe Daru::DataFrame do
       it { is_expected.to eq(Daru::DataFrame.new({
           b: [11,12,13,200], a: [1,2,3,100],
           c: [11,22,33,300]}, order: [:a, :b, :c],
-          index: Daru::MultiIndex.from_tuples([[:one, :two], [:one, :three], [:two, :four], [:two, :five]])))
+          index: Daru::MultiIndex.new([[:one, :two], [:one, :three], [:two, :four], [:two, :five]])))
       }
     end
 
@@ -2869,7 +2869,7 @@ describe Daru::DataFrame do
     end
 
     it "creates row index as per (double) index argument and default aggregates to mean" do
-      agg_mi = Daru::MultiIndex.from_tuples(
+      agg_mi = Daru::MultiIndex.new(
         [
           ['bar', 'large'],
           ['bar', 'small'],
@@ -2884,13 +2884,13 @@ describe Daru::DataFrame do
     end
 
     it "creates row and vector index as per (single) index and (single) vectors args" do
-      agg_vectors = Daru::MultiIndex.from_tuples([
+      agg_vectors = Daru::MultiIndex.new([
         [:d, 'one'],
         [:d, 'two'],
         [:e, 'one'],
         [:e, 'two']
       ])
-      agg_index = Daru::MultiIndex.from_tuples(
+      agg_index = Daru::MultiIndex.new(
         [
           ['bar'],
           ['foo']
@@ -2909,7 +2909,7 @@ describe Daru::DataFrame do
     end
 
     it "creates row and vector index as per (single) index and (double) vector args" do
-      agg_vectors = Daru::MultiIndex.from_tuples(
+      agg_vectors = Daru::MultiIndex.new(
         [
           [:d, 'one', 'large'],
           [:d, 'one', 'small'],
@@ -2922,7 +2922,7 @@ describe Daru::DataFrame do
         ]
       )
 
-      agg_index = Daru::MultiIndex.from_tuples(
+      agg_index = Daru::MultiIndex.new(
         [
           ['bar'],
           ['foo']
@@ -2944,7 +2944,7 @@ describe Daru::DataFrame do
     end
 
     it "creates row and vector index with (double) index and (double) vector args" do
-      agg_index = Daru::MultiIndex.from_tuples([
+      agg_index = Daru::MultiIndex.new([
         ['bar', 4],
         ['bar', 5],
         ['bar', 6],
@@ -2954,7 +2954,7 @@ describe Daru::DataFrame do
         ['foo', 3]
       ])
 
-      agg_vectors = Daru::MultiIndex.from_tuples([
+      agg_vectors = Daru::MultiIndex.new([
         [:e, 'one', 'large'],
         [:e, 'one', 'small'],
         [:e, 'two', 'large'],
@@ -2973,7 +2973,7 @@ describe Daru::DataFrame do
     end
 
     it "only aggregates over the vector specified in the values argument" do
-      agg_vectors = Daru::MultiIndex.from_tuples(
+      agg_vectors = Daru::MultiIndex.new(
         [
           [:e, 'one', 'large'],
           [:e, 'one', 'small'],
@@ -2981,7 +2981,7 @@ describe Daru::DataFrame do
           [:e, 'two', 'small']
         ]
       )
-      agg_index = Daru::MultiIndex.from_tuples(
+      agg_index = Daru::MultiIndex.new(
         [
           ['bar'],
           ['foo']
@@ -2998,7 +2998,7 @@ describe Daru::DataFrame do
         )
       )
 
-      agg_vectors = Daru::MultiIndex.from_tuples(
+      agg_vectors = Daru::MultiIndex.new(
         [
           [:d, 'one'],
           [:d, 'two'],
@@ -3019,7 +3019,7 @@ describe Daru::DataFrame do
     end
 
     it "overrides default aggregate function to aggregate over sum" do
-      agg_vectors = Daru::MultiIndex.from_tuples(
+      agg_vectors = Daru::MultiIndex.new(
         [
           [:e, 'one', 'large'],
           [:e, 'one', 'small'],
@@ -3027,7 +3027,7 @@ describe Daru::DataFrame do
           [:e, 'two', 'small']
         ]
       )
-      agg_index = Daru::MultiIndex.from_tuples(
+      agg_index = Daru::MultiIndex.new(
         [
           ['bar'],
           ['foo']
@@ -3083,14 +3083,14 @@ describe Daru::DataFrame do
         e: [2,nil,4,6,6,8,10,12,nil]
       })
 
-      agg_vectors = Daru::MultiIndex.from_tuples(
+      agg_vectors = Daru::MultiIndex.new(
         [
           [:e, 'one'],
           [:e, 'two']
         ]
       )
 
-      agg_index = Daru::MultiIndex.from_tuples(
+      agg_index = Daru::MultiIndex.new(
         [
           ['bar'],
           ['foo'],
@@ -3135,8 +3135,8 @@ describe Daru::DataFrame do
           [
             [80.0, 80.0, nil],
             [nil, 80.0, 80.0],
-          ], index: Daru::MultiIndex.from_tuples([[:apr], [:feb], [:mar]]),
-          order: Daru::MultiIndex.from_tuples([[:averages, 2016], [:averages, 2014]])
+          ], index: Daru::MultiIndex.new([[:apr], [:feb], [:mar]]),
+          order: Daru::MultiIndex.new([[:averages, 2016], [:averages, 2014]])
         )
       # Comparing their parts previous to full comparison allows to
       # find complicated differences.
@@ -3594,7 +3594,7 @@ describe Daru::DataFrame do
 
     context Daru::MultiIndex do
       before do
-        agg_vectors = Daru::MultiIndex.from_tuples(
+        agg_vectors = Daru::MultiIndex.new(
           [
             [:d, :one, :large],
             [:d, :one, :small],
@@ -3607,7 +3607,7 @@ describe Daru::DataFrame do
           ]
         )
 
-        agg_index = Daru::MultiIndex.from_tuples(
+        agg_index = Daru::MultiIndex.new(
           [
             [:bar],
             [:foo]
@@ -3628,7 +3628,7 @@ describe Daru::DataFrame do
       end
 
       it "returns numeric vectors" do
-        vectors = Daru::MultiIndex.from_tuples(
+        vectors = Daru::MultiIndex.new(
           [
             [:d, :one, :large],
             [:d, :two, :large],
@@ -3639,7 +3639,7 @@ describe Daru::DataFrame do
           ]
         )
 
-        index = Daru::MultiIndex.from_tuples(
+        index = Daru::MultiIndex.new(
           [
             [:bar],
             [:foo]
@@ -3921,7 +3921,7 @@ describe Daru::DataFrame do
           {
             a:   [1,2,3,4,5,6,7],
             b: %w[a b c d e f g]
-          }, index: Daru::MultiIndex.from_tuples([
+          }, index: Daru::MultiIndex.new([
                 %w[foo one],
                 %w[foo two],
                 %w[foo three],

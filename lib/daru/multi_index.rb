@@ -1,4 +1,19 @@
 module Daru
+  # MultiIndex is a kind of dataframe Index which represents several levels of nested labels.
+  #
+  # In addition to usual index operations, it also allows slicing by sublevels.
+  #
+  # @example
+  #   # TODO:
+  #   #   construction and inspect
+  #   #   access to single row
+  #   #   access to subgroup
+  #
+  # In addition to being useful for storing complex data, MultiIndex is also utilized for structuring
+  # aggregated data, returned from {DataFrame#group_by}, {DataFrame#pivot_table} and similar methods.
+  #
+  # @see Index for explanation about indexes basics.
+  #
   class MultiIndex
     extend Forwardable
     include Enumerable
@@ -56,6 +71,7 @@ module Daru
       end
     end
 
+    # @private
     # Return tuples with nils in place of repeating values, like this:
     #
     # [:a , :bar, :one]
