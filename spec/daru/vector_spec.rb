@@ -111,9 +111,49 @@ RSpec.describe Daru::Vector do
   end
 
   describe '#each' do
+    context 'without block' do
+      its(:each) { is_expected.to be_a Enumerator }
+    end
+
+    context 'with block' do
+      subject { ->(block) { vector.each(&block) } }
+
+      it { is_expected.to yield_successive_args([:a, 1], [:b, 2], [:c, 3]) }
+    end
   end
 
-  describe 'Enumerable'
+  describe 'Enumerable' do
+    describe '#first(N)' do
+      subject { method_call(vector, :first) }
+
+      its([2]) { is_expected.to eq described_class.new [1, 2], index: %i[a b] }
+      # its([]) { is_expected.to eq 1 } -- TODO
+    end
+
+    describe '#select' do
+      subject { vector.select { |idx, val| val.odd? } }
+
+      it { is_expected.to eq described_class.new [1, 3], index: %i[a c] }
+    end
+
+    describe '#map' do
+      subject { vector.map { |idx, val| val + 1 } }
+
+      it { is_expected.to eq [2, 3, 4] } # map does not preserves class
+    end
+  end
+
+  describe '#recode!' do
+    before { vector.recode! { |val| val + 1 } }
+
+    it { is_expected.to eq described_class.new [2, 3, 4], index: %i[a b c] }
+  end
+
+  describe '#recode' do
+    subject { vector.recode { |val| val + 1 } }
+
+    it { is_expected.to eq described_class.new [2, 3, 4], index: %i[a b c] }
+  end
 
   # mutable part
   describe '#[]='

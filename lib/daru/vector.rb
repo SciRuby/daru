@@ -1,3 +1,5 @@
+require 'idempotent_enumerable'
+
 require 'daru/maths/arithmetic/vector.rb'
 require 'daru/maths/statistics/vector.rb'
 require 'daru/plotting/gruff.rb'
@@ -16,13 +18,17 @@ module Daru
   # Vector behaves like an Array (values in vector can be enumerated and addressed by numeric positions)
   # and a Hash (addressed by labels in vector's Index) at the same time.
   #
-  # TODO: This description should be extended and examples added.
+  # TODO: This description should be extended and examples added. IdempotentEnumerable behavior should
+  # be shown.
   #
   class Vector
-    include Enumerable
+    extend Gem::Deprecate
+
+    include IdempotentEnumerable
+    idempotent_enumerable.constructor = :new_from_pairs
+
     include Daru::Maths::Arithmetic::Vector
     include Daru::Maths::Statistics::Vector
-    extend Gem::Deprecate
 
     class << self
       # Create a new vector by specifying the size and an optional value
@@ -44,6 +50,10 @@ module Daru
         value = opts.delete :value
         block ||= ->(_) { value }
         Daru::Vector.new Array.new(n, &block), opts
+      end
+
+      def new_from_pairs(pairs)
+        new(pairs.map(&:last), index: pairs.map(&:first))
       end
 
       # Create a vector using (almost) any object
@@ -92,38 +102,6 @@ module Daru
       end
     end
 
-    def size
-      @data.size
-    end
-
-    def each(&block)
-      return to_enum(:each) unless block_given?
-
-      @data.each(&block)
-      self
-    end
-
-    def each_index(&block)
-      return to_enum(:each_index) unless block_given?
-
-      @index.each(&block)
-      self
-    end
-
-    def each_with_index(&block)
-      return to_enum(:each_with_index) unless block_given?
-
-      @data.to_a.zip(@index.to_a).each(&block)
-
-      self
-    end
-
-    def map!(&block)
-      return to_enum(:map!) unless block_given?
-      @data.map!(&block)
-      self
-    end
-
     # The name of the Daru::Vector. String.
     attr_reader :name
     # The row index. Can be either Daru::Index or Daru::MultiIndex.
@@ -134,71 +112,61 @@ module Daru
     # underlying NMatrix object. See NMatrix docs for more details on NMatrix
     # data types.
     attr_reader :nm_dtype
-    # An Array or the positions in the vector that are being treated as 'missing'.
-    attr_reader :missing_positions
-    deprecate :missing_positions, :indexes, 2016, 10
-    # Store a hash of labels for values. Supplementary only. Recommend using index
-    # for proper usage.
-    attr_accessor :labels
+
     # Store vector data in an array
     attr_reader :data
     # Ploting library being used for this vector
     attr_reader :plotting_library
 
-    # Create a Vector object.
+    # Create Vector from Array or Hash.
     #
-    # == Arguments
-    #
-    # @param source[Array,Hash] - Supply elements in the form of an Array or a
-    # Hash. If Array, a numeric index will be created if not supplied in the
-    # options. Specifying more index elements than actual values in *source*
-    # will insert *nil* into the surplus index elements. When a Hash is specified,
-    # the keys of the Hash are taken as the index elements and the corresponding
-    # values as the values that populate the vector.
-    #
-    # == Options
-    #
-    # * +:name+  - Name of the vector
-    #
-    # * +:index+ - Index of the vector
-    #
-    # * +:dtype+ - The underlying data type. Can be :array, :nmatrix or :gsl.
-    # Default :array.
-    #
-    # * +:nm_dtype+ - For NMatrix, the data type of the numbers. See the NMatrix docs for
-    # further information on supported data type.
-    #
-    # * +:missing_values+ - An Array of the values that are to be treated as 'missing'.
-    # nil is the default missing value.
+    # @param source [Array, Hash] Array of vector values or hash of `{index label => vector value}`.
+    #   In the former case, `index` parameter is ignored.
+    # @param name [String] Optional vector name.
+    # @param index [Daru::Index, Array, Hash] Any object from which {Index} can be constructed. If
+    #   index size is lower than values size, error is raised. If index size is greater, vector is
+    #   padded with `nil`s. If index is omitted, default counting index (0, 1, 2) will be created.
     #
     # @example
+    #    Daru::Vector.new([100, 200, 300], name: :salary, index: %w[Jill John Mary])
+    #    # => #<Daru::Vector(3)>
+    #    #         salary
+    #    #   Jill    100
+    #    #   John    200
+    #    #   Mary    300
+    #    Daru::Vector.new([100, 200, 300])
+    #    # => #<Daru::Vector(3)>
+    #    #       0    100
+    #    #       1    200
+    #    #       2    300
+    #    Daru::Vector.new(Jill: 100, John: 200, Mary: 300)
+    #    # => #<Daru::Vector(3)>
+    #    #   Jill    100
+    #    #   John    200
+    #    #   Mary    300
     #
-    #   vecarr = Daru::Vector.new [1,2,3,4], index: [:a, :e, :i, :o]
-    #   vechsh = Daru::Vector.new({a: 1, e: 2, i: 3, o: 4})
-    def initialize(source, opts={})
-      if opts[:type] == :category
-        # Initialize category type vector
-        extend Daru::Category
-        initialize_category source, opts
-      else
-        # Initialize non-category type vector
-        initialize_vector source, opts
-      end
+    def initialize(source, name: nil, index: nil)
+      source, index = source.values, source.keys if source.is_a?(Hash)
+      @data = source.to_a
+      @index = Index.coerce(index || (@data.size.zero? ? [] : 0...@data.size))
+
+      guard_sizes!
+
+      @name = name
     end
 
-    def plotting_library=(lib)
-      case lib
-      when :gruff, :nyaplot
-        @plotting_library = lib
-        if Daru.send("has_#{lib}?".to_sym)
-          extend Module.const_get(
-            "Daru::Plotting::Vector::#{lib.to_s.capitalize}Library"
-          )
-        end
-      else
-        raise ArguementError, "Plotting library #{lib} not supported. "\
-          'Supported libraries are :nyaplot and :gruff'
-      end
+    # Two vectors are equal if they have the exact same index values corresponding
+    # with the exact same elements. Name is ignored.
+    #
+    # @param other [Vector]
+    # @return [true, false]
+    def ==(other)
+      other.is_a?(Daru::Vector) && @index == other.index && @data == other.data
+    end
+
+    # @return [String]
+    def to_s
+      "#<#{self.class}#{': ' + @name.to_s if @name}(#{size})#{':category' if category?}>"
     end
 
     # Get element(s) from vector by index values or numeric positions.
@@ -206,7 +174,8 @@ module Daru
     # The logic of deciding if it is index value or position is following:
     # * if any of input values is present in index, all input values are decided to be values from
     #   index (even if the values are positive integers);
-    # * if all of input values are positive integers, they are decided to be numeric positions;
+    # * if none of values are in the index, but all of them are positive integers, they are decided
+    #   to be numeric positions;
     # * otherwise, `IndexError` is raised.
     #
     # @overload [](label)
@@ -242,18 +211,92 @@ module Daru
     #   # TODO
     #
     def [](*labels_or_positions)
-      # Get array of positions indexes
-      positions = @index.pos(*labels_or_positions)
+      positions = index.pos(*labels_or_positions)
 
-      # If one object is asked return it
-      return @data[positions] if positions.is_a? Integer
+      return data[positions] if positions.is_a?(Integer)
 
-      # Form a new Vector using positional indexes
       Daru::Vector.new(
-        positions.map { |loc| @data[loc] },
-        name: @name,
-        index: @index.keys_at(*positions), dtype: @dtype
+        data.values_at(*positions),
+        name: name,
+        index: index.keys_at(*positions)
       )
+    end
+
+    # Enumerates all (label, value) pairs in the index.
+    #
+    # @see each_value, each_label
+    #
+    # @example
+    #   # TODO
+    #
+    # @return [Enumerator, self]
+    def each
+      return to_enum(:each) unless block_given?
+
+      index.each_with_index { |idx, i| yield(idx, data[i]) }
+      self
+    end
+
+    # Produces new Vector with the same index and name, as current one, and values processed by
+    # block passed.
+    #
+    # @example:
+    #   vector = Daru::Vector.new([100, 200, 300], name: :salary, index: %w[Jill John Mary])
+    #   vector.recode { |val| val / 100.0 }
+    #   # => #<Daru::Vector(3)>
+    #   #        salary
+    #   #   Jill    1.0
+    #   #   John    2.0
+    #   #   Mary    3.0
+    #
+    # @return [Vector]
+    def recode(&block)
+      return to_enum(:recode) unless block_given?
+
+      dup.recode!(&block)
+    end
+
+    # Destructive version of {#recode}
+    #
+    # @return [self]
+    def recode!(&block)
+      return to_enum(:recode!) unless block_given?
+
+      data.map!(&block)
+      self
+    end
+
+    # NOT REFACTORED CODE STARTS BELOW THIS LINE ===================================================
+    public
+
+    def each_index(&block)
+      return to_enum(:each_index) unless block_given?
+
+      @index.each(&block)
+      self
+    end
+
+    def each_with_index(&block)
+      return to_enum(:each_with_index) unless block_given?
+
+      @data.to_a.zip(@index.to_a).each(&block)
+
+      self
+    end
+
+    def plotting_library=(lib)
+      case lib
+      when :gruff, :nyaplot
+        @plotting_library = lib
+        if Daru.send("has_#{lib}?".to_sym)
+          extend Module.const_get(
+            "Daru::Plotting::Vector::#{lib.to_s.capitalize}Library"
+          )
+        end
+      else
+        raise ArguementError, "Plotting library #{lib} not supported. "\
+          'Supported libraries are :nyaplot and :gruff'
+      end
     end
 
     # Returns vector of values given positional values
@@ -318,12 +361,6 @@ module Daru
       modify_vector(indexes, val)
 
       update_position_cache
-    end
-
-    # Two vectors are equal if they have the exact same index values corresponding
-    # with the exact same elements. Name is ignored.
-    def ==(other)
-      other.is_a?(Daru::Vector) && @index == other.index && @data == other.data
     end
 
     # !@method eq
@@ -669,22 +706,6 @@ module Daru
     end
     # :nocov:
 
-    # Like map, but returns a Daru::Vector with the returned values.
-    def recode(dt=nil, &block)
-      return to_enum(:recode) unless block_given?
-
-      dup.recode! dt, &block
-    end
-
-    # Destructive version of recode!
-    def recode!(dt=nil, &block)
-      return to_enum(:recode!) unless block_given?
-
-      @data.map!(&block).data
-      @data = cast_vector_to(dt || @dtype)
-      self
-    end
-
     # Delete an element if block returns true. Destructive.
     def delete_if
       return to_enum(:delete_if) unless block_given?
@@ -994,10 +1015,6 @@ module Daru
           File.expand_path('../iruby/templates/vector_tbody.html.erb', __FILE__)
         end
       ERB.new(File.read(table_tbody_path).strip).result(binding)
-    end
-
-    def to_s
-      "#<#{self.class}#{': ' + @name.to_s if @name}(#{size})#{':category' if category?}>"
     end
 
     # Create a summary of the Vector

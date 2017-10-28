@@ -177,19 +177,20 @@ module Daru
     #
     # @example
     #   x = Daru::Index.new [:a, :b, :c]
+    #   x.pos(:b)     # => [1] -- it always returns array of positions for simplified automatic processing
     #   x.pos(:a, :b) # => [0, 1]
     #   x.pos(1..2)   # => [1, 2]
     #   x.pos(:a, 1)  # => IndexError, you can't provide labels and positions at same time.
     #
     # @param labels [Range, Array, Object] Labels or positions. If any of arguments is a valid label,
     #   ALL arguments considered labels, this prohibits any ambiguity.
-    # @return [Integer, Array<Integer>]
+    # @return [Array<Integer>]
     # @raise IndexError if any of values passed is not in index/is not valid position.
     def pos(*labels)
       if fetch_from_labels?(labels)
         self[*labels].tap { |result|
           result.is_a?(Array) && (idx = result.index(nil)) and
-            raise(IndexError, "Undefined index label: #{labels[idx].inspect}")
+            raise IndexError, "Undefined index label: #{labels[idx].inspect}"
         }
       elsif TypeCheck[Array, of: Integer].match?(labels) || TypeCheck[Range, of: Integer].match?(labels.first)
         preprocess_positions(labels).tap(&method(:validate_positions))
