@@ -21,7 +21,7 @@ module Daru
         #   df = Daru::DataFrame.new({a:['A', 'B', 'C', 'D', 'E'], b:[10,20,30,40,50]})
         #   df.plot type: :bar, x: :a, y: :b
         def plot opts={}, &block
-          index_as_default_x_axis(opts) if x_axis_undefined?(opts)
+          index_as_default_x_axis(opts) unless x_axis_defined?(opts)
 
           if opts[:categorized]
             plot_with_category(opts, &block)
@@ -32,8 +32,8 @@ module Daru
 
         private
 
-        def x_axis_undefined?(opts)
-          !(opts[:x] || opts.keys.any? { |k| k.to_s.match(/x\d+/) })
+        def x_axis_defined?(opts)
+          opts[:x] || opts.keys.any? { |k| k.to_s.match(/x\d+/) }
         end
 
         def index_as_default_x_axis(opts)
