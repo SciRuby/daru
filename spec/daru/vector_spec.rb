@@ -110,6 +110,14 @@ RSpec.describe Daru::Vector do
     end
   end
 
+  describe '#at' do
+    subject { method_call(vector, :at) }
+
+    its([1]) { is_expected.to eq 2 }
+    its([1, 2]) { is_expected.to eq described_class.new [2, 3], index: %i[b c] }
+    it { expect { vector.at(7) }.to raise_error IndexError }
+  end
+
   describe '#each' do
     context 'without block' do
       its(:each) { is_expected.to be_a Enumerator }
@@ -141,6 +149,20 @@ RSpec.describe Daru::Vector do
 
       it { is_expected.to eq [2, 3, 4] } # map does not preserves class
     end
+
+    describe '#sort_by' do
+      subject { vector.sort_by { |idx, val| -val } }
+
+      it { is_expected.to eq described_class.new [3, 2, 1], index: %i[c b a] }
+    end
+  end
+
+  describe '#sort_by_index' do
+    subject { vector.sort_by_index }
+
+    let(:index) { %i[c a b] }
+
+    it { is_expected.to eq described_class.new [2, 3, 1], index: %i[a b c] }
   end
 
   describe '#recode!' do
@@ -154,6 +176,16 @@ RSpec.describe Daru::Vector do
 
     it { is_expected.to eq described_class.new [2, 3, 4], index: %i[a b c] }
   end
+
+  describe '#reindex'
+
+  describe '#reorder'
+
+  describe '#select_values'
+
+  describe '#reject_values'
+
+  describe '#replace_values'
 
   # mutable part
   describe '#[]='
