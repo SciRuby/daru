@@ -23,12 +23,13 @@ module Daru
   #
   class Vector
     extend Gem::Deprecate
+    extend Forwardable
 
     include IdempotentEnumerable
     idempotent_enumerable.constructor = :new_from_pairs
 
-    include Daru::Maths::Arithmetic::Vector
-    include Daru::Maths::Statistics::Vector
+    include Maths::Arithmetic::Vector
+    include Maths::Statistics::Vector
 
     class << self
       # Create a new vector by specifying the size and an optional value
@@ -117,6 +118,8 @@ module Daru
     attr_reader :data
     # Ploting library being used for this vector
     attr_reader :plotting_library
+
+    def_delegators :@data, :size
 
     # Create Vector from Array or Hash.
     #
@@ -237,7 +240,7 @@ module Daru
       self
     end
 
-    # Produces new Vector with the same index and name, as current one, and values processed by
+    # Produces new Vector with the same index and name as current one, and values processed by
     # block passed.
     #
     # @example:

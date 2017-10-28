@@ -1,4 +1,5 @@
 module Daru
+  # @private
   module Util
     # module_function
 
