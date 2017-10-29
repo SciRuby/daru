@@ -83,6 +83,14 @@ RSpec.describe Daru::Vector do
     end
   end
 
+  describe '#type' do
+    subject { ->(*data) { described_class.new(data).type } }
+
+    its([1,2,3]) { is_expected.to eq :numeric }
+    its([1,2,nil]) { is_expected.to eq :numeric }
+    its([1,2,'3']) { is_expected.to eq :object }
+  end
+
   describe '#[]' do
     context 'by index' do
       its([:a]) { is_expected.to eq 1 }
@@ -118,6 +126,43 @@ RSpec.describe Daru::Vector do
     it { expect { vector.at(7) }.to raise_error IndexError }
   end
 
+  describe '#index_of' do
+    subject { method_call(vector, :index_of) }
+
+    its([1]) { is_expected.to eq :a }
+    its([4]) { is_expected.to be_nil }
+  end
+
+  describe '#has_label?' do
+    subject { method_call(vector, :has_label?) }
+
+    its([:a]) { is_expected.to be_truthy }
+    its([:e]) { is_expected.to be_falsy }
+  end
+
+  describe '#count_values' do
+    subject { method_call(vector, :count_values) }
+
+    let(:data) { [1, 2, 1, '1', nil, nil, Float::NAN] }
+    let(:index) { nil }
+
+    its([1]) { is_expected.to eq 2 }
+    its([nil, 2]) { is_expected.to eq 3 }
+    its([Float::NAN]) { is_expected.to eq 1 }
+  end
+
+  describe '#positions' do
+    subject { method_call(vector, :positions) }
+
+    let(:data) { [1, 2, 1, '1', nil, nil, Float::NAN] }
+    let(:index) { nil }
+
+    its([1]) { is_expected.to eq [0, 2] }
+    its([nil, 2]) { is_expected.to eq [1, 4, 5] }
+    its([Float::NAN]) { is_expected.to eq [6] }
+    its([3, 5]) { is_expected.to eq [] }
+  end
+
   describe '#each' do
     context 'without block' do
       its(:each) { is_expected.to be_a Enumerator }
@@ -139,19 +184,19 @@ RSpec.describe Daru::Vector do
     end
 
     describe '#select' do
-      subject { vector.select { |idx, val| val.odd? } }
+      subject { vector.select { |_idx, val| val.odd? } }
 
       it { is_expected.to eq described_class.new [1, 3], index: %i[a c] }
     end
 
     describe '#map' do
-      subject { vector.map { |idx, val| val + 1 } }
+      subject { vector.map { |_idx, val| val + 1 } }
 
       it { is_expected.to eq [2, 3, 4] } # map does not preserves class
     end
 
     describe '#sort_by' do
-      subject { vector.sort_by { |idx, val| -val } }
+      subject { vector.sort_by { |_idx, val| -val } }
 
       it { is_expected.to eq described_class.new [3, 2, 1], index: %i[c b a] }
     end
@@ -186,6 +231,16 @@ RSpec.describe Daru::Vector do
   describe '#reject_values'
 
   describe '#replace_values'
+
+  describe '#include_values?' do
+    subject { method_call(vector, :include_values?) }
+
+    let(:data) { [1, Float::NAN, nil] }
+
+    its([1, nil]) { is_expected.to be_truthy }
+    its([2, Float::NAN]) { is_expected.to be_truthy }
+    its([2]) { is_expected.to be_falsy }
+  end
 
   # mutable part
   describe '#[]='

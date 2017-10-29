@@ -1,7 +1,6 @@
 module Daru
   module Deprecated
     module Vector
-
       DATE_REGEXP = /^(\d{2}-\d{2}-\d{4}|\d{4}-\d{2}-\d{2})$/
 
       # Returns the database type for the vector, according to its content
@@ -234,14 +233,12 @@ module Daru
         name.to_s.end_with?('=') || has_index?(name) || super
       end
 
-
       # Copies the structure of the vector (i.e the index, size, etc.) and fills all
       # all values with nils.
       # Deprecated, because it is just `vector.recode { nil }`
       def clone_structure
         Daru::Vector.new(([nil]*size), name: @name, index: @index.dup)
       end
-
 
       # Reports all values that doesn't comply with a condition.
       # Returns a hash with the index of data and the invalid data.
@@ -296,6 +293,30 @@ module Daru
         Daru::Vector.new(vector, index: index, name: @name, dtype: @dtype)
       end
 
+      private
+
+      # @private
+      DEFAULT_SORTER = lambda { |(lv, li), (rv, ri)|
+        case
+        when lv.nil? && rv.nil?
+          li <=> ri
+        when lv.nil?
+          -1
+        when rv.nil?
+          1
+        else
+          lv <=> rv
+        end
+      }
+
+      def resort_index(vector_index, ascending)
+        if block_given?
+          vector_index.sort { |(lv, _li), (rv, _ri)| yield(lv, rv) }
+        else
+          vector_index.sort(&DEFAULT_SORTER)
+        end
+          .tap { |res| res.reverse! unless ascending }
+      end
     end
   end
 end

@@ -172,6 +172,27 @@ module Daru
       "#<#{self.class}#{': ' + @name.to_s if @name}(#{size})#{':category' if category?}>"
     end
 
+    # Type of the underlying data: `:numeric` (if only numbers/nils) or `:object` for generic data.
+    #
+    # @return [Symbol]
+    def type
+      data.all? { |e| e.is_a?(Numeric) || e.nil? } ? :numeric : :object
+    end
+
+    # If all data is numeric
+    #
+    # @see #type
+    def numeric?
+      type == :numeric
+    end
+
+    # If all data is of generic types (not all numeric).
+    #
+    # @see #type
+    def object?
+      type == :object
+    end
+
     # Fetching and slicing =========================================================================
 
     # Get element(s) from vector by index values or numeric positions.
@@ -248,6 +269,64 @@ module Daru
       Daru::Vector.new data.values_at(*positions), index: index.keys_at(*positions)
     end
 
+    # Examining/querying ===========================================================================
+
+    # Returns index label for the specified value.
+    #
+    # @return [Integer, nil]
+    def index_of(element)
+      index.label(data.index(element))
+    end
+
+    # Check if any of values occur in the vector. Unlike standard `Enumerable#include?` also handles
+    # `Float::NAN` inclusion (usual pattern for "nothing here" for numeric computations with homogenous
+    # data types, when `nil` is not appropriate).
+    #
+    # @param values [Array] values to check for
+    # @example
+    #   dv = Daru::Vector.new [1, 2, 3, 4, nil]
+    #   dv.include_values? nil, Float::NAN
+    #   # => true
+    def include_values?(*values)
+      values.any? { |v| include_with_nan? data, v }
+    end
+
+    # If vector's index includes label specified
+    #
+    # @param label Label from vector's index.
+    def has_label?(label)
+      index.include? label
+    end
+
+    # TODO: deprecate
+    alias has_index? has_label?
+
+    # Count the number of specified values' entries in vector.
+    #
+    # @param values [Array] values to count
+    # @return [Integer] the number of times the values mentioned occurs
+    # @example
+    #   dv = Daru::Vector.new [1, 2, 1, 2, 3, 4, nil, nil]
+    #   dv.count_values nil
+    #   # => 2
+    def count_values(*values)
+      positions(*values).size
+    end
+
+    # List of numeric positions for vector values provided.
+    #
+    # @note
+    #   Positions are ordered ascending, regardless of argument values order.
+    #
+    # @param values [Array] Values to fetch positions of.
+    # @return [Array<Integer>]
+    def positions(*values)
+      data
+        .each_with_index
+        .select { |val, _i| values.any? { |test| eq_with_nan?(val, test) } }
+        .map(&:last)
+    end
+
     # Enumerable-alike =============================================================================
 
     # Enumerates all (label, value) pairs in the index.
@@ -292,6 +371,18 @@ module Daru
 
       data.map!(&block)
       self
+    end
+
+    # Sorts the vector according to its index.
+    #
+    # @return [Vector]
+    #
+    # @example
+    #   dv = Daru::Vector.new [11, 13, 12], index: [23, 21, 22]
+    #   dv.sort_by_index
+    #   # => Daru::Vector.new [13, 12, 11], index: [21, 22, 23]
+    def sort_by_index
+      sort_by(&:first)
     end
 
     # NOT REFACTORED CODE STARTS BELOW THIS LINE ===================================================
@@ -351,26 +442,6 @@ module Daru
       modify_vector(indexes, val)
     end
 
-    def numeric?
-      type == :numeric
-    end
-
-    def object?
-      type == :object
-    end
-
-    # Check if any one of mentioned values occur in the vector
-    # @param values  [Array] values to check for
-    # @return [true, false] returns true if any one of specified values
-    #   occur in the vector
-    # @example
-    #   dv = Daru::Vector.new [1, 2, 3, 4, nil]
-    #   dv.include_values? nil, Float::NAN
-    #   # => true
-    def include_values?(*values)
-      values.any? { |v| include_with_nan? @data, v }
-    end
-
     # @note Do not use it to check for Float::NAN as
     #   Float::NAN == Float::NAN is false
     # Return vector of booleans with value at ith position is either
@@ -424,28 +495,6 @@ module Daru
       @index = Daru::Index.new(@index.to_a - [index])
     end
 
-    # The type of data contained in the vector. Can be :object or :numeric. If
-    # the underlying dtype is an NMatrix, this method will return the data type
-    # of the NMatrix object.
-    #
-    # Running through the data to figure out the kind of data is delayed to the
-    # last possible moment.
-    def type
-      return @data.nm_dtype if dtype == :nmatrix
-
-      if @type.nil? || @possibly_changed_type
-        @type = :numeric
-        each do |e|
-          next if e.nil? || e.is_a?(Numeric)
-          @type = :object
-          break
-        end
-        @possibly_changed_type = false
-      end
-
-      @type
-    end
-
     # Tells if vector is categorical or not.
     # @return [true, false] true if vector is of type category, false otherwise
     # @example
@@ -456,14 +505,6 @@ module Daru
       type == :category
     end
 
-    # Get index of element
-    def index_of(element)
-      case dtype
-      when :array then @index.key(@data.index { |x| x.eql? element })
-      else @index.key @data.index(element)
-      end
-    end
-
     # Keep only unique elements of the vector alongwith their indexes.
     def uniq
       uniq_vector = @data.uniq
@@ -472,44 +513,8 @@ module Daru
       Daru::Vector.new uniq_vector, name: @name, index: new_index, dtype: @dtype
     end
 
-    # Sorts the vector according to it's`Index` values. Defaults to ascending
-    # order sorting.
-    #
-    # @param [Hash] opts the options for sort_by_index method.
-    # @option opts [Boolean] :ascending false, will sort `index` in
-    #  descending order.
-    #
-    # @return [Vector] new sorted `Vector` according to the index values.
-    #
-    # @example
-    #
-    #   dv = Daru::Vector.new [11, 13, 12], index: [23, 21, 22]
-    #   # Say you want to sort index in ascending order
-    #   dv.sort_by_index(ascending: true)
-    #   #=> Daru::Vector.new [13, 12, 11], index: [21, 22, 23]
-    #   # Say you want to sort index in descending order
-    #   dv.sort_by_index(ascending: false)
-    #   #=> Daru::Vector.new [11, 12, 13], index: [23, 22, 21]
-    def sort_by_index
-      sort_by(&:first)
-    end
-
-    # @private
-    DEFAULT_SORTER = lambda { |(lv, li), (rv, ri)|
-      case
-      when lv.nil? && rv.nil?
-        li <=> ri
-      when lv.nil?
-        -1
-      when rv.nil?
-        1
-      else
-        lv <=> rv
-      end
-    }
-
     def reset_index!
-      @index = Daru::Index.new(Array.new(size) { |i| i })
+      @index = Daru::Index.new(Array.new(size, &:itself))
       self
     end
 
@@ -587,22 +592,6 @@ module Daru
       else
         copy([])
       end
-    end
-
-    # Count the number of values specified
-    # @param values [Array] values to count for
-    # @return [Integer] the number of times the values mentioned occurs
-    # @example
-    #   dv = Daru::Vector.new [1, 2, 1, 2, 3, 4, nil, nil]
-    #   dv.count_values nil
-    #   # => 2
-    def count_values(*values)
-      positions(*values).size
-    end
-
-    # Returns *true* if an index exists
-    def has_index?(index)
-      @index.include? index
     end
 
     # @return [Daru::DataFrame] the vector as a single-vector dataframe
@@ -937,19 +926,6 @@ module Daru
       end
     end
 
-    def positions(*values)
-      case values
-      when [nil]
-        nil_positions
-      when [Float::NAN]
-        nan_positions
-      when [nil, Float::NAN], [Float::NAN, nil]
-        nil_positions + nan_positions
-      else
-        size.times.select { |i| include_with_nan? values, @data[i] }
-      end
-    end
-
     def group_by(*args)
       to_df.group_by(*args)
     end
@@ -1148,6 +1124,11 @@ module Daru
       end
     end
 
+    def eq_with_nan?(left, right)
+      left.respond_to?(:nan?) && left.nan? && right.respond_to?(:nan?) && right.nan? ||
+        left == right
+    end
+
     def include_with_nan?(array, value)
       # Returns true if value is included in array.
       # Similar to include? but also works if value is Float::NAN
@@ -1156,15 +1137,6 @@ module Daru
       else
         array.include? value
       end
-    end
-
-    def resort_index(vector_index, ascending)
-      if block_given?
-        vector_index.sort { |(lv, _li), (rv, _ri)| yield(lv, rv) }
-      else
-        vector_index.sort(&DEFAULT_SORTER)
-      end
-        .tap { |res| res.reverse! unless ascending }
     end
   end
 end
