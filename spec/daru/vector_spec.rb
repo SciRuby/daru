@@ -366,6 +366,25 @@ RSpec.describe Daru::Vector do
     its([2]) { is_expected.to be_falsy }
   end
 
-  # mutable part
+  # mutable behavior
   describe '#[]='
+
+  describe '#reindex!' do
+    subject { ->(*values) { vector.reindex!(Daru::Index.new(values)) } }
+
+    its(%i[c b a]) { is_expected.to eq described_class.new [3, 2, 1], index: %i[c b a] }
+    its(%i[c a]) { is_expected.to eq described_class.new [3, 1], index: %i[c a] }
+    its(%i[a d f]) { is_expected.to eq described_class.new [1, nil, nil], index: %i[a d f] }
+  end
+
+  describe '#reorder!' do
+    subject { ->(*values) { vector.reorder!(values) } }
+
+    its([0, 2, 1]) { is_expected.to eq described_class.new [1, 3, 2], index: %i[a c b] }
+    its([0, 1]) { is_expected.to eq described_class.new [1, 2], index: %i[a b] }
+    its([0, 2, 4]) { is_expected.to eq described_class.new [1, 3, nil], index: [:a, :c, nil] }
+
+    # TODO: what is reasonable behavior here?
+    # its([4, 8, 16]) { is_expected.to eq described_class.empty }
+  end
 end

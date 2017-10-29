@@ -51,6 +51,12 @@ RSpec.describe Daru::Index do
 
       it { is_expected.to eq '#<Daru::Index(3): number {one, two, three}>' }
     end
+
+    xcontext 'with nils' do # TODO
+      let(:index) { described_class.new ['one', 1, nil] }
+
+      it { is_expected.to eq '#<Daru::Index(3): {one, 1, nil}>' }
+    end
   end
 
   describe '#==' do

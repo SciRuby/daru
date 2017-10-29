@@ -57,6 +57,10 @@ module Daru
         new(pairs.map(&:last), index: pairs.map(&:first))
       end
 
+      def empty
+        @empty ||= new([]).freeze
+      end
+
       # Create a vector using (almost) any object
       # * Array: flattened
       # * Range: transformed using to_a
@@ -150,10 +154,8 @@ module Daru
     #
     def initialize(source, name: nil, index: nil)
       source, index = source.values, source.keys if source.is_a?(Hash)
-      @data = source.to_a
-      @index = Index.coerce(index || (@data.size.zero? ? [] : 0...@data.size))
-
-      guard_sizes!
+      data = source.to_a
+      reset!(Index.coerce(index || (data.size.zero? ? [] : 0...data.size)), data)
 
       @name = name
     end
@@ -378,6 +380,7 @@ module Daru
     end
 
     # Destructive version of {#recode}
+    # FIXME: methods are documented in inconsistent order (compare with reindex/reorder)
     #
     # @return [self]
     def recode!(&block)
@@ -414,6 +417,29 @@ module Daru
         .map { |_, group| group.first }.transpose
 
       Vector.new new_values, index: new_index
+    end
+
+    # Modify vector elements =======================================================================
+
+    # Sets new index for vector. Preserves index->value correspondence.
+    # Sets nil for new index keys absent from original index.
+    # @note Unlike #reorder! which takes positions as input it takes
+    #   index as an input to reorder the vector
+    # @param [Daru::Index, Daru::MultiIndex] new_index new index to order with
+    # @return [self]
+    def reindex!(new_index)
+      new_data = data.values_at(*index[*new_index.to_a].compact)
+
+      reset!(new_index, new_data)
+
+      self
+    end
+
+    # Non-destructive version of {#reindex!}
+    #
+    # @return [Vector]
+    def reindex(new_index)
+      dup.reindex!(new_index)
     end
 
     # NOT REFACTORED CODE STARTS BELOW THIS LINE ===================================================
@@ -736,25 +762,6 @@ module Daru
       summary
     end
 
-    # Sets new index for vector. Preserves index->value correspondence.
-    # Sets nil for new index keys absent from original index.
-    # @note Unlike #reorder! which takes positions as input it takes
-    #   index as an input to reorder the vector
-    # @param [Daru::Index, Daru::MultiIndex] new_index new index to order with
-    # @return [Daru::Vector] vector reindexed with new index
-    def reindex!(new_index)
-      values = []
-      each_with_index do |val, i|
-        values[new_index[i]] = val if new_index.include?(i)
-      end
-      values.fill(nil, values.size, new_index.size - values.size)
-
-      @data = cast_vector_to @dtype, values
-      @index = new_index
-
-      self
-    end
-
     # Reorder the vector with given positions
     # @note Unlike #reindex! which takes index as input, it takes
     #   positions as an input to reorder the vector
@@ -767,22 +774,14 @@ module Daru
     #   #   a   1
     #   #   b   2
     #   #   c   3
-    def reorder!(order)
-      @index = @index.reorder order
-      data_array = order.map { |i| @data[i] }
-      @data = cast_vector_to @dtype, data_array, @nm_dtype
+    def reorder!(positions)
+      reset!(index.reorder(positions), data.values_at(*positions))
       self
     end
 
     # Non-destructive version of #reorder!
     def reorder(order)
       dup.reorder! order
-    end
-
-    # Create a new vector with a different index, and preserve the indexing of
-    # current elements.
-    def reindex(new_index)
-      dup.reindex!(new_index)
     end
 
     def index=(idx)
@@ -1138,6 +1137,18 @@ module Daru
       else
         array.include? value
       end
+    end
+
+    def reset!(index, data)
+      if index.size > data.size
+        data.fill(nil, data.size...index.size)
+      elsif index.size < data.size
+        raise ArgumentError,
+          "Expected index size >= vector size. Index size : #{index.size}, vector size : #{data.size}"
+      end
+
+      @index = index
+      @data = data
     end
   end
 end
