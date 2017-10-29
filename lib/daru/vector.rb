@@ -399,6 +399,23 @@ module Daru
       sort_by(&:first)
     end
 
+    # Produce vector with uniq elements of current one. If optional block is provided, it is used
+    # to decide whether element is uniq, otherwise it is just a simple "uniq by value".
+    #
+    # @yield [idx, val] Block that should return truthy or falsy values.
+    # @yieldparam idx Index label
+    # @yieldparam val Vector value
+    #
+    # @return [Vector]
+    def uniq
+      new_index, new_values =
+        each
+        .group_by { |idx, val| block_given? ? yield(idx, val) : val }
+        .map { |_, group| group.first }.transpose
+
+      Vector.new new_values, index: new_index
+    end
+
     # NOT REFACTORED CODE STARTS BELOW THIS LINE ===================================================
     public
 
@@ -517,14 +534,6 @@ module Daru
     #   # => true
     def category?
       type == :category
-    end
-
-    # Keep only unique elements of the vector alongwith their indexes.
-    def uniq
-      uniq_vector = @data.uniq
-      new_index   = uniq_vector.map { |element| index_of(element) }
-
-      Daru::Vector.new uniq_vector, name: @name, index: new_index, dtype: @dtype
     end
 
     def reset_index!

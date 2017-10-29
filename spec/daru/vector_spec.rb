@@ -308,6 +308,22 @@ RSpec.describe Daru::Vector do
 
       it { is_expected.to eq described_class.new [3, 2, 1], index: %i[c b a] }
     end
+
+    describe '#uniq' do
+      describe 'with block' do
+        subject { vector.uniq { |_, v| v.odd? } }
+
+        it { is_expected.to eq described_class.new [1, 2], index: %i[a b] }
+      end
+
+      describe 'without block' do
+        subject { vector.uniq }
+
+        let(:data) { [1, 1, 3] }
+
+        it { is_expected.to eq described_class.new [1, 3], index: %i[a c] }
+      end
+    end
   end
 
   describe '#sort_by_index' do
