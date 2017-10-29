@@ -317,6 +317,14 @@ module Daru
         end
           .tap { |res| res.reverse! unless ascending }
       end
+
+      def nil_positions
+        @nil_positions ||= size.times.select { |i| @data[i].nil? }
+      end
+
+      def nan_positions
+        @nan_positions ||= size.times.select { |i| @data[i].respond_to?(:nan?) && @data[i].nan? }
+      end
     end
   end
 end

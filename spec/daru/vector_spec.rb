@@ -72,7 +72,115 @@ RSpec.describe Daru::Vector do
     it { is_expected.to eq described_class.new(data, index: index, name: 'foobar') } # name doesn't matter, data matters
   end
 
-  describe '#inspect'
+  describe '#inspect' do
+    context 'simple' do
+      its(:inspect) {
+        is_expected.to eq %{
+        |#<Daru::Vector(3)>
+        |   a   1
+        |   b   2
+        |   c   3
+      }.unindent }
+    end
+
+    context 'with name' do
+      let(:name) { 'test' }
+
+      its(:inspect) {
+        is_expected.to eq %{
+        |#<Daru::Vector(3)>
+        |      test
+        |    a    1
+        |    b    2
+        |    c    3
+      }.unindent }
+    end
+
+    context 'with nils' do
+      let(:data) { [1, nil, 3] }
+
+      its(:inspect) {
+        is_expected.to eq %{
+        |#<Daru::Vector(3)>
+        |   a   1
+        |   b nil
+        |   c   3
+      }.unindent }
+    end
+
+    context 'very large amount of data' do
+      let(:data) { [1,2,3] * 100 }
+      let(:name) { 'test' }
+      let(:index) { nil }
+
+      its(:inspect) {
+        is_expected.to eq %{
+        |#<Daru::Vector(300)>
+        |      test
+        |    0    1
+        |    1    2
+        |    2    3
+        |    3    1
+        |    4    2
+        |    5    3
+        |    6    1
+        |    7    2
+        |    8    3
+        |    9    1
+        |   10    2
+        |   11    3
+        |   12    1
+        |   13    2
+        |   14    3
+        |  ...  ...
+      }.unindent }
+    end
+
+    context 'really long name or data' do
+      let(:data) { [1,2,'this is ridiculously long'] }
+      let(:name) { 'and this is not much better faithfully' }
+
+      its(:inspect) {
+        is_expected.to eq %{
+        |#<Daru::Vector(3)>
+        |                      and this is not much
+        |                    a                    1
+        |                    b                    2
+        |                    c this is ridiculously
+      }.unindent }
+    end
+
+    context 'with multiindex' do
+      let(:data) { [1,2,3,4,5,6,7] }
+      let(:name) { 'test' }
+      let(:index) {
+        [
+          %w[foo one],
+          %w[foo two],
+          %w[foo three],
+          %w[bar one],
+          %w[bar two],
+          %w[bar three],
+          %w[baz one]
+        ]
+      }
+
+      its(:inspect) {
+        is_expected.to eq %{
+        |#<Daru::Vector(7)>
+        |              test
+        |   foo   one     1
+        |         two     2
+        |       three     3
+        |   bar   one     4
+        |         two     5
+        |       three     6
+        |   baz   one     7
+      }.unindent}
+    end
+
+    context 'threshold and spacing settings'
+  end
 
   describe '#to_s' do
     its(:to_s) { is_expected.to eq '#<Daru::Vector(3)>' }

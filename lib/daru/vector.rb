@@ -167,6 +167,20 @@ module Daru
       other.is_a?(Daru::Vector) && @index == other.index && @data == other.data
     end
 
+    # @return [Sring]
+    def inspect(spacing=20, threshold=15)
+      row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
+
+      "#<#{self.class}(#{size})#{':category' if category?}>\n" +
+        Formatters::Table.format(
+          to_a.lazy.map { |v| [v] },
+          headers: name && [name],
+          row_headers: row_headers,
+          threshold: threshold,
+          spacing: spacing
+        )
+    end
+
     # @return [String]
     def to_s
       "#<#{self.class}#{': ' + @name.to_s if @name}(#{size})#{':category' if category?}>"
@@ -713,20 +727,6 @@ module Daru
       summary
     end
 
-    # @return [Sring]
-    def inspect(spacing=20, threshold=15)
-      row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
-
-      "#<#{self.class}(#{size})#{':category' if category?}>\n" +
-        Formatters::Table.format(
-          to_a.lazy.map { |v| [v] },
-          headers: name && [name],
-          row_headers: row_headers,
-          threshold: threshold,
-          spacing: spacing
-        )
-    end
-
     # Sets new index for vector. Preserves index->value correspondence.
     # Sets nil for new index keys absent from original index.
     # @note Unlike #reorder! which takes positions as input it takes
@@ -936,14 +936,6 @@ module Daru
       # Make sure values is right-justified to the size of the vector
       values.concat([nil] * (size-values.size)) if values.size < size
       Daru::Vector.new(values[0...size], index: @index, name: @name)
-    end
-
-    def nil_positions
-      @nil_positions ||= size.times.select { |i| @data[i].nil? }
-    end
-
-    def nan_positions
-      @nan_positions ||= size.times.select { |i| @data[i].respond_to?(:nan?) && @data[i].nan? }
     end
 
     # Helper method returning validity of arbitrary value
