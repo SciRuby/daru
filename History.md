@@ -1,3 +1,31 @@
+# 0.2.0 (20 October 2017)
+* Major Enhancements
+ - Add which query DSL (@rainchen)
+ - Add `DataFrame#vector_sum` method that allows skipnil arg (@parthm)
+ - Add `DataFrame/Vector#rolling_fillna` (@baarkerlounger)
+ - Add `GroupBy#aggregate` (@shekharrajak)
+ - Add `DataFrame#uniq` (@baarkerlounger)
+
+* Minor Enhancements
+  - Allow `Vector#count` to be called without param for category type Vector (@rainchen)
+  - Add profiling for `Vector#new` (@v0dro)
+  - Add installation to ReadMe (@koishimasato)
+  - Add release policy documentation (@baarkerlounger)
+
+* Fixes
+ - Fix `DataFrame/Vector#to_s` when name is a symbol (@baarkerlounger)
+ - Force `Vector#proportions` to return float (@rainchen)
+ - `DataFrame#new` creates empty DataFrame when given empty hash (@parthm)
+ - Remove unnecessary backports dependencies (@zverok)
+ - Specify minimum packable dependency (@zverok)
+ - Preserve key/column order when creating DataFrame from hash (@baarkerlounger)
+ - Fix `DataFrame#add_row` for DF with multi-index (@zverok)
+ - Fix `Vector #min, #max, #index_of_min, #index_of_max` (0.1.6 regression) (@athityakumar)
+ - Integrate yard-junk into CI (@rohitner)
+ - Remove Travis spec restriction (@zverok)
+ - Fix tuple sorting for DataFrames with nils (@baarkerlounger)
+ - Fix merge on index dropping default index (@rohitner)
+
 # 0.1.6 (04 August 2017)
 * Major Enhancements
   - Add support for reading HTML tables into DataFrames (@athityakumar)
