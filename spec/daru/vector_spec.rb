@@ -387,4 +387,10 @@ RSpec.describe Daru::Vector do
     # TODO: what is reasonable behavior here?
     # its([4, 8, 16]) { is_expected.to eq described_class.empty }
   end
+
+  describe '#reset_index!' do
+    subject { vector.reset_index! }
+
+    it { is_expected.to eq described_class.new data, index: [0, 1, 2] }
+  end
 end

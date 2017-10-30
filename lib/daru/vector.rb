@@ -155,7 +155,7 @@ module Daru
     def initialize(source, name: nil, index: nil)
       source, index = source.values, source.keys if source.is_a?(Hash)
       data = source.to_a
-      reset!(Index.coerce(index || (data.size.zero? ? [] : 0...data.size)), data)
+      reset!(index, data)
 
       @name = name
     end
@@ -421,10 +421,10 @@ module Daru
 
     # Modify vector elements =======================================================================
 
-    # Sets new index for vector. Preserves index->value correspondence.
-    # Sets nil for new index keys absent from original index.
-    # @note Unlike #reorder! which takes positions as input it takes
-    #   index as an input to reorder the vector
+    # Reorders vector according to new index provided. If the label of a new index was present in
+    # the vector, corresponding value is preserved, otherwise value is filled with `nil`.
+    #
+    # @see #reorder! to change vector order according to positions list provided
     # @param [Daru::Index, Daru::MultiIndex] new_index new index to order with
     # @return [self]
     def reindex!(new_index)
@@ -435,11 +435,51 @@ module Daru
       self
     end
 
-    # Non-destructive version of {#reindex!}
+    # Non-destructive version of {#reindex!}.
     #
     # @return [Vector]
     def reindex(new_index)
       dup.reindex!(new_index)
+    end
+
+    # Reorder the vector with given positions.
+    #
+    # @see #reindex! to change vector order according to new index labels
+    # @param positions [Array<Integer>] List of current vector positions in desired order.
+    # @return [self]
+    # @example
+    #   dv = Daru::Vector.new [3, 2, 1], index: ['c', 'b', 'a']
+    #   dv.reorder! [2, 1, 0]
+    #   # => #<Daru::Vector(3)>
+    #   #   a   1
+    #   #   b   2
+    #   #   c   3
+    def reorder!(positions)
+      reset!(index.reorder(positions), data.values_at(*positions))
+      self
+    end
+
+    # Non-destructive version of {#reorder!}.
+    #
+    # @param positions [Array<Integer>] List of current vector positions in desired order.
+    # @return [Vector]
+    def reorder(positions)
+      dup.reorder! positions
+    end
+
+    # Replaces vector's index with default one: `0, 1, 2, ...size-1`.
+    #
+    # @return [self]
+    def reset_index!
+      reset!(nil, data)
+      self
+    end
+
+    # Non-destructive version of {#reset_index!}.
+    #
+    # @return [Vector]
+    def reset_index
+      dup.reset_index!
     end
 
     # NOT REFACTORED CODE STARTS BELOW THIS LINE ===================================================
@@ -562,11 +602,6 @@ module Daru
       type == :category
     end
 
-    def reset_index!
-      @index = Daru::Index.new(Array.new(size, &:itself))
-      self
-    end
-
     # Rolling fillna
     # replace all Float::NAN and NIL values with the preceeding or following value
     #
@@ -588,13 +623,13 @@ module Daru
     #   8   3
     #
     def rolling_fillna!(direction=:forward)
-      enum = direction == :forward ? index : index.reverse_each
+      enum = direction == :forward ? data.each_with_index : data.each_with_index.reverse_each
       last_valid_value = 0
-      enum.each do |idx|
-        if valid_value?(self[idx])
-          last_valid_value = self[idx]
+      enum.each do |val, i|
+        if valid_value?(val)
+          last_valid_value = val
         else
-          self[idx] = last_valid_value
+          data[i] = last_valid_value
         end
       end
     end
@@ -760,28 +795,6 @@ module Daru
                    "\n  kurtosis: %0.4f" % kurtosis
       end
       summary
-    end
-
-    # Reorder the vector with given positions
-    # @note Unlike #reindex! which takes index as input, it takes
-    #   positions as an input to reorder the vector
-    # @param [Array] order the order to reorder the vector with
-    # @return reordered vector
-    # @example
-    #   dv = Daru::Vector.new [3, 2, 1], index: ['c', 'b', 'a']
-    #   dv.reorder! [2, 1, 0]
-    #   # => #<Daru::Vector(3)>
-    #   #   a   1
-    #   #   b   2
-    #   #   c   3
-    def reorder!(positions)
-      reset!(index.reorder(positions), data.values_at(*positions))
-      self
-    end
-
-    # Non-destructive version of #reorder!
-    def reorder(order)
-      dup.reorder! order
     end
 
     def index=(idx)
@@ -1140,6 +1153,7 @@ module Daru
     end
 
     def reset!(index, data)
+      index = Index.coerce(index || (data.size.zero? ? [] : 0...data.size))
       if index.size > data.size
         data.fill(nil, data.size...index.size)
       elsif index.size < data.size
