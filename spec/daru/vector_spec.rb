@@ -393,4 +393,38 @@ RSpec.describe Daru::Vector do
 
     it { is_expected.to eq described_class.new data, index: [0, 1, 2] }
   end
+
+  describe '#rolling_fillna!' do
+    let(:data) { [Float::NAN, 2, 1, 4, nil, Float::NAN, 3, nil, Float::NAN] }
+    let(:index) { nil }
+
+    context 'forward' do
+      before { vector.rolling_fillna! }
+
+      it { is_expected.to eq described_class.new [0, 2, 1, 4, 4, 4, 3, 3, 3] }
+    end
+
+    context 'backward' do
+      before { vector.rolling_fillna!(:backward) }
+
+      it { is_expected.to eq described_class.new [2, 2, 1, 4, 3, 3, 3, 0, 0] }
+    end
+
+    context 'all empty' do
+      let(:data) { [Float::NAN, nil, Float::NAN] }
+
+      before { vector.rolling_fillna! }
+
+      it { is_expected.to eq described_class.new [0, 0, 0] }
+    end
+  end
+
+  describe '#lag!' do
+    subject { method_call(vector, :lag!) }
+
+    its([0]) { is_expected.to eq described_class.new [1, 2, 3], index: %i[a b c] }
+    its([1]) { is_expected.to eq described_class.new [nil, 1, 2], index: %i[a b c] }
+    its([-1]) { is_expected.to eq described_class.new [2, 3, nil], index: %i[a b c] }
+    its([100]) { is_expected.to eq described_class.new [nil, nil, nil], index: %i[a b c] }
+  end
 end

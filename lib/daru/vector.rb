@@ -482,6 +482,99 @@ module Daru
       dup.reset_index!
     end
 
+    # Replace all empty values (NAN and nil) with next or previous value of the vector.
+    #
+    #
+    # @param direction [:forward, :backward] "Forward" means that vector filling is done from start
+    #   to end (non-empty value "spreads" forward on all empty positions), "backward" means the other
+    #   way. Empty values at the beginning (if forward) or end (if backward) are filled with 0.
+    # @return [self]
+    #
+    # @example
+    #   dv = Daru::Vector.new([1, 2, nil, 4])
+    #   dv.rolling_fillna!
+    #   # => #<Daru::Vector(4)>
+    #   #   0   1
+    #   #   1   2
+    #   #   2   2
+    #   #   3   4
+    #
+    #   dv = Daru::Vector.new([1, 2, nil, 4])
+    #   dv.rolling_fillna!(:backward)
+    #   # => #<Daru::Vector(4)>
+    #   #   0   1
+    #   #   1   2
+    #   #   2   4
+    #   #   3   4
+    def rolling_fillna!(direction=:forward)
+      enum = direction == :forward ? data.each_with_index : data.each_with_index.reverse_each
+      last_valid_value = 0
+      enum.each do |val, i|
+        if valid_value?(val)
+          last_valid_value = val
+        else
+          data[i] = last_valid_value
+        end
+      end
+      self
+    end
+
+    # Non-destructive version of {#rolling_fillna!}
+    #
+    # @param direction [:forward, :backward] "Forward" means that vector filling is done from start
+    #   to end (non-empty value "spreads" forward on all empty positions), "backward" means the other
+    #   way. Empty values at the beginning (if forward) or end (if backward) are filled with 0.
+    # @return [Vector]
+    def rolling_fillna(direction=:forward)
+      dup.rolling_fillna!(direction)
+    end
+
+    # "Lags" the vector by specified amount of periods.
+    #
+    # Data is shifted forwards (if `periods` is positive) or backwards (if negative) and padded with
+    # nils.
+    #
+    # @param periods [Integer] Shift amount.
+    # @return [self]
+    #
+    # @example
+    #   Daru::Vector.new(1..3).lag!
+    #   # => #<Daru::Vector(3)>
+    #   #   0 nil
+    #   #   1   1
+    #   #   2   2
+    #   Daru::Vector.new(1..3).lag!(-2)
+    #   # => #<Daru::Vector(3)>
+    #   #   0   3
+    #   #   1 nil
+    #   #   2 nil
+    #   Daru::Vector.new(1..3).lag!(100)
+    #   # => #<Daru::Vector(3)>
+    #   #   0 nil
+    #   #   1 nil
+    #   #   2 nil
+    #
+    def lag!(periods=1)
+      case periods
+      when 0 then self
+      when 1...size
+        reset!(index, ([nil] * periods + data)[0...size])
+      when -size..-1
+        reset!(index, data[periods.abs...size])
+      else
+        reset!(index, [])
+      end
+      self
+    end
+
+    # Non-destructive version of {#lag!}
+    #
+    # @param periods [Integer] Shift amount.
+    # @return [Vector]
+    def lag(periods=1)
+      dup.lag!(periods)
+    end
+
     # NOT REFACTORED CODE STARTS BELOW THIS LINE ===================================================
     public
 
@@ -600,82 +693,6 @@ module Daru
     #   # => true
     def category?
       type == :category
-    end
-
-    # Rolling fillna
-    # replace all Float::NAN and NIL values with the preceeding or following value
-    #
-    # @param direction [Symbol] (:forward, :backward) whether replacement value is preceeding or following
-    #
-    # @example
-    #  dv = Daru::Vector.new([1, 2, 1, 4, nil, Float::NAN, 3, nil, Float::NAN])
-    #
-    #   2.3.3 :068 > dv.rolling_fillna(:forward)
-    #   => #<Daru::Vector(9)>
-    #   0   1
-    #   1   2
-    #   2   1
-    #   3   4
-    #   4   4
-    #   5   4
-    #   6   3
-    #   7   3
-    #   8   3
-    #
-    def rolling_fillna!(direction=:forward)
-      enum = direction == :forward ? data.each_with_index : data.each_with_index.reverse_each
-      last_valid_value = 0
-      enum.each do |val, i|
-        if valid_value?(val)
-          last_valid_value = val
-        else
-          data[i] = last_valid_value
-        end
-      end
-    end
-
-    # Non-destructive version of rolling_fillna!
-    def rolling_fillna(direction=:forward)
-      dup.rolling_fillna!(direction)
-    end
-
-    # Lags the series by `k` periods.
-    #
-    # Lags the series by `k` periods, "shifting" data and inserting `nil`s
-    # from beginning or end of a vector, while preserving original vector's
-    # size.
-    #
-    # `k` can be positive or negative integer. If `k` is positive, `nil`s
-    # are inserted at the beginning of the vector, otherwise they are
-    # inserted at the end.
-    #
-    # @param [Integer] k "shift" the series by `k` periods. `k` can be
-    #   positive or negative. (default = 1)
-    #
-    # @return [Daru::Vector] a new vector with "shifted" inital values
-    #   and `nil` values inserted. The return vector is the same length
-    #   as the orignal vector.
-    #
-    # @example Lag a vector with different periods `k`
-    #
-    #   ts = Daru::Vector.new(1..5)
-    #               # => [1, 2, 3, 4, 5]
-    #
-    #   ts.lag      # => [nil, 1, 2, 3, 4]
-    #   ts.lag(1)   # => [nil, 1, 2, 3, 4]
-    #   ts.lag(2)   # => [nil, nil, 1, 2, 3]
-    #   ts.lag(-1)  # => [2, 3, 4, 5, nil]
-    #
-    def lag(k=1)
-      case k
-      when 0 then dup
-      when 1...size
-        copy([nil] * k + data.to_a)
-      when -size..-1
-        copy(data.to_a[k.abs...size])
-      else
-        copy([])
-      end
     end
 
     # @return [Daru::DataFrame] the vector as a single-vector dataframe
