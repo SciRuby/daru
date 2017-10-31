@@ -1,4 +1,4 @@
-# 0.2.0 (20 October 2017)
+# 0.2.0 (31 October 2017)
 * Major Enhancements
   - Add `DataFrame#which` query DSL (experimental! @rainchen)
   - Add `DataFrame/Vector#rolling_fillna` (@baarkerlounger)
