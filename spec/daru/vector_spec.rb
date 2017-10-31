@@ -195,7 +195,7 @@ RSpec.describe Daru::Vector do
     subject { ->(*data) { described_class.new(data).type } }
 
     its([1,2,3]) { is_expected.to eq :numeric }
-    its([1,2,nil]) { is_expected.to eq :numeric }
+    its([1,Float::NAN,nil]) { is_expected.to eq :numeric }
     its([1,2,'3']) { is_expected.to eq :object }
   end
 
