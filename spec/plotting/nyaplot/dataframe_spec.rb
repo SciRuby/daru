@@ -21,6 +21,16 @@ describe Daru::DataFrame, 'plotting' do
       index: [:one, :two, :three, :four]
     )
   }
+
+  let(:df_with_index_as_default) {
+    Nyaplot::DataFrame.new [
+      {:x=>1, :y1=>5, :y2=>-3, :cat=>:a, :_index=>:one},
+      {:x=>2, :y1=>7, :y2=>-7, :cat=>:b, :_index=>:two},
+      {:x=>3, :y1=>9, :y2=>-11, :cat=>:c, :_index=>:three},
+      {:x=>4, :y1=>11, :y2=>-15, :cat=>:d, :_index=>:four}
+    ]
+  }
+
   let(:plot) { instance_double('Nyaplot::Plot') }
   let(:diagram) { instance_double('Nyaplot::Diagram') }
 
@@ -55,6 +65,19 @@ describe Daru::DataFrame, 'plotting' do
           .ordered
 
         expect(data_frame.plot(type: :scatter, x: :x)).to eq plot
+      end
+    end
+
+    context 'default x axis' do
+      it 'sets the x axis as the index value if not defined' do
+        expect(plot).to receive(:add_with_df)
+          .with(df_with_index_as_default, :line, :_index, :y1)
+          .ordered
+
+        expect(
+          data_frame.plot(
+            type: :line, y: :y1)
+        ).to eq plot
       end
     end
 
