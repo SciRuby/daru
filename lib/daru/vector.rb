@@ -421,6 +421,32 @@ module Daru
 
     # Modify vector elements =======================================================================
 
+    # Assign value(s) by index labels or numeric positions.
+    #
+    # @param labels_or_positions The same set of possible values as for {#[]}: one, or array, or range
+    #   of index labels, or numeric positions.
+    # @param val Value to assign to all places referred to by `labels_or_positions`.
+    #
+    # @see []
+    # @example
+    #   v = Daru::Vector.new([1,2,3], index: %i[a b c])
+    #   v[:a] = 999
+    #   v[:b, :c] = 888
+    #   v
+    #   # => #<Daru::Vector(3)>
+    #   #   a 999
+    #   #   b 888
+    #   #   c 888
+    def []=(*labels_or_positions, val)
+      positions = index.pos(*labels)
+
+      if positions.is_a? Numeric
+        data[positions] = val
+      else
+        positions.each { |pos| data[pos] = val }
+      end
+    end
+
     # Reorders vector according to new index provided. If the label of a new index was present in
     # the vector, corresponding value is preserved, otherwise value is filled with `nil`.
     #
@@ -611,26 +637,6 @@ module Daru
       positions.map { |pos| @data[pos] = val }
     end
 
-    # Just like in Hashes, you can specify the index label of the Daru::Vector
-    # and assign an element an that place in the Daru::Vector.
-    #
-    # == Usage
-    #
-    #   v = Daru::Vector.new([1,2,3], index: [:a, :b, :c])
-    #   v[:a] = 999
-    #   #=>
-    #   ##<Daru::Vector:90257920 @name = nil @size = 3 >
-    #   #    nil
-    #   #  a 999
-    #   #  b   2
-    #   #  c   3
-    def []=(*indexes, val)
-      cast(dtype: :array) if val.nil? && dtype != :array
-
-      guard_type_check(val)
-
-      modify_vector(indexes, val)
-    end
 
     # @note Do not use it to check for Float::NAN as
     #   Float::NAN == Float::NAN is false
@@ -961,12 +967,6 @@ module Daru
       end
     end
 
-    def guard_type_check(value)
-      @possibly_changed_type = true \
-        if object? && (value.nil? || value.is_a?(Numeric)) ||
-           numeric? && !value.is_a?(Numeric) && !value.nil?
-    end
-
     def split_value(key, v)
       case
       when v.nil?           then nil
@@ -1035,18 +1035,6 @@ module Daru
         size.times.to_a[positions.first]
       else
         raise ArgumentError, 'Unkown position type.'
-      end
-    end
-
-    # Helper method for []=.
-    # Assigs existing index to another value
-    def modify_vector(indexes, val)
-      positions = @index.pos(*indexes)
-
-      if positions.is_a? Numeric
-        @data[positions] = val
-      else
-        positions.each { |pos| @data[pos] = val }
       end
     end
 

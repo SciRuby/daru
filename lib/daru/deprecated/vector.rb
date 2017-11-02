@@ -377,6 +377,12 @@ module Daru
       def nan_positions
         @nan_positions ||= size.times.select { |i| @data[i].respond_to?(:nan?) && @data[i].nan? }
       end
+
+      def guard_type_check(value)
+        @possibly_changed_type = true \
+          if object? && (value.nil? || value.is_a?(Numeric)) ||
+             numeric? && !value.is_a?(Numeric) && !value.nil?
+      end
     end
   end
 end

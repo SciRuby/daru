@@ -31,7 +31,7 @@ RSpec.describe Daru::Vector do
       context 'too small index' do
         subject { described_class.new [1, 2, 3], index: %i[a b] }
 
-        its_call { is_expected.to raise_error(ArgumentError, /Expected index size >= vector size./) }
+        its_block { is_expected.to raise_error(ArgumentError, /Expected index size >= vector size./) }
       end
 
       context 'too large index' do
@@ -227,7 +227,7 @@ RSpec.describe Daru::Vector do
   end
 
   describe '#at' do
-    subject { method_call(vector, :at) }
+    subject { vector.method(:at) }
 
     its([1]) { is_expected.to eq 2 }
     its([1, 2]) { is_expected.to eq described_class.new [2, 3], index: %i[b c] }
@@ -235,21 +235,21 @@ RSpec.describe Daru::Vector do
   end
 
   describe '#index_of' do
-    subject { method_call(vector, :index_of) }
+    subject { vector.method(:index_of) }
 
     its([1]) { is_expected.to eq :a }
     its([4]) { is_expected.to be_nil }
   end
 
   describe '#has_label?' do
-    subject { method_call(vector, :has_label?) }
+    subject { vector.method(:has_label?) }
 
     its([:a]) { is_expected.to be_truthy }
     its([:e]) { is_expected.to be_falsy }
   end
 
   describe '#count_values' do
-    subject { method_call(vector, :count_values) }
+    subject { vector.method(:count_values) }
 
     let(:data) { [1, 2, 1, '1', nil, nil, Float::NAN] }
     let(:index) { nil }
@@ -260,7 +260,7 @@ RSpec.describe Daru::Vector do
   end
 
   describe '#positions' do
-    subject { method_call(vector, :positions) }
+    subject { vector.method(:positions) }
 
     let(:data) { [1, 2, 1, '1', nil, nil, Float::NAN] }
     let(:index) { nil }
@@ -285,7 +285,7 @@ RSpec.describe Daru::Vector do
 
   describe 'Enumerable' do
     describe '#first(N)' do
-      subject { method_call(vector, :first) }
+      subject { vector.method(:first) }
 
       its([2]) { is_expected.to eq described_class.new [1, 2], index: %i[a b] }
       # its([]) { is_expected.to eq 1 } -- TODO
@@ -357,7 +357,7 @@ RSpec.describe Daru::Vector do
   describe '#replace_values'
 
   describe '#include_values?' do
-    subject { method_call(vector, :include_values?) }
+    subject { vector.method(:include_values?) }
 
     let(:data) { [1, Float::NAN, nil] }
 
@@ -367,7 +367,36 @@ RSpec.describe Daru::Vector do
   end
 
   # mutable behavior
-  describe '#[]='
+  describe '#[]=' do
+    # set value at labels and check the resulting vector
+    subject { ->(*labels) { vector.tap { vector[*labels] = value }  } }
+    let(:value) { 'x' }
+
+    context 'by index' do
+      its([:a]) { is_expected.to eq described_class.new ['x', 2, 3], index: %i[a b c] }
+      it { expect { vector[:d] = value }.to raise_error(IndexError) }
+      its(%i[b c]) { is_expected.to eq described_class.new [1, 'x', 'x'], index: %i[a b c] }
+      its([:a..:c]) { is_expected.to eq described_class.new %w[x x x], index: %i[a b c] }
+      its([:a...:c]) { is_expected.to eq described_class.new ['x', 'x', 3], index: %i[a b c] }
+    end
+
+    context 'by MultiIndex' do
+      let(:data) { 1..4 }
+      let(:index) { Daru::MultiIndex.new [%w[India Delhi], %w[India Pune], %w[Ukraine Kyiv], %w[Ukraine Kharkiv]] }
+
+      its(%w[Ukraine Kharkiv]) { is_expected.to eq described_class.new [1, 2, 3, 'x'], index: index }
+      its(%w[Ukraine]) { is_expected.to eq described_class.new [1, 2, 'x', 'x'], index: index }
+    end
+
+    context 'by DateTimeIndex'
+
+    context 'by numeric position' do
+      its([0]) { is_expected.to eq described_class.new ['x', 2, 3], index: %i[a b c] }
+      its([1, 2]) { is_expected.to eq described_class.new [1, 'x', 'x'], index: %i[a b c] }
+      its([0..2]) { is_expected.to eq described_class.new %w[x x x], index: %i[a b c] }
+      its([0...2]) { is_expected.to eq described_class.new ['x', 'x', 3], index: %i[a b c] }
+    end
+  end
 
   describe '#reindex!' do
     subject { ->(*values) { vector.reindex!(Daru::Index.new(values)) } }
@@ -420,7 +449,7 @@ RSpec.describe Daru::Vector do
   end
 
   describe '#lag!' do
-    subject { method_call(vector, :lag!) }
+    subject { vector.method(:lag!) }
 
     its([0]) { is_expected.to eq described_class.new [1, 2, 3], index: %i[a b c] }
     its([1]) { is_expected.to eq described_class.new [nil, 1, 2], index: %i[a b c] }

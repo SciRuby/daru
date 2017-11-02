@@ -17,7 +17,7 @@ RSpec.describe Daru::Index do
     context 'from non-Enumerable' do
       let(:data) { 'foo' }
 
-      its_call { is_expected.to raise_error ArgumentError }
+      its_block { is_expected.to raise_error ArgumentError }
     end
   end
 
@@ -67,38 +67,38 @@ RSpec.describe Daru::Index do
   end
 
   describe '#key' do
-    subject { method_call(index, :key) }
+    subject { index.method(:key) }
 
-    its([2]) { is_expected.to eq 'guitar' }
-    its([20]) { is_expected.to be_nil }
-    its(['guitar']) { is_expected.to be_nil }
+    its_call(2) { is_expected.to ret 'guitar' }
+    its_call(20) { is_expected.to ret nil }
+    its_call('guitar') { is_expected.to ret nil }
   end
 
   describe '#[]' do
-    subject { method_call(index, :[]) }
+    subject { index.method(:[]) }
 
-    its(['mic'..'amp']) { is_expected.to eq [1, 2, 3] }
-    its(['mic'...'amp']) { is_expected.to eq [1, 2] }
-    its(['amp'..'mic']) { is_expected.to eq [] }
-    its(%w[amp mic speaker piano]) { is_expected.to eq [3, 1, 0, nil] }
+    its_call('mic'..'amp') { is_expected.to ret [1, 2, 3] }
+    its_call('mic'...'amp') { is_expected.to ret [1, 2] }
+    its_call('amp'..'mic') { is_expected.to ret [] }
+    its_call(*%w[amp mic speaker piano]) { is_expected.to ret [3, 1, 0, nil] }
 
     context 'first index is not valid' do
-      its(['foo'..'bar']) { is_expected.to be_nil }
+      its_call('foo'..'bar') { is_expected.to ret nil }
     end
 
     context 'first index is valid, second is not' do
-      its(['mic'..'bar']) { is_expected.to eq [1, 2, 3] }
+      its_call('mic'..'bar') { is_expected.to ret [1, 2, 3] }
     end
 
     context 'invalid' do
-      its(['piano']) { is_expected.to be_nil }
+      its_call('piano') { is_expected.to ret nil }
     end
 
     context 'mixed type index' do
       let(:index) { described_class.new ['a','b','c',:d,:a,8,3,5] }
 
-      its(['a'..'c']) { is_expected.to eq [0, 1, 2] }
-      its([0,5,3,2]) { is_expected.to eq([nil, 7, 6, nil]) }
+      its_call('a'..'c') { is_expected.to ret [0, 1, 2] }
+      its_call(0,5,3,2) { is_expected.to ret [nil, 7, 6, nil] }
     end
   end
 
@@ -120,16 +120,16 @@ RSpec.describe Daru::Index do
   end
 
   xdescribe '#valid?' do
-    subject { method_call(index, :valid?) }
+    subject { index.method(:valid?) }
 
     context 'single index' do
-      its([2]) { is_expected.to eq true }
-      its(['piano']) { is_expected.to eq false }
+      its_call(2) { is_expected.to ret true }
+      its_call('piano') { is_expected.to ret false }
     end
 
     context 'multiple indexes' do
-      its(['guitar', 1]) { is_expected.to eq true }
-      its(['guitar', 8]) { is_expected.to eq false }
+      its_call('guitar', 1) { is_expected.to ret true }
+      its_call('guitar', 8) { is_expected.to ret false }
     end
   end
 
@@ -170,76 +170,66 @@ RSpec.describe Daru::Index do
   end
 
   describe '#pos' do
-    subject { method_call(index, :pos) }
+    subject { index.method(:pos) }
 
     let(:index) { described_class.new [:a, :b, 1, 2] }
 
     context 'by label' do
-      its([:a]) { is_expected.to eq 0 }
-      its([:a, 1]) { is_expected.to eq [0, 2] }
+      its_call(:a) { is_expected.to ret 0 }
+      its_call(:a, 1) { is_expected.to ret [0, 2] }
 
       # it is treated as labels!
-      its([1..3]) { is_expected.to eq [2, 3] }
+      its_call(1..3) { is_expected.to ret [2, 3] }
 
-      it 'fails on one non-existent value' do
-        expect { index.pos(:c) }.to raise_error(IndexError, 'Undefined index label: :c')
-      end
-
-      it 'fails on one of several values non-existent' do
-        expect { index.pos(:a, :c) }.to raise_error(IndexError, 'Undefined index label: :c')
-      end
+      its_call(:c) { is_expected.to raise_error(IndexError, 'Undefined index label: :c') }
+      its_call(:a, :c) { is_expected.to raise_error(IndexError, 'Undefined index label: :c') }
     end
 
     context 'by position' do
-      its([0]) { is_expected.to eq 0 }
-      its([0, 3]) { is_expected.to eq [0, 3] }
-      its([0..-1]) { is_expected.to eq [0, 1, 2, 3] }
+      its_call(0) { is_expected.to ret 0 }
+      its_call(0, 3) { is_expected.to ret [0, 3] }
+      its_call(0..-1) { is_expected.to ret [0, 1, 2, 3] }
 
-      it 'fails on one non-existent position' do
-        expect { index.pos(6) }.to raise_error(IndexError, 'Invalid index position: 6')
-      end
-
-      it 'fails on one of several values non-existent' do
-        expect { index.pos(0, 6) }.to raise_error(IndexError, 'Invalid index position: 6')
-      end
+      its_call(6) { is_expected.to raise_error(IndexError, 'Invalid index position: 6') }
+      its_call(0, 6) { is_expected.to raise_error(IndexError, 'Invalid index position: 6') }
     end
   end
 
   xdescribe '#subset' do
-    subject { method_call(idx, :subset) }
+    subject { idx.method(:subset) }
 
     let(:idx) { described_class.new [:a, :b, 1, 2] }
 
-    its([:a, 1]) { is_expected.to eq described_class.new [:a, 1] }
-    its([0, 3]) { is_expected.to eq described_class.new [:a, 2] }
-    its([1..3]) { is_expected.to eq described_class.new [:b, 1, 2] }
+    its_call(:a, 1) { is_expected.to ret described_class.new [:a, 1] }
+    its_call(0, 3) { is_expected.to ret described_class.new [:a, 2] }
+    its_call(1..3) { is_expected.to ret described_class.new [:b, 1, 2] }
   end
 
   describe '#at' do
-    subject(:at) { method_call(idx, :at) }
+    subject { idx.method(:at) }
 
     let(:idx) { described_class.new [:a, :b, 1] }
 
-    its([1]) { is_expected.to eq :b }
-    its([1, 2]) { is_expected.to eq described_class.new [:b, 1] }
-    its([1..2]) { is_expected.to eq described_class.new [:b, 1] }
-    its([1..-1]) { is_expected.to eq described_class.new [:b, 1] }
-    its([1..1]) { is_expected.to eq described_class.new [:b] }
-    it { expect { at.call(3) }.to raise_error IndexError }
-    it { expect { at.call(2, 3) }.to raise_error IndexError }
+    its_call(1) { is_expected.to ret :b }
+    its_call(1, 2) { is_expected.to ret described_class.new [:b, 1] }
+    its_call(1..2) { is_expected.to ret described_class.new [:b, 1] }
+    its_call(1..-1) { is_expected.to ret described_class.new [:b, 1] }
+    its_call(1..1) { is_expected.to ret described_class.new [:b] }
+    its_call(3) { is_expected.to raise_error IndexError }
+    its_call(2, 3) { is_expected.to raise_error IndexError }
   end
 
   describe '#is_values' do
-    subject { method_call(idx, :is_values) }
+    subject { idx.method(:is_values) }
 
     let(:idx) { described_class.new [:one, 'one', 1, 2, 'two', nil, [1, 2]] }
 
-    its([]) { is_expected.to eq [false, false, false, false, false, false, false] }
-    its(['one']) { is_expected.to eq [false, true, false, false, false, false, false] }
-    its([2, :one]) { is_expected.to eq [true, false, false, true, false, false, false] }
-    its(['one', 1]) { is_expected.to eq [false, true, true, false, false, false, false] }
-    its(['two', nil]) { is_expected.to eq [false, false, false, false, true, true, false] }
-    its([[1, 2]]) { is_expected.to eq [false, false, false, false, false, false, true] }
+    it { is_expected.to ret [false, false, false, false, false, false, false] }
+    its_call('one') { is_expected.to ret [false, true, false, false, false, false, false] }
+    its_call(2, :one) { is_expected.to ret [true, false, false, true, false, false, false] }
+    its_call('one', 1) { is_expected.to ret [false, true, true, false, false, false, false] }
+    its_call('two', nil) { is_expected.to ret [false, false, false, false, true, true, false] }
+    its_call([1, 2]) { is_expected.to ret [false, false, false, false, false, false, true] }
   end
 
   describe '#reorder' do

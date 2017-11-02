@@ -9,7 +9,7 @@ require 'pry-byebug'
 require 'nokogiri'
 require 'gruff'
 require 'webmock/rspec'
-require 'saharspec/its/call'
+require 'saharspec'
 
 def mri?
   RUBY_ENGINE == 'ruby'
@@ -89,7 +89,3 @@ class String
 end
 
 Dir[File.expand_path('../support/**/*.rb', __FILE__)].each {|f| require f }
-
-def method_call(object, method)
-  ->(*arg) { object.send(method, *arg) }
-end

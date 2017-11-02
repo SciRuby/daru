@@ -39,13 +39,13 @@ RSpec.describe Daru::MultiIndex do
     context 'attempt to create one-level MultiIndex' do
       let(:data) { [[1], [2], [3]] }
 
-      its_call { is_expected.to raise_error ArgumentError, 'MultiIndex should contain at least 2 values in each label' }
+      its_block { is_expected.to raise_error ArgumentError, 'MultiIndex should contain at least 2 values in each label' }
     end
 
     context 'different sizes of labels' do
       let(:data) { [%i[a one], %i[b two foo]] }
 
-      its_call { is_expected.to raise_error ArgumentError, 'Different MultiIndex label sizes: [:a, :one], [:b, :two, :foo]' }
+      its_block { is_expected.to raise_error ArgumentError, 'Different MultiIndex label sizes: [:a, :one], [:b, :two, :foo]' }
     end
 
     context 'non-uniq data' do
@@ -154,14 +154,14 @@ RSpec.describe Daru::MultiIndex do
   end
 
   describe '#label' do
-    subject { method_call(index, :label) }
+    subject { index.method(:label) }
 
-    its([3]) { is_expected.to eq %i[b two] }
-    its([20]) { is_expected.to be_nil }
+    its_call(3) { is_expected.to ret %i[b two] }
+    its_call(20) { is_expected.to ret nil }
   end
 
   describe '#pos' do
-    subject { method_call(index, :pos) }
+    subject { index.method(:pos) }
 
     context 'by labels' do
       context 'single row' do
@@ -178,14 +178,12 @@ RSpec.describe Daru::MultiIndex do
     end
 
     context 'by positions' do
-      its([0]) { is_expected.to eq 0 }
-      its([1..3]) { is_expected.to eq [1, 2, 3] }
-      its([1...3]) { is_expected.to eq [1, 2] }
-      its([1, 2]) { is_expected.to eq [1, 2] }
+      its_call(0) { is_expected.to ret 0 }
+      its_call(1..3) { is_expected.to ret [1, 2, 3] }
+      its_call(1...3) { is_expected.to ret [1, 2] }
+      its_call(1, 2) { is_expected.to ret [1, 2] }
 
-      context 'too large' do
-        it { expect { index.pos(10) }.to raise_error IndexError, 'Invalid index position: 10' }
-      end
+      its_call(10) { is_expected.to raise_error IndexError, 'Invalid index position: 10' }
     end
   end
 end
