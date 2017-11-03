@@ -1453,12 +1453,12 @@ module Daru
       vectors.flatten!
       missing_vectors = vectors - @vectors.to_a
       unless missing_vectors.empty?
-        errorString = if missing_vectors.size > 1
-          "Vectors #{missing_vectors.join(", ")} do not exist"
-        else
-          "Vector #{missing_vectors.first} does not exist"
-        end
-        raise(ArgumentError, errorString)
+        error_string = if missing_vectors.size > 1
+                         "Vectors #{missing_vectors.join(', ')} do not exist"
+                       else
+                         "Vector #{missing_vectors.first} does not exist"
+                       end
+        raise(ArgumentError, error_string)
       end
 
       vectors = [@vectors.first] if vectors.empty?
