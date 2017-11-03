@@ -1449,7 +1449,7 @@ module Daru
     #   # ["foo", "three", 8]=>[7],
     #   # ["foo", "two", 3]=>[2, 4]}
     def group_by *vectors
-      return self unless nrows > 1
+      return self if nrows == 1
       vectors.flatten!
       missing_vectors = vectors - @vectors.to_a
       unless missing_vectors.empty?
