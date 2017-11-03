@@ -1451,14 +1451,10 @@ module Daru
     def group_by *vectors
       return self if nrows == 1
       vectors.flatten!
-      missing_vectors = vectors - @vectors.to_a
-      unless missing_vectors.empty?
-        error_string = if missing_vectors.size > 1
-                         "Vectors #{missing_vectors.join(', ')} do not exist"
-                       else
-                         "Vector #{missing_vectors.first} does not exist"
-                       end
-        raise(ArgumentError, error_string)
+      missing = vectors - @vectors.to_a
+      unless missing.empty?
+        e = missing.size > 1 ? "Vectors #{missing.join(', ')} do not exist" : "Vector #{missing.first} does not exist"
+        raise(ArgumentError, e)
       end
 
       vectors = [@vectors.first] if vectors.empty?
