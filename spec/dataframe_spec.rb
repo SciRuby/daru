@@ -3266,6 +3266,15 @@ describe Daru::DataFrame do
     end
   end
 
+  context "group_by" do
+    context "on a single row DataFrame" do
+      let(:df){ Daru::DataFrame.new({a: [1], b: [2]}) }
+      it "returns itself" do
+        expect(df.group_by([:a])).to eq(df)
+      end
+    end
+  end
+
   context "#vector_sum" do
     before do
       a1 = Daru::Vector.new [1, 2, 3, 4, 5, nil, nil]

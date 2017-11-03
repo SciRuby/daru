@@ -1449,12 +1449,17 @@ module Daru
     #   # ["foo", "three", 8]=>[7],
     #   # ["foo", "two", 3]=>[2, 4]}
     def group_by *vectors
+      return self unless nrows > 1
       vectors.flatten!
-      # FIXME: wouldn't it better to do vectors - @vectors here and
-      # raise one error with all non-existent vector names?.. - zverok, 2016-05-18
-      vectors.each { |v|
-        raise(ArgumentError, "Vector #{v} does not exist") unless has_vector?(v)
-      }
+      missing_vectors = vectors - @vectors.to_a
+      unless missing_vectors.empty?
+        errorString = if missing_vectors.size > 1
+          "Vectors #{missing_vectors.join(", ")} do not exist"
+        else
+          "Vector #{missing_vectors.first} does not exist"
+        end
+        raise(ArgumentError, errorString)
+      end
 
       vectors = [@vectors.first] if vectors.empty?
 
