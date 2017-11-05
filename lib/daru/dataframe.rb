@@ -1453,7 +1453,7 @@ module Daru
       vectors.flatten!
       missing = vectors - @vectors.to_a
       unless missing.empty?
-        raise(ArgumentError, "Vector(s) missing: #{missing.join(', ')}" )
+        raise(ArgumentError, "Vector(s) missing: #{missing.join(', ')}")
       end
 
       vectors = [@vectors.first] if vectors.empty?
