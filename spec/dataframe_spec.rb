@@ -3268,9 +3268,12 @@ describe Daru::DataFrame do
 
   context "group_by" do
     context "on a single row DataFrame" do
-      let(:df){ Daru::DataFrame.new({a: [1], b: [2]}) }
-      it "returns itself" do
-        expect(df.group_by([:a])).to eq(df)
+      let(:df){ Daru::DataFrame.new(city: %w[Kyiv], year: [2015], value: [1]) }
+      it "returns a groupby object" do
+        expect(df.group_by([:city]).class).to eq(Daru::Core::GroupBy)
+      end
+      it "has the correct index" do
+        expect(df.group_by([:city]).groups).to eq({["Kyiv"]=>[0]})
       end
     end
   end

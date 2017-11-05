@@ -173,7 +173,8 @@ module Daru
         elsif ArrayHelper.array_of?(source, Vector)
           from_vector_rows(source, opts)
         else
-          raise ArgumentError, "Can't create DataFrame from #{source}"
+          row = source.map { |v| Array(v) }
+          DataFrame.new(row, opts)
         end
       end
 
@@ -1449,12 +1450,10 @@ module Daru
     #   # ["foo", "three", 8]=>[7],
     #   # ["foo", "two", 3]=>[2, 4]}
     def group_by *vectors
-      return self if nrows == 1
       vectors.flatten!
       missing = vectors - @vectors.to_a
       unless missing.empty?
-        e = missing.size > 1 ? "Vectors #{missing.join(', ')} do not exist" : "Vector #{missing.first} does not exist"
-        raise(ArgumentError, e)
+        raise(ArgumentError, "Vector(s) missing: #{missing.join(', ')}" )
       end
 
       vectors = [@vectors.first] if vectors.empty?
