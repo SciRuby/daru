@@ -169,12 +169,10 @@ module Daru
         opts[:order] ||= guess_order(source)
 
         if ArrayHelper.array_of?(source, Array) || source.empty?
+          binding.pry
           DataFrame.new(source.transpose, opts)
         elsif ArrayHelper.array_of?(source, Vector)
           from_vector_rows(source, opts)
-        elsif source.respond_to?(:map)
-          row = source.map { |v| Array(v) }
-          DataFrame.new(row, opts)
         else
           raise ArgumentError, "Can't create DataFrame from #{source}"
         end
@@ -2254,17 +2252,19 @@ module Daru
     # returns array of row tuples at given index(s)
     def access_row_tuples_by_indexs *indexes
       positions = @index.pos(*indexes)
-
-      return populate_row_for(positions) if positions.is_a? Numeric
-
-      res = []
-      new_rows = @data.map { |vec| vec[*indexes] }
-      indexes.each do |index|
-        tuples = []
-        new_rows.map { |row| tuples += [row[index]] }
-        res << tuples
+      if positions.is_a? Numeric
+        row = populate_row_for(positions)
+        row.first.is_a?(Array) ? row : [] << row
+      else
+        res = []
+        new_rows = @data.map { |vec| vec[*indexes] }
+        indexes.each do |index|
+          tuples = []
+          new_rows.map { |row| tuples += [row[index]] }
+          res << tuples
+        end
+        res
       end
-      res
     end
 
     # Function to use for aggregating the data.
@@ -2912,7 +2912,7 @@ module Daru
     end
 
     def update_data source, vectors
-      @data = @vectors.each_with_index.map do |_vec,idx|
+      @data = @vectors.each_with_index.map do |_vec, idx|
         Daru::Vector.new(source[idx], index: @index, name: vectors[idx])
       end
     end
