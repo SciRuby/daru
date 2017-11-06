@@ -2259,7 +2259,7 @@ module Daru
         new_rows = @data.map { |vec| vec[*indexes] }
         indexes.each do |index|
           tuples = []
-          new_rows.map { |row| tuples += [row[index]] }
+          new_rows.map { |r| tuples += [r[index]] }
           res << tuples
         end
         res
