@@ -172,9 +172,11 @@ module Daru
           DataFrame.new(source.transpose, opts)
         elsif ArrayHelper.array_of?(source, Vector)
           from_vector_rows(source, opts)
-        else
+        elsif source.respond_to?(:map)
           row = source.map { |v| Array(v) }
           DataFrame.new(row, opts)
+        else
+          raise ArgumentError, "Can't create DataFrame from #{source}"
         end
       end
 
