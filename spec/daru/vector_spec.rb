@@ -1,5 +1,9 @@
 RSpec.describe Daru::Vector do
-  subject(:vector) { described_class.new(data, index: index, name: name) }
+  def vec(*arg)
+    described_class.new(*arg)
+  end
+
+  subject(:vector) { vec(data, index: index, name: name) }
 
   let(:data) { [1, 2, 3] }
   let(:index) { %i[a b c] }
@@ -11,31 +15,31 @@ RSpec.describe Daru::Vector do
 
   describe '#initialize' do
     context 'from array' do
-      subject { described_class.new [1, 2, 3] }
+      subject { vec [1, 2, 3] }
 
       its(:to_a) { is_expected.to eq [1, 2, 3] }
       its(:index) { is_expected.to eq Daru::Index.new [0, 1, 2] }
 
       context 'with index' do
-        subject { described_class.new [1, 2, 3], index: Daru::Index.new(%i[a b c]) }
+        subject { vec [1, 2, 3], index: Daru::Index.new(%i[a b c]) }
 
         its(:index) { is_expected.to eq Daru::Index.new %i[a b c] }
       end
 
       context 'with index to be coerced' do
-        subject { described_class.new [1, 2, 3], index: %i[a b c] }
+        subject { vec [1, 2, 3], index: %i[a b c] }
 
         its(:index) { is_expected.to eq Daru::Index.new %i[a b c] }
       end
 
       context 'too small index' do
-        subject { described_class.new [1, 2, 3], index: %i[a b] }
+        subject { vec [1, 2, 3], index: %i[a b] }
 
         its_block { is_expected.to raise_error(ArgumentError, /Expected index size >= vector size./) }
       end
 
       context 'too large index' do
-        subject { described_class.new [1, 2, 3], index: %i[a b c d e] }
+        subject { vec [1, 2, 3], index: %i[a b c d e] }
 
         its(:to_a) { is_expected.to eq [1, 2, 3, nil, nil] }
         its(:index) { is_expected.to eq Daru::Index.new %i[a b c d e] }
@@ -43,13 +47,13 @@ RSpec.describe Daru::Vector do
     end
 
     context 'from hash' do
-      subject { described_class.new(a: 1, b: 2, c: 3) }
+      subject { vec(a: 1, b: 2, c: 3) }
 
       its(:to_a) { is_expected.to eq [1, 2, 3] }
       its(:index) { is_expected.to eq Daru::Index.new %i[a b c] }
 
       context 'with name' do
-        subject { described_class.new({a: 1, b: 2, c: 3}, name: 'foo') }
+        subject { vec({a: 1, b: 2, c: 3}, name: 'foo') }
 
         its(:name) { is_expected.to eq 'foo' }
       end
@@ -58,7 +62,7 @@ RSpec.describe Daru::Vector do
     end
 
     context 'from enumerable' do
-      subject { described_class.new 1..3 }
+      subject { vec 1..3 }
 
       its(:to_a) { is_expected.to eq [1, 2, 3] }
       its(:index) { is_expected.to eq Daru::Index.new [0, 1, 2] }
@@ -66,10 +70,10 @@ RSpec.describe Daru::Vector do
   end
 
   describe '#==' do
-    it { is_expected.to eq described_class.new(data, index: index, name: name) }
-    it { is_expected.not_to eq described_class.new(data, index: index.reverse, name: name) }
-    it { is_expected.not_to eq described_class.new(data.reverse, index: index, name: name) }
-    it { is_expected.to eq described_class.new(data, index: index, name: 'foobar') } # name doesn't matter, data matters
+    it { is_expected.to eq vec(data, index: index, name: name) }
+    it { is_expected.not_to eq vec(data, index: index.reverse, name: name) }
+    it { is_expected.not_to eq vec(data.reverse, index: index, name: name) }
+    it { is_expected.to eq vec(data, index: index, name: 'foobar') } # name doesn't matter, data matters
   end
 
   describe '#inspect' do
@@ -192,20 +196,20 @@ RSpec.describe Daru::Vector do
   end
 
   describe '#type' do
-    subject { ->(*data) { described_class.new(data).type } }
+    subject { ->(*data) { vec(data).type } }
 
-    its([1,2,3]) { is_expected.to eq :numeric }
-    its([1,Float::NAN,nil]) { is_expected.to eq :numeric }
-    its([1,2,'3']) { is_expected.to eq :object }
+    its_call(1,2,3) { is_expected.to ret :numeric }
+    its_call(1,Float::NAN,nil) { is_expected.to ret :numeric }
+    its_call(1,2,'3') { is_expected.to ret :object }
   end
 
   describe '#[]' do
     context 'by index' do
       its([:a]) { is_expected.to eq 1 }
       it { expect { vector[:d] }.to raise_error(IndexError) }
-      its(%i[b c]) { is_expected.to eq described_class.new [2, 3], index: %i[b c] }
-      its([:a..:c]) { is_expected.to eq described_class.new [1, 2, 3], index: %i[a b c] }
-      its([:a...:c]) { is_expected.to eq described_class.new [1, 2], index: %i[a b] }
+      its(%i[b c]) { is_expected.to eq vec [2, 3], index: %i[b c] }
+      its([:a..:c]) { is_expected.to eq vec [1, 2, 3], index: %i[a b c] }
+      its([:a...:c]) { is_expected.to eq vec [1, 2], index: %i[a b] }
     end
 
     context 'by MultiIndex' do
@@ -213,39 +217,39 @@ RSpec.describe Daru::Vector do
       let(:index) { Daru::MultiIndex.new [%w[India Delhi], %w[India Pune], %w[Ukraine Kyiv], %w[Ukraine Kharkiv]] }
 
       its(%w[Ukraine Kharkiv]) { is_expected.to eq 4 }
-      its(%w[Ukraine]) { is_expected.to eq described_class.new [3, 4], index: Daru::MultiIndex.new([%w[Ukraine Kyiv], %w[Ukraine Kharkiv]]) }
+      its(%w[Ukraine]) { is_expected.to eq vec [3, 4], index: Daru::MultiIndex.new([%w[Ukraine Kyiv], %w[Ukraine Kharkiv]]) }
     end
 
     context 'by DateTimeIndex'
 
     context 'by numeric position' do
       its([0]) { is_expected.to eq 1 }
-      its([1, 2]) { is_expected.to eq described_class.new [2, 3], index: %i[b c] }
-      its([0..2]) { is_expected.to eq described_class.new [1, 2, 3], index: %i[a b c] }
-      its([0...2]) { is_expected.to eq described_class.new [1, 2], index: %i[a b] }
+      its([1, 2]) { is_expected.to eq vec [2, 3], index: %i[b c] }
+      its([0..2]) { is_expected.to eq vec [1, 2, 3], index: %i[a b c] }
+      its([0...2]) { is_expected.to eq vec [1, 2], index: %i[a b] }
     end
   end
 
   describe '#at' do
     subject { vector.method(:at) }
 
-    its([1]) { is_expected.to eq 2 }
-    its([1, 2]) { is_expected.to eq described_class.new [2, 3], index: %i[b c] }
-    it { expect { vector.at(7) }.to raise_error IndexError }
+    its_call(1) { is_expected.to ret 2 }
+    its_call(1, 2) { is_expected.to ret vec [2, 3], index: %i[b c] }
+    its_call(7) { is_expected.to raise_error IndexError }
   end
 
   describe '#index_of' do
     subject { vector.method(:index_of) }
 
-    its([1]) { is_expected.to eq :a }
-    its([4]) { is_expected.to be_nil }
+    its_call(1) { is_expected.to ret :a }
+    its_call(4) { is_expected.to ret be_nil }
   end
 
   describe '#has_label?' do
     subject { vector.method(:has_label?) }
 
-    its([:a]) { is_expected.to be_truthy }
-    its([:e]) { is_expected.to be_falsy }
+    its_call(:a) { is_expected.to ret be_truthy }
+    its_call(:e) { is_expected.to ret be_falsy }
   end
 
   describe '#count_values' do
@@ -254,9 +258,9 @@ RSpec.describe Daru::Vector do
     let(:data) { [1, 2, 1, '1', nil, nil, Float::NAN] }
     let(:index) { nil }
 
-    its([1]) { is_expected.to eq 2 }
-    its([nil, 2]) { is_expected.to eq 3 }
-    its([Float::NAN]) { is_expected.to eq 1 }
+    its_call(1) { is_expected.to ret 2 }
+    its_call(nil, 2) { is_expected.to ret 3 }
+    its_call(Float::NAN) { is_expected.to ret 1 }
   end
 
   describe '#positions' do
@@ -265,10 +269,10 @@ RSpec.describe Daru::Vector do
     let(:data) { [1, 2, 1, '1', nil, nil, Float::NAN] }
     let(:index) { nil }
 
-    its([1]) { is_expected.to eq [0, 2] }
-    its([nil, 2]) { is_expected.to eq [1, 4, 5] }
-    its([Float::NAN]) { is_expected.to eq [6] }
-    its([3, 5]) { is_expected.to eq [] }
+    its_call(1) { is_expected.to ret [0, 2] }
+    its_call(nil, 2) { is_expected.to ret [1, 4, 5] }
+    its_call(Float::NAN) { is_expected.to ret [6] }
+    its_call(3, 5) { is_expected.to ret [] }
   end
 
   describe '#each' do
@@ -287,14 +291,14 @@ RSpec.describe Daru::Vector do
     describe '#first(N)' do
       subject { vector.method(:first) }
 
-      its([2]) { is_expected.to eq described_class.new [1, 2], index: %i[a b] }
+      its_call(2) { is_expected.to ret vec [1, 2], index: %i[a b] }
       # its([]) { is_expected.to eq 1 } -- TODO
     end
 
     describe '#select' do
       subject { vector.select { |_idx, val| val.odd? } }
 
-      it { is_expected.to eq described_class.new [1, 3], index: %i[a c] }
+      it { is_expected.to eq vec [1, 3], index: %i[a c] }
     end
 
     describe '#map' do
@@ -306,14 +310,14 @@ RSpec.describe Daru::Vector do
     describe '#sort_by' do
       subject { vector.sort_by { |_idx, val| -val } }
 
-      it { is_expected.to eq described_class.new [3, 2, 1], index: %i[c b a] }
+      it { is_expected.to eq vec [3, 2, 1], index: %i[c b a] }
     end
 
     describe '#uniq' do
       describe 'with block' do
         subject { vector.uniq { |_, v| v.odd? } }
 
-        it { is_expected.to eq described_class.new [1, 2], index: %i[a b] }
+        it { is_expected.to eq vec [1, 2], index: %i[a b] }
       end
 
       describe 'without block' do
@@ -321,7 +325,7 @@ RSpec.describe Daru::Vector do
 
         let(:data) { [1, 1, 3] }
 
-        it { is_expected.to eq described_class.new [1, 3], index: %i[a c] }
+        it { is_expected.to eq vec [1, 3], index: %i[a c] }
       end
     end
   end
@@ -331,19 +335,19 @@ RSpec.describe Daru::Vector do
 
     let(:index) { %i[c a b] }
 
-    it { is_expected.to eq described_class.new [2, 3, 1], index: %i[a b c] }
+    it { is_expected.to eq vec [2, 3, 1], index: %i[a b c] }
   end
 
   describe '#recode!' do
     before { vector.recode! { |val| val + 1 } }
 
-    it { is_expected.to eq described_class.new [2, 3, 4], index: %i[a b c] }
+    it { is_expected.to eq vec [2, 3, 4], index: %i[a b c] }
   end
 
   describe '#recode' do
     subject { vector.recode { |val| val + 1 } }
 
-    it { is_expected.to eq described_class.new [2, 3, 4], index: %i[a b c] }
+    it { is_expected.to eq vec [2, 3, 4], index: %i[a b c] }
   end
 
   describe '#reindex'
@@ -361,9 +365,9 @@ RSpec.describe Daru::Vector do
 
     let(:data) { [1, Float::NAN, nil] }
 
-    its([1, nil]) { is_expected.to be_truthy }
-    its([2, Float::NAN]) { is_expected.to be_truthy }
-    its([2]) { is_expected.to be_falsy }
+    its_call(1, nil) { is_expected.to ret be_truthy }
+    its_call(2, Float::NAN) { is_expected.to ret be_truthy }
+    its_call(2) { is_expected.to ret be_falsy }
   end
 
   # mutable behavior
@@ -373,45 +377,45 @@ RSpec.describe Daru::Vector do
     let(:value) { 'x' }
 
     context 'by index' do
-      its([:a]) { is_expected.to eq described_class.new ['x', 2, 3], index: %i[a b c] }
-      it { expect { vector[:d] = value }.to raise_error(IndexError) }
-      its(%i[b c]) { is_expected.to eq described_class.new [1, 'x', 'x'], index: %i[a b c] }
-      its([:a..:c]) { is_expected.to eq described_class.new %w[x x x], index: %i[a b c] }
-      its([:a...:c]) { is_expected.to eq described_class.new ['x', 'x', 3], index: %i[a b c] }
+      its_call(:a) { is_expected.to ret vec ['x', 2, 3], index: %i[a b c] }
+      its_call(:d) { is_expected.to raise_error(IndexError) }
+      its_call(:b, :c) { is_expected.to ret vec [1, 'x', 'x'], index: %i[a b c] }
+      its_call(:a..:c) { is_expected.to ret vec %w[x x x], index: %i[a b c] }
+      its_call(:a...:c) { is_expected.to ret vec ['x', 'x', 3], index: %i[a b c] }
     end
 
     context 'by MultiIndex' do
       let(:data) { 1..4 }
       let(:index) { Daru::MultiIndex.new [%w[India Delhi], %w[India Pune], %w[Ukraine Kyiv], %w[Ukraine Kharkiv]] }
 
-      its(%w[Ukraine Kharkiv]) { is_expected.to eq described_class.new [1, 2, 3, 'x'], index: index }
-      its(%w[Ukraine]) { is_expected.to eq described_class.new [1, 2, 'x', 'x'], index: index }
+      its(%w[Ukraine Kharkiv]) { is_expected.to eq vec [1, 2, 3, 'x'], index: index }
+      its(%w[Ukraine]) { is_expected.to eq vec [1, 2, 'x', 'x'], index: index }
     end
 
     context 'by DateTimeIndex'
 
     context 'by numeric position' do
-      its([0]) { is_expected.to eq described_class.new ['x', 2, 3], index: %i[a b c] }
-      its([1, 2]) { is_expected.to eq described_class.new [1, 'x', 'x'], index: %i[a b c] }
-      its([0..2]) { is_expected.to eq described_class.new %w[x x x], index: %i[a b c] }
-      its([0...2]) { is_expected.to eq described_class.new ['x', 'x', 3], index: %i[a b c] }
+      its_call(0) { is_expected.to ret vec ['x', 2, 3], index: %i[a b c] }
+      its_call(1, 2) { is_expected.to ret vec [1, 'x', 'x'], index: %i[a b c] }
+      its_call(0..2) { is_expected.to ret vec %w[x x x], index: %i[a b c] }
+      its_call(0...2) { is_expected.to ret vec ['x', 'x', 3], index: %i[a b c] }
     end
   end
 
   describe '#reindex!' do
     subject { ->(*values) { vector.reindex!(Daru::Index.new(values)) } }
 
-    its(%i[c b a]) { is_expected.to eq described_class.new [3, 2, 1], index: %i[c b a] }
-    its(%i[c a]) { is_expected.to eq described_class.new [3, 1], index: %i[c a] }
-    its(%i[a d f]) { is_expected.to eq described_class.new [1, nil, nil], index: %i[a d f] }
+    its_call(:c, :b, :a) { is_expected.to ret vec [3, 2, 1], index: %i[c b a] }
+    its_call(:c, :a) { is_expected.to ret vec [3, 1], index: %i[c a] }
+    its_call(:a, :d, :f) { is_expected.to ret vec [1, nil, nil], index: %i[a d f] }
   end
 
   describe '#reorder!' do
     subject { ->(*values) { vector.reorder!(values) } }
 
-    its([0, 2, 1]) { is_expected.to eq described_class.new [1, 3, 2], index: %i[a c b] }
-    its([0, 1]) { is_expected.to eq described_class.new [1, 2], index: %i[a b] }
-    its([0, 2, 4]) { is_expected.to eq described_class.new [1, 3, nil], index: [:a, :c, nil] }
+    its_call(0, 2, 1) { is_expected.to ret vec [1, 3, 2], index: %i[a c b] }
+    its_call(0, 1) { is_expected.to ret vec [1, 2], index: %i[a b] }
+    its_call(0, 2, 4) { is_expected.to ret vec [1, 3, nil], index: [:a, :c, nil] }
 
     # TODO: what is reasonable behavior here?
     # its([4, 8, 16]) { is_expected.to eq described_class.empty }
@@ -420,7 +424,7 @@ RSpec.describe Daru::Vector do
   describe '#reset_index!' do
     subject { vector.reset_index! }
 
-    it { is_expected.to eq described_class.new data, index: [0, 1, 2] }
+    it { is_expected.to eq vec data, index: [0, 1, 2] }
   end
 
   describe '#rolling_fillna!' do
@@ -430,13 +434,13 @@ RSpec.describe Daru::Vector do
     context 'forward' do
       before { vector.rolling_fillna! }
 
-      it { is_expected.to eq described_class.new [0, 2, 1, 4, 4, 4, 3, 3, 3] }
+      it { is_expected.to eq vec [0, 2, 1, 4, 4, 4, 3, 3, 3] }
     end
 
     context 'backward' do
       before { vector.rolling_fillna!(:backward) }
 
-      it { is_expected.to eq described_class.new [2, 2, 1, 4, 3, 3, 3, 0, 0] }
+      it { is_expected.to eq vec [2, 2, 1, 4, 3, 3, 3, 0, 0] }
     end
 
     context 'all empty' do
@@ -444,16 +448,16 @@ RSpec.describe Daru::Vector do
 
       before { vector.rolling_fillna! }
 
-      it { is_expected.to eq described_class.new [0, 0, 0] }
+      it { is_expected.to eq vec [0, 0, 0] }
     end
   end
 
   describe '#lag!' do
     subject { vector.method(:lag!) }
 
-    its([0]) { is_expected.to eq described_class.new [1, 2, 3], index: %i[a b c] }
-    its([1]) { is_expected.to eq described_class.new [nil, 1, 2], index: %i[a b c] }
-    its([-1]) { is_expected.to eq described_class.new [2, 3, nil], index: %i[a b c] }
-    its([100]) { is_expected.to eq described_class.new [nil, nil, nil], index: %i[a b c] }
+    its_call(0) { is_expected.to ret vec [1, 2, 3], index: %i[a b c] }
+    its_call(1) { is_expected.to ret vec [nil, 1, 2], index: %i[a b c] }
+    its_call(-1) { is_expected.to ret vec [2, 3, nil], index: %i[a b c] }
+    its_call(100) { is_expected.to ret vec [nil, nil, nil], index: %i[a b c] }
   end
 end

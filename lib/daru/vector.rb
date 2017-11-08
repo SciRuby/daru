@@ -438,7 +438,7 @@ module Daru
     #   #   b 888
     #   #   c 888
     def []=(*labels_or_positions, val)
-      positions = index.pos(*labels)
+      positions = index.pos(*labels_or_positions)
 
       if positions.is_a? Numeric
         data[positions] = val
