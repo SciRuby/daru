@@ -447,6 +447,29 @@ module Daru
       end
     end
 
+    # Deletes element from vector by index label.
+    #
+    # @param label Label to delete element at
+    # @return Deleted element or nil if label was not in the vector
+    def delete_at(label)
+      pos = index[label] or return nil
+      @index = index.except(label)
+      data.delete_at(pos)
+    end
+
+    # Deletes an element from vector by value.
+    # If element is present several times, all entries are deleted.
+    #
+    # @param element Element to delete
+    # @return Deleted element or nil if element was not in the vector
+    def delete(element)
+      positions = data.each_with_index.select { |val, _| val == element }.map(&:last)
+      return nil if positions.empty?
+      @data.reject! { |val| val == element }
+      @index = index.except(*positions.map { |pos| index.label(pos) })
+      element
+    end
+
     # Reorders vector according to new index provided. If the label of a new index was present in
     # the vector, corresponding value is preserved, otherwise value is filled with `nil`.
     #
@@ -637,7 +660,6 @@ module Daru
       positions.map { |pos| @data[pos] = val }
     end
 
-
     # @note Do not use it to check for Float::NAN as
     #   Float::NAN == Float::NAN is false
     # Return vector of booleans with value at ith position is either
@@ -678,17 +700,6 @@ module Daru
       raise ArgumentError, "Unsupported dtype #{opts[:dtype]}" unless %i[array nmatrix gsl].include?(dt)
 
       @data = cast_vector_to dt unless @dtype == dt
-    end
-
-    # Delete an element by value
-    def delete(element)
-      delete_at index_of(element)
-    end
-
-    # Delete element by index
-    def delete_at(index)
-      @data.delete_at @index[index]
-      @index = Daru::Index.new(@index.to_a - [index])
     end
 
     # Tells if vector is categorical or not.

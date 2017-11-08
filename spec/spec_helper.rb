@@ -10,6 +10,7 @@ require 'nokogiri'
 require 'gruff'
 require 'webmock/rspec'
 require 'saharspec'
+require 'saharspec/matchers/dont'
 
 def mri?
   RUBY_ENGINE == 'ruby'

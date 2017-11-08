@@ -373,7 +373,8 @@ RSpec.describe Daru::Vector do
   # mutable behavior
   describe '#[]=' do
     # set value at labels and check the resulting vector
-    subject { ->(*labels) { vector.tap { vector[*labels] = value }  } }
+    subject { ->(*labels) { vector.tap { vector[*labels] = value } } }
+
     let(:value) { 'x' }
 
     context 'by index' do
@@ -428,27 +429,18 @@ RSpec.describe Daru::Vector do
   end
 
   describe '#rolling_fillna!' do
+    subject { vector.method(:rolling_fillna!) }
+
     let(:data) { [Float::NAN, 2, 1, 4, nil, Float::NAN, 3, nil, Float::NAN] }
     let(:index) { nil }
 
-    context 'forward' do
-      before { vector.rolling_fillna! }
-
-      it { is_expected.to eq vec [0, 2, 1, 4, 4, 4, 3, 3, 3] }
-    end
-
-    context 'backward' do
-      before { vector.rolling_fillna!(:backward) }
-
-      it { is_expected.to eq vec [2, 2, 1, 4, 3, 3, 3, 0, 0] }
-    end
+    it { is_expected.to ret vec [0, 2, 1, 4, 4, 4, 3, 3, 3] }
+    its_call(:backward) { is_expected.to ret vec [2, 2, 1, 4, 3, 3, 3, 0, 0] }
 
     context 'all empty' do
       let(:data) { [Float::NAN, nil, Float::NAN] }
 
-      before { vector.rolling_fillna! }
-
-      it { is_expected.to eq vec [0, 0, 0] }
+      it { is_expected.to ret vec [0, 0, 0] }
     end
   end
 
@@ -459,5 +451,23 @@ RSpec.describe Daru::Vector do
     its_call(1) { is_expected.to ret vec [nil, 1, 2], index: %i[a b c] }
     its_call(-1) { is_expected.to ret vec [2, 3, nil], index: %i[a b c] }
     its_call(100) { is_expected.to ret vec [nil, nil, nil], index: %i[a b c] }
+  end
+
+  describe '#delete_at' do
+    subject { vector.method(:delete_at) }
+
+    its_call(:a) { is_expected.to ret(1).and change { vector }.to(vec([2, 3], index: %i[b c])) }
+    its_call(:d) { is_expected.to ret(nil).and(dont.change { vector }) }
+  end
+
+  describe '#delete' do
+    subject { vector.method(:delete) }
+
+    let(:data) { [1, 2, 3, 2] }
+    let(:index) { %i[a b c d] }
+
+    its_call(1) { is_expected.to ret(1).and change { vector }.to(vec([2, 3, 2], index: %i[b c d])) }
+    its_call(2) { is_expected.to ret(2).and change { vector }.to(vec([1, 3], index: %i[a c])) }
+    its_call(4) { is_expected.to ret(nil).and(dont.change { vector }) }
   end
 end

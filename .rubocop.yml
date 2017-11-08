@@ -135,7 +135,7 @@ Style/BlockDelimiters:
   Enabled: false
 
 RSpec/EmptyExampleGroup:
-  CustomIncludeMethods: [its_call, its_map]
+  CustomIncludeMethods: [its_call, its_map, its_block]
 
 RSpec/NestedGroups:
   Enabled: false

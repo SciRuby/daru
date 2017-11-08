@@ -123,7 +123,7 @@ module Daru
     # Index label by position.
     #
     # @param position [Integer] Position in index 0...index.size
-    # @return Lable at position, or nil if position is not numeric or outside the index size
+    # @return Label at position, or nil if position is not numeric or outside the index size
     def label(position)
       return nil unless position.is_a?(Integer)
       keys[position]
@@ -197,6 +197,10 @@ module Daru
       else
         raise IndexError, "Undefined index label: #{labels.first.inspect}"
       end
+    end
+
+    def except(*labels)
+      Index.new(keys - labels)
     end
 
     # def subset(*indexes)

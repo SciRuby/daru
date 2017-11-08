@@ -80,7 +80,7 @@ RSpec.describe Daru::Index do
     its_call('mic'..'amp') { is_expected.to ret [1, 2, 3] }
     its_call('mic'...'amp') { is_expected.to ret [1, 2] }
     its_call('amp'..'mic') { is_expected.to ret [] }
-    its_call(*%w[amp mic speaker piano]) { is_expected.to ret [3, 1, 0, nil] }
+    its_call('amp', 'mic', 'speaker', 'piano') { is_expected.to ret [3, 1, 0, nil] }
 
     context 'first index is not valid' do
       its_call('foo'..'bar') { is_expected.to ret nil }
