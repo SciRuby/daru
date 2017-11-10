@@ -76,6 +76,19 @@ RSpec.describe Daru::Vector do
     it { is_expected.to eq vec(data, index: index, name: 'foobar') } # name doesn't matter, data matters
   end
 
+  describe '#dup' do
+    subject(:dup) { vector.dup }
+
+    it { is_expected.to eq vec(data, index: index) }
+    its(:name) { is_expected.to eq name }
+
+    specify {
+      expect(dup.object_id).not_to eq vector.object_id
+      expect(dup.data.object_id).not_to eq vector.data.object_id
+      expect(dup.index.object_id).not_to eq vector.index.object_id
+    }
+  end
+
   describe '#inspect' do
     context 'simple' do
       its(:inspect) {
@@ -350,15 +363,16 @@ RSpec.describe Daru::Vector do
     it { is_expected.to eq vec [2, 3, 4], index: %i[a b c] }
   end
 
-  describe '#reindex'
+  describe '#reject_values' do
+    subject { vector.method(:reject_values) }
 
-  describe '#reorder'
+    let(:data) { [1, nil, 3, :a, Float::NAN, nil, Float::NAN, 1] }
+    let(:index) { 11..18 }
 
-  describe '#select_values'
-
-  describe '#reject_values'
-
-  describe '#replace_values'
+    its_call(nil) { is_expected.to ret vec [1, 3, :a, Float::NAN, Float::NAN, 1], index: [11, 13, 14, 15, 17, 18] }
+    its_call(Float::NAN) { is_expected.to ret vec [1, nil, 3, :a, nil, 1], index: [11, 12, 13, 14, 16, 18] }
+    its_call(1, :a, nil, Float::NAN) { is_expected.to ret vec [3], index: [13] }
+  end
 
   describe '#include_values?' do
     subject { vector.method(:include_values?) }
@@ -409,6 +423,13 @@ RSpec.describe Daru::Vector do
     its_call(:c, :b, :a) { is_expected.to ret vec [3, 2, 1], index: %i[c b a] }
     its_call(:c, :a) { is_expected.to ret vec [3, 1], index: %i[c a] }
     its_call(:a, :d, :f) { is_expected.to ret vec [1, nil, nil], index: %i[a d f] }
+    its_call(:b, :d, :a) { is_expected.to ret vec [2, nil, 1], index: %i[b d a] }
+  end
+
+  describe '#rename!' do
+    subject { vector.method(:rename!) }
+
+    its_call('foo') { is_expected.to change(vector, :name).to 'foo' }
   end
 
   describe '#reorder!' do
@@ -469,5 +490,15 @@ RSpec.describe Daru::Vector do
     its_call(1) { is_expected.to ret(1).and change { vector }.to(vec([2, 3, 2], index: %i[b c d])) }
     its_call(2) { is_expected.to ret(2).and change { vector }.to(vec([1, 3], index: %i[a c])) }
     its_call(4) { is_expected.to ret(nil).and(dont.change { vector }) }
+  end
+
+  describe '#replace_values!' do
+    subject { vector.method(:replace_values!) }
+
+    let(:data) { [1, nil, 3, :a, Float::NAN, nil, Float::NAN, 1] }
+    let(:index) { 11..18 }
+
+    its_call(1, 8) { is_expected.to ret vec [8, nil, 3, :a, Float::NAN, nil, Float::NAN, 8], index: 11..18 }
+    its_call([nil, Float::NAN], 0) { is_expected.to ret vec [1, 0, 3, :a, 0, 0, 0, 1], index: 11..18 }
   end
 end

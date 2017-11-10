@@ -160,6 +160,12 @@ module Daru
       @name = name
     end
 
+    # @private
+    def initialize_dup(other)
+      reset!(other.index.dup, other.data.dup)
+      @name = other.name
+    end
+
     # Two vectors are equal if they have the exact same index values corresponding
     # with the exact same elements. Name is ignored.
     #
@@ -419,6 +425,21 @@ module Daru
       Vector.new new_values, index: new_index
     end
 
+    # Return a vector with specified values removed.
+    #
+    # @param values [Array] values to reject from resultant vector
+    # @return [Daru::Vector] vector with specified values removed
+    # @example
+    #   dv = Daru::Vector.new [1, 2, nil, Float::NAN]
+    #   dv.reject_values nil, Float::NAN
+    #   # => #<Daru::Vector(2)>
+    #   #   0   1
+    #   #   1   2
+    def reject_values(*values)
+      positions = size.times.to_a - positions(*values)
+      positions.count == 1 ? at(positions.first..positions.first) : at(*positions)
+    end
+
     # Modify vector elements =======================================================================
 
     # Assign value(s) by index labels or numeric positions.
@@ -470,6 +491,23 @@ module Daru
       element
     end
 
+    # Give the vector a new name
+    #
+    # @param new_name [Symbol, String] The new name.
+    # @return [self]
+    def rename!(new_name)
+      @name = new_name
+      self
+    end
+
+    # Create the copy of vector with a new name.
+    #
+    # @param new_name [Symbol, String] The new name.
+    # @return [Vector]
+    def rename(new_name)
+      dup.rename(new_name)
+    end
+
     # Reorders vector according to new index provided. If the label of a new index was present in
     # the vector, corresponding value is preserved, otherwise value is filled with `nil`.
     #
@@ -477,7 +515,7 @@ module Daru
     # @param [Daru::Index, Daru::MultiIndex] new_index new index to order with
     # @return [self]
     def reindex!(new_index)
-      new_data = data.values_at(*index[*new_index.to_a].compact)
+      new_data = index[*new_index.to_a].map { |pos| pos.nil? ? nil : data[pos] }
 
       reset!(new_index, new_data)
 
@@ -624,23 +662,39 @@ module Daru
       dup.lag!(periods)
     end
 
+    # Replaces specified values with a new value.
+    #
+    # @param old_values [Object, Array] Value, or array of values, to replace.
+    # @param new_value New value to replace with.
+    # @return [self]
+    # @example
+    #   dv = Daru::Vector.new [1, 2, :a, :b]
+    #   dv.replace_values! [:a, :b], nil
+    #   dv
+    #   # =>
+    #   # #<Daru::Vector:19903200 @name = nil @metadata = {} @size = 4 >
+    #   #     nil
+    #   #   0   1
+    #   #   1   2
+    #   #   2 nil
+    #   #   3 nil
+    def replace_values!(old_values, new_value)
+      old_values = Array(old_values)
+      data.each_with_index { |val, i| data[i] = new_value if include_with_nan?(old_values, val) }
+      self
+    end
+
+    # Non-destructive version of {#replace_values!}
+    #
+    # @param old_values [Object, Array] Value, or array of values, to replace.
+    # @param new_value New value to replace with.
+    # @return [Vector]
+    def replace_values(old_values, new_value)
+      dup.replace_values!(old_values, new_value)
+    end
+
     # NOT REFACTORED CODE STARTS BELOW THIS LINE ===================================================
     public
-
-    def each_index(&block)
-      return to_enum(:each_index) unless block_given?
-
-      @index.each(&block)
-      self
-    end
-
-    def each_with_index(&block)
-      return to_enum(:each_with_index) unless block_given?
-
-      @data.to_a.zip(@index.to_a).each(&block)
-
-      self
-    end
 
     # Change value at given positions
     # @param positions [Array<object>] positional values
@@ -779,59 +833,6 @@ module Daru
       summary
     end
 
-    def index=(idx)
-      idx = Index.coerce idx
-
-      if idx.size != size
-        raise ArgumentError,
-          "Size of supplied index #{idx.size} does not match size of Vector"
-      end
-
-      unless idx.is_a?(Daru::Index)
-        raise ArgumentError, 'Can only assign type Index and its subclasses.'
-      end
-
-      @index = idx
-    end
-
-    # Give the vector a new name
-    #
-    # @param new_name [Symbol] The new name.
-    def rename(new_name)
-      @name = new_name
-      self
-    end
-
-    alias_method :name=, :rename
-
-    # Duplicated a vector
-    # @return [Daru::Vector] duplicated vector
-    def dup
-      Daru::Vector.new @data.dup, name: @name, index: @index.dup
-    end
-
-    # Return a vector with specified values removed
-    # @param values [Array] values to reject from resultant vector
-    # @return [Daru::Vector] vector with specified values removed
-    # @example
-    #   dv = Daru::Vector.new [1, 2, nil, Float::NAN]
-    #   dv.reject_values nil, Float::NAN
-    #   # => #<Daru::Vector(2)>
-    #   #   0   1
-    #   #   1   2
-    def reject_values(*values)
-      resultant_pos = size.times.to_a - positions(*values)
-      dv = at(*resultant_pos)
-      # Handle the case when number of positions is 1
-      # and hence #at doesn't return a vector
-      if dv.is_a?(Daru::Vector)
-        dv
-      else
-        pos = resultant_pos.first
-        at(pos..pos)
-      end
-    end
-
     # Return indexes of values specified
     # @param values [Array] values to find indexes for
     # @return [Array] array of indexes of values specified
@@ -841,42 +842,6 @@ module Daru
     #   # => [13, 14]
     def indexes(*values)
       index.to_a.values_at(*positions(*values))
-    end
-
-    # Replaces specified values with a new value
-    # @param [Array] old_values array of values to replace
-    # @param [object] new_value new value to replace with
-    # @note It performs the replace in place.
-    # @return [Daru::Vector] Same vector itself with values
-    #   replaced with new value
-    # @example
-    #   dv = Daru::Vector.new [1, 2, :a, :b]
-    #   dv.replace_values [:a, :b], nil
-    #   dv
-    #   # =>
-    #   # #<Daru::Vector:19903200 @name = nil @metadata = {} @size = 4 >
-    #   #     nil
-    #   #   0   1
-    #   #   1   2
-    #   #   2 nil
-    #   #   3 nil
-    def replace_values(old_values, new_value)
-      old_values = [old_values] unless old_values.is_a? Array
-      size.times do |pos|
-        set_at([pos], new_value) if include_with_nan? old_values, at(pos)
-      end
-      self
-    end
-
-    # Returns a Vector with only numerical data. Missing data is included
-    # but non-Numeric objects are excluded. Preserves index.
-    def only_numerics
-      numeric_indexes =
-        each_with_index
-        .select { |v, _i| v.is_a?(Numeric) || v.nil? }
-        .map(&:last)
-
-      self[*numeric_indexes]
     end
 
     # Converts a non category type vector to category type vector.

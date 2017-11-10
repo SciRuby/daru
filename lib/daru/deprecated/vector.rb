@@ -3,6 +3,21 @@ module Daru
     module Vector
       DATE_REGEXP = /^(\d{2}-\d{2}-\d{4}|\d{4}-\d{2}-\d{2})$/
 
+      def each_index(&block)
+        return to_enum(:each_index) unless block_given?
+
+        @index.each(&block)
+        self
+      end
+
+      def each_with_index(&block)
+        return to_enum(:each_with_index) unless block_given?
+
+        @data.to_a.zip(@index.to_a).each(&block)
+
+        self
+      end
+
       # Returns the database type for the vector, according to its content
       def db_type
         # first, detect any character not number
@@ -343,6 +358,32 @@ module Daru
         else
           GSL::Vector.alloc(reject_values(*Daru::MISSING_VALUES).to_a)
         end
+      end
+
+      def index=(idx)
+        idx = Index.coerce idx
+
+        if idx.size != size
+          raise ArgumentError,
+            "Size of supplied index #{idx.size} does not match size of Vector"
+        end
+
+        unless idx.is_a?(Daru::Index)
+          raise ArgumentError, 'Can only assign type Index and its subclasses.'
+        end
+
+        @index = idx
+      end
+
+      # Returns a Vector with only numerical data. Missing data is included
+      # but non-Numeric objects are excluded. Preserves index.
+      def only_numerics
+        numeric_indexes =
+          each_with_index
+          .select { |v, _i| v.is_a?(Numeric) || v.nil? }
+          .map(&:last)
+
+        self[*numeric_indexes]
       end
 
       private
