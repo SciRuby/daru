@@ -2654,7 +2654,7 @@ module Daru
           "equal order size (#{source.size})"
       end
 
-      @index   = Index.coerce(index || source[0].size)
+      @index   = Index.coerce(index || source[0].size.times)
       @vectors = Index.coerce(vectors)
 
       update_data source, vectors
@@ -2740,7 +2740,8 @@ module Daru
     end
 
     def initialize_from_hash_with_arrays(source, index, _opts)
-      @index = Index.coerce(index || source.values[0].size)
+      p [index, source]
+      @index = Index.coerce(index || source.values[0].size.times)
 
       @vectors.each do |name|
         @data << Daru::Vector.new(source[name].dup, name: coerce_name(name), index: @index)

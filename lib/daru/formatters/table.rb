@@ -47,7 +47,7 @@ module Daru
         " %#{width}.#{width}s" * rows.first.size if rows.first
       end
 
-      def pretty_to_s(val)
+      def pretty_to_s(val, *)
         val.nil? ? 'nil' : val.to_s
       end
     end

@@ -55,6 +55,10 @@ module Daru
       recreate(keys_at(*positions), name: name)
     end
 
+    def except(*except_labels)
+      self.class.new(labels - except_labels)
+    end
+
     private
 
     # Preprocess ranges, integers and array in appropriate ways

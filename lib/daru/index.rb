@@ -52,6 +52,8 @@ module Daru
     # @param name Optional index name
     # @return [Index, MultiIndex, DateTimeIndex]
     def self.[](labels, name: nil)
+      return Index.new([], name: name) if labels.nil?
+
       MultiIndex.try_create(labels, name: name) ||
         DateTimeIndex.try_create(labels, name: name) ||
         Index.new(labels, name: name)
@@ -197,10 +199,6 @@ module Daru
       else
         raise IndexError, "Undefined index label: #{labels.first.inspect}"
       end
-    end
-
-    def except(*labels)
-      Index.new(keys - labels)
     end
 
     # def subset(*indexes)

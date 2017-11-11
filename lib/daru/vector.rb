@@ -473,7 +473,7 @@ module Daru
     # @param label Label to delete element at
     # @return Deleted element or nil if label was not in the vector
     def delete_at(label)
-      pos = index[label] or return nil
+      pos = index[*label] or return nil
       @index = index.except(label)
       data.delete_at(pos)
     end
@@ -1026,8 +1026,8 @@ module Daru
     # Works similar to #[]= but also insert the vector in case index is not valid
     # It is there only to be accessed by Daru::DataFrame and not meant for user.
     def set(indexes, val)
-      cast(dtype: :array) if val.nil? && dtype != :array
-      guard_type_check(val)
+      #cast(dtype: :array) if val.nil? && dtype != :array
+      #guard_type_check(val)
 
       if @index.valid?(*indexes)
         modify_vector(indexes, val)

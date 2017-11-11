@@ -71,6 +71,13 @@ module Daru
       end
     end
 
+    # FIXME!
+    def [](*labels_or_positions)
+      pos(*labels_or_positions)
+    rescue IndexError
+      nil
+    end
+
     # @private
     # Return tuples with nils in place of repeating values, like this:
     #

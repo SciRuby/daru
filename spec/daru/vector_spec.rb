@@ -479,6 +479,12 @@ RSpec.describe Daru::Vector do
 
     its_call(:a) { is_expected.to ret(1).and change { vector }.to(vec([2, 3], index: %i[b c])) }
     its_call(:d) { is_expected.to ret(nil).and(dont.change { vector }) }
+
+    context 'with MultiIndex' do
+      let(:index) { Daru::MultiIndex.new([%i[a x], %i[a y], %i[b x]]) }
+
+      its_call(%i[a x]) { is_expected.to ret(1).and change { vector }.to(vec([2, 3], index: [%i[a y], %i[b x]])) }
+    end
   end
 
   describe '#delete' do
