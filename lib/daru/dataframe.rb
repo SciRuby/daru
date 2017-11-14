@@ -2253,16 +2253,10 @@ module Daru
       positions = @index.pos(*indexes)
       if positions.is_a? Numeric
         row = populate_row_for(positions)
-        row.first.is_a?(Array) ? row : [] << row
+        row.first.is_a?(Array) ? row : [row]
       else
-        res = []
         new_rows = @data.map { |vec| vec[*indexes] }
-        indexes.each do |index|
-          tuples = []
-          new_rows.map { |r| tuples += [r[index]] }
-          res << tuples
-        end
-        res
+        indexes.map { |index| new_rows.map { |r| r[index] } }
       end
     end
 
