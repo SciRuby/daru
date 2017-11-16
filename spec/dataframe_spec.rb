@@ -3266,6 +3266,18 @@ describe Daru::DataFrame do
     end
   end
 
+  context "group_by" do
+    context "on a single row DataFrame" do
+      let(:df){ Daru::DataFrame.new(city: %w[Kyiv], year: [2015], value: [1]) }
+      it "returns a groupby object" do
+        expect(df.group_by([:city])).to be_a(Daru::Core::GroupBy)
+      end
+      it "has the correct index" do
+        expect(df.group_by([:city]).groups).to eq({["Kyiv"]=>[0]})
+      end
+    end
+  end
+
   context "#vector_sum" do
     before do
       a1 = Daru::Vector.new [1, 2, 3, 4, 5, nil, nil]

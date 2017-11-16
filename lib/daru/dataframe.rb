@@ -1450,11 +1450,10 @@ module Daru
     #   # ["foo", "two", 3]=>[2, 4]}
     def group_by *vectors
       vectors.flatten!
-      # FIXME: wouldn't it better to do vectors - @vectors here and
-      # raise one error with all non-existent vector names?.. - zverok, 2016-05-18
-      vectors.each { |v|
-        raise(ArgumentError, "Vector #{v} does not exist") unless has_vector?(v)
-      }
+      missing = vectors - @vectors.to_a
+      unless missing.empty?
+        raise(ArgumentError, "Vector(s) missing: #{missing.join(', ')}")
+      end
 
       vectors = [@vectors.first] if vectors.empty?
 
@@ -2252,17 +2251,13 @@ module Daru
     # returns array of row tuples at given index(s)
     def access_row_tuples_by_indexs *indexes
       positions = @index.pos(*indexes)
-
-      return populate_row_for(positions) if positions.is_a? Numeric
-
-      res = []
-      new_rows = @data.map { |vec| vec[*indexes] }
-      indexes.each do |index|
-        tuples = []
-        new_rows.map { |row| tuples += [row[index]] }
-        res << tuples
+      if positions.is_a? Numeric
+        row = populate_row_for(positions)
+        row.first.is_a?(Array) ? row : [row]
+      else
+        new_rows = @data.map { |vec| vec[*indexes] }
+        indexes.map { |index| new_rows.map { |r| r[index] } }
       end
-      res
     end
 
     # Function to use for aggregating the data.
@@ -2910,7 +2905,7 @@ module Daru
     end
 
     def update_data source, vectors
-      @data = @vectors.each_with_index.map do |_vec,idx|
+      @data = @vectors.each_with_index.map do |_vec, idx|
         Daru::Vector.new(source[idx], index: @index, name: vectors[idx])
       end
     end
