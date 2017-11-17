@@ -4025,7 +4025,7 @@ describe Daru::DataFrame do
     end
   end
 
-  xcontext '#aggregate' do
+  context '#aggregate' do
     let(:cat_idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
     let(:df) { Daru::DataFrame.new(num: [52,12,07,17,01], cat_index: cat_idx) }
     let(:df_cat_idx) {
@@ -4043,7 +4043,7 @@ describe Daru::DataFrame do
     end
   end
 
-  xcontext '#create_sql' do
+  context '#create_sql' do
     let(:df) { Daru::DataFrame.new({
         a: [1,2,3],
         b: ['test', 'me', 'please'],

@@ -340,10 +340,10 @@ module Daru
     #    #    1   4  14  44
     #    #    2   5  15  55
 
-    def initialize(source={}, opts={}) # rubocop:disable Metrics/MethodLength
-      vectors, index = opts[:order], opts[:index] # FIXME: just keyword arges after Ruby 2.1
+    def initialize(source={}, order: nil, index: nil, name: nil, **opts) # rubocop:disable Metrics/MethodLength
+      vectors = order
       @data = []
-      @name = opts[:name]
+      @name = name
 
       case source
       when ->(s) { s.empty? }
@@ -2740,7 +2740,6 @@ module Daru
     end
 
     def initialize_from_hash_with_arrays(source, index, _opts)
-      p [index, source]
       @index = Index.coerce(index || source.values[0].size.times)
 
       @vectors.each do |name|
