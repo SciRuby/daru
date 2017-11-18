@@ -56,5 +56,16 @@ RSpec.describe Daru::DataFrame do
     end
 
     # TODO: array of vectors
+    # TODO: providing different types of indexes for index and order
   end
+
+  describe '#=='
+  describe '#inspect'
+  describe '#to_s'
+
+  #### QUERYING DATA
+
+  #### CHANGING DATA
+
+  #### ENUMERABLE-ALIKE
 end

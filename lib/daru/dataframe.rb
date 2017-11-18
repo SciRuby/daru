@@ -6,6 +6,32 @@ require 'daru/plotting/nyaplot.rb'
 require 'daru/io/io.rb'
 
 module Daru
+  # DataFrame is the main data type of Daru. It is **two-dimensional table** (matrix) **with named
+  # axes**. It is proven to be very powerful concept for data loading, converting and processing in
+  # a multitude of areas.
+  #
+  # ### Structure
+  #
+  # Let's look at this table:
+  #
+  # ```
+  #
+  # ### Usage
+  #
+  # #### Creating dataframe
+  #
+  #
+  # #### Loading data into dataframe from files and other sources
+  #
+  # #### Examining and understanding data
+  #
+  #
+  # #### Processing data
+  #
+  #
+  # #### Saving data
+  #
+  #
   class DataFrame
     include Daru::Maths::Arithmetic::DataFrame
     include Daru::Maths::Statistics::DataFrame
