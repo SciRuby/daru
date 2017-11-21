@@ -2309,7 +2309,8 @@ module Daru
 
       "#<#{self.class}#{name_part}(#{nrows}x#{ncols})>\n" +
         Formatters::Table.format(
-          each_row.lazy,
+          data.map(&:data).transpose, # TODO
+          # each_row.lazy,
           row_headers: row_headers,
           headers: headers,
           threshold: threshold,
@@ -2572,55 +2573,24 @@ module Daru
     end
 
     def access_vector(*names)
-      if names.first.is_a?(Range)
-        dup(@vectors.subset(names.first))
-      elsif @vectors.is_a?(MultiIndex)
-        access_vector_multi_index(*names)
+      positions = vectors.pos(*names)
+      if positions.is_a?(Integer)
+        data[positions]
       else
-        access_vector_single_index(*names)
+        DataFrame.new(data.values_at(*positions), index: index)
       end
-    end
-
-    def access_vector_multi_index(*names)
-      pos = @vectors[names]
-
-      return @data[pos] if pos.is_a?(Integer)
-
-      new_vectors = pos.map { |tuple| @data[@vectors[tuple]] }
-
-      pos = pos.drop_left_level(names.size) if names.size < @vectors.width
-
-      Daru::DataFrame.new(new_vectors, index: @index, order: pos)
-    end
-
-    def access_vector_single_index(*names)
-      if names.count < 2
-        begin
-          pos = @vectors.is_a?(Daru::DateTimeIndex) ? @vectors[names.first] : @vectors.pos(names.first)
-        rescue IndexError
-          raise IndexError, "Specified vector #{names.first} does not exist"
-        end
-        return @data[pos] if pos.is_a?(Numeric)
-        names = pos
-      end
-
-      new_vectors = names.map { |name| [name, @data[@vectors.pos(name)]] }.to_h
-
-      order = names.is_a?(Array) ? Daru::Index.new(names) : names
-      Daru::DataFrame.new(new_vectors, order: order,
-                                       index: @index, name: @name)
     end
 
     def access_row(*indexes)
       positions = @index.pos(*indexes)
 
       if positions.is_a? Numeric
-        return Daru::Vector.new populate_row_for(positions),
+        Daru::Vector.new populate_row_for(positions),
           index: @vectors,
           name: indexes.first
       else
         new_rows = @data.map { |vec| vec[*indexes] }
-        return Daru::DataFrame.new new_rows,
+        Daru::DataFrame.new new_rows,
           index: @index.subset(*indexes),
           order: @vectors
       end
@@ -2799,7 +2769,7 @@ module Daru
         vectors ||= (0..source.size-1).to_a
         initialize_from_array_of_arrays source, vectors, index, opts
       when Vector
-        vectors ||= (0..source.size-1).to_a
+        vectors ||= source.map(&:name) # TODO: what if non-uniq
         initialize_from_array_of_vectors source, vectors, index, opts
       when Hash
         initialize_from_array_of_hashes source, vectors, index, opts

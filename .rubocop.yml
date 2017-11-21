@@ -13,6 +13,7 @@ AllCops:
     - '**/*.erb'
     - '**/*.csv'
     - 'spec/fixtures/**/*'
+    - 'examples/**'
     # Remove one-by-one when specs are updated
     - spec/accessors/array_wrapper_spec.rb
     - spec/accessors/gsl_wrapper_spec.rb
@@ -119,6 +120,12 @@ Style/EmptyCaseCondition:
   Enabled: false
 
 Style/MultilineBlockChain:
+  Enabled: false
+
+Style/AsciiComments:
+  Enabled: false
+
+Style/CommentAnnotation:
   Enabled: false
 
 # See https://github.com/bbatsov/rubocop/issues/4429
