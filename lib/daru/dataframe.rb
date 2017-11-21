@@ -6,30 +6,164 @@ require 'daru/plotting/nyaplot.rb'
 require 'daru/io/io.rb'
 
 module Daru
-  # DataFrame is the main data type of Daru. It is **two-dimensional table** (matrix) **with named
+  # DataFrame is the main data type of Daru. It is **two-dimensional table** (matrix) **with labeled
   # axes**. It is proven to be very powerful concept for data loading, converting and processing in
   # a multitude of areas.
-  #
-  # ### Structure
   #
   # Let's look at this table:
   #
   # ```
+  #         Populations (× 1000)
+  # -----------------------------------
+  #      | Argentina    India   Ukraine
+  # -----+-----------------------------
+  # 1990 |    32730    873785     51838
+  # 2000 |    37057   1053898     49429
+  # 2010 |    41223   1182108     45962
+  # ```
+  #
+  # It has:
+  #
+  # * **name**: "Populations (× 1000)"
+  # * **order** (of columns) axis: Argentina, India, Ukraine
+  # * **index** axis: 1990, 2000, 2010
+  # * **data**: population numbers for each specified country/year.
+  #
+  # That's our dataframe!
   #
   # ### Usage
   #
   # #### Creating dataframe
   #
+  # ```ruby
+  # # Depending on what source data you have, you can create DF from:
+  # # ...hash of columns
+  # populations = Daru::DataFrame.new(
+  #   {
+  #     Ukraine: [51_838, 49_429, 45_962],
+  #     India: [873_785, 1_053_898, 1_182_108],
+  #     Argentina: [32_730, 37_057, 41_223]
+  #   },
+  #   index: [1990, 2000, 2010],
+  #   name: 'Populations × 1000'
+  # )
+  # # ...array of hashes
+  # populations = Daru::DataFrame.new(
+  #   [
+  #     {Ukraine: 51838, India: 873785, Argentina: 32730},
+  #     {Ukraine: 49429, India: 1053898, Argentina: 37057},
+  #     {Ukraine: 45962, India: 1182108, Argentina: 41223}
+  #   ],
+  #   index: [1990, 2000, 2010],
+  #   name: 'Populations × 1000'
+  # )
+  # # ...or array of arrays
+  # populations = Daru::DataFrame.new(
+  #   [
+  #     [51_838, 49_429, 45_962],
+  #     [873_785, 1_053_898, 1_182_108],
+  #     [32_730, 37_057, 41_223]
+  #   ],
+  #   order: %i[Ukraine India Argentina],
+  #   index: [1990, 2000, 2010],
+  #   name: 'Populations × 1000'
+  # )
+  # # ...all three will give you:
+  # # #<Daru::DataFrame: Populations × 1000 (3x3)>
+  # #              Ukraine     India Argentina
+  # #       1990     51838    873785     32730
+  # #       2000     49429   1053898     37057
+  # #       2010     45962   1182108     41223
+  # ```
   #
   # #### Loading data into dataframe from files and other sources
   #
+  # Daru's accompanying gem, daru-io, has a lot of importers (and exporters, but we'll discuss it
+  # later). They are injected into `DataFrame` and allow to import data from a lot of sources:
+  #
+  # ```ruby
+  # df = Daru::DataFrame.from_csv('populations.csv')
+  # # ...or
+  # df = Daru::DataFrame.from_excel('populations.xls')
+  # # ...or
+  # df = Daru::DataFrame.from_ar(ActiveRecord::Base.connection)
+  # # ...or
+  # df = Daru::DataFrame.from_json('http://some/url/with.json', json_schema)
+  # ```
+  #
+  # Refer to [daru-io](https://github.com/sciruby/daru-io) for a list of available importers. New
+  # ones, when necessary, are also easily defined with daru-io foundation.
+  #
   # #### Examining and understanding data
   #
+  # Once you have the dataframe loaded or generated from somewhere, you may want to look at the data.
+  # Reasonable wish! So, here we go:
+  #
+  # ```ruby
+  # # single value:
+  # populations[:Ukraine][1990] # => 51838
+  #
+  # # column:
+  # populations[:Ukraine]
+  # # => #<Daru::Vector(3)>
+  # #          Ukraine
+  # #     1990   51838
+  # #     2000   49429
+  # #     2010   45962
+  #
+  # # row:
+  # populations.row[1990]
+  # # => #<Daru::Vector(3)>
+  # #                 1990
+  # #  Argentina     32730
+  # #      India    873785
+  # #    Ukraine     51838
+  #
+  # # ...and different kinds of slicing by combining the above:
+  # populations[:Ukraine, :India].row[1990, 2010]
+  # # => #<Daru::DataFrame(2x2)>
+  # #          Ukraine   India
+  # #     1990   51838  873785
+  # #     2010   45962 1182108
+  # ```
+  # As you can see, one column and one row of DataFrame is represented as {Vector}. Internally,
+  # data is stored as an array of columns, each column represented by single {Vector}.
+  #
+  # Being a sophisticated collection, `DataFrame` tries to follow Ruby intuition for collections.
+  # You can iterate over rows or columns (named "vectors"):
+  #
+  # ```ruby
+  # populations.each { |vector| p vector } # prints "Argentina" column as a Vector, then "India", then "Ukraine"
+  # populations.each(:row) { |row| p row } # prints 1990 row, then 2000, then 2010
+  # # TODO: those vectors are unnamed!!!!
+  # ```
+  #
+  # DataFrame behaves like some kind of advanced Enumerable: you can also do this:
+  #
+  # ```ruby
+  # populations.any? { |vector| vector.sum > 1_000_000 }
+  # populations.any?(:row) { |row| row.sum < 1000 }
+  # populations.select { |vector| vector.sum < 1_000_000 }
+  # populations.select(:row)
+  # ```
+  #
+  # Despite how expressive Ruby blocks are, they are slow on large amounts of data. So, `Daru` has
+  # faster filtering idiom, borrowed from pandas:
+  #
+  # ```ruby
+  # populations.where(populations[:Ukraine].lt(45_000))
+  # ```
+  # And experimental DSL around it:
+  # ```
+  # populations.which { `Ukraine` < 45_000 }
+  # ```
+  #
+  # #### Stats, aggregation and math
   #
   # #### Processing data
   #
   #
-  # #### Saving data
+  # #### Saving and outputting data
   #
   #
   class DataFrame
