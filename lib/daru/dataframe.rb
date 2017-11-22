@@ -2413,14 +2413,8 @@ module Daru
 
       return populate_row_for(positions) if positions.is_a? Numeric
 
-      res = []
       new_rows = @data.map { |vec| vec[*indexes] }
-      indexes.each do |index|
-        tuples = []
-        new_rows.map { |row| tuples += [row[index]] }
-        res << tuples
-      end
-      res
+      indexes.map { |index| new_rows.map { |row| [row[index]] } }
     end
 
     # Function to use for aggregating the data.

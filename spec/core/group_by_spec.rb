@@ -12,7 +12,7 @@ describe Daru::Core::GroupBy do
     @tl_group = @df.group_by([:a,:b,:c])
 
     @sl_index = Daru::Index.new(['bar', 'foo'])
-    @dl_multi_index = Daru::MultiIndex.from_tuples([
+    @dl_multi_index = Daru::MultiIndex.new([
       ['bar', 'one'],
       ['bar', 'three'],
       ['bar', 'two'],
@@ -20,7 +20,7 @@ describe Daru::Core::GroupBy do
       ['foo', 'three'],
       ['foo', 'two']
     ])
-    @tl_multi_index = Daru::MultiIndex.from_tuples([
+    @tl_multi_index = Daru::MultiIndex.new([
       ['bar', 'one'  , 2],
       ['bar', 'three', 1],
       ['bar', 'two'  , 6],
@@ -482,7 +482,7 @@ describe Daru::Core::GroupBy do
       expect { df.group_by(df.vectors.map(&:to_s)) }.to_not raise_error(ArgumentError)
     end
   end
-  
+
   context '#aggregate' do
     let(:dataframe) { Daru::DataFrame.new({
       employee: %w[John Jane Mark John Jane Mark],

@@ -41,7 +41,7 @@ module Daru
       def size
         index =
           if multi_indexed_grouping?
-            Daru::MultiIndex.from_tuples @groups.keys
+            Daru::MultiIndex.new @groups.keys
           else
             Daru::Index.new @groups.keys.flatten
           end
@@ -336,7 +336,7 @@ module Daru
 
       def apply_method_index
         if multi_indexed_grouping?
-          Daru::MultiIndex.from_tuples(@groups.keys)
+          Daru::MultiIndex.new(@groups.keys)
         else
           Daru::Index.new(@groups.keys.flatten)
         end
@@ -348,9 +348,7 @@ module Daru
         rows_tuples = context_tmp.access_row_tuples_by_indexs(
           *@groups.values.flatten!
         )
-        context_new = Daru::DataFrame.rows(rows_tuples, index: multi_index)
-        context_new.vectors = context_tmp.vectors
-        context_new
+        Daru::DataFrame.rows(rows_tuples, order: context_tmp.vectors, index: multi_index)
       end
 
       def all_indices_for(arry, element)
