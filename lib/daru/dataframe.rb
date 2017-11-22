@@ -2584,15 +2584,12 @@ module Daru
     def access_row(*indexes)
       positions = @index.pos(*indexes)
 
+      new_rows = data.map { |vec| vec.at(*positions) }
+
       if positions.is_a? Numeric
-        Daru::Vector.new populate_row_for(positions),
-          index: @vectors,
-          name: indexes.first
+        Daru::Vector.new new_rows, index: vectors, name: indexes.first
       else
-        new_rows = @data.map { |vec| vec[*indexes] }
-        Daru::DataFrame.new new_rows,
-          index: @index.subset(*indexes),
-          order: @vectors
+        Daru::DataFrame.new new_rows, index: index.at(*positions), order: vectors
       end
     end
 

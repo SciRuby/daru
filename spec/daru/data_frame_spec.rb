@@ -98,7 +98,7 @@ RSpec.describe Daru::DataFrame do
       let(:df) { described_class.new({a: [1,2,3], b: [3,4,5], c: [6,7,8]}, name: 'test') }
 
       it {
-        is_expected.to == %{
+        is_expected.to eq %{
         |#<Daru::DataFrame: test (3x3)>
         |       a   b   c
         |   0   1   3   6
@@ -112,7 +112,7 @@ RSpec.describe Daru::DataFrame do
         let(:df) { described_class.new({a: [1,2,3], b: [3,4,5], c: [6,7,8]}, name: 'test') }
 
         it {
-          is_expected.to == %{
+          is_expected.to eq %{
           |#<Daru::DataFrame: test (3x3)>
           | index_name          a          b          c
           |          0          1          3          6
@@ -134,7 +134,7 @@ RSpec.describe Daru::DataFrame do
         }
 
         it {
-          is_expected.to == %{
+          is_expected.to eq %{
           |#<Daru::DataFrame: test (6x2)>
           |  s1  s2   a   b
           |   a one  11  21
@@ -151,7 +151,7 @@ RSpec.describe Daru::DataFrame do
       let(:df) { described_class.new({a: [1,2,3], b: [3,4,5], c: [6,7,8]}, {}) }
 
       it {
-        is_expected.to == %{
+        is_expected.to eq %{
         |#<Daru::DataFrame(3x3)>
         |       a   b   c
         |   0   1   3   6
@@ -292,6 +292,32 @@ RSpec.describe Daru::DataFrame do
     its_call(1990, :row) { is_expected.to ret vec([51_838, 873_785, 32_730], index: %i[Ukraine India Argentina]) }
 
     context 'with MultiIndex'
+  end
+
+  describe '#row' do
+    subject { dataframe.row.method(:[]) }
+
+    its_call(1990) { is_expected.to ret vec([51_838, 873_785, 32_730], index: %i[Ukraine India Argentina]) }
+    its_call(1990, 2010) {
+      is_expected.to ret df(
+        {
+          Ukraine: [51_838, 45_962],
+          India: [873_785, 1_182_108],
+          Argentina: [32_730, 41_223]
+        },
+        index: [1990, 2010]
+      )
+    }
+    its_call(1990...2010) {
+      is_expected.to ret df(
+        {
+          Ukraine: [51_838, 49_429],
+          India: [873_785, 1_053_898],
+          Argentina: [32_730, 37_057]
+        },
+        index: [1990, 2000]
+      )
+    }
   end
 
   #### QUERYING DATA
