@@ -1609,16 +1609,16 @@ module Daru
     #   # ["foo", "three", 8]=>[7],
     #   # ["foo", "two", 3]=>[2, 4]}
     def group_by(*vectors)
-      vectors.flatten!
-      # FIXME: wouldn't it better to do vectors - @vectors here and
-      # raise one error with all non-existent vector names?.. - zverok, 2016-05-18
-      vectors.each { |v|
-        raise(ArgumentError, "Vector #{v} does not exist") unless has_vector?(v)
+      cols = @vectors.pos(*vectors)
+      groups = Hash.new { |h, k| h[k] = {index: [], data: []} }
+      each_row_with_index { |row, idx|
+        label = Array(row.at(*cols))
+        groups[label][:index] << idx
+        groups[label][:data] << row
       }
-
-      vectors = [@vectors.first] if vectors.empty?
-
-      Daru::Core::GroupBy.new(self, vectors)
+      data = groups.values.flat_map { |g| g[:data].map(&:data) }.transpose
+      index = groups.flat_map { |label, group| group[:index].map { |i| [*label, *i] } }
+      DataFrame.new(data, index: index, order: @vectors)
     end
 
     def reindex_vectors(new_vectors)
@@ -2405,16 +2405,6 @@ module Daru
           .rename(cat)
           .delete_vector cat_name
       end
-    end
-
-    # returns array of row tuples at given index(s)
-    def access_row_tuples_by_indexs(*indexes)
-      positions = @index[*indexes]
-
-      return populate_row_for(positions) if positions.is_a? Numeric
-
-      new_rows = @data.map { |vec| vec[*indexes] }
-      indexes.map { |index| new_rows.map { |row| [row[index]] } }
     end
 
     # Function to use for aggregating the data.

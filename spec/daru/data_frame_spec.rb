@@ -320,6 +320,100 @@ RSpec.describe Daru::DataFrame do
     }
   end
 
+  describe '#each' do
+    context 'without args' do
+      subject { ->(block) { dataframe.each(&block) } }
+
+      it {
+        is_expected.to yield_successive_args(
+          vec([51_838, 49_429, 45_962], index: [1990, 2000, 2010]),
+          vec([873_785, 1_053_898, 1_182_108], index: [1990, 2000, 2010]),
+          vec([32_730, 37_057, 41_223], index: [1990, 2000, 2010])
+        )
+      }
+    end
+
+    context 'by row' do
+      subject { ->(block) { dataframe.each(:row, &block) } }
+
+      it {
+        is_expected.to yield_successive_args(
+          vec([51_838, 873_785, 32_730], index: %i[Ukraine India Argentina]),
+          vec([49_429, 1_053_898, 37_057], index: %i[Ukraine India Argentina]),
+          vec([45_962, 1_182_108, 41_223], index: %i[Ukraine India Argentina])
+        )
+      }
+    end
+  end
+
+    #described_class.new(
+      #{
+        #Ukraine: [51_838, 49_429, 45_962],
+        #India: [873_785, 1_053_898, 1_182_108],
+        #Argentina: [32_730, 37_057, 41_223]
+      #},
+      #index: [1990, 2000, 2010],
+      #name: 'Populations × 1000'
+    #)
+
+  describe '#group_by' do
+    subject { dataframe.method(:group_by) }
+    let(:dataframe) {
+      described_class.new(
+        {
+          year: [1990, 2000, 2010, 1990, 2000, 2010, 1990, 2000, 2010],
+          century: %w[XX XX XI XX XX XI XX XX XI],
+          country: %w[Ukraine Ukraine Ukraine India India India Argentina Argentina Argentina],
+          population: [51_838, 49_429, 45_962, 873_785, 1_053_898, 1_182_108, 32_730, 37_057, 41_223]
+        }, {}
+      )
+    }
+    context 'by one column' do
+      its_call(:country) {
+        is_expected.to ret df(
+          {
+            year: [1990, 2000, 2010, 1990, 2000, 2010, 1990, 2000, 2010],
+            century: %w[XX XX XI XX XX XI XX XX XI],
+            country: %w[Ukraine Ukraine Ukraine India India India Argentina Argentina Argentina],
+            population: [51_838, 49_429, 45_962, 873_785, 1_053_898, 1_182_108, 32_730, 37_057, 41_223]
+          },
+          index: [
+            ['Ukraine', 0],
+            ['Ukraine', 1],
+            ['Ukraine', 2],
+            ['India', 3],
+            ['India', 4],
+            ['India', 5],
+            ['Argentina', 6],
+            ['Argentina', 7],
+            ['Argentina', 8],
+          ]
+        )
+      }
+
+      its_call(:year) {
+        is_expected.to ret df(
+          {
+            year: [1990, 1990, 1990, 2000, 2000, 2000, 2010, 2010, 2010],
+            century: %w[XX XX XX XX XX XX XI XI XI],
+            country: %w[Ukraine India Argentina Ukraine India Argentina Ukraine India Argentina],
+            population: [51_838, 873_785, 32_730, 49_429, 1_053_898, 37_057, 45_962, 1_182_108, 41_223]
+          },
+          index: [
+            [1990, 0], [1990, 3], [1990, 6],
+            [2000, 1], [2000, 4], [2000, 7],
+            [2010, 2], [2010, 5], [2010, 8]
+          ]
+        )
+      }
+    end
+
+    context 'by several columns' do
+    end
+
+    context 'when wrong column'
+  end
+
   #### QUERYING DATA
 
   #### CHANGING DATA
