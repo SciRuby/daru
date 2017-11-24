@@ -119,7 +119,6 @@ require 'daru/formatters/table'
 require 'daru/iruby/helpers'
 require 'daru/exceptions.rb'
 
-require 'daru/core/group_by.rb'
 require 'daru/core/query.rb'
 require 'daru/core/merge.rb'
 

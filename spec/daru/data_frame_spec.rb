@@ -414,6 +414,61 @@ RSpec.describe Daru::DataFrame do
     context 'when wrong column'
   end
 
+  describe '#aggregate' do
+    subject { dataframe.method(:aggregate) }
+    let(:dataframe) {
+      described_class.new(
+        {
+          population: [51_838, 49_429, 45_962,  873_785, 1_053_898, 1_182_108, 32_730,   37_057,   41_223],
+          source:   %w[census  census  estimate estimate estimate   census     census    census    census]
+        },
+        index:      %w[Ukraine Ukraine Ukraine  India    India      India      Argentina Argentina Argentina]
+                 .zip([1990,   2000,   2010,    1990,    2000,      2010,      1990,     2000,     2010]),
+      )
+    }
+
+    context 'existing column' do
+      context 'with symbol' do
+        its_call(population: :sum) {
+          is_expected.to ret df(
+            {
+              population: [147229, 3109791, 111010]
+            },
+            index: %w[Ukraine India Argentina]
+          )
+        }
+      end
+
+      context 'with block' do
+        its_call(population: ->(vec) { vec.data.join('→') }) {
+          is_expected.to ret df(
+            {
+              population: ['51838→49429→45962', '873785→1053898→1182108', '32730→37057→41223']
+            },
+            index: %w[Ukraine India Argentina]
+          )
+        }
+      end
+    end
+
+    context 'new column' do
+      its_call(census_count: ->(df) { df.source.data.count { |v| v == 'census' } }) {
+          is_expected.to ret df(
+            {
+              census_count: [2, 1, 3]
+            },
+            index: %w[Ukraine India Argentina]
+          )
+      }
+    end
+
+    context 'different levels of index' do
+    end
+
+    context 'Index'
+    context 'DateTimeIndex'
+  end
+
   #### QUERYING DATA
 
   #### CHANGING DATA

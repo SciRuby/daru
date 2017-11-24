@@ -78,6 +78,10 @@ module Daru
       nil
     end
 
+    def levels
+      @labels.transpose.map(&:uniq) # FIXME: Hm?
+    end
+
     # @private
     # Return tuples with nils in place of repeating values, like this:
     #
