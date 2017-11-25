@@ -502,7 +502,7 @@ module Daru
     #    #    1   4  14  44
     #    #    2   5  15  55
 
-    def initialize(source={}, order: nil, index: nil, name: nil, **opts) # rubocop:disable Metrics/MethodLength
+    def initialize(source, order: nil, index: nil, name: nil, **opts) # rubocop:disable Metrics/MethodLength
       vectors = order
       @data = []
       @name = name
@@ -521,22 +521,7 @@ module Daru
       set_size
       validate
       update
-      self.plotting_library = Daru.plotting_library
-    end
-
-    def plotting_library=(lib)
-      case lib
-      when :gruff, :nyaplot
-        @plotting_library = lib
-        if Daru.send("has_#{lib}?".to_sym)
-          extend Module.const_get(
-            "Daru::Plotting::DataFrame::#{lib.to_s.capitalize}Library"
-          )
-        end
-      else
-        raise ArguementError, "Plotting library #{lib} not supported. "\
-          'Supported libraries are :nyaplot and :gruff'
-      end
+      #self.plotting_library = Daru.plotting_library
     end
 
     # Access row or vector. Specify name of row/vector followed by axis(:row, :vector).

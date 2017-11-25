@@ -87,8 +87,8 @@ module Daru
       end
 
       # rubocop:disable Metrics/AbcSize
-      # Both methods a bit above our current limit.
-      # And both look too complicated indeed, should be rethouhgt.
+      # Both methods a bit (24 first, and 20.2 second) above our current limit (20).
+      # And both look too complicated indeed, should be rethouhgt?
       def setup_column_map
         @left_columns =
           left_df
