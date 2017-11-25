@@ -1,16 +1,4 @@
 RSpec.describe Daru::DataFrame do
-  def df(*arg)
-    described_class.new(*arg)
-  end
-
-  def vec(*arg)
-    Daru::Vector.new(*arg)
-  end
-
-  def idx(*arg)
-    Daru::Index.new(*arg)
-  end
-
   describe '#initialize' do
     context 'empty' do
       subject { described_class.new }
@@ -467,6 +455,11 @@ RSpec.describe Daru::DataFrame do
 
     context 'Index'
     context 'DateTimeIndex'
+  end
+
+  describe 'joins' do
+    describe '#inner_join' do
+    end
   end
 
   #### QUERYING DATA

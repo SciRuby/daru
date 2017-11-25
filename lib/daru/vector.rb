@@ -291,6 +291,13 @@ module Daru
       Daru::Vector.new data.values_at(*positions), index: index.keys_at(*positions)
     end
 
+    def values_at(*positions)
+      positions = coerce_positions(*positions)
+      validate_positions(*positions)
+
+      data.values_at(*positions)
+    end
+
     # Examining/querying ===========================================================================
 
     # Returns index label for the specified value.

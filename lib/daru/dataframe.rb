@@ -1990,36 +1990,20 @@ module Daru
       end
     end
 
-    # Join 2 DataFrames with SQL style joins. Currently supports inner, left
-    # outer, right outer and full outer joins.
-    #
-    # @param [Daru::DataFrame] other_df Another DataFrame on which the join is
-    #   to be performed.
-    # @param [Hash] opts Options Hash
-    # @option :how [Symbol] Can be one of :inner, :left, :right or :outer.
-    # @option :on [Array] The columns on which the join is to be performed.
-    #   Column names specified here must be common to both DataFrames.
-    # @option :indicator [Symbol] The name of a vector to add to the resultant
-    #   dataframe that indicates whether the record was in the left (:left_only),
-    #   right (:right_only), or both (:both) joining dataframes.
-    # @return [Daru::DataFrame]
-    # @example Inner Join
-    #   left = Daru::DataFrame.new({
-    #     :id   => [1,2,3,4],
-    #     :name => ['Pirate', 'Monkey', 'Ninja', 'Spaghetti']
-    #   })
-    #   right = Daru::DataFrame.new({
-    #     :id => [1,2,3,4],
-    #     :name => ['Rutabaga', 'Pirate', 'Darth Vader', 'Ninja']
-    #   })
-    #   left.join(right, how: :inner, on: [:name])
-    #   #=>
-    #   ##<Daru::DataFrame:82416700 @name = 74c0811b-76c6-4c42-ac93-e6458e82afb0 @size = 2>
-    #   #                 id_1       name       id_2
-    #   #         0          1     Pirate          2
-    #   #         1          3      Ninja          4
-    def join(other_df,opts={})
-      Daru::Core::Merge.join(self, other_df, opts)
+    def inner_join(other, columns)
+      Joiner.new(self, other, columns).inner
+    end
+
+    def left_join(other, columns)
+      Joiner.new(self, other, columns).left
+    end
+
+    def right_join(other, columns)
+      Joiner.new(self, other, columns).right
+    end
+
+    def outer_join(other, columns)
+      Joiner.new(self, other, columns).outer
     end
 
     # Creates a new dataset for one to many relations
@@ -2773,7 +2757,7 @@ module Daru
           (vectors + source[0].keys).uniq
         end
       @vectors = Daru::Index.new(names)
-      @index = Daru::Index.new(index || source.size)
+      @index = Daru::Index.new(index || source.size.times)
 
       @data = @vectors.map do |name|
         v = source.map { |h| h.fetch(name) { h[name.to_s] } }

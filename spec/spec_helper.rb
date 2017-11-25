@@ -90,3 +90,15 @@ class String
 end
 
 Dir[File.expand_path('../support/**/*.rb', __FILE__)].each {|f| require f }
+
+def df(*arg)
+  Daru::DataFrame.new(*arg)
+end
+
+def vec(*arg)
+  Daru::Vector.new(*arg)
+end
+
+def idx(*arg)
+  Daru::Index.new(*arg)
+end
