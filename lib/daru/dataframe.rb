@@ -5,6 +5,8 @@ require 'daru/plotting/gruff.rb'
 require 'daru/plotting/nyaplot.rb'
 require 'daru/io/io.rb'
 
+require_relative 'data_frame/joiner'
+
 module Daru
   # DataFrame is the main data type of Daru. It is **two-dimensional table** (matrix) **with labeled
   # axes**. It is proven to be very powerful concept for data loading, converting and processing in

@@ -1,5 +1,6 @@
 module Daru
   class DataFrame
+    # @private
     class Joiner
       attr_reader :left_df, :right_df, :columns, :row_map
 
@@ -36,34 +37,45 @@ module Daru
 
       private
 
-      def join(&row_filter)
-        rows = @row_map.select { |_, val| row_filter.call(val) }
+      def join
+        rows =
+          @row_map
+          .select { |_, val| yield(val) }
           .map { |join_value, row|
             [
               columns.zip(join_value).to_h,
-              row[:left].map { |i| hash_from(i, left_df, @left_columns) },
-              row[:right].map { |i| hash_from(i, right_df, @right_columns) }
+              hashes_from(row[:left], left_df, @left_columns),
+              hashes_from(row[:right], right_df, @right_columns)
             ]
           }
-          .flat_map { |between, from_left, from_right|
-            if from_left.any? && from_right.any?
-              from_left.product(from_right).map { |l, r| l.merge(between).merge(r) }
-            elsif from_left.any?
-              from_left.map { |l| l.merge(between) }
-            elsif from_right.any?
-              from_right.map { |r| between.merge(r) }
-            end
-          }
+          .flat_map(&method(:join_one))
 
         Daru::DataFrame.new(rows, order: joined_columns)
       end
 
-      def hash_from(idx, df, columns)
-        row = df.row.at(idx)
-        columns.keys.zip(row.values_at(*columns.values)).to_h
+      def join_one((between, from_left, from_right)) # TWO pairs of brackets is for args deconstruction!
+        if from_left.any? && from_right.any?
+          from_left.product(from_right).map { |l, r| l.merge(between).merge(r) }
+        elsif from_left.any?
+          from_left.map { |l| l.merge(between) }
+        elsif from_right.any?
+          from_right.map { |r| between.merge(r) }
+        end
+      end
+
+      def hashes_from(rows, df, columns)
+        rows.map { |idx|
+          row = df.row.at(idx)
+          columns.keys.zip(row.values_at(*columns.values)).to_h
+        }
       end
 
       def setup_join_map
+        setup_row_map
+        setup_column_map
+      end
+
+      def setup_row_map
         @row_map = Hash.new { |h, k| h[k] = {left: [], right: []} }
         left_df[*columns].to_df.each_row_with_index do |row, i|
           @row_map[row.data][:left] << i
@@ -72,19 +84,34 @@ module Daru
         right_df[*columns].to_df.each_row_with_index do |row, i|
           @row_map[row.data][:right] << i
         end
+      end
 
-        rename_map = (left_df.vectors.to_a + right_df.vectors.to_a - columns).group_by(&:itself)
+      # rubocop:disable Metrics/AbcSize
+      # Both methods a bit above our current limit.
+      # And both look too complicated indeed, should be rethouhgt.
+      def setup_column_map
+        @left_columns =
+          left_df
+          .vectors.to_a.select { |col| rename_map.key?(col) }
+          .map.with_index { |col, i| [rename_map[col][:left], i] }.to_h
+        @right_columns =
+          right_df
+          .vectors.to_a.select { |col| rename_map.key?(col) }
+          .map.with_index { |col, i| [rename_map[col][:right], i] }.to_h
+      end
+
+      def rename_map
+        @rename_map ||=
+          (left_df.vectors.to_a + right_df.vectors.to_a - columns)
+          .group_by(&:itself)
           .map { |col, group|
             [col, {
               left: group.count == 1 ? col : "#{left_df.name}.#{col}",
-              right: group.count == 1 ? col : "#{right_df.name}.#{col}",
+              right: group.count == 1 ? col : "#{right_df.name}.#{col}"
             }]
           }.to_h
-        @left_columns = left_df.vectors.to_a.select { |col| rename_map.key?(col) }
-          .map.with_index { |col, i| [rename_map[col][:left], i] }.to_h
-        @right_columns = right_df.vectors.to_a.select { |col| rename_map.key?(col) }
-          .map.with_index { |col, i| [rename_map[col][:right], i] }.to_h
       end
+      # rubocop:enable Metrics/AbcSize
     end
   end
 end
