@@ -201,6 +201,26 @@ module Daru
       end
     end
 
+    def positions_at(*expected_positions)
+      if expected_positions.count == 1 && expected_positions.first.is_a?(Range)
+        size.times.to_a[expected_positions.first] # Mostly for correct processing of (1..-1) ranges
+      else
+        expected_positions # FIXME: validate/limit
+      end
+    end
+
+    def positions(*labels)
+      if labels.count == 1 && labels.first.is_a?(Range)
+        all_labels = relation_hash.keys
+        first_idx = all_labels.index(labels.first.begin)
+        last_idx = all_labels.index(labels.first.end) || -1
+        range = labels.first.exclude_end? ? first_idx...last_idx : first_idx..last_idx
+        positions(*all_labels[range])
+      else
+        relation_hash.values_at(*labels)
+      end
+    end
+
     # def subset(*indexes)
     #   if indexes.first.is_a? Range
     #     start = indexes.first.begin

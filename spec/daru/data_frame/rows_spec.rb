@@ -5,6 +5,10 @@ RSpec.describe Daru::DataFrame::Rows do
     Daru::DataFrame::Rows::Proxy.new(df, pos)
   end
 
+  def rs(df, *poss)
+    Daru::DataFrame::Rows.new(df, positions: (poss.empty? ? nil : poss))
+  end
+
   subject(:rows) { described_class.new(dataframe) }
 
   let(:dataframe) {
@@ -20,7 +24,7 @@ RSpec.describe Daru::DataFrame::Rows do
   }
 
   its(:count) { is_expected.to eq 3 }
-  its(:dataframe) { is_expected.to equal dataframe } # note the equal -- it is the same object exactly
+  its(:dataframe) { is_expected.to equal dataframe } # note the `equal` -- it is the same object exactly
 
   describe '#at' do
     subject { rows.method(:at) }
@@ -33,8 +37,8 @@ RSpec.describe Daru::DataFrame::Rows do
     }
   end
 
-  describe '#vector' do
-    subject { rows.method(:vector) }
+  describe '#fetch' do
+    subject { rows.method(:fetch) }
     its_call(1990) {
       is_expected.to ret(
         be_a(Daru::DataFrame::Rows::Proxy)
@@ -44,33 +48,63 @@ RSpec.describe Daru::DataFrame::Rows do
     }
   end
 
-  describe '#vectors' do
-    subject { rows.method(:vector) }
+  describe '#slice' do
+    subject { rows.method(:slice) }
 
-    its_call(1990) { is_expected.to ret [proxy(dataframe, 0)] }
-    its_call(1990, 2010) { is_expected.to ret [proxy(dataframe, 0), proxy(dataframe, 2)] }
-    its_call(1990...2010) { is_expected.to ret [proxy(dataframe, 0), proxy(dataframe, 1)] }
+    its_call(1990) { is_expected.to ret rs(dataframe, 0) }
+    its_call(1990, 2010) { is_expected.to ret rs(dataframe, 0, 2) }
+    its_call(1990...2010) { is_expected.to ret rs(dataframe, 0, 1) }
   end
 
-  describe '#vectors_at' do
-    subject { rows.method(:vector) }
+  describe '#slice_at' do
+    subject { rows.method(:slice_at) }
 
-    its_call(0) { is_expected.to ret [proxy(dataframe, 0)] }
-    its_call(0, 2) { is_expected.to ret [proxy(dataframe, 0), proxy(dataframe, 2)] }
-    its_call(0...2) { is_expected.to ret [proxy(dataframe, 0), proxy(dataframe, 1)] }
+    its_call(0) { is_expected.to ret rs(dataframe, 0) }
+    its_call(0, 2) { is_expected.to ret rs(dataframe, 0, 2) }
+    its_call(0...2) { is_expected.to ret rs(dataframe, 0, 1) }
   end
 
-  describe '#[]'
+  describe '#[]' # TODO: it should be fluent
 
-  describe '#each'
+  describe '#each' do
+    subject { ->(block) { rows.each(&block) } }
 
-  describe '#slice' # should be "view"
-  describe '#slice_at'
+    it {
+      is_expected.to yield_successive_args(
+        proxy(dataframe, 0),
+        proxy(dataframe, 1),
+        proxy(dataframe, 2)
+      )
+    }
+  end
+
+  context 'rows with positions specified' do
+    subject(:rows) { described_class.new(dataframe, positions: [0, 2]) }
+    its(:count) { is_expected.to eq 2 }
+    describe '#each' do
+      subject { ->(block) { rows.each(&block) } }
+
+      it { expect(rows.slice(2000..2010)).to eq rs(dataframe, 2) }
+      it { expect(rows.slice_at(1)).to eq rs(dataframe, 2) }
+
+      it {
+        is_expected.to yield_successive_args(
+          proxy(dataframe, 0),
+          proxy(dataframe, 2)
+        )
+      }
+    end
+  end
 
   describe 'Enumerable-alike behavior' do
     describe '#first'
     describe '#last'
-    describe '#select'
+    describe '#select' do
+      subject { rows.select { |r| r.data.inject(:+) > 1_200_000  } }
+
+      it { is_expected.to eq rs(dataframe, 2) }
+    end
+
     describe '#map'
     describe '#recode'
   end
