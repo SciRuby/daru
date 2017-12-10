@@ -391,11 +391,7 @@ module Daru
                       .each_with_index.map { |n, i| n || i }
         index = ArrayHelper.recode_repeated(index)
 
-        DataFrame.new({}, opts).tap do |df|
-          source.each_with_index do |row, idx|
-            df[index[idx] || idx, :row] = row
-          end
-        end
+        DataFrame.new(source.map(&:data).transpose, {index: index}.merge(opts))
       end
     end
 

@@ -78,6 +78,13 @@ RSpec.describe Daru::DataFrame::Rows do
     }
   end
 
+  describe '#dup' do
+    subject { rows.dup }
+
+    it { is_expected.to eq dataframe }
+    it { is_expected.not_to be_equal dataframe } # another DF, equal data, but not the same
+  end
+
   context 'rows with positions specified' do
     subject(:rows) { described_class.new(dataframe, positions: [0, 2]) }
     its(:count) { is_expected.to eq 2 }
@@ -105,7 +112,37 @@ RSpec.describe Daru::DataFrame::Rows do
       it { is_expected.to eq rs(dataframe, 2) }
     end
 
-    describe '#map'
+    describe '#map' do
+      subject { rows.map(&:dup) }
+
+      it { is_expected.to all be_a Daru::Vector }
+      its(:count) { is_expected.to eq 3 }
+    end
+
     describe '#recode'
+  end
+
+  describe 'one row' do
+    subject(:row) { rows.at(0) }
+
+    describe '#[]' do
+      its([:Ukraine]) { is_expected.to eq 51_838 }
+    end
+
+    describe '#each' do
+      it { expect { |b| row.each(&b) }.to yield_successive_args([:Ukraine, 51_838], [:India, 873_785], [:Argentina, 32_730]) }
+    end
+
+    describe '#select' do
+      it { expect(row.select { |_, val| val.even? }).to eq vec([51_838, 32_730], index: %i[Ukraine Argentina]) }
+    end
+
+    describe '#[]=' do
+      before { row[:Ukraine] += 1 }
+
+      its([:Ukraine]) { is_expected.to eq 51_839 }
+    end
+
+    describe '#recode!'
   end
 end

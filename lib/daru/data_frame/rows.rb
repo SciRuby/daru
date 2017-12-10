@@ -4,6 +4,11 @@ module Daru
       class Proxy
         attr_reader :dataframe, :position
 
+        extend Forwardable
+
+        # TODO: Other methods
+        def_delegators :to_vector, :[], :each, :select
+
         def initialize(dataframe, position)
           @dataframe = dataframe
           @position = position
@@ -35,6 +40,19 @@ module Daru
         def inspect
           "#{dataframe}:row(#{position})"
         end
+
+        def []=(label, value)
+          column_pos = dataframe.vectors.pos(label)
+          dataframe.data[column_pos].set_at([position], value)
+        end
+
+        def to_vector
+          # TODO: in fact, not efficient. This way df.rows[foo][bar] should take just from one col,
+          # but it takes from all cols, then constructs vector, then fetches one value from it.
+          Vector.new(dataframe.data.map { |col| col.at(position) }, index: dataframe.vectors)
+        end
+
+        alias dup to_vector
       end
 
       def self.from_a(proxies)
@@ -82,10 +100,15 @@ module Daru
         by_positions(real_poss)
       end
 
+      # TODO: row index? Or just name to Proxy?
       def each
         return to_enum(:each) unless block_given?
         seq = positions || (0...count)
         seq.each { |pos| yield(Proxy.new(dataframe, pos)) }
+      end
+
+      def dup
+        DataFrame.rows(map(&:dup), index: dataframe.index)
       end
 
       private
