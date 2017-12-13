@@ -192,7 +192,7 @@ In addition to nyaplot, daru also supports plotting out of the box with [gnuplot
 
 ## Documentation
 
-Docs can be found [here](https://rubygems.org/gems/daru).
+Docs can be found [here](http://www.rubydoc.info/gems/daru).
 
 ## Contributing
 
