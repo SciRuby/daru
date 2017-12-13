@@ -8,7 +8,7 @@
 
 daru (Data Analysis in RUby) is a library for storage, analysis, manipulation and visualization of data in Ruby.
 
-daru makes it easy and intuitive to process data predominantly through 2 data structures: `Daru::DataFrame` and `Daru::Vector`. Written in pure Ruby works with all ruby implementations. Tested with MRI 2.0, 2.1, 2.2 and 2.3.
+daru makes it easy and intuitive to process data predominantly through 2 data structures: `Daru::DataFrame` and `Daru::Vector`. Written in pure Ruby works with all ruby implementations. Tested with MRI 2.0, 2.1, 2.2, 2.3, and 2.4.
 
 ## Features
 
@@ -198,7 +198,7 @@ Docs can be found [here](http://www.rubydoc.info/gems/daru).
 
 Pick a feature from the Roadmap or the issue tracker or think of your own and send me a Pull Request!
 
-For details see [CONTRIBUTING](https://github.com/v0dro/daru/blob/master/CONTRIBUTING.md).
+For details see [CONTRIBUTING](https://github.com/SciRuby/daru/blob/master/CONTRIBUTING.md).
 
 ## Acknowledgements
 
