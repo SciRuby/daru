@@ -198,7 +198,7 @@ Docs can be found [here](https://rubygems.org/gems/daru).
 
 Pick a feature from the Roadmap or the issue tracker or think of your own and send me a Pull Request!
 
-For details see [CONTRIBUTING](https://github.com/v0dro/daru/blob/master/CONTRIBUTING.md).
+For details see [CONTRIBUTING](https://github.com/SciRuby/daru/blob/master/CONTRIBUTING.md).
 
 ## Acknowledgements
 
