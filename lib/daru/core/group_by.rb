@@ -6,6 +6,8 @@ module Daru
       # Iterate over each group created by group_by. A DataFrame is yielded in
       # block.
       def each_group
+        return to_enum(:each_group) unless block_given?
+
         groups.keys.each do |k|
           yield get_group(k)
         end

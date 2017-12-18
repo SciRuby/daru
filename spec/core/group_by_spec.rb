@@ -201,6 +201,22 @@ describe Daru::Core::GroupBy do
     end
   end
 
+  context '#each_group without block' do
+    it 'enumerates groups' do
+      enum = @dl_group.each_group
+
+      expect(enum.count).to eq 6
+      expect(enum).to all be_a(Daru::DataFrame)
+      expect(enum.to_a.last).to eq(Daru::DataFrame.new({
+        a: ['foo', 'foo'],
+        b: ['two', 'two'],
+        c: [3, 3],
+        d: [33, 55]
+        }, index: [2, 4]
+      ))
+    end
+  end
+
   context '#first' do
     it 'gets the first row from each group' do
       expect(@dl_group.first).to eq(Daru::DataFrame.new({
