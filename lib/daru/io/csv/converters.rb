@@ -11,6 +11,9 @@ module Daru
           else
             f
           end
+        },
+        string: lambda { |f, _|
+          f
         }
       }.freeze
     end
