@@ -214,7 +214,7 @@ module Daru
       end
 
       def from_csv_prepare_converters(converters)
-        converters.flat_map do |c|
+        Array(converters).flat_map do |c|
           if ::CSV::Converters[c]
             ::CSV::Converters[c]
           elsif Daru::IO::CSV::CONVERTERS[c]
