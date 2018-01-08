@@ -247,7 +247,7 @@ RSpec.describe Daru::DataFrame do
         India: [873_785, 1_053_898, 1_182_108],
         Argentina: [32_730, 37_057, 41_223]
       },
-      index: [1990, 2000, 2010],
+      index: [1990, 2000, 2010]
       name: 'Populations × 1000'
     )
   }
