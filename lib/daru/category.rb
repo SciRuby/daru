@@ -922,6 +922,13 @@ module Daru
       @cat_hash[category] << pos
     end
 
+    def set indexes, val
+      @index = @index.add(indexes)
+      @cat_hash.store(val,[indexes])
+      @array << indexes
+      modify_category_at indexes, val
+    end
+
     def order_with new
       if new.to_set != categories.to_set
         raise ArgumentError, 'The contents of new and old order must be the same.'
