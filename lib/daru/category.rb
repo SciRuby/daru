@@ -918,15 +918,16 @@ module Daru
       end
       old_category = category_from_position pos
       @array[pos] = int_from_cat category
-      @cat_hash[old_category].delete pos
+      @cat_hash[old_category].delete pos unless old_category.nil?
       @cat_hash[category] << pos
     end
 
-    def set indexes, val
-      @index = @index.add(indexes)
-      @cat_hash.store(val,[indexes])
-      @array << indexes
-      modify_category_at indexes, val
+    def set index, val
+      add_category(val)
+      @index = @index.add(index)
+      @array << index
+      @cat_hash.store(val,[index])
+      self.[]= index, val
     end
 
     def order_with new
