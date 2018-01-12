@@ -924,6 +924,7 @@ module Daru
 
     def set index, val
       add_category(val)
+      return self.[]= index, val if @index.include? index
       @index = @index.add(index)
       @array << index
       @cat_hash.store(val,[index])
