@@ -923,10 +923,11 @@ module Daru
     end
 
     def set index, val
+      categories = @cat_hash.keys
       add_category(val)
       return self.[]= index, val if @index.include? index
       @index = @index.add(index)
-      @array << index
+      @array << @array.max + 1 unless categories.size == @cat_hash.keys.size
       @cat_hash.store(val,[index])
       self.[]= index, val
     end
