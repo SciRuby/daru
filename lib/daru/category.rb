@@ -922,14 +922,16 @@ module Daru
       @cat_hash[category] << pos
     end
 
-    def set index, val
-      categories = @cat_hash.keys
-      add_category(val)
-      return self.[]= index, val if @index.include? index
-      @index = @index.add(index)
-      @array << @array.max + 1 unless categories.size == @cat_hash.keys.size
-      @cat_hash.store(val,[index])
-      self.[]= index, val
+    def set pos, category
+      unless categories.include? category
+        raise ArgumentError, "Invalid category #{category}, "\
+          'to add a new category use #add_category'
+      end
+      return self.[]= pos, category if @index.include? pos
+      @array << categories.index(category)
+      @index = @index.add(pos)
+      @cat_hash.store(category,[pos])
+      self.[]= pos, category
     end
 
     def order_with new
