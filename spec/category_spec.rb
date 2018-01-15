@@ -828,6 +828,11 @@ describe Daru::Vector, "categorical" do
         expect(@dv[:yoda]).to eq(666)
       end
 
+      it "assigns at a new index" do
+        @dv.send(:set,:xtbr,3)
+        expect(@dv[:xtbr]).to eq(3)
+      end
+
       it "assigns correctly for a mixed index Vector" do
         v = Daru::Vector.new [1,2,3,4], index: ['a',:a,0,66], type: :category
         v.add_category 666
