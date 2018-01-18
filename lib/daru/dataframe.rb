@@ -698,6 +698,7 @@ module Daru
     #
     def rolling_fillna!(direction=:forward)
       @data.each { |vec| vec.rolling_fillna!(direction) }
+      self
     end
 
     def rolling_fillna(direction=:forward)
