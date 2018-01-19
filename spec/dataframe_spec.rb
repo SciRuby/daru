@@ -1858,7 +1858,7 @@ describe Daru::DataFrame do
 
     context 'rolling_fillna! forwards' do
       before { subject.rolling_fillna!(:forward) }
-      it { is_expected.to be_a Daru::DataFrame }
+      it { expect(subject.rolling_fillna!(:forward)).to eq(subject) }
       its(:'a.to_a') { is_expected.to eq [1, 2, 3, 3, 3, 3, 1, 7] }
       its(:'b.to_a') { is_expected.to eq [:a,  :b, :b, :b, :b, 3, 5, 5] }
       its(:'c.to_a') { is_expected.to eq ['a', 'a', 3, 4, 3, 5, 5, 7] }
@@ -1866,7 +1866,7 @@ describe Daru::DataFrame do
 
     context 'rolling_fillna! backwards' do
       before { subject.rolling_fillna!(:backward) }
-      it { is_expected.to be_a Daru::DataFrame }
+      it { expect(subject.rolling_fillna!(:backward)).to eq(subject) }
       its(:'a.to_a') { is_expected.to eq [1, 2, 3, 1, 1, 1, 1, 7] }
       its(:'b.to_a') { is_expected.to eq [:a, :b, 3, 3, 3, 3, 5, 0] }
       its(:'c.to_a') { is_expected.to eq ['a', 3, 3, 4, 3, 5, 7, 7] }

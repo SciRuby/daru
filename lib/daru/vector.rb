@@ -790,6 +790,7 @@ module Daru
           self[idx] = last_valid_value
         end
       end
+      self
     end
 
     # Non-destructive version of rolling_fillna!
