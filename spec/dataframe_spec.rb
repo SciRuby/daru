@@ -829,7 +829,7 @@ describe Daru::DataFrame do
         }, index: idx)
       end
 
-      context "modify exiting row" do
+      context "modify existing row" do
         context "single category" do
           subject { df }
           before { df.row[:a] = ['x', 'y'] }
@@ -865,7 +865,14 @@ describe Daru::DataFrame do
       end
 
       context "add new row" do
-        # TODO
+        subject { df }
+        before { df.send(:insert_or_modify_row,:l,Daru::Vector.new(['g',6], index: [:a, :b])) }
+
+        it { is_expected.to be_a Daru::DataFrame }
+        its(:index) { is_expected.to eq Daru::CategoricalIndex.new [:a, 1, :a, 1, :c, :l] }
+        its(:vectors) { is_expected.to eq Daru::Index.new [:a, :b] }
+        its(:'a.to_a') { is_expected.to eq ['a', 'b', 'c', 'd', 'e', 'g'] }
+        its(:'b.to_a') { is_expected.to eq [1, 2, 3, 4, 5, 6] }
       end
     end
   end
