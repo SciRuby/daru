@@ -927,11 +927,17 @@ module Daru
         raise ArgumentError, "Invalid category #{category}, "\
           'to add a new category use #add_category'
       end
-      return self.[]= pos, category if @index.include? pos
-      @array << categories.index(category)
-      @index = @index.add(pos)
-      @cat_hash.store(category,[pos])
-      self.[]= pos, category
+      pos = pos.is_a?(Array) ? pos : [pos]
+      pos.each do |x|
+        if @index.include? x
+          self.[]= x, category
+          next
+        end
+        @array << categories.index(category)
+        @index = @index.add(x)
+        @cat_hash.store(category,[x])
+        self.[]= x, category
+      end
     end
 
     def order_with new
