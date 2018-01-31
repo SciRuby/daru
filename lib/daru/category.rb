@@ -935,7 +935,7 @@ module Daru
         end
         @array << categories.index(category)
         @index = @index.add(x)
-        self.[]= x, category
+        @cat_hash[category] << x
       end
     end
 

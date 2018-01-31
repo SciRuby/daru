@@ -828,9 +828,10 @@ describe Daru::Vector, "categorical" do
         expect(@dv[:yoda]).to eq(666)
       end
 
-      it "assigns at a new index" do
-        @dv.send(:set,:xtbr,3)
-        expect(@dv[:xtbr]).to eq(3)
+      it "assigns a new category at a new index " do
+        @dv.add_category :abc
+        @dv.send(:set, :xtbr, :abc)
+        expect(@dv[:xtbr]).to eq(:abc)
       end
 
       it "assigns correctly for a mixed index Vector" do
