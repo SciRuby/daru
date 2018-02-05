@@ -73,6 +73,7 @@ $ gem install daru
 * [Data Analysis in RUby: Basic data manipulation and plotting](http://v0dro.github.io/blog/2014/11/25/data-analysis-in-ruby-basic-data-manipulation-and-plotting/)
 * [Data Analysis in RUby: Splitting, sorting, aggregating data and data types](http://v0dro.github.io/blog/2015/02/24/data-analysis-in-ruby-part-2/)
 * [Finding and Combining data in daru](http://v0dro.github.io/blog/2015/08/03/finding-and-combining-data-in-daru/)
+* [Introduction to analyzing datasets with daru library](http://gafur.me/2018/02/05/analysing-datasets-with-daru-library.html)
 
 ### Time series
 
