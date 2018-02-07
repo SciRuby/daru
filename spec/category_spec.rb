@@ -834,6 +834,13 @@ describe Daru::Vector, "categorical" do
         expect(@dv[:xtbr]).to eq(:abc)
       end
 
+      it "assigns a new category at a multiple indices " do
+        @dv.add_category :rbn
+          @dv.send(:set, [:padme, :bdn], :rbn)
+        expect(@dv[:bdn]).to eq(:rbn)
+        expect(@dv[:padme]).to eq(:rbn)
+      end
+
       it "assigns correctly for a mixed index Vector" do
         v = Daru::Vector.new [1,2,3,4], index: ['a',:a,0,66], type: :category
         v.add_category 666
