@@ -918,7 +918,7 @@ module Daru
       end
       old_category = category_from_position pos
       @array[pos] = int_from_cat category
-      @cat_hash[old_category].delete pos unless old_category.nil?
+      @cat_hash[old_category].delete pos
       @cat_hash[category] << pos
     end
 
@@ -933,7 +933,7 @@ module Daru
           self.[]= x, category
           next
         end
-        @array << categories.index(category)
+        @array << int_from_cat(category)
         @index = @index.add(x)
         @cat_hash[category] << x
       end
