@@ -922,21 +922,31 @@ module Daru
       @cat_hash[category] << pos
     end
 
-    def set pos, category
+    def set indexes, category
       unless categories.include? category
         raise ArgumentError, "Invalid category #{category}, "\
           'to add a new category use #add_category'
       end
-      pos = pos.is_a?(Array) ? pos : [pos]
-      pos.each do |x|
-        if @index.include? x
-          self.[]= x, category
+      indexes = indexes.is_a?(Array) ? indexes : [indexes]
+      indexes.each do |pos|
+        if pos.is_a? Range
+          pos.each do |index|
+            set_util index, category
+          end
           next
         end
-        @array << int_from_cat(category)
-        @index = @index.add(x)
-        @cat_hash[category] << x
+        set_util pos, category
       end
+    end
+
+    def set_util pos, category
+      if @index.include? pos
+        self.[]= pos, category
+        return
+      end
+      @array << int_from_cat(category)
+      @index = @index.add(pos)
+      @cat_hash[category] << pos
     end
 
     def order_with new
