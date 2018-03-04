@@ -2,11 +2,11 @@ module Daru
   module Core
     class GroupBy
       class << self
-        def get_positions_group_map(df, group_by_keys, sort: true)
+        def get_positions_group_map_on(indexes_with_positions, sort: false)
           group_map = {}
 
-          df[*group_by_keys].to_df.each_row.each_with_index do |vect, position|
-            (group_map[vect.to_a] ||= []) << position
+          indexes_with_positions.each do |idx, position|
+            (group_map[idx] ||= []) << position
           end
 
           if sort # TODO: maybe add a more "stable" sorting option?
@@ -17,11 +17,17 @@ module Daru
           group_map
         end
 
+        def get_positions_group_map_for_df(df, group_by_keys, sort: true)
+          indexes_with_positions = df[*group_by_keys].to_df.each_row.map(&:to_a).each_with_index
+
+          get_positions_group_map_on(indexes_with_positions, sort: sort)
+        end
+
         def group_map_from_positions_to_indexes(positions_group_map, index)
           positions_group_map.map { |k, positions| [k, positions.map { |pos| index.at(pos) }] }.to_h
         end
 
-        def df_from_group_map(df, group_map, remaining_vectors, from_position: false)
+        def df_from_group_map(df, group_map, remaining_vectors, from_position: true)
           return nil if group_map == {}
 
           new_index = group_map.flat_map { |group, values| values.map { |val| group + [val] } }
@@ -69,9 +75,10 @@ module Daru
         #   #  => {4=>["test"], 2=>["me"], 6=>["please"]}
         #
         # - zverok, 2016-09-12
-        @groups = GroupBy.get_positions_group_map(@context, names, sort: true)
-        @groups = GroupBy.group_map_from_positions_to_indexes(@groups, @context.index)
-        @df     = GroupBy.df_from_group_map(@context, @groups, @non_group_vectors, from_position: false)
+        positions_groups = GroupBy.get_positions_group_map_for_df(@context, names, sort: true)
+
+        @groups = GroupBy.group_map_from_positions_to_indexes(positions_groups, @context.index)
+        @df     = GroupBy.df_from_group_map(@context, positions_groups, @non_group_vectors)
       end
 
       # Get a Daru::Vector of the size of each group.
