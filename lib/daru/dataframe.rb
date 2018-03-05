@@ -2345,18 +2345,11 @@ module Daru
     # Do the `method` (`method` can be :sum, :mean, :std, :median, etc or
     # lambda), on the column.
     def apply_method_on_colmns colmn, index_tuples, method
-      rows = []
-      index_tuples.each do |indexes|
-        # If single element then also make it vector.
-        slice = Daru::Vector.new(Array(self[colmn][*indexes]))
-        case method
-        when Symbol
-          rows << (slice.is_a?(Daru::Vector) ? slice.send(method) : slice)
-        when Proc
-          rows << method.call(slice)
-        end
+      vect = self[colmn]
+
+      index_tuples.map do |indexes|
+        vect.apply_method_on_sub_vector(method, keys: [*indexes], by_position: false)
       end
-      rows
     end
 
     def apply_method_on_df index_tuples, method
@@ -2937,20 +2930,15 @@ module Daru
     end
 
     def aggregated_colmn_value(options)
-      colmn_value = []
       index_tuples = Array(@index).uniq
-      options.keys.each do |vec|
-        do_this_on_vec = options[vec]
-        colmn_value << if @vectors.include?(vec)
-                         apply_method_on_colmns(
-                           vec, index_tuples, do_this_on_vec
-                         )
-                       else
-                         apply_method_on_df(
-                           index_tuples, do_this_on_vec
-                         )
-                       end
+      colmn_value = options.map do |vec, do_this_on_vec|
+        if @vectors.include?(vec)
+          apply_method_on_colmns(vec, index_tuples, do_this_on_vec)
+        else
+          apply_method_on_df(index_tuples, do_this_on_vec)
+        end
       end
+
       [colmn_value, index_tuples]
     end
 
