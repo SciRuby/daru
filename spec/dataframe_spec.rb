@@ -4044,7 +4044,7 @@ describe Daru::DataFrame do
       Daru::DataFrame.new({num: [52,12,07,17,01]}, index: cat_idx) }
 
     it 'lambda function on particular column' do
-      expect(df.aggregate(num_100_times: ->(df) { df.num*100 })).to eq(
+      expect(df.aggregate(num_100_times: ->(df) { (df.num*100).first })).to eq(
           Daru::DataFrame.new(num_100_times: [5200, 1200, 700, 1700, 100])
         )
     end

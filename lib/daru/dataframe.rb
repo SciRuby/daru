@@ -2303,7 +2303,7 @@ module Daru
     #      3   d  17
     #      4   e   1
     #
-    #    df.aggregate(num_100_times: ->(df) { df.num*100 })
+    #    df.aggregate(num_100_times: ->(df) { (df.num*100).first })
     #   => #<Daru::DataFrame(5x1)>
     #               num_100_ti
     #             0       5200
@@ -2353,12 +2353,9 @@ module Daru
     end
 
     def apply_method_on_df index_tuples, method
-      rows = []
-      index_tuples.each do |indexes|
-        slice = row[*indexes]
-        rows << method.call(slice)
+      index_tuples.map do |indexes|
+        apply_method_on_sub_df(method, keys: [*indexes], by_position: false)
       end
-      rows
     end
 
     def headers
