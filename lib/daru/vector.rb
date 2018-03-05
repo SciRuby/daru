@@ -122,6 +122,17 @@ module Daru
       self
     end
 
+    def apply_method(method, keys: nil, by_position: true)
+      vect = keys ? get_sub_vector(keys, by_position: by_position) : self
+
+      case method
+      when Symbol then vect.send(method)
+      when Proc   then method.call(vect)
+      else raise
+      end
+    end
+    alias :apply_method_on_sub_vector :apply_method
+
     # The name of the Daru::Vector. String.
     attr_reader :name
     # The row index. Can be either Daru::Index or Daru::MultiIndex.
@@ -869,6 +880,19 @@ module Daru
     # Returns *true* if an index exists
     def has_index? index
       @index.include? index
+    end
+
+    # @param keys [Array] can be positions (if by_position is true) or indexes (if by_position if false)
+    # @return [Daru::Vector]
+    def get_sub_vector(keys, by_position: true)
+      return Daru::Vector.new([]) if keys == []
+
+      keys = @index.pos(*keys) unless by_position
+
+      sub_vect = at(*keys)
+      sub_vect = Daru::Vector.new([sub_vect]) unless sub_vect.is_a?(Daru::Vector)
+
+      sub_vect
     end
 
     # @return [Daru::DataFrame] the vector as a single-vector dataframe

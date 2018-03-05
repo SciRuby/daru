@@ -549,6 +549,20 @@ module Daru
       Daru::Accessors::DataFrameByRow.new(self)
     end
 
+    # Extract a dataframe given row indexes or positions
+    # @param keys [Array] can be positions (if by_position is true) or indexes (if by_position if false)
+    # @return [Daru::Dataframe]
+    def get_sub_dataframe(keys, by_position: true)
+      return Daru::DataFrame.new({}) if keys == []
+
+      keys = @index.pos(*keys) unless by_position
+
+      sub_df = row_at(*keys)
+      sub_df = sub_df.to_df.transpose if sub_df.is_a?(Daru::Vector)
+
+      sub_df
+    end
+
     # Duplicate the DataFrame entirely.
     #
     # == Arguments
@@ -990,6 +1004,17 @@ module Daru
 
       self
     end
+
+    def apply_method(method, keys: nil, by_position: true)
+      df = keys ? get_sub_dataframe(keys, by_position: by_position) : self
+
+      case method
+      when Symbol then df.send(method)
+      when Proc   then method.call(df)
+      else raise
+      end
+    end
+    alias :apply_method_on_sub_df :apply_method
 
     # Retrieves a Daru::Vector, based on the result of calculation
     # performed on each row.
