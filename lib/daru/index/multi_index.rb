@@ -285,7 +285,7 @@ module Daru
     end
 
     def dup
-      MultiIndex.new levels: levels.dup, labels: labels
+      MultiIndex.new levels: levels.dup, labels: labels.dup, name: (@name.nil? ? nil : @name.dup)
     end
 
     def drop_left_level by=1
