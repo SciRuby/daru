@@ -17,6 +17,15 @@ module Daru
           group_map
         end
 
+        def get_positions_group_for_aggregation(multi_index, level=-1)
+          raise unless multi_index.is_a?(Daru::MultiIndex)
+
+          new_index = multi_index.dup
+          new_index.remove_layer(level) # TODO: recheck code of Daru::MultiIndex#remove_layer
+
+          get_positions_group_map_on(new_index.each_with_index)
+        end
+
         def get_positions_group_map_for_df(df, group_by_keys, sort: true)
           indexes_with_positions = df[*group_by_keys].to_df.each_row.map(&:to_a).each_with_index
 

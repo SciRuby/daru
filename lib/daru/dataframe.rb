@@ -2927,6 +2927,22 @@ module Daru
       [colmn_value, index_tuples]
     end
 
+    def group_index_for_aggregation(index, multi_index_level=-1)
+      case index
+      when Daru::MultiIndex
+        groups = Daru::Core::GroupBy.get_positions_group_for_aggregation(index, multi_index_level)
+        new_index, pos_tuples = groups.keys, groups.values
+
+        new_index = Daru::MultiIndex.from_tuples(new_index).coerce_index
+      when Daru::Index, Daru::CategoricalIndex
+        new_index = Array(index).uniq
+        pos_tuples = new_index.map { |idx| [*index.pos(idx)] }
+      else raise
+      end
+
+      [pos_tuples, new_index]
+    end
+
     # coerce ranges, integers and array in appropriate ways
     def coerce_positions *positions, size
       if positions.size == 1
