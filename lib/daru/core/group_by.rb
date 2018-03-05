@@ -1,6 +1,42 @@
 module Daru
   module Core
     class GroupBy
+      class << self
+        def get_positions_group_map(df, group_by_keys, sort: true)
+          group_map = {}
+
+          df[*group_by_keys].to_df.each_row.each_with_index do |vect, position|
+            (group_map[vect.to_a] ||= []) << position
+          end
+
+          if sort # TODO: maybe add a more "stable" sorting option?
+            sorted_keys = group_map.keys.sort(&Daru::Core::GroupBy::TUPLE_SORTER)
+            group_map = sorted_keys.map { |k| [k, group_map[k]] }.to_h
+          end
+
+          group_map
+        end
+
+        def group_map_from_positions_to_indexes(positions_group_map, index)
+          positions_group_map.map { |k, positions| [k, positions.map { |pos| index.at(pos) }] }.to_h
+        end
+
+        def df_from_group_map(df, group_map, remaining_vectors, from_position: false)
+          return nil if group_map == {}
+
+          new_index = group_map.flat_map { |group, values| values.map { |val| group + [val] } }
+          new_index = Daru::MultiIndex.from_tuples(new_index)
+
+          return Daru::DataFrame.new({}, index: new_index) if remaining_vectors == []
+
+          new_rows_order = group_map.values.flatten
+          new_df = df[*remaining_vectors].to_df.get_sub_dataframe(new_rows_order, by_position: from_position)
+          new_df.index = new_index
+
+          new_df
+        end
+      end
+
       attr_reader :groups, :df
 
       # Iterate over each group created by group_by. A DataFrame is yielded in
@@ -24,11 +60,8 @@ module Daru
       end
 
       def initialize context, names
-        @groups = {}
         @non_group_vectors = context.vectors.to_a - names
         @context = context
-        vectors = names.map { |vec| context[vec].to_a }
-        tuples  = vectors[0].zip(*vectors[1..-1])
         # FIXME: It feels like we don't want to sort here. Ruby's #group_by
         # never sorts:
         #
@@ -36,7 +69,9 @@ module Daru
         #   #  => {4=>["test"], 2=>["me"], 6=>["please"]}
         #
         # - zverok, 2016-09-12
-        init_groups_df tuples, names
+        @groups = GroupBy.get_positions_group_map(@context, names, sort: true)
+        @groups = GroupBy.group_map_from_positions_to_indexes(@groups, @context.index)
+        @df     = GroupBy.df_from_group_map(@context, @groups, @non_group_vectors, from_position: false)
       end
 
       # Get a Daru::Vector of the size of each group.
