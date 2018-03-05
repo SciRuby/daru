@@ -335,7 +335,6 @@ module Daru
       #           Ram Hyderabad,Mumbai
       #
       def aggregate(options={})
-        @df.index = @df.index.remove_layer(@df.index.levels.size - 1)
         @df.aggregate(options)
       end
 

@@ -2321,30 +2321,15 @@ module Daru
     #
     # Note: `GroupBy` class `aggregate` method uses this `aggregate` method
     # internally.
-    def aggregate(options={})
-      colmn_value, index_tuples = aggregated_colmn_value(options)
-      Daru::DataFrame.new(
-        colmn_value, index: index_tuples, order: options.keys
-      )
+    def aggregate(options={}, multi_index_level=-1)
+      positions_tuples, new_index = group_index_for_aggregation(@index, multi_index_level)
+
+      colmn_value = aggregate_by_positions_tuples(options, positions_tuples)
+
+      Daru::DataFrame.new(colmn_value, index: new_index, order: options.keys)
     end
 
     private
-
-    # Do the `method` (`method` can be :sum, :mean, :std, :median, etc or
-    # lambda), on the column.
-    def apply_method_on_colmns colmn, index_tuples, method
-      vect = self[colmn]
-
-      index_tuples.map do |indexes|
-        vect.apply_method_on_sub_vector(method, keys: [*indexes], by_position: false)
-      end
-    end
-
-    def apply_method_on_df index_tuples, method
-      index_tuples.map do |indexes|
-        apply_method_on_sub_df(method, keys: [*indexes], by_position: false)
-      end
-    end
 
     def headers
       Daru::Index.new(Array(index.name) + @vectors.to_a)
@@ -2914,17 +2899,20 @@ module Daru
       end
     end
 
-    def aggregated_colmn_value(options)
-      index_tuples = Array(@index).uniq
-      colmn_value = options.map do |vec, do_this_on_vec|
-        if @vectors.include?(vec)
-          apply_method_on_colmns(vec, index_tuples, do_this_on_vec)
+    def aggregate_by_positions_tuples(options, positions_tuples)
+      options.map do |vect, method|
+        if @vectors.include?(vect)
+          vect = self[vect]
+
+          positions_tuples.map do |positions|
+            vect.apply_method_on_sub_vector(method, keys: positions)
+          end
         else
-          apply_method_on_df(index_tuples, do_this_on_vec)
+          positions_tuples.map do |positions|
+            apply_method_on_sub_df(method, keys: positions)
+          end
         end
       end
-
-      [colmn_value, index_tuples]
     end
 
     def group_index_for_aggregation(index, multi_index_level=-1)
