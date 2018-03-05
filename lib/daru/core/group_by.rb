@@ -325,20 +325,6 @@ module Daru
 
       private
 
-      def init_groups_df tuples, names
-        multi_index_tuples = []
-        keys = tuples.uniq.sort(&TUPLE_SORTER)
-        keys.each do |key|
-          indices = all_indices_for(tuples, key)
-          @groups[key] = indices
-          indices.each do |indice|
-            multi_index_tuples << key + [indice]
-          end
-        end
-        @groups.freeze
-        @df = resultant_context(multi_index_tuples, names) unless multi_index_tuples.empty?
-      end
-
       def select_groups_from method, quantity
         selection     = @context
         rows, indexes = [], []
@@ -376,33 +362,6 @@ module Daru
           Daru::MultiIndex.from_tuples(@groups.keys)
         else
           Daru::Index.new(@groups.keys.flatten)
-        end
-      end
-
-      def resultant_context(multi_index_tuples, names)
-        multi_index = Daru::MultiIndex.from_tuples(multi_index_tuples)
-        context_tmp = @context.dup.delete_vectors(*names)
-        rows_tuples = context_tmp.access_row_tuples_by_indexs(
-          *@groups.values.flatten!
-        )
-        context_new = Daru::DataFrame.rows(rows_tuples, index: multi_index)
-        context_new.vectors = context_tmp.vectors
-        context_new
-      end
-
-      def all_indices_for arry, element
-        found, index, indexes = -1, -1, []
-        while found
-          found = arry[index+1..-1].index(element)
-          if found
-            index = index + found + 1
-            indexes << index
-          end
-        end
-        if indexes.count == 1
-          [@context.index.at(*indexes)]
-        else
-          @context.index.at(*indexes).to_a
         end
       end
 
