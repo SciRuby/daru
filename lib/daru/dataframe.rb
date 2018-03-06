@@ -2329,6 +2329,16 @@ module Daru
       Daru::DataFrame.new(colmn_value, index: new_index, order: options.keys)
     end
 
+    # Is faster than using group_by followed by aggregate (because it doesn't generate an intermediary dataframe)
+    def group_by_and_aggregate(*group_by_keys, **aggregation_map)
+      positions_groups = Daru::Core::GroupBy.get_positions_group_map_for_df(self, group_by_keys.flatten, sort: true)
+
+      new_index   = Daru::MultiIndex.from_tuples(positions_groups.keys).coerce_index
+      colmn_value = aggregate_by_positions_tuples(aggregation_map, positions_groups.values)
+
+      Daru::DataFrame.new(colmn_value, index: new_index, order: aggregation_map.keys)
+    end
+
     private
 
     def headers

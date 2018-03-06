@@ -4055,6 +4055,34 @@ describe Daru::DataFrame do
     end
   end
 
+  context '#group_by_and_aggregate' do
+    let(:spending_df) {
+      Daru::DataFrame.rows([
+        [2010,    'dev',  50, 1],
+        [2010,    'dev', 150, 1],
+        [2010,    'dev', 200, 1],
+        [2011,    'dev',  50, 1],
+        [2012,    'dev', 150, 1],
+
+        [2011, 'office', 300, 1],
+
+        [2010, 'market',  50, 1],
+        [2011, 'market', 500, 1],
+        [2012, 'market', 500, 1],
+        [2012, 'market', 300, 1],
+
+        [2012,    'R&D',  10, 1],],
+        order: [:year, :category, :spending, :nb_spending])
+    }
+
+    it 'works as group_by + aggregate' do
+      expect(spending_df.group_by_and_aggregate(:year, {spending: :sum})).to eq(
+        spending_df.group_by(:year).aggregate(spending: :sum))
+      expect(spending_df.group_by_and_aggregate([:year, :category], spending: :sum, nb_spending: :size)).to eq(
+        spending_df.group_by([:year, :category]).aggregate(spending: :sum, nb_spending: :size))
+    end
+  end
+
   context '#create_sql' do
     let(:df) { Daru::DataFrame.new({
         a: [1,2,3],
