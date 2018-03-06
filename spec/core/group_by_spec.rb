@@ -239,10 +239,6 @@ describe Daru::Core::GroupBy do
     end
   end
 
-  context "#aggregate" do
-    pending
-  end
-
   context "#mean" do
     it "computes mean of the numeric columns of a single layer group" do
       expect(@sl_group.mean).to eq(Daru::DataFrame.new({
@@ -514,23 +510,6 @@ describe Daru::Core::GroupBy do
       }
     end
 
-    context 'group and aggregate sum for two vectors' do
-      subject {
-        dataframe.group_by([:employee, :month]).aggregate(salary: :sum) }
-
-      it { is_expected.to eq Daru::DataFrame.new({
-              salary: [600, 500, 1200, 1000, 600, 700]},
-              index: Daru::MultiIndex.from_tuples([
-                  ['Jane', 'July'],
-                  ['Jane', 'June'],
-                  ['John', 'July'],
-                  ['John', 'June'],
-                  ['Mark', 'July'],
-                  ['Mark', 'June']
-                ])
-      )}
-    end
-
     context 'group and aggregate sum and lambda function for vectors' do
       subject { dataframe.group_by([:employee]).aggregate(
         salary: :sum,
@@ -606,6 +585,65 @@ describe Daru::Core::GroupBy do
                 index: ['Krishna', 'Ram']
               )
           )
+      end
+    end
+
+    let(:spending_df) {
+      Daru::DataFrame.rows([
+        [2010,    'dev',  50, 1],
+        [2010,    'dev', 150, 1],
+        [2010,    'dev', 200, 1],
+        [2011,    'dev',  50, 1],
+        [2012,    'dev', 150, 1],
+
+        [2011, 'office', 300, 1],
+
+        [2010, 'market',  50, 1],
+        [2011, 'market', 500, 1],
+        [2012, 'market', 500, 1],
+        [2012, 'market', 300, 1],
+
+        [2012,    'R&D',  10, 1],],
+        order: [:year, :category, :spending, :nb_spending])
+    }
+    let(:multi_index_year_category) {
+      Daru::MultiIndex.from_tuples([
+                       [2010, "dev"], [2010, "market"],
+                       [2011, "dev"], [2011, "market"], [2011, "office"],
+        [2012, "R&D"], [2012, "dev"], [2012, "market"]])
+    }
+
+    context 'group_by and aggregate on multiple elements' do
+      it 'does aggregate' do
+        expect(spending_df.group_by([:year, :category]).aggregate(spending: :sum)).to eq(
+          Daru::DataFrame.new({spending: [400, 50, 50, 500, 300, 10, 150, 800]}, index: multi_index_year_category))
+      end
+
+      it 'works as older methods' do
+        newer_way = spending_df.group_by([:year, :category]).aggregate(spending: :sum, nb_spending: :sum)
+        older_way = spending_df.group_by([:year, :category]).sum
+        expect(newer_way).to eq(older_way)
+      end
+
+      context 'can aggregate on MultiIndex' do
+        let(:multi_indexed_aggregated_df) { spending_df.group_by([:year, :category]).aggregate(spending: :sum) }
+        let(:index_year) { Daru::Index.new([2010, 2011, 2012]) }
+        let(:index_category) { Daru::Index.new(["dev", "market", "office", "R&D"]) }
+
+        it 'aggregates by default on the last layer of MultiIndex' do
+          expect(multi_indexed_aggregated_df.aggregate(spending: :sum)).to eq(
+            Daru::DataFrame.new({spending: [450, 850, 960]}, index: index_year))
+        end
+
+        it 'can aggregate on the first layer of MultiIndex' do
+          expect(multi_indexed_aggregated_df.aggregate({spending: :sum},0)).to eq(
+            Daru::DataFrame.new({spending: [600, 1350, 300, 10]}, index: index_category))
+        end
+
+        it 'does coercion: when one layer is remaining, MultiIndex is coerced in Index that does not aggregate anymore' do
+          df_with_simple_index = multi_indexed_aggregated_df.aggregate(spending: :sum)
+          expect(df_with_simple_index.aggregate(spending: :sum)).to eq(df_with_simple_index)
+        end
       end
     end
   end
