@@ -834,14 +834,18 @@ describe Daru::Vector, "categorical" do
         expect(@dv[:xtbr]).to eq(:abc)
       end
 
-      it "assigns a new category at a multiple indices " do
+      it "assigns a new category to an array of indices " do
         @dv.add_category :rbn
           @dv.send(:set, [:padme, :bdn], :rbn)
-          @dv.send(:set, :cy..:db, :rbn)
         expect(@dv[:bdn]).to eq(:rbn)
         expect(@dv[:padme]).to eq(:rbn)
+      end
+
+      it "assigns a new category to a range of indices " do
+        @dv.add_category :kgn
+          @dv.send(:set, :cy..:db, :kgn)
         (:cy..:db).each do |pos|
-          expect(@dv[pos]).to eq(:rbn)
+          expect(@dv[pos]).to eq(:kgn)
         end
       end
 
