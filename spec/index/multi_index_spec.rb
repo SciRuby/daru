@@ -202,8 +202,16 @@ describe Daru::MultiIndex do
       expect(@multi_mi.include?([:a, :one])).to eq(true)
     end
 
-    it "checks for non-existence of a tuple" do
-      expect(@multi_mi.include?([:boo])).to eq(false)
+    it "checks for non-existence of completely specified tuple" do
+      expect(@multi_mi.include?([:b, :two, :foo])).to eq(false)
+    end
+
+    it "checks for non-existence of a top layer incomplete tuple" do
+      expect(@multi_mi.include?([:d])).to eq(false)
+    end
+
+    it "checks for non-existence of a middle layer incomplete tuple" do
+      expect(@multi_mi.include?([:c, :three])).to eq(false)
     end
   end
 
