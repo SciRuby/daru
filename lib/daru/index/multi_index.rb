@@ -293,8 +293,9 @@ module Daru
 
     def include? tuple
       return false unless tuple.is_a? Enumerable
-      tuple.flatten.each_with_index
-           .all? { |tup, i| @levels[i][tup] }
+      @labels[0...tuple.flatten.size]
+        .transpose
+        .include?(tuple.flatten.each_with_index.map { |e, i| @levels[i][e] })
     end
 
     def size
