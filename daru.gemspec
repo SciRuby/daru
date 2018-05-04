@@ -45,7 +45,11 @@ statsample family.
 
 Read the README for interesting use cases and examples.
 
+Install the spreadsheet gem version ~>1.1.1 for using spreadsheet functions.
+Install the mechanize gem version ~>2.7.5 for using mechanize functions.
+
 Cheers!
+
 *************************************************************************
 EOF
 
