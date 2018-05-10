@@ -34,11 +34,12 @@ module Daru
     end
   end
 
-  module IO
+  module IO # rubocop:disable Metrics/ModuleLength
     class << self
       # Functions for loading/writing Excel files.
 
       def from_excel path, opts={}
+        optional_gem 'spreadsheet', '~>1.1.1'
         opts = {
           worksheet_id: 0
         }.merge opts
@@ -185,18 +186,24 @@ module Daru
       end
 
       def from_html path, opts
+        optional_gem 'mechanize', '~>2.7.5'
         page = Mechanize.new.get(path)
         page.search('table').map { |table| html_parse_table table }
             .keep_if { |table| html_search table, opts[:match] }
             .compact
             .map { |table| html_decide_values table, opts }
             .map { |table| html_table_to_dataframe table }
-      rescue LoadError
-        raise 'Install the mechanize gem version 2.7.5 with `gem install mechanize`,'\
-        ' for using the from_html function.'
       end
 
       private
+
+      def optional_gem(name, version)
+        gem name, version
+        require name
+      rescue LoadError
+        Daru.error "\nInstall the #{name} gem version #{version} for using"\
+        " #{name} functions."
+      end
 
       DARU_OPT_KEYS = %i[clone order index name].freeze
 
