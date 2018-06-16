@@ -1,30 +1,76 @@
 module Daru
+  # Module encapsulating advanced data cleaning methods on DataFrame.
   module Clean
-    def validate_df vector, expression
-      self[vector].map! {|ele| expression.call(ele)}
-    end
-
-    require 'fuzzy_match'
+    # replace elements with those from given set of elements
+    # based on similarity
+    # @param vector [Daru::Vector] vector to be cleansed
+    # @param dict [Array] the array serving as key set
+    # @example
+    #   df = Daru::DataFrame.new({ a: ['mal','femal','M','F','Fem']})
+    #   df.fuzzy_match :a, ['MALE','FEMALE']
+    #   # => #<Daru::DataFrame(5x1)>
+    #   #           a
+    #   #   0    MALE
+    #   #   1  FEMALE
+    #   #   2    MALE
+    #   #   3  FEMALE
+    #   #   4  FEMALE
     def fuzzy_match vector, dict
-      key = FuzzyMatch.new(dict)
-      self[vector].map! {|ele| key.find(ele)}
+      # TODO
     end
 
-    require 'statsample'
-    def impute vector, method: :regression
-      vec = self[vector]
-      case method
-      when :regression
-        x = Daru::Vector.new (0...vec.size)
-        reg = Statsample::Regression::Simple.new_from_vectors(x, vec)
-        vec.map! { |ele| ele.nil? ? reg.a + reg.b*x : ele }
-      when :gradient_boosting
-        puts 'gradient_boosting'
-      when :dimension_reduction
-        puts 'dimension_reduction'
-      else
-        puts 'invalid method'
-      end
+    # fill missing places using linear regression
+    # @param vector [Daru::Vector] vector to be cleansed
+    # @example
+    #   df = Daru::DataFrame.new({ a: [1,3,nil,7,9,nil]})
+    #   df.impute :a
+    #   # => #<Daru::DataFrame(6x1)>
+    #   #       a
+    #   #   0   1
+    #   #   1   3
+    #   #   2   5
+    #   #   3   7
+    #   #   4   9
+    #   #   5   11
+    def impute vector
+      # TODO
+    end
+
+    # Split multi valued cells in more than one column into rows
+    # @example
+    #   df = Daru::DataFrame.new({
+    #      REF: ['2002, 2003', '3001, 3002, 3003']
+    #      Handle: ['t-shirt1', 't-shirt2']
+    #      Size: ['M, L', 'S, M, L']
+    #      Price: [23,24]
+    #   })
+    #   df.split_cell
+    #   # => #<Daru::DataFrame(5x4)>
+    #   #       REF    Handle  Size  Price
+    #   #   0  2002  t-shirt1     M     23
+    #   #   1  2003  t-shirt1     L     23
+    #   #   2  3001  t-shirt2     S     24
+    #   #   3  3002  t-shirt2     M     24
+    #   #   4  3003  t-shirt2     L     24
+    def split_cell
+      # TODO
+    end
+
+    # check dependency of one column to another
+    # @param vec1 [Daru::Vector] vector to be checked
+    # @param vec2 [Daru::Vector] vector to be checked
+    #   df = Daru::DataFrame.new({
+    #      a: [1,1,1,2,1]
+    #      b: [11,12,11,12,7,12]
+    #      c: ['a','a','a','b','a']
+    #   })
+    #   df.depend? :a, :c
+    #   # => true
+    #
+    #   df.depend? :b, :c
+    #   # => false
+    def depend? vec1, vec2
+      # TODO
     end
   end
 end

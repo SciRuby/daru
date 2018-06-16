@@ -31,7 +31,6 @@ Gem::Specification.new do |spec|
 
   # it is required by NMatrix, yet we want to specify clearly which minimal version is OK
   spec.add_runtime_dependency 'packable', '~> 1.3.9'
-  spec.add_runtime_dependency 'fuzzy_match', '~> 2.1'
 
   spec.add_development_dependency 'spreadsheet', '~> 1.1.1'
   spec.add_development_dependency 'bundler', '~> 1.10'
