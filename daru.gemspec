@@ -27,29 +27,6 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.post_install_message = <<-EOF
-*************************************************************************
-Thank you for installing daru!
-
-  oOOOOOo
- ,|    oO
-//|     |
-\\\\|     |
- `|     |
-  `-----`
-
-
-Hope you love daru! For enhanced interactivity and better visualizations,
-consider using gnuplotrb and nyaplot with iruby. For statistics use the
-statsample family.
-
-Read the README for interesting use cases and examples.
-
-Cheers!
-*************************************************************************
-EOF
-
-
   spec.add_runtime_dependency 'backports'
 
   # it is required by NMatrix, yet we want to specify clearly which minimal version is OK
