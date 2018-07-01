@@ -549,6 +549,20 @@ module Daru
       Daru::Accessors::DataFrameByRow.new(self)
     end
 
+    # Extract a dataframe given row indexes or positions
+    # @param keys [Array] can be positions (if by_position is true) or indexes (if by_position if false)
+    # @return [Daru::Dataframe]
+    def get_sub_dataframe(keys, by_position: true)
+      return Daru::DataFrame.new({}) if keys == []
+
+      keys = @index.pos(*keys) unless by_position
+
+      sub_df = row_at(*keys)
+      sub_df = sub_df.to_df.transpose if sub_df.is_a?(Daru::Vector)
+
+      sub_df
+    end
+
     # Duplicate the DataFrame entirely.
     #
     # == Arguments
@@ -698,6 +712,7 @@ module Daru
     #
     def rolling_fillna!(direction=:forward)
       @data.each { |vec| vec.rolling_fillna!(direction) }
+      self
     end
 
     def rolling_fillna(direction=:forward)
@@ -989,6 +1004,17 @@ module Daru
 
       self
     end
+
+    def apply_method(method, keys: nil, by_position: true)
+      df = keys ? get_sub_dataframe(keys, by_position: by_position) : self
+
+      case method
+      when Symbol then df.send(method)
+      when Proc   then method.call(df)
+      else raise
+      end
+    end
+    alias :apply_method_on_sub_df :apply_method
 
     # Retrieves a Daru::Vector, based on the result of calculation
     # performed on each row.
@@ -2248,18 +2274,6 @@ module Daru
       end
     end
 
-    # returns array of row tuples at given index(s)
-    def access_row_tuples_by_indexs *indexes
-      positions = @index.pos(*indexes)
-      if positions.is_a? Numeric
-        row = populate_row_for(positions)
-        row.first.is_a?(Array) ? row : [row]
-      else
-        new_rows = @data.map { |vec| vec[*indexes] }
-        indexes.map { |index| new_rows.map { |r| r[index] } }
-      end
-    end
-
     # Function to use for aggregating the data.
     #
     # @param options [Hash] options for column, you want in resultant dataframe
@@ -2277,7 +2291,7 @@ module Daru
     #      3   d  17
     #      4   e   1
     #
-    #    df.aggregate(num_100_times: ->(df) { df.num*100 })
+    #    df.aggregate(num_100_times: ->(df) { (df.num*100).first })
     #   => #<Daru::DataFrame(5x1)>
     #               num_100_ti
     #             0       5200
@@ -2307,40 +2321,25 @@ module Daru
     #
     # Note: `GroupBy` class `aggregate` method uses this `aggregate` method
     # internally.
-    def aggregate(options={})
-      colmn_value, index_tuples = aggregated_colmn_value(options)
-      Daru::DataFrame.new(
-        colmn_value, index: index_tuples, order: options.keys
-      )
+    def aggregate(options={}, multi_index_level=-1)
+      positions_tuples, new_index = group_index_for_aggregation(@index, multi_index_level)
+
+      colmn_value = aggregate_by_positions_tuples(options, positions_tuples)
+
+      Daru::DataFrame.new(colmn_value, index: new_index, order: options.keys)
+    end
+
+    # Is faster than using group_by followed by aggregate (because it doesn't generate an intermediary dataframe)
+    def group_by_and_aggregate(*group_by_keys, **aggregation_map)
+      positions_groups = Daru::Core::GroupBy.get_positions_group_map_for_df(self, group_by_keys.flatten, sort: true)
+
+      new_index   = Daru::MultiIndex.from_tuples(positions_groups.keys).coerce_index
+      colmn_value = aggregate_by_positions_tuples(aggregation_map, positions_groups.values)
+
+      Daru::DataFrame.new(colmn_value, index: new_index, order: aggregation_map.keys)
     end
 
     private
-
-    # Do the `method` (`method` can be :sum, :mean, :std, :median, etc or
-    # lambda), on the column.
-    def apply_method_on_colmns colmn, index_tuples, method
-      rows = []
-      index_tuples.each do |indexes|
-        # If single element then also make it vector.
-        slice = Daru::Vector.new(Array(self[colmn][*indexes]))
-        case method
-        when Symbol
-          rows << (slice.is_a?(Daru::Vector) ? slice.send(method) : slice)
-        when Proc
-          rows << method.call(slice)
-        end
-      end
-      rows
-    end
-
-    def apply_method_on_df index_tuples, method
-      rows = []
-      index_tuples.each do |indexes|
-        slice = row[*indexes]
-        rows << method.call(slice)
-      end
-      rows
-    end
 
     def headers
       Daru::Index.new(Array(index.name) + @vectors.to_a)
@@ -2910,22 +2909,36 @@ module Daru
       end
     end
 
-    def aggregated_colmn_value(options)
-      colmn_value = []
-      index_tuples = Array(@index).uniq
-      options.keys.each do |vec|
-        do_this_on_vec = options[vec]
-        colmn_value << if @vectors.include?(vec)
-                         apply_method_on_colmns(
-                           vec, index_tuples, do_this_on_vec
-                         )
-                       else
-                         apply_method_on_df(
-                           index_tuples, do_this_on_vec
-                         )
-                       end
+    def aggregate_by_positions_tuples(options, positions_tuples)
+      options.map do |vect, method|
+        if @vectors.include?(vect)
+          vect = self[vect]
+
+          positions_tuples.map do |positions|
+            vect.apply_method_on_sub_vector(method, keys: positions)
+          end
+        else
+          positions_tuples.map do |positions|
+            apply_method_on_sub_df(method, keys: positions)
+          end
+        end
       end
-      [colmn_value, index_tuples]
+    end
+
+    def group_index_for_aggregation(index, multi_index_level=-1)
+      case index
+      when Daru::MultiIndex
+        groups = Daru::Core::GroupBy.get_positions_group_for_aggregation(index, multi_index_level)
+        new_index, pos_tuples = groups.keys, groups.values
+
+        new_index = Daru::MultiIndex.from_tuples(new_index).coerce_index
+      when Daru::Index, Daru::CategoricalIndex
+        new_index = Array(index).uniq
+        pos_tuples = new_index.map { |idx| [*index.pos(idx)] }
+      else raise
+      end
+
+      [pos_tuples, new_index]
     end
 
     # coerce ranges, integers and array in appropriate ways

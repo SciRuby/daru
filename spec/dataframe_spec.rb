@@ -1858,7 +1858,7 @@ describe Daru::DataFrame do
 
     context 'rolling_fillna! forwards' do
       before { subject.rolling_fillna!(:forward) }
-      it { is_expected.to be_a Daru::DataFrame }
+      it { expect(subject.rolling_fillna!(:forward)).to eq(subject) }
       its(:'a.to_a') { is_expected.to eq [1, 2, 3, 3, 3, 3, 1, 7] }
       its(:'b.to_a') { is_expected.to eq [:a,  :b, :b, :b, :b, 3, 5, 5] }
       its(:'c.to_a') { is_expected.to eq ['a', 'a', 3, 4, 3, 5, 5, 7] }
@@ -1866,7 +1866,7 @@ describe Daru::DataFrame do
 
     context 'rolling_fillna! backwards' do
       before { subject.rolling_fillna!(:backward) }
-      it { is_expected.to be_a Daru::DataFrame }
+      it { expect(subject.rolling_fillna!(:backward)).to eq(subject) }
       its(:'a.to_a') { is_expected.to eq [1, 2, 3, 1, 1, 1, 1, 7] }
       its(:'b.to_a') { is_expected.to eq [:a, :b, 3, 3, 3, 3, 5, 0] }
       its(:'c.to_a') { is_expected.to eq ['a', 3, 3, 4, 3, 5, 7, 7] }
@@ -4044,7 +4044,7 @@ describe Daru::DataFrame do
       Daru::DataFrame.new({num: [52,12,07,17,01]}, index: cat_idx) }
 
     it 'lambda function on particular column' do
-      expect(df.aggregate(num_100_times: ->(df) { df.num*100 })).to eq(
+      expect(df.aggregate(num_100_times: ->(df) { (df.num*100).first })).to eq(
           Daru::DataFrame.new(num_100_times: [5200, 1200, 700, 1700, 100])
         )
     end
@@ -4052,6 +4052,34 @@ describe Daru::DataFrame do
       expect(df_cat_idx.aggregate(num: :sum)).to eq(
           Daru::DataFrame.new({num: [76, 12, 1]}, index: [:a, :b, :c])
         )
+    end
+  end
+
+  context '#group_by_and_aggregate' do
+    let(:spending_df) {
+      Daru::DataFrame.rows([
+        [2010,    'dev',  50, 1],
+        [2010,    'dev', 150, 1],
+        [2010,    'dev', 200, 1],
+        [2011,    'dev',  50, 1],
+        [2012,    'dev', 150, 1],
+
+        [2011, 'office', 300, 1],
+
+        [2010, 'market',  50, 1],
+        [2011, 'market', 500, 1],
+        [2012, 'market', 500, 1],
+        [2012, 'market', 300, 1],
+
+        [2012,    'R&D',  10, 1],],
+        order: [:year, :category, :spending, :nb_spending])
+    }
+
+    it 'works as group_by + aggregate' do
+      expect(spending_df.group_by_and_aggregate(:year, {spending: :sum})).to eq(
+        spending_df.group_by(:year).aggregate(spending: :sum))
+      expect(spending_df.group_by_and_aggregate([:year, :category], spending: :sum, nb_spending: :size)).to eq(
+        spending_df.group_by([:year, :category]).aggregate(spending: :sum, nb_spending: :size))
     end
   end
 

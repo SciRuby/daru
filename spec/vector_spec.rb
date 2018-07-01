@@ -1808,6 +1808,22 @@ describe Daru::Vector do
     end
   end
 
+  context '#rolling_fillna' do
+    subject do
+      Daru::Vector.new(
+        [Float::NAN, 2, 1, 4, nil, Float::NAN, 3, nil, Float::NAN]
+      )
+    end
+
+    context 'rolling_fillna forwards' do
+      it { expect(subject.rolling_fillna(:forward).to_a).to eq [0, 2, 1, 4, 4, 4, 3, 3, 3] }
+    end
+
+    context 'rolling_fillna backwards' do
+      it { expect(subject.rolling_fillna(direction: :backward).to_a).to eq [2, 2, 1, 4, 3, 3, 3, 0, 0] }
+    end
+  end
+
   context "#type" do
     before(:each) do
       @numeric    = Daru::Vector.new([1,2,3,4,5])
