@@ -51,6 +51,11 @@ describe Daru::IO do
         expect(df['Domestic'].to_a).to all be_boolean
       end
 
+      it "uses the custom string converter correctly" do
+        df = Daru::DataFrame.from_csv 'spec/fixtures/string_converter_test.csv', converters: [:string]
+        expect(df['Case Number'].to_a.all? {|x| String === x }).to be_truthy
+      end
+
       it "allow symbol to converters option" do
         df = Daru::DataFrame.from_csv 'spec/fixtures/boolean_converter_test.csv', converters: :boolean
         expect(df['Domestic'].to_a).to all be_boolean
