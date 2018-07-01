@@ -17,17 +17,17 @@ module Daru
         end
       end
 
-      def initialize left_df, right_df, opts={}
+      def initialize left_df, right_df, opts={} # rubocop:disable Metrics/AbcSize -- quick-fix for issue #171
         init_opts(opts)
         validate_on!(left_df, right_df)
         key_sanitizer = ->(h) { sanitize_merge_keys(h.values_at(*on)) }
 
         @left = df_to_a(left_df)
-        @left.sort_by!(&key_sanitizer)
+        @left.sort! { |a, b| safe_compare(a.values_at(*on), b.values_at(*on)) }
         @left_key_values = @left.map(&key_sanitizer)
 
         @right = df_to_a(right_df)
-        @right.sort_by!(&key_sanitizer)
+        @right.sort! { |a, b| safe_compare(a.values_at(*on), b.values_at(*on)) }
         @right_key_values = @right.map(&key_sanitizer)
 
         @left_keys, @right_keys = merge_keys(left_df, right_df, on)
@@ -245,6 +245,15 @@ module Daru
           left_df.has_vector?(on) && right_df.has_vector?(on) or
             raise ArgumentError, "Both dataframes expected to have #{on.inspect} field"
         end
+      end
+
+      def safe_compare(left_array, right_array)
+        left_array.zip(right_array).map { |l, r|
+          next 0 if l.nil? && r.nil?
+          next 1 if r.nil?
+          next -1 if l.nil?
+          l <=> r
+        }.reject(&:zero?).first || 0
       end
     end
 
