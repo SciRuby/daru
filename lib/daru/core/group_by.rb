@@ -1,6 +1,57 @@
 module Daru
   module Core
     class GroupBy
+      class << self
+        def get_positions_group_map_on(indexes_with_positions, sort: false)
+          group_map = {}
+
+          indexes_with_positions.each do |idx, position|
+            (group_map[idx] ||= []) << position
+          end
+
+          if sort # TODO: maybe add a more "stable" sorting option?
+            sorted_keys = group_map.keys.sort(&Daru::Core::GroupBy::TUPLE_SORTER)
+            group_map = sorted_keys.map { |k| [k, group_map[k]] }.to_h
+          end
+
+          group_map
+        end
+
+        def get_positions_group_for_aggregation(multi_index, level=-1)
+          raise unless multi_index.is_a?(Daru::MultiIndex)
+
+          new_index = multi_index.dup
+          new_index.remove_layer(level) # TODO: recheck code of Daru::MultiIndex#remove_layer
+
+          get_positions_group_map_on(new_index.each_with_index)
+        end
+
+        def get_positions_group_map_for_df(df, group_by_keys, sort: true)
+          indexes_with_positions = df[*group_by_keys].to_df.each_row.map(&:to_a).each_with_index
+
+          get_positions_group_map_on(indexes_with_positions, sort: sort)
+        end
+
+        def group_map_from_positions_to_indexes(positions_group_map, index)
+          positions_group_map.map { |k, positions| [k, positions.map { |pos| index.at(pos) }] }.to_h
+        end
+
+        def df_from_group_map(df, group_map, remaining_vectors, from_position: true)
+          return nil if group_map == {}
+
+          new_index = group_map.flat_map { |group, values| values.map { |val| group + [val] } }
+          new_index = Daru::MultiIndex.from_tuples(new_index)
+
+          return Daru::DataFrame.new({}, index: new_index) if remaining_vectors == []
+
+          new_rows_order = group_map.values.flatten
+          new_df = df[*remaining_vectors].to_df.get_sub_dataframe(new_rows_order, by_position: from_position)
+          new_df.index = new_index
+
+          new_df
+        end
+      end
+
       attr_reader :groups, :df
 
       # Iterate over each group created by group_by. A DataFrame is yielded in
@@ -24,11 +75,8 @@ module Daru
       end
 
       def initialize context, names
-        @groups = {}
         @non_group_vectors = context.vectors.to_a - names
         @context = context
-        vectors = names.map { |vec| context[vec].to_a }
-        tuples  = vectors[0].zip(*vectors[1..-1])
         # FIXME: It feels like we don't want to sort here. Ruby's #group_by
         # never sorts:
         #
@@ -36,7 +84,10 @@ module Daru
         #   #  => {4=>["test"], 2=>["me"], 6=>["please"]}
         #
         # - zverok, 2016-09-12
-        init_groups_df tuples, names
+        positions_groups = GroupBy.get_positions_group_map_for_df(@context, names, sort: true)
+
+        @groups = GroupBy.group_map_from_positions_to_indexes(positions_groups, @context.index)
+        @df     = GroupBy.df_from_group_map(@context, positions_groups, @non_group_vectors)
       end
 
       # Get a Daru::Vector of the size of each group.
@@ -284,25 +335,10 @@ module Daru
       #           Ram Hyderabad,Mumbai
       #
       def aggregate(options={})
-        @df.index = @df.index.remove_layer(@df.index.levels.size - 1)
         @df.aggregate(options)
       end
 
       private
-
-      def init_groups_df tuples, names
-        multi_index_tuples = []
-        keys = tuples.uniq.sort(&TUPLE_SORTER)
-        keys.each do |key|
-          indices = all_indices_for(tuples, key)
-          @groups[key] = indices
-          indices.each do |indice|
-            multi_index_tuples << key + [indice]
-          end
-        end
-        @groups.freeze
-        @df = resultant_context(multi_index_tuples, names) unless multi_index_tuples.empty?
-      end
 
       def select_groups_from method, quantity
         selection     = @context
@@ -341,33 +377,6 @@ module Daru
           Daru::MultiIndex.from_tuples(@groups.keys)
         else
           Daru::Index.new(@groups.keys.flatten)
-        end
-      end
-
-      def resultant_context(multi_index_tuples, names)
-        multi_index = Daru::MultiIndex.from_tuples(multi_index_tuples)
-        context_tmp = @context.dup.delete_vectors(*names)
-        rows_tuples = context_tmp.access_row_tuples_by_indexs(
-          *@groups.values.flatten!
-        )
-        context_new = Daru::DataFrame.rows(rows_tuples, index: multi_index)
-        context_new.vectors = context_tmp.vectors
-        context_new
-      end
-
-      def all_indices_for arry, element
-        found, index, indexes = -1, -1, []
-        while found
-          found = arry[index+1..-1].index(element)
-          if found
-            index = index + found + 1
-            indexes << index
-          end
-        end
-        if indexes.count == 1
-          [@context.index.at(*indexes)]
-        else
-          @context.index.at(*indexes).to_a
         end
       end
 
