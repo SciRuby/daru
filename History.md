@@ -1,3 +1,18 @@
+# 0.2.1 (01 July 2018)
+
+* Minor Enhancements
+  - Allow pasing singular Symbol to CSV converters option (@takkanm)
+  - Support calling GroupBy#each_group w/o blocks (@hibariya)
+  - Refactor grouping and aggregation (@paisible-wanderer)
+  - Add String Converter to Daru::IO::CSV::CONVERTERS (@takkanm)
+  - Fix annoying missing libraries warning
+  - Remove post-install message (nice yet useless)
+
+* Fixes
+  - Fix group_by for DataFrame with single row (@baarkerlounger)
+  - `#rolling_fillna!` bugfixes on `Daru::Vector` and `Daru::DataFrame` (@mhammiche)
+  - Fixes `#include?` on multiindex (@rohitner)
+
 # 0.2.0 (31 October 2017)
 * Major Enhancements
   - Add `DataFrame#which` query DSL (experimental! @rainchen)
