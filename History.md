@@ -1,4 +1,4 @@
-# 0.2.1 (01 July 2018)
+# 0.2.1 (02 July 2018)
 
 * Minor Enhancements
   - Allow pasing singular Symbol to CSV converters option (@takkanm)
