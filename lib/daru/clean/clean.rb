@@ -15,8 +15,10 @@ module Daru
     #   #   2    MALE
     #   #   3  FEMALE
     #   #   4  FEMALE
-    def fuzzy_match vector, dict
-      # TODO
+    require 'fuzzy_match'
+    def fuzzy_replace vector, dict
+      key = FuzzyMatch.new(dict)
+      self[vector].map! {|ele| key.find(ele)}
     end
 
     # fill missing places using linear regression
@@ -39,9 +41,9 @@ module Daru
     # Split multi valued cells in more than one column into rows
     # @example
     #   df = Daru::DataFrame.new({
-    #      REF: ['2002, 2003', '3001, 3002, 3003']
-    #      Handle: ['t-shirt1', 't-shirt2']
-    #      Size: ['M, L', 'S, M, L']
+    #      REF: ['2002, 2003', '3001, 3002, 3003'],
+    #      Handle: ['t-shirt1', 't-shirt2'],
+    #      Size: ['M, L', 'S, M, L'],
     #      Price: [23,24]
     #   })
     #   df.split_cell
@@ -52,8 +54,21 @@ module Daru
     #   #   2  3001  t-shirt2     S     24
     #   #   3  3002  t-shirt2     M     24
     #   #   4  3003  t-shirt2     L     24
-    def split_cell
-      # TODO
+    def split_cell cols, delimiter: ","
+      self[cols[0]].each_with_index do |row, idx|
+        next unless row.to_s.include? delimiter
+        (0...row.split(delimiter).size).each do |i|
+          arr = []
+          self.row[idx].each_with_index do |ele, idx1|
+            arr << ((cols.include? idx1) ? ele.split(delimiter)[i].chomp : ele)
+          end
+          self.add_row arr
+        end
+      end
+      self[cols[0]].each_with_index do |row, idx|
+        next unless row.to_s.include? delimiter
+        self.delete_row idx
+      end
     end
 
     # check dependency of one column to another
