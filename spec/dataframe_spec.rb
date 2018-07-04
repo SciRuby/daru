@@ -4040,6 +4040,9 @@ describe Daru::DataFrame do
   context '#access_row_tuples_by_indexs' do
     let(:df) {
       Daru::DataFrame.new({col: [:a, :b, :c, :d, :e], num: [52,12,07,17,01]}) }
+    let(:df_idx) {
+      Daru::DataFrame.new({a: [52, 12, 07], b: [1, 2, 3]}, index: [:one, :two, :three])
+    }
     context 'when no index is given' do
       it 'returns empty Array' do
         expect(df.access_row_tuples_by_indexs()).to eq([])
@@ -4049,6 +4052,13 @@ describe Daru::DataFrame do
       it 'returns Array of row tuples' do
         expect(df.access_row_tuples_by_indexs(1)).to eq([[:b, 12]])
         expect(df.access_row_tuples_by_indexs(0,3)).to eq([[:a, 52], [:d, 17]])
+      end
+    end
+    context 'when custom index(s) are given' do
+      it 'returns Array of row tuples' do
+        expect(df_idx.access_row_tuples_by_indexs(:one,:three)).to eq(
+          [[52, 1], [7, 3]]
+        )
       end
     end
   end
