@@ -2274,6 +2274,19 @@ module Daru
       end
     end
 
+    # @param indexes [Array] index(s) at which row tuples are retrieved
+    # @return [Array] returns array of row tuples at given index(s)
+    def access_row_tuples_by_indexs *indexes
+      positions = @index.pos(*indexes)
+      if positions.is_a? Numeric
+        row = populate_row_for(positions)
+        row.first.is_a?(Array) ? row : [row]
+      else
+        new_rows = @data.map { |vec| vec[*indexes] }
+        indexes.map { |index| new_rows.map { |r| r[index] } }
+      end
+    end
+
     # Function to use for aggregating the data.
     #
     # @param options [Hash] options for column, you want in resultant dataframe

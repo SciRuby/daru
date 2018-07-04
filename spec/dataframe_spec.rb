@@ -4037,6 +4037,22 @@ describe Daru::DataFrame do
     end
   end
 
+  context '#access_row_tuples_by_indexs' do
+    let(:df) {
+      Daru::DataFrame.new({col: [:a, :b, :c, :d, :e], num: [52,12,07,17,01]}) }
+    context 'when no index is given' do
+      it 'returns empty Array' do
+        expect(df.access_row_tuples_by_indexs()).to eq([])
+      end
+    end
+    context 'when index(s) are given' do
+      it 'returns Array of row tuples' do
+        expect(df.access_row_tuples_by_indexs(1)).to eq([[:b, 12]])
+        expect(df.access_row_tuples_by_indexs(0,3)).to eq([[:a, 52], [:d, 17]])
+      end
+    end
+  end
+
   context '#aggregate' do
     let(:cat_idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
     let(:df) { Daru::DataFrame.new(num: [52,12,07,17,01], cat_index: cat_idx) }
