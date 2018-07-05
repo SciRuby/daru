@@ -2276,6 +2276,18 @@ module Daru
 
     # @param indexes [Array] index(s) at which row tuples are retrieved
     # @return [Array] returns array of row tuples at given index(s)
+    # @example
+    #   df = Daru::DataFrame.new({
+    #     a: [1, 2, 3],
+    #     b: ['a', 'a', 'b']
+    #   })
+    #
+    #   df.access_row_tuples_by_indexs(1,2)
+    #   # => [[2, "a"], [3, "b"]]
+    #
+    #   df.index = Daru::Index.new([:one,:two,:three])
+    #   df.access_row_tuples_by_indexs(:one,:three)
+    #   # => [[1, "a"], [3, "b"]]
     def access_row_tuples_by_indexs *indexes
       positions = @index.pos(*indexes)
       if positions.is_a? Numeric
