@@ -19,6 +19,7 @@ module Daru
     def fuzzy_replace vector, dict
       key = FuzzyMatch.new(dict)
       self[vector].map! {|ele| key.find(ele)}
+      self
     end
 
     # fill missing places using linear regression
@@ -54,7 +55,7 @@ module Daru
     #   #   2  3001  t-shirt2     S     24
     #   #   3  3002  t-shirt2     M     24
     #   #   4  3003  t-shirt2     L     24
-    def split_cell cols, delimiter: ","
+    def split_cell! cols, delimiter: ','
       self[cols[0]].each_with_index do |row, idx|
         next unless row.to_s.include? delimiter
         (0...row.split(delimiter).size).each do |i|
@@ -69,14 +70,22 @@ module Daru
         next unless row.to_s.include? delimiter
         self.delete_row idx
       end
+      self.index= Daru::Index.new self.size
+      self
     end
 
-    # check dependency of one column to another
+    # non-destructive version of split_cell!
+    def split_cell cols, delimiter: ','
+      dup.split_cell! cols, delimiter: delimiter
+    end
+
+    # check dependency of one column on another by
+    # using equality of their factorizations
     # @param vec1 [Daru::Vector] vector to be checked
     # @param vec2 [Daru::Vector] vector to be checked
     #   df = Daru::DataFrame.new({
-    #      a: [1,1,1,2,1]
-    #      b: [11,12,11,12,7,12]
+    #      a: [1,1,1,2,1],
+    #      b: [11,12,11,12,7],
     #      c: ['a','a','a','b','a']
     #   })
     #   df.depend? :a, :c
@@ -85,7 +94,7 @@ module Daru
     #   df.depend? :b, :c
     #   # => false
     def depend? vec1, vec2
-      # TODO
+      self[vec1].uniq.clone_structure == self[vec2].uniq.clone_structure
     end
   end
 end
