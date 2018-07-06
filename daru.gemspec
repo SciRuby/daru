@@ -56,6 +56,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'gruff'
   spec.add_development_dependency 'webmock'
   spec.add_development_dependency 'fuzzy_match'
+  spec.add_development_dependency 'statsample'
 
   if RUBY_VERSION < '2.1.0'
     spec.add_development_dependency 'nokogiri', '<= 1.6.8.1'

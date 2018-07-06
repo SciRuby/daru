@@ -15,7 +15,7 @@ module Daru
     #   #   2    MALE
     #   #   3  FEMALE
     #   #   4  FEMALE
-    require 'fuzzy_match'
+    require 'fuzzy_match' # to be required optionally
     def fuzzy_replace vector, dict
       key = FuzzyMatch.new(dict)
       self[vector].map! {|ele| key.find(ele)}
@@ -35,8 +35,12 @@ module Daru
     #   #   3   7
     #   #   4   9
     #   #   5   11
+    require 'statsample' # to be required optionally
     def impute vector
-      # TODO
+      vec = self[vector]
+      x = Daru::Vector.new (0...vec.size)
+      reg = Statsample::Regression::Simple.new_from_vectors(x, vec)
+      vec.each_with_index { |ele, idx| vec[idx] = ele.nil? ? (reg.a + reg.b * idx) : ele }
     end
 
     # Split multi valued cells in more than one column into rows
