@@ -4037,6 +4037,56 @@ describe Daru::DataFrame do
     end
   end
 
+  context '#access_row_tuples_by_indexs' do
+    let(:df) {
+      Daru::DataFrame.new({col: [:a, :b, :c, :d, :e], num: [52,12,07,17,01]}) }
+    let(:df_idx) {
+      Daru::DataFrame.new({a: [52, 12, 07], b: [1, 2, 3]}, index: [:one, :two, :three])
+    }
+    let (:mi_idx) do
+      Daru::MultiIndex.from_tuples [
+        [:a,:one,:bar],
+        [:a,:one,:baz],
+        [:b,:two,:bar],
+        [:a,:two,:baz],
+      ]
+    end
+    let (:df_mi) do
+      Daru::DataFrame.new({
+        a: 1..4,
+        b: 'a'..'d'
+      }, index: mi_idx )
+    end
+    context 'when no index is given' do
+      it 'returns empty Array' do
+        expect(df.access_row_tuples_by_indexs()).to eq([])
+      end
+    end
+    context 'when index(s) are given' do
+      it 'returns Array of row tuples' do
+        expect(df.access_row_tuples_by_indexs(1)).to eq([[:b, 12]])
+        expect(df.access_row_tuples_by_indexs(0,3)).to eq([[:a, 52], [:d, 17]])
+      end
+    end
+    context 'when custom index(s) are given' do
+      it 'returns Array of row tuples' do
+        expect(df_idx.access_row_tuples_by_indexs(:one,:three)).to eq(
+          [[52, 1], [7, 3]]
+        )
+      end
+    end
+    context 'when multi index is given' do
+      it 'returns Array of row tuples' do
+        expect(df_mi.access_row_tuples_by_indexs(:a)).to eq(
+          [[1, "a"], [2, "b"], [4, "d"]]
+        )
+        expect(df_mi.access_row_tuples_by_indexs(:a, :one, :baz)).to eq(
+          [[2, "b"]]
+        )
+      end
+    end
+  end
+
   context '#aggregate' do
     let(:cat_idx) { Daru::CategoricalIndex.new [:a, :b, :a, :a, :c] }
     let(:df) { Daru::DataFrame.new(num: [52,12,07,17,01], cat_index: cat_idx) }

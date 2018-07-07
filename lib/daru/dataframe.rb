@@ -2274,6 +2274,50 @@ module Daru
       end
     end
 
+    # @param indexes [Array] index(s) at which row tuples are retrieved
+    # @return [Array] returns array of row tuples at given index(s)
+    # @example Using Daru::Index
+    #   df = Daru::DataFrame.new({
+    #     a: [1, 2, 3],
+    #     b: ['a', 'a', 'b']
+    #   })
+    #
+    #   df.access_row_tuples_by_indexs(1,2)
+    #   # => [[2, "a"], [3, "b"]]
+    #
+    #   df.index = Daru::Index.new([:one,:two,:three])
+    #   df.access_row_tuples_by_indexs(:one,:three)
+    #   # => [[1, "a"], [3, "b"]]
+    #
+    # @example Using Daru::MultiIndex
+    #   mi_idx = Daru::MultiIndex.from_tuples [
+    #     [:a,:one,:bar],
+    #     [:a,:one,:baz],
+    #     [:b,:two,:bar],
+    #     [:a,:two,:baz],
+    #   ]
+    #   df_mi = Daru::DataFrame.new({
+    #     a: 1..4,
+    #     b: 'a'..'d'
+    #   }, index: mi_idx )
+    #
+    #   df_mi.access_row_tuples_by_indexs(:b, :two, :bar)
+    #   # => [[3, "c"]]
+    #   df_mi.access_row_tuples_by_indexs(:a)
+    #   # => [[1, "a"], [2, "b"], [4, "d"]]
+    def access_row_tuples_by_indexs *indexes
+      return get_sub_dataframe(indexes, by_position: false).map_rows(&:to_a) if
+      @index.is_a?(Daru::MultiIndex)
+      positions = @index.pos(*indexes)
+      if positions.is_a? Numeric
+        row = populate_row_for(positions)
+        row.first.is_a?(Array) ? row : [row]
+      else
+        new_rows = @data.map { |vec| vec[*indexes] }
+        indexes.map { |index| new_rows.map { |r| r[index] } }
+      end
+    end
+
     # Function to use for aggregating the data.
     #
     # @param options [Hash] options for column, you want in resultant dataframe
