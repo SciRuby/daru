@@ -55,8 +55,10 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'gruff'
   spec.add_development_dependency 'webmock'
-  spec.add_development_dependency 'fuzzy_match'
-  spec.add_development_dependency 'statsample'
+  spec.add_development_dependency 'fuzzy_match', '~> 2.1.0'
+  spec.add_development_dependency 'statsample', '~> 2.1.0'
+  spec.add_development_dependency 'k_means', '~> 0.0.7'
+  spec.add_development_dependency 'hierclust', '~> 0.1.5'
 
   if RUBY_VERSION < '2.1.0'
     spec.add_development_dependency 'nokogiri', '<= 1.6.8.1'
