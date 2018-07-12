@@ -39,7 +39,7 @@ module Daru
     def cluster_hier cols
       points = self[cols[0]].each_with_index
                 .map { |x, y| Hierclust::Point.new(x, cols[1] ? self[cols[1]][y] : 0) }
-      Hierclust::Clusterer.new(points).clusters[0]
+      helper_hier Hierclust::Clusterer.new(points).clusters[0]
     end
 
     # Returns a sample obtained by the systematic technique: A member occurring after a fixed 
@@ -84,6 +84,12 @@ module Daru
         end
       end
       df
+    end
+
+    private
+
+    def helper_hier cluster
+      cluster.items.map { |item| item.class == Hierclust::Point ? [item.x, item.y] : helper_hier(item) }
     end
   end
 end
