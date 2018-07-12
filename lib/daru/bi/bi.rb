@@ -15,9 +15,9 @@ module Daru
     #   # => [[0,1],[2,3,4]]
     #   df.cluster_kmeans [:Size, :Price], 3
     #   # => [[0,3],[1,4],[2]]
-    require 'k_means' 
+    require 'k_means'
     def cluster_kmeans cols, centroids
-      KMeans.new(self[*cols].to_df.to_a[0..-2][0].map {|h| h.values}, centroids: centroids)
+      KMeans.new(self[*cols].to_df.to_a[0..-2][0].map(&:values), centroids: centroids)
     end
 
     # cluster records by hierarchy for details of algorithm visit
@@ -37,12 +37,13 @@ module Daru
     #   # =>  "[[[(3001, 24), (3002, 24)], (3003, 24)], [(2002, 23), (2003, 23)]]"
     require 'hierclust'
     def cluster_hier cols
-      points = self[cols[0]].each_with_index
-                .map { |x, y| Hierclust::Point.new(x, cols[1] ? self[cols[1]][y] : 0) }
+      points = self[cols[0]]
+               .each_with_index
+               .map { |x, y| Hierclust::Point.new(x, cols[1] ? self[cols[1]][y] : 0) }
       helper_hier Hierclust::Clusterer.new(points).clusters[0]
     end
 
-    # Returns a sample obtained by the systematic technique: A member occurring after a fixed 
+    # Returns a sample obtained by the systematic technique: A member occurring after a fixed
     # interval is selected. The member occurring after fixed interval is known as Kth element.
     # @params k [Integer] the length of interval
     # @return dataframe with the obtained sample
@@ -55,12 +56,11 @@ module Daru
     #   #  25  26  50
     #   #  50  51  50
     #   #  75  76  50
-    def sample_systematic k = 10
-      self.row_at(*@index.to_a.select { |x| x % k == 0 })
+    def sample_systematic k=10
+      row_at(*@index.to_a.select { |x| (x % k).zero? })
     end
 
-    # Returns a sample obtained in a stratified way: A member occurring after a fixed 
-    # interval is selected. The member occurring after fixed interval is known as Kth element.
+    # Returns a sample obtained in a stratified way.
     # @params division [Hash] represents the strata (sub-groups), keys can be
     # ranges or arrays and sample size drawn from the stratum is corresponding value
     # @return dataframe with the obtained sample
@@ -75,12 +75,12 @@ module Daru
     #   #   3  35  37
     #   #   4  33  35
     def sample_stratified division
-      df = self.row[]
+      df = row[]
       division.each do |group, num|
-        if(num == 1)
-          df.add_row(self.row_at(*group.to_a.sample(num)))
+        if num == 1
+          df.add_row(row_at(*group.to_a.sample(num)))
         else
-          df = df.concat(self.row_at(*group.to_a.sample(num)))
+          df = df.concat(row_at(*group.to_a.sample(num)))
         end
       end
       df

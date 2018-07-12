@@ -18,7 +18,7 @@ module Daru
     require 'fuzzy_match' # to be required optionally
     def fuzzy_replace vector, dict
       key = FuzzyMatch.new(dict)
-      self[vector].map! {|ele| key.find(ele)}
+      self[vector].map! { |ele| key.find(ele) }
       self
     end
 
@@ -38,7 +38,7 @@ module Daru
     require 'statsample' # to be required optionally
     def impute vector
       vec = self[vector]
-      x = Daru::Vector.new (0...vec.size)
+      x = Daru::Vector.new 0...vec.size
       reg = Statsample::Regression::Simple.new_from_vectors(x, vec)
       vec.each_with_index { |ele, idx| vec[idx] = ele.nil? ? (reg.a + reg.b * idx) : ele }
     end
@@ -59,22 +59,23 @@ module Daru
     #   #   2  3001  t-shirt2     S     24
     #   #   3  3002  t-shirt2     M     24
     #   #   4  3003  t-shirt2     L     24
-    def split_cell! cols, delimiter: ','
+    def split_cell! cols, delimiter: ',' # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       self[cols[0]].each_with_index do |row, idx|
         next unless row.to_s.include? delimiter
         (0...row.split(delimiter).size).each do |i|
           arr = []
           self.row[idx].each_with_index do |ele, idx1|
+            # rubocop:disable Style/TernaryParentheses
             arr << ((cols.include? idx1) ? ele.split(delimiter)[i].chomp : ele)
           end
-          self.add_row arr
+          add_row arr
         end
       end
       self[cols[0]].each_with_index do |row, idx|
         next unless row.to_s.include? delimiter
-        self.delete_row idx
+        delete_row idx
       end
-      self.index= Daru::Index.new self.size
+      self.index= Daru::Index.new size
       self
     end
 
