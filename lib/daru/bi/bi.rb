@@ -1,5 +1,8 @@
 module Daru
   module BI
+    require 'k_means'
+    require 'hierclust'
+
     # cluster records using K-Means algorithm
     # @param cols [Array] array of columns to be used for clustering
     # @param centroids [Integer] number of centroids
@@ -15,7 +18,6 @@ module Daru
     #   # => [[0,1],[2,3,4]]
     #   df.cluster_kmeans [:Size, :Price], 3
     #   # => [[0,3],[1,4],[2]]
-    require 'k_means'
     def cluster_kmeans cols, centroids
       KMeans.new(self[*cols].to_df.to_a[0..-2][0].map(&:values), centroids: centroids)
     end
@@ -35,7 +37,6 @@ module Daru
     #   cluster = df.cluster_hier [:REF,:Price]
     #   cluster.to_a
     #   # =>  "[[[(3001, 24), (3002, 24)], (3003, 24)], [(2002, 23), (2003, 23)]]"
-    require 'hierclust'
     def cluster_hier cols
       points = self[cols[0]]
                .each_with_index
@@ -45,7 +46,7 @@ module Daru
 
     # Returns a sample obtained by the systematic technique: A member occurring after a fixed
     # interval is selected. The member occurring after fixed interval is known as Kth element.
-    # @params k [Integer] the length of interval
+    # @param k [Integer] the length of interval
     # @return dataframe with the obtained sample
     # @example
     #   df = Daru::DataFrame.new({a: (1..98), b: [50]*98})
@@ -61,7 +62,7 @@ module Daru
     end
 
     # Returns a sample obtained in a stratified way.
-    # @params division [Hash] represents the strata (sub-groups), keys can be
+    # @param division [Hash] represents the strata (sub-groups), keys can be
     # ranges or arrays and sample size drawn from the stratum is corresponding value
     # @return dataframe with the obtained sample
     # @example
