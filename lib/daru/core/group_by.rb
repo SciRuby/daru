@@ -350,7 +350,9 @@ module Daru
       #           Ram Hyderabad,Mumbai
       #
       def aggregate(options={})
-        grouped_df.aggregate(options)
+        new_index = Daru::MultiIndex.from_tuples(@groups_by_pos.keys).coerce_index
+
+        @context.aggregate(options) { [@groups_by_pos.values, new_index] }
       end
 
       private
