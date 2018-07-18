@@ -2,6 +2,7 @@ module Daru
   module Core
     class GroupBy
       class << self
+        # @private
         def get_positions_group_map_on(indexes_with_positions, sort: false)
           group_map = {}
 
@@ -17,6 +18,7 @@ module Daru
           group_map
         end
 
+        # @private
         def get_positions_group_for_aggregation(multi_index, level=-1)
           raise unless multi_index.is_a?(Daru::MultiIndex)
 
@@ -26,16 +28,19 @@ module Daru
           get_positions_group_map_on(new_index.each_with_index)
         end
 
+        # @private
         def get_positions_group_map_for_df(df, group_by_keys, sort: true)
           indexes_with_positions = df[*group_by_keys].to_df.each_row.map(&:to_a).each_with_index
 
           get_positions_group_map_on(indexes_with_positions, sort: sort)
         end
 
+        # @private
         def group_map_from_positions_to_indexes(positions_group_map, index)
           positions_group_map.map { |k, positions| [k, positions.map { |pos| index.at(pos) }] }.to_h
         end
 
+        # @private
         def df_from_group_map(df, group_map, remaining_vectors, from_position: true)
           return nil if group_map == {}
 
