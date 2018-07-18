@@ -57,7 +57,17 @@ module Daru
         end
       end
 
-      attr_reader :groups, :df
+      # lazy accessor/attr_reader for the attribute groups
+      def groups
+        @groups ||= GroupBy.group_map_from_positions_to_indexes(@groups_by_pos, @context.index)
+      end
+      alias :groups_by_idx :groups
+
+      # lazy accessor/attr_reader for the attribute df
+      def df
+        @df ||= GroupBy.df_from_group_map(@context, @groups_by_pos, @non_group_vectors)
+      end
+      alias :grouped_df :df
 
       # Iterate over each group created by group_by. A DataFrame is yielded in
       # block.
@@ -80,8 +90,11 @@ module Daru
       end
 
       def initialize context, names
+        @group_vectors     = names
         @non_group_vectors = context.vectors.to_a - names
-        @context = context
+
+        @context = context # TODO: maybe rename in @original_df or @grouped_db
+
         # FIXME: It feels like we don't want to sort here. Ruby's #group_by
         # never sorts:
         #
@@ -89,22 +102,19 @@ module Daru
         #   #  => {4=>["test"], 2=>["me"], 6=>["please"]}
         #
         # - zverok, 2016-09-12
-        positions_groups = GroupBy.get_positions_group_map_for_df(@context, names, sort: true)
-
-        @groups = GroupBy.group_map_from_positions_to_indexes(positions_groups, @context.index)
-        @df     = GroupBy.df_from_group_map(@context, positions_groups, @non_group_vectors)
+        @groups_by_pos = GroupBy.get_positions_group_map_for_df(@context, @group_vectors, sort: true)
       end
 
       # Get a Daru::Vector of the size of each group.
       def size
         index =
           if multi_indexed_grouping?
-            Daru::MultiIndex.from_tuples @groups.keys
+            Daru::MultiIndex.from_tuples groups_by_idx.keys
           else
-            Daru::Index.new @groups.keys.flatten
+            Daru::Index.new groups_by_idx.keys.flatten
           end
 
-        values = @groups.values.map(&:size)
+        values = groups_by_idx.values.map(&:size)
         Daru::Vector.new(values, index: index, name: :size)
       end
 
@@ -251,7 +261,7 @@ module Daru
       #   #                    a          b          c          d
       #   #         5        bar        two          6         66
       def get_group group
-        indexes   = @groups[group]
+        indexes   = groups_by_idx[group]
         elements  = @context.each_vector.map(&:to_a)
         transpose = elements.transpose
         rows      = indexes.each.map { |idx| transpose[idx] }
@@ -278,7 +288,7 @@ module Daru
       #   #   a ACE
       #   #   b BDF
       def reduce(init=nil)
-        result_hash = @groups.each_with_object({}) do |(group, indices), h|
+        result_hash = groups_by_idx.each_with_object({}) do |(group, indices), h|
           group_indices = indices.map { |v| @context.index.to_a[v] }
 
           grouped_result = init
@@ -300,7 +310,7 @@ module Daru
       end
 
       def inspect
-        @df.inspect
+        grouped_df.inspect
       end
 
       # Function to use for aggregating the data.
@@ -340,7 +350,7 @@ module Daru
       #           Ram Hyderabad,Mumbai
       #
       def aggregate(options={})
-        @df.aggregate(options)
+        grouped_df.aggregate(options)
       end
 
       private
@@ -349,7 +359,7 @@ module Daru
         selection     = @context
         rows, indexes = [], []
 
-        @groups.each_value do |index|
+        groups_by_idx.each_value do |index|
           index.send(method, quantity).each do |idx|
             rows << selection.row[idx].to_a
             indexes << idx
@@ -365,7 +375,7 @@ module Daru
           method_type == :numeric && @context[ngvec].type == :numeric
         end
 
-        rows = @groups.map do |_group, indexes|
+        rows = groups_by_idx.map do |_group, indexes|
           order.map do |ngvector|
             slice = @context[ngvector][*indexes]
             slice.is_a?(Daru::Vector) ? slice.send(method) : slice
@@ -379,15 +389,15 @@ module Daru
 
       def apply_method_index
         if multi_indexed_grouping?
-          Daru::MultiIndex.from_tuples(@groups.keys)
+          Daru::MultiIndex.from_tuples(groups_by_idx.keys)
         else
-          Daru::Index.new(@groups.keys.flatten)
+          Daru::Index.new(groups_by_idx.keys.flatten)
         end
       end
 
       def multi_indexed_grouping?
-        return false unless @groups.keys[0]
-        @groups.keys[0].size > 1
+        return false unless groups_by_idx.keys[0]
+        groups_by_idx.keys[0].size > 1
       end
     end
   end
