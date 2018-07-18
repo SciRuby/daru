@@ -2366,21 +2366,19 @@ module Daru
     # Note: `GroupBy` class `aggregate` method uses this `aggregate` method
     # internally.
     def aggregate(options={}, multi_index_level=-1)
-      positions_tuples, new_index = group_index_for_aggregation(@index, multi_index_level)
+      if block_given?
+        positions_tuples, new_index = yield(@index) # note: use of yield is private for now
+      else
+        positions_tuples, new_index = group_index_for_aggregation(@index, multi_index_level)
+      end
 
       colmn_value = aggregate_by_positions_tuples(options, positions_tuples)
 
       Daru::DataFrame.new(colmn_value, index: new_index, order: options.keys)
     end
 
-    # Is faster than using group_by followed by aggregate (because it doesn't generate an intermediary dataframe)
     def group_by_and_aggregate(*group_by_keys, **aggregation_map)
-      positions_groups = Daru::Core::GroupBy.get_positions_group_map_for_df(self, group_by_keys.flatten, sort: true)
-
-      new_index   = Daru::MultiIndex.from_tuples(positions_groups.keys).coerce_index
-      colmn_value = aggregate_by_positions_tuples(aggregation_map, positions_groups.values)
-
-      Daru::DataFrame.new(colmn_value, index: new_index, order: aggregation_map.keys)
+      group_by(*group_by_keys).aggregate(aggregation_map)
     end
 
     private
@@ -2972,10 +2970,10 @@ module Daru
     def group_index_for_aggregation(index, multi_index_level=-1)
       case index
       when Daru::MultiIndex
-        groups = Daru::Core::GroupBy.get_positions_group_for_aggregation(index, multi_index_level)
-        new_index, pos_tuples = groups.keys, groups.values
+        groups_by_pos = Daru::Core::GroupBy.get_positions_group_for_aggregation(index, multi_index_level)
 
-        new_index = Daru::MultiIndex.from_tuples(new_index).coerce_index
+        new_index = Daru::MultiIndex.from_tuples(groups_by_pos.keys).coerce_index
+        pos_tuples = groups_by_pos.values
       when Daru::Index, Daru::CategoricalIndex
         new_index = Array(index).uniq
         pos_tuples = new_index.map { |idx| [*index.pos(idx)] }
