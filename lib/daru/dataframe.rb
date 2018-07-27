@@ -1011,6 +1011,7 @@ module Daru
       case method
       when Symbol then df.send(method)
       when Proc   then method.call(df)
+      when Array  then method.map(&:to_proc).map { |proc| proc.call(df) } # works with Array of both Symbol and/or Proc
       else raise
       end
     end
@@ -2952,19 +2953,48 @@ module Daru
     end
 
     def aggregate_by_positions_tuples(options, positions_tuples)
-      options.map do |vect, method|
-        if @vectors.include?(vect)
-          vect = self[vect]
+      agg_over_vectors_only, options = cast_aggregation_options(options)
+
+      if agg_over_vectors_only
+        options.map do |vect_name, method|
+          vect = self[vect_name]
 
           positions_tuples.map do |positions|
             vect.apply_method_on_sub_vector(method, keys: positions)
           end
-        else
-          positions_tuples.map do |positions|
-            apply_method_on_sub_df(method, keys: positions)
-          end
         end
+      else
+        methods = options.values
+
+        # note: because we aggregate over rows, we don't have to re-get sub-dfs for each method (which is expensive)
+        rows = positions_tuples.map do |positions|
+          apply_method_on_sub_df(methods, keys: positions)
+        end
+
+        rows.transpose
       end
+    end
+
+    # convert operations over sub-vectors to operations over sub-dfs when it improves perf
+    # note: we don't always "cast" because aggregation over a single vector / a few vector is faster
+    #   than aggregation over (sub-)dfs
+    def cast_aggregation_options(options)
+      vects, non_vects = options.keys.partition { |k| @vectors.include?(k) }
+
+      over_vectors = true
+
+      if non_vects.any?
+        options = options.clone
+
+        vects.each do |name|
+          proc_on_vect = options[name].to_proc
+          options[name] = ->(sub_df) { proc_on_vect.call(sub_df[name]) }
+        end
+
+        over_vectors = false
+      end
+
+      [over_vectors, options]
     end
 
     def group_index_for_aggregation(index, multi_index_level=-1)

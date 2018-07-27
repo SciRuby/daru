@@ -620,9 +620,14 @@ describe Daru::Core::GroupBy do
       end
 
       it 'works as older methods' do
-        newer_way = spending_df.group_by([:year, :category]).aggregate(spending: :sum, nb_spending: :sum)
         older_way = spending_df.group_by([:year, :category]).sum
+
+        newer_way = spending_df.group_by([:year, :category]).aggregate(spending: :sum, nb_spending: :sum)
         expect(newer_way).to eq(older_way)
+
+        contrived_way = spending_df.group_by([:year, :category]).aggregate(spending: :sum, nb_spending_lambda: ->(df) { df[:nb_spending].sum })
+        contrived_way.rename_vectors(nb_spending_lambda: :nb_spending)
+        expect(contrived_way).to eq(older_way)
       end
 
       context 'can aggregate on MultiIndex' do
