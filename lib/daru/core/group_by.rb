@@ -107,14 +107,9 @@ module Daru
 
       # Get a Daru::Vector of the size of each group.
       def size
-        index =
-          if multi_indexed_grouping?
-            Daru::MultiIndex.from_tuples groups_by_idx.keys
-          else
-            Daru::Index.new groups_by_idx.keys.flatten
-          end
+        index = get_grouped_index
 
-        values = groups_by_idx.values.map(&:size)
+        values = @groups_by_pos.values.map(&:size)
         Daru::Vector.new(values, index: index, name: :size)
       end
 
@@ -299,12 +294,7 @@ module Daru
           h[group] = grouped_result
         end
 
-        index =
-          if multi_indexed_grouping?
-            Daru::MultiIndex.from_tuples result_hash.keys
-          else
-            Daru::Index.new result_hash.keys.flatten
-          end
+        index = get_grouped_index(result_hash.keys)
 
         Daru::Vector.new(result_hash.values, index: index)
       end
@@ -350,7 +340,7 @@ module Daru
       #           Ram Hyderabad,Mumbai
       #
       def aggregate(options={})
-        new_index = Daru::MultiIndex.from_tuples(@groups_by_pos.keys).coerce_index
+        new_index = get_grouped_index
 
         @context.aggregate(options) { [@groups_by_pos.values, new_index] }
       end
@@ -384,22 +374,24 @@ module Daru
           end
         end
 
-        index = apply_method_index
+        index = get_grouped_index
         order = Daru::Index.new(order)
         Daru::DataFrame.new(rows.transpose, index: index, order: order)
       end
 
-      def apply_method_index
+      def get_grouped_index(index_tuples=nil)
+        index_tuples = @groups_by_pos.keys if index_tuples.nil?
+
         if multi_indexed_grouping?
-          Daru::MultiIndex.from_tuples(groups_by_idx.keys)
+          Daru::MultiIndex.from_tuples(index_tuples)
         else
-          Daru::Index.new(groups_by_idx.keys.flatten)
+          Daru::Index.new(index_tuples.flatten)
         end
       end
 
       def multi_indexed_grouping?
-        return false unless groups_by_idx.keys[0]
-        groups_by_idx.keys[0].size > 1
+        return false unless @groups_by_pos.keys[0]
+        @groups_by_pos.keys[0].size > 1
       end
     end
   end
