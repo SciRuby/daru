@@ -10,7 +10,8 @@ module Daru
     include Daru::Maths::Arithmetic::DataFrame
     include Daru::Maths::Statistics::DataFrame
     # TODO: Remove this line but its causing erros due to unkown reason
-    include Daru::Plotting::DataFrame::NyaplotLibrary if Daru.has_nyaplot?
+    Daru.has_nyaplot?
+
     extend Gem::Deprecate
 
     class << self
@@ -359,7 +360,6 @@ module Daru
       set_size
       validate
       update
-      self.plotting_library = Daru.plotting_library
     end
 
     def plotting_library= lib
@@ -375,6 +375,13 @@ module Daru
         raise ArguementError, "Plotting library #{lib} not supported. "\
           'Supported libraries are :nyaplot and :gruff'
       end
+    end
+
+    # this method is overwritten: see Daru::DataFrame#plotting_library=
+    def plot(*args, **options, &b)
+      init_plotting_library
+
+      plot(*args, **options, &b)
     end
 
     # Access row or vector. Specify name of row/vector followed by axis(:row, :vector).
@@ -2381,6 +2388,11 @@ module Daru
     end
 
     private
+
+    # Will lazily load the plotting library being used for this dataframe
+    def init_plotting_library
+      self.plotting_library = Daru.plotting_library
+    end
 
     def headers
       Daru::Index.new(Array(index.name) + @vectors.to_a)

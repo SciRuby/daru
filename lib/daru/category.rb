@@ -74,6 +74,13 @@ module Daru
       end
     end
 
+    # this method is overwritten: see Daru::Category#plotting_library=
+    def plot(*args, **options, &b)
+      init_plotting_library
+
+      plot(*args, **options, &b)
+    end
+
     alias_method :rename, :name=
 
     # Returns an enumerator that enumerates on categorical data
@@ -748,6 +755,11 @@ module Daru
 
     private
 
+    # Will lazily load the plotting library being used
+    def init_plotting_library
+      self.plotting_library = Daru.plotting_library
+    end
+
     def validate_categories input_categories
       raise ArgumentError, 'Input categories and speculated categories mismatch' unless
         (categories - input_categories).empty?
@@ -768,9 +780,6 @@ module Daru
       # To link every instance to its category,
       # it stores integer for every instance representing its category
       @array = map_cat_int.values_at(*data)
-
-      # Include plotting functionality
-      self.plotting_library = Daru.plotting_library
     end
 
     def category_from_position position
