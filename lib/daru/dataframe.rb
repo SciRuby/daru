@@ -404,13 +404,11 @@ module Daru
       validate_positions(*positions, nrows)
 
       if positions.is_a? Integer
-        return Daru::Vector.new @data.map { |vec| vec.at(*positions) },
-          index: @vectors
+        row = get_rows_for([positions])
+        Daru::Vector.new row, index: @vectors
       else
-        new_rows = @data.map { |vec| vec.at(*original_positions) }
-        return Daru::DataFrame.new new_rows,
-          index: @index.at(*original_positions),
-          order: @vectors
+        new_rows = get_rows_for(original_positions)
+        Daru::DataFrame.new new_rows, index: @index.at(*original_positions), order: @vectors
       end
     end
 
@@ -2311,10 +2309,10 @@ module Daru
       @index.is_a?(Daru::MultiIndex)
       positions = @index.pos(*indexes)
       if positions.is_a? Numeric
-        row = populate_row_for(positions)
+        row = get_rows_for([positions])
         row.first.is_a?(Array) ? row : [row]
       else
-        new_rows = @data.map { |vec| vec[*indexes] }
+        new_rows = get_rows_for(indexes, by_position: false)
         indexes.map { |index| new_rows.map { |r| r[index] } }
       end
     end
@@ -2495,19 +2493,30 @@ module Daru
       positions = @index.pos(*indexes)
 
       if positions.is_a? Numeric
-        return Daru::Vector.new populate_row_for(positions),
-          index: @vectors,
-          name: indexes.first
+        row = get_rows_for([positions])
+        Daru::Vector.new row, index: @vectors, name: indexes.first
       else
-        new_rows = @data.map { |vec| vec[*indexes] }
-        return Daru::DataFrame.new new_rows,
-          index: @index.subset(*indexes),
-          order: @vectors
+        new_rows = get_rows_for(indexes, by_position: false)
+        Daru::DataFrame.new new_rows, index: @index.subset(*indexes), order: @vectors
       end
     end
 
-    def populate_row_for pos
-      @data.map { |vector| vector.at(*pos) }
+    # @param keys [Array] can be an array of positions (if by_position is true) or indexes (if by_position if false)
+    # because of coercion by Daru::Vector#at and Daru::Vector#[], can return either an Array of
+    #   values (representing a row) or an array of Vectors (that can be seen as rows)
+    def get_rows_for(keys, by_position: true)
+      raise unless keys.is_a?(Array)
+
+      if by_position
+        pos = keys
+        @data.map { |vector| vector.at(*pos) }
+      else
+        # TODO: for now (2018-07-27), it is different than using
+        #    get_rows_for(@index.pos(*keys))
+        #    because Daru::Vector#at and Daru::Vector#[] don't handle Daru::MultiIndex the same way
+        indexes = keys
+        @data.map { |vec| vec[*indexes] }
+      end
     end
 
     def insert_or_modify_vector name, vector
