@@ -347,14 +347,14 @@ module Daru
       @name = opts[:name]
 
       case source
-      when ->(s) { s.empty? }
-        @vectors = Index.coerce vectors
-        @index   = Index.coerce index
-        create_empty_vectors
+      when [], {}
+        create_empty_vectors(vectors, index)
       when Array
         initialize_from_array source, vectors, index, opts
       when Hash
         initialize_from_hash source, vectors, index, opts
+      when ->(s) { s.empty? } # TODO: likely want to remove this case
+        create_empty_vectors(vectors, index)
       end
 
       set_size
@@ -2629,7 +2629,10 @@ module Daru
       set_size
     end
 
-    def create_empty_vectors
+    def create_empty_vectors(vectors, index)
+      @vectors = Index.coerce vectors
+      @index   = Index.coerce index
+
       @data = @vectors.map do |name|
         Daru::Vector.new([], name: coerce_name(name), index: @index)
       end
@@ -2949,7 +2952,6 @@ module Daru
 
     # Raises IndexError when one of the positions is not a valid position
     def validate_positions *positions, size
-      positions = [positions] if positions.is_a? Integer
       positions.each do |pos|
         raise IndexError, "#{pos} is not a valid position." if pos >= size
       end

@@ -1613,7 +1613,6 @@ module Daru
 
     # Raises IndexError when one of the positions is an invalid position
     def validate_positions *positions
-      positions = [positions] if positions.is_a? Integer
       positions.each do |pos|
         raise IndexError, "#{pos} is not a valid position." if pos >= size
       end
