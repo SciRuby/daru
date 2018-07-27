@@ -74,7 +74,7 @@ module Daru
     def ==(other)
       return false if self.class != other.class || other.size != @size
 
-      @relation_hash.keys == other.to_a &&
+      @keys == other.to_a &&
         @relation_hash.values == other.relation_hash.values
     end
 
@@ -201,7 +201,7 @@ module Daru
     end
 
     def to_a
-      @relation_hash.keys
+      @keys
     end
 
     def key(value)
@@ -230,16 +230,16 @@ module Daru
     #   #     3  false
     #   #     4  true
     def is_values(*indexes) # rubocop:disable Style/PredicateName
-      bool_array = @relation_hash.keys.map { |r| indexes.include?(r) }
+      bool_array = @keys.map { |r| indexes.include?(r) }
       Daru::Vector.new(bool_array)
     end
 
     def empty?
-      @relation_hash.empty?
+      @size.zero?
     end
 
     def dup
-      Daru::Index.new @relation_hash.keys
+      Daru::Index.new @keys
     end
 
     def add *indexes
@@ -285,11 +285,9 @@ module Daru
     #   di.sort #=> Daru::Index.new [1, 2, 99, 100, 101]
     def sort opts={}
       opts = {ascending: true}.merge(opts)
-      if opts[:ascending]
-        new_index, = @relation_hash.sort.transpose
-      else
-        new_index, = @relation_hash.sort.reverse.transpose
-      end
+
+      new_index = @keys.sort
+      new_index = new_index.reverse unless opts[:ascending]
 
       self.class.new(new_index)
     end
