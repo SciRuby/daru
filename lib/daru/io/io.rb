@@ -134,23 +134,11 @@ module Daru
       #
       # @return A dataframe containing the data in the given relation
       def from_activerecord(relation, *fields)
-        if fields.empty?
-          records = relation.map do |record|
-            record.attributes.symbolize_keys
-          end
-          return Daru::DataFrame.new(records)
-        else
-          fields = fields.map(&:to_sym)
-        end
+        fields = relation.klass.column_names if fields.empty?
+        fields = fields.map(&:to_sym)
 
-        vectors = fields.map { |name| [name, Daru::Vector.new([], name: name)] }.to_h
-
-        Daru::DataFrame.new(vectors, order: fields).tap do |df|
-          relation.pluck(*fields).each do |record|
-            df.add_row(Array(record))
-          end
-          df.update
-        end
+        result = relation.pluck(*fields).transpose
+        Daru::DataFrame.new(result, order: fields).tap(&:update)
       end
 
       # Loading data from plain text files
