@@ -34,7 +34,7 @@ module Daru
     end
   end
 
-  module IO # rubocop:disable Metrics/ModuleLength
+  module IO
     class << self
       # Functions for loading/writing Excel files.
 
