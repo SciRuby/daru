@@ -1489,7 +1489,7 @@ module Daru
     def reindex_vectors new_vectors
       unless new_vectors.is_a?(Daru::Index)
         raise ArgumentError, 'Must pass the new index of type Index or its '\
-          "subclasses, not #{new_index.class}"
+          "subclasses, not #{new_vectors.class}"
       end
 
       cl = Daru::DataFrame.new({}, order: new_vectors, index: @index, name: @name)
