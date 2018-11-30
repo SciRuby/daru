@@ -1576,7 +1576,7 @@ module Daru
     #
     # @param [Daru::Index] idx New index object on which the rows of the dataframe
     #   are to be indexed.
-    # @example Reassgining index of a DataFrame
+    # @example Reassigining index of a DataFrame
     #   df = Daru::DataFrame.new({a: [1,2,3,4], b: [11,22,33,44]})
     #   df.index.to_a #=> [0,1,2,3]
     #
