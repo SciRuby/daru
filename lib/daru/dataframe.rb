@@ -752,7 +752,7 @@ module Daru
     #     3   4   d
     #
     def uniq(*vtrs)
-      vecs = vtrs.empty? ? vectors.map(&:to_s) : Array(vtrs)
+      vecs = vtrs.empty? ? vectors.to_a : Array(vtrs)
       grouped = group_by(vecs)
       indexes = grouped.groups.values.map { |v| v[0] }.sort
       row[*indexes]
@@ -1528,13 +1528,37 @@ module Daru
     end
 
     # Set a particular column as the new DF
-    def set_index new_index, opts={}
+    def set_index new_index_col, opts={}
+      multi_index_flag = new_index_col.respond_to?(:to_a)
+      new_index_col = new_index_col.to_a if multi_index_flag
+
+      uniq_size =
+        if multi_index_flag
+          self[*new_index_col].uniq.size
+        else
+          self[new_index_col].uniq.size
+        end
+
       raise ArgumentError, 'All elements in new index must be unique.' if
-        @size != self[new_index].uniq.size
+        @size != uniq_size
 
-      self.index = Daru::Index.new(self[new_index].to_a)
-      delete_vector(new_index) unless opts[:keep]
+      self.index =
+        if multi_index_flag
+          Daru::MultiIndex.from_arrays(self[*new_index_col].map_vectors(&:to_a)).tap do |mi|
+            mi.name = new_index_col
+            mi
+          end
+        else
+          Daru::Index.new(self[new_index_col].to_a)
+        end
 
+      unless opts[:keep]
+        if multi_index_flag
+          delete_vectors(*new_index_col)
+        else
+          delete_vector(new_index_col)
+        end
+      end
       self
     end
 

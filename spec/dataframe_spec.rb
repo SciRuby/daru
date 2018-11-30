@@ -3712,6 +3712,26 @@ describe Daru::DataFrame do
         jholu.set_index(:a)
       }.to raise_error(ArgumentError)
     end
+
+    it "sets multiindex if array is given" do
+      df = Daru::DataFrame.new({
+        a: %w[a a b b],
+        b: [1, 2, 1, 2],
+        c: %w[a b c d]
+      })
+      df.set_index(%i[a b])
+      expected =
+        Daru::DataFrame.new(
+          { c: %w[a b c d] },
+          index: Daru::MultiIndex.from_tuples(
+            [['a', 1], ['a', 2], ['b', 1], ['b', 2]]
+          )
+        ).tap do |df|
+          df.index.name = %i[a b]
+          df
+        end
+      expect(df).to eq(expected)
+    end
   end
 
   context "#concat" do
