@@ -19,7 +19,7 @@ module Daru
     # If user don't want to put name for particular level then user must put
     # empty string in that index of Array `name`.
     # For example there is multi_index of 3 levels and user don't want to name
-    # level 0, then do mulit_index.name = ['', 'level1_name1', 'level2_name']
+    # level 0, then do multi_index.name = ['', 'level1_name1', 'level2_name']
     #
     # @example
     #
