@@ -1527,38 +1527,52 @@ module Daru
       df
     end
 
+    module SetSingleIndexStrategy
+      def self.uniq_size(df, col)
+        df[col].uniq.size
+      end
+
+      def self.new_index(df, col)
+        Daru::Index.new(df[col].to_a)
+      end
+
+      def self.delete_vector(df, col)
+        df.delete_vector(col)
+      end
+    end
+
+    module SetMultiIndexStrategy
+      def self.uniq_size(df, cols)
+        df[*cols].uniq.size
+      end
+
+      def self.new_index(df, cols)
+        Daru::MultiIndex.from_arrays(df[*cols].map_vectors(&:to_a)).tap do |mi|
+          mi.name = cols
+          mi
+        end
+      end
+
+      def self.delete_vector(df, cols)
+        df.delete_vectors(*cols)
+      end
+    end
+
     # Set a particular column as the new DF
     def set_index new_index_col, opts={}
-      multi_index_flag = new_index_col.respond_to?(:to_a)
-      new_index_col = new_index_col.to_a if multi_index_flag
+      if new_index_col.respond_to?(:to_a)
+        strategy = SetMultiIndexStrategy
+        new_index_col = new_index_col.to_a
+      else
+        strategy = SetSingleIndexStrategy
+      end
 
-      uniq_size =
-        if multi_index_flag
-          self[*new_index_col].uniq.size
-        else
-          self[new_index_col].uniq.size
-        end
-
+      uniq_size = strategy.uniq_size(self, new_index_col)
       raise ArgumentError, 'All elements in new index must be unique.' if
         @size != uniq_size
 
-      self.index =
-        if multi_index_flag
-          Daru::MultiIndex.from_arrays(self[*new_index_col].map_vectors(&:to_a)).tap do |mi|
-            mi.name = new_index_col
-            mi
-          end
-        else
-          Daru::Index.new(self[new_index_col].to_a)
-        end
-
-      unless opts[:keep]
-        if multi_index_flag
-          delete_vectors(*new_index_col)
-        else
-          delete_vector(new_index_col)
-        end
-      end
+      self.index = strategy.new_index(self, new_index_col)
+      strategy.delete_vector(self, new_index_col) unless opts[:keep]
       self
     end
 
