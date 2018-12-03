@@ -388,4 +388,17 @@ describe Daru::Index do
     end
 
   end
+
+  context '#to_df' do
+    let(:idx) do
+      Daru::Index.new(['speaker', 'mic', 'guitar', 'amp'],
+                      name: 'instruments')
+    end
+    subject { idx.to_df }
+
+    it { is_expected.to eq Daru::DataFrame.new(
+           'instruments' => ['speaker', 'mic', 'guitar', 'amp']
+         )
+    }
+  end
 end
