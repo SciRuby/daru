@@ -3673,6 +3673,41 @@ describe Daru::DataFrame do
     end
   end
 
+  context '#reset_index' do
+    context 'when Index' do
+      subject do
+        Daru::DataFrame.new(
+          {'vals' => [1,2,3,4,5]},
+          index: Daru::Index.new(%w[a b c d e], name: 'indices')
+        ).reset_index
+      end
+
+      it { is_expected.to eq Daru::DataFrame.new(
+        'indices' => %w[a b c d e],
+        'vals' => [1,2,3,4,5]
+      )}
+    end
+
+    context 'when MultiIndex' do
+      subject do
+        mi = Daru::MultiIndex.from_tuples([
+          [0, 'a'], [0, 'b'], [1, 'a'], [1, 'b']
+        ])
+        mi.name = %w[nums alphas]
+        Daru::DataFrame.new(
+          {'vals' => [1,2,3,4]},
+          index: mi
+        ).reset_index
+      end
+
+      it { is_expected.to eq Daru::DataFrame.new(
+        'nums' => [0,0,1,1],
+        'alphas' => %w[a b a b],
+        'vals' => [1,2,3,4]
+      )}
+    end
+  end
+
   context "#set_index" do
     before(:each) do
       @df = Daru::DataFrame.new({

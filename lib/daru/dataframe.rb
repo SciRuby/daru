@@ -1576,10 +1576,12 @@ module Daru
       index_df = index.to_df
       names = index.name
       names = [names] unless names.instance_of?(Array)
+      new_vectors = names + vectors.to_a
+      self.index = index_df.index
       names.each do |name|
         self[name] = index_df[name]
       end
-      self.index = index_df.index
+      self.order = new_vectors
       self
     end
 
