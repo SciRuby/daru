@@ -1572,6 +1572,17 @@ module Daru
       end
     end
 
+    def reset_index
+      index_df = index.to_df
+      names = index.name
+      names = [names] unless names.instance_of?(Array)
+      names.each do |name|
+        self[name] = index_df[name]
+      end
+      self.index = index_df.index
+      self
+    end
+
     # Reassign index with a new index of type Daru::Index or any of its subclasses.
     #
     # @param [Daru::Index] idx New index object on which the rows of the dataframe
