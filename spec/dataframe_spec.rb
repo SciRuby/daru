@@ -2784,6 +2784,11 @@ describe Daru::DataFrame do
         :a  => [1,2,3,4,5]
       }, order: [:b, 'a', :a]))
     end
+
+    it 'raises ArgumentError if argument was not an index' do
+      df = Daru::DataFrame.new([])
+      expect { df.reindex_vectors([]) }.to raise_error(ArgumentError)
+    end
   end
 
   context "#to_matrix" do
