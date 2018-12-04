@@ -294,6 +294,10 @@ module Daru
       self.class.new(new_index)
     end
 
+    def to_df
+      Daru::DataFrame.new(name => to_a)
+    end
+
     private
 
     def guess_index index

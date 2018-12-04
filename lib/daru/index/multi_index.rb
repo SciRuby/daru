@@ -9,6 +9,7 @@ module Daru
     end
 
     attr_reader :labels
+    attr_reader :name
 
     def levels
       @levels.map(&:keys)
@@ -364,6 +365,10 @@ module Daru
         left = cur.zip(prev).drop_while { |c, p| c == p }
         [nil] * (cur.size - left.size) + left.map(&:first)
       }
+    end
+
+    def to_df
+      Daru::DataFrame.new(@name.zip(to_a.transpose).to_h)
     end
   end
 end

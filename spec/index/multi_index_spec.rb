@@ -659,4 +659,22 @@ describe Daru::MultiIndex do
       it { expect(idx.valid? :a, :three).to eq false }
     end
   end
+
+  context '#to_df' do
+    let(:idx) do
+      described_class.from_tuples([
+        %w[a one bar],
+        %w[a two bar],
+        %w[b two baz],
+        %w[b one foo]
+      ]).tap { |idx| idx.name = %w[col1 col2 col3] }
+    end
+
+    subject { idx.to_df }
+    it { is_expected.to eq Daru::DataFrame.new(
+           'col1' => %w[a a b b],
+           'col2' => %w[one two two one],
+           'col3' => %w[bar bar baz foo]
+    )}
+  end
 end
