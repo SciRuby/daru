@@ -10,7 +10,8 @@ module Daru
     include Daru::Maths::Arithmetic::DataFrame
     include Daru::Maths::Statistics::DataFrame
     # TODO: Remove this line but its causing erros due to unkown reason
-    include Daru::Plotting::DataFrame::NyaplotLibrary if Daru.has_nyaplot?
+    Daru.has_nyaplot?
+
     extend Gem::Deprecate
 
     class << self
@@ -346,20 +347,19 @@ module Daru
       @name = opts[:name]
 
       case source
-      when ->(s) { s.empty? }
-        @vectors = Index.coerce vectors
-        @index   = Index.coerce index
-        create_empty_vectors
+      when [], {}
+        create_empty_vectors(vectors, index)
       when Array
         initialize_from_array source, vectors, index, opts
       when Hash
         initialize_from_hash source, vectors, index, opts
+      when ->(s) { s.empty? } # TODO: likely want to remove this case
+        create_empty_vectors(vectors, index)
       end
 
       set_size
       validate
       update
-      self.plotting_library = Daru.plotting_library
     end
 
     def plotting_library= lib
@@ -375,6 +375,13 @@ module Daru
         raise ArguementError, "Plotting library #{lib} not supported. "\
           'Supported libraries are :nyaplot and :gruff'
       end
+    end
+
+    # this method is overwritten: see Daru::DataFrame#plotting_library=
+    def plot(*args, **options, &b)
+      init_plotting_library
+
+      plot(*args, **options, &b)
     end
 
     # Access row or vector. Specify name of row/vector followed by axis(:row, :vector).
@@ -404,13 +411,11 @@ module Daru
       validate_positions(*positions, nrows)
 
       if positions.is_a? Integer
-        return Daru::Vector.new @data.map { |vec| vec.at(*positions) },
-          index: @vectors
+        row = get_rows_for([positions])
+        Daru::Vector.new row, index: @vectors
       else
-        new_rows = @data.map { |vec| vec.at(*original_positions) }
-        return Daru::DataFrame.new new_rows,
-          index: @index.at(*original_positions),
-          order: @vectors
+        new_rows = get_rows_for(original_positions)
+        Daru::DataFrame.new new_rows, index: @index.at(*original_positions), order: @vectors
       end
     end
 
@@ -1011,6 +1016,7 @@ module Daru
       case method
       when Symbol then df.send(method)
       when Proc   then method.call(df)
+      when Array  then method.map(&:to_proc).map { |proc| proc.call(df) } # works with Array of both Symbol and/or Proc
       else raise
       end
     end
@@ -2361,10 +2367,10 @@ module Daru
       @index.is_a?(Daru::MultiIndex)
       positions = @index.pos(*indexes)
       if positions.is_a? Numeric
-        row = populate_row_for(positions)
+        row = get_rows_for([positions])
         row.first.is_a?(Array) ? row : [row]
       else
-        new_rows = @data.map { |vec| vec[*indexes] }
+        new_rows = get_rows_for(indexes, by_position: false)
         indexes.map { |index| new_rows.map { |r| r[index] } }
       end
     end
@@ -2417,24 +2423,27 @@ module Daru
     # Note: `GroupBy` class `aggregate` method uses this `aggregate` method
     # internally.
     def aggregate(options={}, multi_index_level=-1)
-      positions_tuples, new_index = group_index_for_aggregation(@index, multi_index_level)
+      if block_given?
+        positions_tuples, new_index = yield(@index) # note: use of yield is private for now
+      else
+        positions_tuples, new_index = group_index_for_aggregation(@index, multi_index_level)
+      end
 
       colmn_value = aggregate_by_positions_tuples(options, positions_tuples)
 
       Daru::DataFrame.new(colmn_value, index: new_index, order: options.keys)
     end
 
-    # Is faster than using group_by followed by aggregate (because it doesn't generate an intermediary dataframe)
     def group_by_and_aggregate(*group_by_keys, **aggregation_map)
-      positions_groups = Daru::Core::GroupBy.get_positions_group_map_for_df(self, group_by_keys.flatten, sort: true)
-
-      new_index   = Daru::MultiIndex.from_tuples(positions_groups.keys).coerce_index
-      colmn_value = aggregate_by_positions_tuples(aggregation_map, positions_groups.values)
-
-      Daru::DataFrame.new(colmn_value, index: new_index, order: aggregation_map.keys)
+      group_by(*group_by_keys).aggregate(aggregation_map)
     end
 
     private
+
+    # Will lazily load the plotting library being used for this dataframe
+    def init_plotting_library
+      self.plotting_library = Daru.plotting_library
+    end
 
     def headers
       Daru::Index.new(Array(index.name) + @vectors.to_a)
@@ -2547,19 +2556,30 @@ module Daru
       positions = @index.pos(*indexes)
 
       if positions.is_a? Numeric
-        return Daru::Vector.new populate_row_for(positions),
-          index: @vectors,
-          name: indexes.first
+        row = get_rows_for([positions])
+        Daru::Vector.new row, index: @vectors, name: indexes.first
       else
-        new_rows = @data.map { |vec| vec[*indexes] }
-        return Daru::DataFrame.new new_rows,
-          index: @index.subset(*indexes),
-          order: @vectors
+        new_rows = get_rows_for(indexes, by_position: false)
+        Daru::DataFrame.new new_rows, index: @index.subset(*indexes), order: @vectors
       end
     end
 
-    def populate_row_for pos
-      @data.map { |vector| vector.at(*pos) }
+    # @param keys [Array] can be an array of positions (if by_position is true) or indexes (if by_position if false)
+    # because of coercion by Daru::Vector#at and Daru::Vector#[], can return either an Array of
+    #   values (representing a row) or an array of Vectors (that can be seen as rows)
+    def get_rows_for(keys, by_position: true)
+      raise unless keys.is_a?(Array)
+
+      if by_position
+        pos = keys
+        @data.map { |vector| vector.at(*pos) }
+      else
+        # TODO: for now (2018-07-27), it is different than using
+        #    get_rows_for(@index.pos(*keys))
+        #    because Daru::Vector#at and Daru::Vector#[] don't handle Daru::MultiIndex the same way
+        indexes = keys
+        @data.map { |vec| vec[*indexes] }
+      end
     end
 
     def insert_or_modify_vector name, vector
@@ -2660,7 +2680,10 @@ module Daru
       set_size
     end
 
-    def create_empty_vectors
+    def create_empty_vectors(vectors, index)
+      @vectors = Index.coerce vectors
+      @index   = Index.coerce index
+
       @data = @vectors.map do |name|
         Daru::Vector.new([], name: coerce_name(name), index: @index)
       end
@@ -2980,7 +3003,6 @@ module Daru
 
     # Raises IndexError when one of the positions is not a valid position
     def validate_positions *positions, size
-      positions = [positions] if positions.is_a? Integer
       positions.each do |pos|
         raise IndexError, "#{pos} is not a valid position." if pos >= size
       end
@@ -3005,28 +3027,57 @@ module Daru
     end
 
     def aggregate_by_positions_tuples(options, positions_tuples)
-      options.map do |vect, method|
-        if @vectors.include?(vect)
-          vect = self[vect]
+      agg_over_vectors_only, options = cast_aggregation_options(options)
+
+      if agg_over_vectors_only
+        options.map do |vect_name, method|
+          vect = self[vect_name]
 
           positions_tuples.map do |positions|
             vect.apply_method_on_sub_vector(method, keys: positions)
           end
-        else
-          positions_tuples.map do |positions|
-            apply_method_on_sub_df(method, keys: positions)
-          end
         end
+      else
+        methods = options.values
+
+        # note: because we aggregate over rows, we don't have to re-get sub-dfs for each method (which is expensive)
+        rows = positions_tuples.map do |positions|
+          apply_method_on_sub_df(methods, keys: positions)
+        end
+
+        rows.transpose
       end
+    end
+
+    # convert operations over sub-vectors to operations over sub-dfs when it improves perf
+    # note: we don't always "cast" because aggregation over a single vector / a few vector is faster
+    #   than aggregation over (sub-)dfs
+    def cast_aggregation_options(options)
+      vects, non_vects = options.keys.partition { |k| @vectors.include?(k) }
+
+      over_vectors = true
+
+      if non_vects.any?
+        options = options.clone
+
+        vects.each do |name|
+          proc_on_vect = options[name].to_proc
+          options[name] = ->(sub_df) { proc_on_vect.call(sub_df[name]) }
+        end
+
+        over_vectors = false
+      end
+
+      [over_vectors, options]
     end
 
     def group_index_for_aggregation(index, multi_index_level=-1)
       case index
       when Daru::MultiIndex
-        groups = Daru::Core::GroupBy.get_positions_group_for_aggregation(index, multi_index_level)
-        new_index, pos_tuples = groups.keys, groups.values
+        groups_by_pos = Daru::Core::GroupBy.get_positions_group_for_aggregation(index, multi_index_level)
 
-        new_index = Daru::MultiIndex.from_tuples(new_index).coerce_index
+        new_index = Daru::MultiIndex.from_tuples(groups_by_pos.keys).coerce_index
+        pos_tuples = groups_by_pos.values
       when Daru::Index, Daru::CategoricalIndex
         new_index = Array(index).uniq
         pos_tuples = new_index.map { |idx| [*index.pos(idx)] }

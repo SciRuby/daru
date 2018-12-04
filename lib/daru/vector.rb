@@ -151,8 +151,6 @@ module Daru
     attr_accessor :labels
     # Store vector data in an array
     attr_reader :data
-    # Ploting library being used for this vector
-    attr_reader :plotting_library
     # TODO: Make private.
     attr_reader :nil_positions, :nan_positions
 
@@ -197,6 +195,13 @@ module Daru
       end
     end
 
+    # attr_reader for :plotting_library
+    def plotting_library
+      init_plotting_library
+
+      @plotting_library
+    end
+
     def plotting_library= lib
       case lib
       when :gruff, :nyaplot
@@ -210,6 +215,13 @@ module Daru
         raise ArguementError, "Plotting library #{lib} not supported. "\
           'Supported libraries are :nyaplot and :gruff'
       end
+    end
+
+    # this method is overwritten: see Daru::Vector#plotting_library=
+    def plot(*args, **options, &b)
+      init_plotting_library
+
+      plot(*args, **options, &b)
     end
 
     # Get one or more elements with specified index or a range.
@@ -1481,6 +1493,11 @@ module Daru
 
     private
 
+    # Will lazily load the plotting library being used for this vector
+    def init_plotting_library
+      self.plotting_library = Daru.plotting_library
+    end
+
     def copy(values)
       # Make sure values is right-justified to the size of the vector
       values.concat([nil] * (size-values.size)) if values.size < size
@@ -1514,8 +1531,6 @@ module Daru
       guard_sizes!
 
       @possibly_changed_type = true
-      # Include plotting functionality
-      self.plotting_library = Daru.plotting_library
     end
 
     def parse_source source, opts
@@ -1598,7 +1613,6 @@ module Daru
 
     # Raises IndexError when one of the positions is an invalid position
     def validate_positions *positions
-      positions = [positions] if positions.is_a? Integer
       positions.each do |pos|
         raise IndexError, "#{pos} is not a valid position." if pos >= size
       end
