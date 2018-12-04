@@ -752,7 +752,7 @@ module Daru
     #     3   4   d
     #
     def uniq(*vtrs)
-      vecs = vtrs.empty? ? vectors.map(&:to_s) : Array(vtrs)
+      vecs = vtrs.empty? ? vectors.to_a : Array(vtrs)
       grouped = group_by(vecs)
       indexes = grouped.groups.values.map { |v| v[0] }.sort
       row[*indexes]
@@ -1527,14 +1527,52 @@ module Daru
       df
     end
 
+    module SetSingleIndexStrategy
+      def self.uniq_size(df, col)
+        df[col].uniq.size
+      end
+
+      def self.new_index(df, col)
+        Daru::Index.new(df[col].to_a)
+      end
+
+      def self.delete_vector(df, col)
+        df.delete_vector(col)
+      end
+    end
+
+    module SetMultiIndexStrategy
+      def self.uniq_size(df, cols)
+        df[*cols].uniq.size
+      end
+
+      def self.new_index(df, cols)
+        Daru::MultiIndex.from_arrays(df[*cols].map_vectors(&:to_a)).tap do |mi|
+          mi.name = cols
+          mi
+        end
+      end
+
+      def self.delete_vector(df, cols)
+        df.delete_vectors(*cols)
+      end
+    end
+
     # Set a particular column as the new DF
-    def set_index new_index, opts={}
+    def set_index new_index_col, opts={}
+      if new_index_col.respond_to?(:to_a)
+        strategy = SetMultiIndexStrategy
+        new_index_col = new_index_col.to_a
+      else
+        strategy = SetSingleIndexStrategy
+      end
+
+      uniq_size = strategy.uniq_size(self, new_index_col)
       raise ArgumentError, 'All elements in new index must be unique.' if
-        @size != self[new_index].uniq.size
+        @size != uniq_size
 
-      self.index = Daru::Index.new(self[new_index].to_a)
-      delete_vector(new_index) unless opts[:keep]
-
+      self.index = strategy.new_index(self, new_index_col)
+      strategy.delete_vector(self, new_index_col) unless opts[:keep]
       self
     end
 
