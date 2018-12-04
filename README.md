@@ -83,9 +83,9 @@ $ gem install daru
 
 ### Categorical Data
 
-* [Categorical Index](http://lokeshh.github.io/blog/2016/06/14/categorical-index/)
-* [Categorical Data](http://lokeshh.github.io/blog/2016/06/21/categorical-data/)
-* [Visualization with Categorical Data](http://lokeshh.github.io/blog/2016/07/02/visualization/)
+* [Categorical Index](http://lokeshh.github.io/gsoc2016/blog/2016/06/14/categorical-index/)
+* [Categorical Data](http://lokeshh.github.io/gsoc2016/blog/2016/06/21/categorical-data/)
+* [Visualization with Categorical Data](http://lokeshh.github.io/gsoc2016/blog/2016/07/02/visualization/)
 
 ## Basic Usage
 
