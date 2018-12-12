@@ -4,6 +4,7 @@
 [![Build Status](https://travis-ci.org/SciRuby/daru.svg?branch=master)](https://travis-ci.org/SciRuby/daru)
 [![Gitter](https://badges.gitter.im/v0dro/daru.svg)](https://gitter.im/v0dro/daru?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Open Source Helpers](https://www.codetriage.com/sciruby/daru/badges/users.svg)](https://www.codetriage.com/sciruby/daru)
+[![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://github.com/SciRuby/daru/blob/master/LICENSE)
 
 ## Introduction
 
