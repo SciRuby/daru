@@ -2229,7 +2229,11 @@ module Daru
     end
 
     # Pretty print in a nice table format for the command line (irb/pry/iruby)
-    def inspect spacing=10, threshold=15
+    #
+    # @option [Boolean] all: when true, will remove thresholding (and will override any value set for threshold)
+    def inspect spacing=10, threshold=15, all: false
+      threshold = :all if all
+
       name_part = @name ? ": #{@name} " : ''
 
       "#<#{self.class}#{name_part}(#{nrows}x#{ncols})>\n" +

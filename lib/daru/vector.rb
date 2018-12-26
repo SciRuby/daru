@@ -1078,7 +1078,11 @@ module Daru
     end
 
     # Over rides original inspect for pretty printing in irb
-    def inspect spacing=20, threshold=15
+    #
+    # @option [Boolean] all: when true, will remove thresholding (and will override any value set for threshold)
+    def inspect spacing=20, threshold=15, all: false
+      threshold = :all if all
+
       row_headers = index.is_a?(MultiIndex) ? index.sparse_tuples : index.to_a
 
       "#<#{self.class}(#{size})#{':category' if category?}>\n" +

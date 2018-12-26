@@ -26,8 +26,14 @@ module Daru
 
       private
 
+      # you can skip thresholding by setting threshold to :all
       def build_rows threshold # rubocop:disable Metrics/AbcSize
-        @row_headers.first(threshold).zip(@data).map do |(r, datarow)|
+        has_threshold = (threshold != :all)
+
+        selected_row_headers = @row_headers
+        selected_row_headers = selected_row_headers.first(threshold) if has_threshold
+
+        selected_row_headers.zip(@data).map do |(r, datarow)|
           [*[r].flatten.map(&:to_s), *(datarow || []).map(&method(:pretty_to_s))]
         end.tap do |rows|
           unless @headers.empty?
@@ -35,7 +41,7 @@ module Daru
             rows.unshift [''] * spaces_to_add + @headers.map(&:to_s)
           end
 
-          rows << ['...'] * rows.first.count if @row_headers.count > threshold
+          rows << ['...'] * rows.first.count if has_threshold && @row_headers.count > threshold
         end
       end
 

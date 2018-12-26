@@ -104,6 +104,16 @@ describe Daru::Formatters::Table do
         | row3    7    8    9
       }.unindent}
     end
+
+    context 'when set to :all' do
+      let(:threshold) { :all }
+      it { is_expected.to eq %Q{
+        |      col1 col2 col3
+        | row1    1    2    3
+        | row2    4    5    6
+        | row3    7    8    9
+      }.unindent}
+    end
   end
 
   context 'no row and column headers' do
