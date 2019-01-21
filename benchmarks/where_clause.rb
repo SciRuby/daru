@@ -46,3 +46,14 @@ end
 #                             user     system      total      real
 # Basic one liner           0.240000   0.000000   0.240000 (0.245787)
 # Little complex statement  0.100000   0.000000   0.100000 (0.094423)
+
+
+# New benchmark - 21 jan 2019
+# Benchmarking DataFrame#where
+#                   user     system      total        real
+# Basic one liner  0.109958   0.007771   0.117729 (  0.117738)
+# Little complex statement  0.077682   0.000059   0.077741 (  0.077749)
+# Benchmarking Vector#where
+#        user     system      total        real
+# Basic one liner  0.047512   0.000000   0.047512 (  0.047516)
+# Little complex statement  0.061928   0.000047   0.061975 (  0.061985)

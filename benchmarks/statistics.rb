@@ -1,3 +1,5 @@
+$:.unshift File.expand_path("../../lib", __FILE__)
+
 require 'daru'
 require 'benchmark'
 
@@ -37,3 +39,11 @@ end
 # Min of a vector                  0.150000   0.000000   0.150000 (  0.163623)
 # Mean of a gsl vector             0.000000   0.000000   0.000000 (  0.001037)
 # Min of a gsl vector              0.000000   0.000000   0.000000 (  0.001251)
+
+
+# New benchmark - 21 jan 2019
+#                    user     system      total        real
+# Mean of a vector  0.094727   0.000000   0.094727 (  0.094808)
+# Minimum of a vector  1.015387   0.019809   1.035196 (  1.035515)
+# Mean of a vector with data type gsl  0.000961   0.000038   0.000999 (  0.021783)
+# Minimum of a vector with data type gsl  0.019477   0.000000   0.019477 (  0.019499)

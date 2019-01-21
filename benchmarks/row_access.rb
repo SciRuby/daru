@@ -39,3 +39,10 @@ end
 # Access rows by comma  1.410000   0.010000   1.420000 (  1.420426)
 # Individual rows       1.480000   0.000000   1.480000 (  1.488531)
 # Access rows by range  1.440000   0.010000   1.450000 (  1.436750)
+
+# New benchmark - 21 jan 2019
+#        user     system      total        real
+# Access single row  0.000067   0.000004   0.000071 (  0.000069)
+# Access rows by comma  0.098123   0.000020   0.098143 (  0.098139)
+# Individual rows  0.300756   0.000000   0.300756 (  0.300738)
+# Access rows by range  0.087087   0.000000   0.087087 (  0.087084)

@@ -29,3 +29,9 @@ end
 # Single Vector access  0.000000   0.000000   0.000000 (  0.000012)
 # Access as range       0.090000   0.000000   0.090000 (  0.084584)
 # Access with commas    0.050000   0.000000   0.050000 (  0.051951)
+
+# New benchmark - 21 jan 2019
+#                        user     system      total        real
+# Single Vector access  0.000028   0.000004   0.000032 (  0.000030)
+# Access as range  0.008412   0.000077   0.008489 (  0.008498)
+# Access with commas  0.002518   0.000000   0.002518 (  0.002517)

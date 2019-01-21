@@ -34,3 +34,10 @@ end
 # Set a single row with Daru::Vector  0.600000   0.000000   0.600000 (  0.598599)
 # Create a new row with Array         0.840000   0.010000   0.850000 (  0.858349)
 # Create a new row with Daru::Vector  0.950000   0.000000   0.950000 (  0.950725)
+
+# New benchmark - 21 jan 2019
+#        user     system      total        real
+# Set a single row with Array  0.020479   0.000082   0.020561 (  0.020561)
+# Set a single row with Daru::Vector  0.000145   0.000013   0.000158 (  0.000157)
+# Create a new row with Array  0.043214   0.007858   0.051072 (  0.051085)
+# Create a new row with Daru::Vector  0.052970   0.000158   0.053128 (  0.053162)

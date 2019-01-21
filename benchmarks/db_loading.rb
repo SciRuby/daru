@@ -32,3 +32,15 @@ Benchmark.bm do |x|
 end
 
 FileUtils.rm(db_name)
+
+
+#        user     system      total        real
+# DataFrame.from_sql  0.220304   0.003850   0.224154 (  0.234226)
+# DataFrame.from_activerecord  0.278455   0.000092   0.278547 (  0.278629)
+
+
+# New benchmark - 21 jan 2019
+#        user     system      total        real
+# DataFrame.from_sql  0.220304   0.003850   0.224154 (  0.234226)
+# DataFrame.from_activerecord  0.278455   0.000092   0.278547 (  0.278629)
+

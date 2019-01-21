@@ -49,3 +49,12 @@ end
 # Sort single column of DataFrame                                          0.940000   0.010000   0.950000 (  0.950349)
 # Sort two columns of DataFrame                                            1.490000   0.010000   1.500000 (  1.505680)
 # Sort two columns with custom operators in different orders of DataFrame  1.480000   0.000000   1.480000 (  1.495839)
+
+
+# New benchmark - 21 jan 2019
+#        user     system      total        real
+# Sort a Vector without any args  0.020920   0.000055   0.020975 (  0.021013)
+# Sort vector in descending order with custom <=> operator  0.040651   0.000000   0.040651 (  0.040730)
+# Sort single column of DataFrame  0.222019   0.000000   0.222019 (  0.222248)
+# Sort two columns of DataFrame  0.377502   0.003628   0.381130 (  0.381769)
+# Sort two columns with custom operators in different orders of DataFrame  0.367188   0.000000   0.367188 (  0.367795)

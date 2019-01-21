@@ -26,3 +26,8 @@ end
 #                user     system      total        real
 # where        0.000000   0.000000   0.000000 (  0.002575)
 # filter_rows  0.210000   0.000000   0.210000 (  0.205403)
+
+# New benchmark - 21 jan 2019
+#        user     system      total        real
+# where  0.000480   0.000160   0.000640 (  0.000625)
+# filter_rows  0.004580   0.000187   0.004767 (  0.004769)

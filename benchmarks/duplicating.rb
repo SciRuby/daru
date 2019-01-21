@@ -43,3 +43,12 @@ end
 #dupe (n=200)  0.850000   0.000000   0.850000 (  0.856591)
 #       user     system      total        real
 #dupe (n=400)  3.370000   0.020000   3.390000 (  3.428211)
+
+
+# New benchmark - 21 jan 2019
+#        user     system      total        real
+# dupe (n=10000)  0.063104   0.007914   0.071018 (  0.071012)
+#        user     system      total        real
+# dupe (n=20000)  0.134448   0.011892   0.146340 (  0.146330)
+#        user     system      total        real
+# dupe (n=40000)  0.268711   0.016047   0.284758 (  0.284751)

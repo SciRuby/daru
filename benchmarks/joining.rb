@@ -50,3 +50,15 @@ end
 #       user     system      total        real
 #Inner join (n=4000)  1.670000   0.010000   1.680000 (  1.680742)
 #Outer join (n=4000) 15.640000   0.060000  15.700000 ( 15.855202)
+
+
+# New benchmark - 21 jan 2019
+#        user     system      total        real
+# Inner join (n=10000)  0.194284   0.000000   0.194284 (  0.194493)
+# Outer join (n=10000)  0.225614   0.000000   0.225614 (  0.225602)
+#        user     system      total        real
+# Inner join (n=20000)  0.496788   0.003951   0.500739 (  0.500770)
+# Outer join (n=20000)  0.533474   0.000000   0.533474 (  0.533518)
+#        user     system      total        real
+# Inner join (n=40000)  0.962813   0.011960   0.974773 (  0.974897)
+# Outer join (n=40000)  1.123241   0.000000   1.123241 (  1.123299)
