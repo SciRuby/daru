@@ -16,10 +16,12 @@ DF_SIZE_POW_10.each do |df_size|
 	Benchmarker.benchmark_median_absolute_deviation()
 	Benchmarker.benchmark_sum_of_squared_deviation()
 	Benchmarker.benchmark_average_deviation_population()
+	Benchmarker.benchmark_unique()
 	puts 
 end
 
-Benchmarker.result_with_size()
+# Benchmarker.result_with_size() Uncomment it to see only Daru::Vector benchmark.
+Benchmarker.result_compare()
 
 # Real times for vector size [10**2, 10**3,10**4,10**5,10**6] 
 
