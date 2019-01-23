@@ -134,23 +134,50 @@ class Benchmarker
 
 	def self.result()
 		puts 'Real times for vector size [10**2, 10**3,10**4,10**5,10**6] '
-		print 'Means => ', @result_mean.to_a
-		puts
-		print 'mode => ' , @result_mode.to_a
-		puts
-		print 'median => ' , @result_median.to_a
-		puts
-		print 'sum => ' , @result_sum.to_a
-		puts
-		print 'product => ' , @result_product.to_a
-		puts
-		print 'median_absolute_deviation => ' , @result_median_absolute_deviation.to_a
-		puts
-		print 'sum_of_squared_deviation => ' , @result_sum_of_squared_deviation.to_a
-		puts
-		print 'average_deviation_populationa => ' , @result_average_deviation_populationa.to_a
-		puts
-		print 'create df real time => ' , @result_create_df.to_a
+		puts 'Means => ', @result_mean.join(" | ")
+		puts 'mode => ' , @result_mode.join(" | ")
+		puts 'median => ' , @result_median.join(" | ")
+		puts 'sum => ' , @result_sum.join(" | ")
+		puts 'product => ' , @result_product.join(" | ")
+		puts 'median_absolute_deviation => ' , @result_median_absolute_deviation.join(" | ")
+		puts 'sum_of_squared_deviation => ' , @result_sum_of_squared_deviation.join(" | ")
+		puts 'average_deviation_populationa => ' , @result_average_deviation_populationa.join(" | ")
+		puts 'create df real time => ' , @result_create_df.join(" | ")
 	end
+
+	def self.result_with_size()
+		puts 'Real times for vector size [10**2, 10**3,10**4,10**5,10**6] '
+
+		self.print_array(@result_mean, 'MEAN')
+
+		print_array(@result_mode, 'mode')
+
+		print_array(@result_median, 'median')
+
+		print_array(@result_sum, 'sum')
+
+		print_array(@result_product, 'product')
+		
+		print_array(@result_median_absolute_deviation, 'median_absolute_deviation')
+
+		print_array(@result_sum_of_squared_deviation, 'sum_of_squared_deviation')
+
+		print_array(@result_average_deviation_populationa, 'average_deviation_populationa')
+
+		print_array(@result_create_df, 'create df real time')
+	end
+
+	private
+
+	def self.print_array(array, task)
+		puts 
+		puts "Method on DataFrame Vector (Vector access and apply method): **#{task}**"
+		puts " | Number of rows | Real Time | "
+		puts " |------------|------------| "
+		array.each_with_index do |val, index|
+			puts " | 10 ** #{index + 2} | #{val} | " 
+		end
+	end
+
 end
 
