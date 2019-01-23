@@ -35,8 +35,8 @@ class Benchmarker
 			report = x.report('Vector mean => ') do
 		   		@df[0].mean
 			end
-			@result_mean.append("%1.12f" % report.real)
-			# print "%1.12f" % report.real
+			@result_mean.append("%1.20f" % report.real)
+			# print "%1.20f" % report.real
 		end
 	end
 
@@ -46,7 +46,7 @@ class Benchmarker
 			report =x.report('Vector mode => ') do
 		   		@df[0].mode
 			end
-			@result_mode.append("%1.12f" % report.real)
+			@result_mode.append("%1.20f" % report.real)
 		end	
 	end
 
@@ -56,7 +56,7 @@ class Benchmarker
 			report =x.report('Vector median => ') do
 		   		@df[0].median
 			end
-			@result_median.append("%1.12f" % report.real)
+			@result_median.append("%1.20f" % report.real)
 		end	
 	end
 
@@ -66,7 +66,7 @@ class Benchmarker
 			report = x.report('Vector sum => ') do
 		   		@df[0].sum
 			end
-			@result_sum.append("%1.12f" % report.real)
+			@result_sum.append("%1.20f" % report.real)
 		end	
 	end
 
@@ -76,7 +76,7 @@ class Benchmarker
 			report = x.report('Vector product => ') do
 		   		@df[0].product
 			end
-			@result_product.append("%1.12f" % report.real)
+			@result_product.append("%1.20f" % report.real)
 		end	
 	end
 
@@ -86,7 +86,7 @@ class Benchmarker
 			report = x.report('Vector median_absolute_deviation => ') do
 		   		@df[0].median_absolute_deviation
 			end
-			@result_median_absolute_deviation.append("%1.12f" % report.real)
+			@result_median_absolute_deviation.append("%1.20f" % report.real)
 		end	
 	end
 
@@ -96,7 +96,7 @@ class Benchmarker
 			report = x.report('Vector sum_of_squared_deviation => ') do
 		   		@df[0].sum_of_squared_deviation
 			end
-			@result_sum_of_squared_deviation.append("%1.12f" % report.real)
+			@result_sum_of_squared_deviation.append("%1.20f" % report.real)
 		end	
 	end
 
@@ -106,7 +106,7 @@ class Benchmarker
 			report = x.report('Vector average_deviation_population => ') do
 		   		@df[0].average_deviation_population
 			end
-			@result_average_deviation_populationa.append("%1.12f" % report.real)
+			@result_average_deviation_populationa.append("%1.20f" % report.real)
 		end	
 	end
 
@@ -115,7 +115,7 @@ class Benchmarker
 			report = x.report('Create DataFrame of size :' + size.to_s + ' => ') do
 				self.generate_df(size)
 			end
-			@result_create_df.append("%1.12f" % report.real)
+			@result_create_df.append("%1.20f" % report.real)
 		end
 	end
 
@@ -172,6 +172,7 @@ class Benchmarker
 	def self.print_array(array, task)
 		puts 
 		puts "Method on DataFrame Vector (Vector access and apply method): **#{task}**"
+		puts
 		puts " | Number of rows | Real Time | "
 		puts " |------------|------------| "
 		array.each_with_index do |val, index|
