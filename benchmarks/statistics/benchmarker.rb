@@ -91,7 +91,7 @@ class Benchmarker
 			@result_median_absolute_deviation.append("%1.20f" % report.real)
 		end	
 	end
-
+    
 	def self.benchmark_sum_of_squared_deviation()
 		
 		bench = Benchmark.bm do |x|
