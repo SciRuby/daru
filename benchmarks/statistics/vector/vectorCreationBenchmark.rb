@@ -1,17 +1,25 @@
-module VectorBenchmark
-  def vectorCreation_array
 
-  end
+$:.unshift File.expand_path("../../../../lib", __FILE__)
 
-  def vectorCreation_nmatrixArray
+require 'daru'
 
-  end
+# TODO
+module DaruBenchmark
+  module Vector
+    def vectorCreation_array
 
-  def vectorCreation_gsl
+    end
 
-  end
+    def vectorCreation_nmatrixArray
 
-  def vectorCreation_mdarray
+    end
 
+    def vectorCreation_gsl
+
+    end
+
+    def vectorCreation_mdarray
+
+    end
   end
 end
