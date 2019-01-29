@@ -239,7 +239,7 @@ module Daru
     end
 
     def dup
-      Daru::Index.new @keys
+      Daru::Index.new @keys, name: @name
     end
 
     def add *indexes

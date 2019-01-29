@@ -401,4 +401,17 @@ describe Daru::Index do
          )
     }
   end
+
+  context "#dup" do
+    let(:idx) do
+      Daru::Index.new(['speaker', 'mic', 'guitar', 'amp'],
+                      name: 'instruments')
+    end
+    subject { idx.dup }
+
+    it { is_expected.to eq idx }
+    it 'have same names' do
+      expect(subject.name).to eq idx.name
+    end
+  end
 end
