@@ -5,10 +5,10 @@ require_relative './vector/vectorCreationBenchmark'
 module DaruBenchmark
   class VectorBenchmark
     extend DaruBenchmark::Vector
-    DF_SIZE_POW_10 = [2, 3, 4, 5]
+    VECTOR_SIZE_POW_10 = [2, 3, 4, 5]
 
     def self.benchmark_daru_vector()
-      DF_SIZE_POW_10.each do |df_size|
+      VECTOR_SIZE_POW_10.each do |df_size|
         puts
         self.set_size(10**df_size)
         self.init()

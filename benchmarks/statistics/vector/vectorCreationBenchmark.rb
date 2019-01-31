@@ -15,6 +15,10 @@ module DaruBenchmark
       @@size = vector_size
     end
 
+    def self.get_daru_vector()
+      @@vector
+    end
+
     # TODO:
     # - With categoricalIndex
     # - With MultiIndex
