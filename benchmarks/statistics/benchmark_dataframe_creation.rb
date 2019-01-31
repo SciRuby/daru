@@ -10,6 +10,7 @@ module DaruBenchmark
     def self.benchmark_daru_dataframe()
       DF_SIZE_POW_10.each do |df_size|
         self.set_df_row_size(10**df_size)
+        self.set_df_colmn_size(2)
         self.init()
         puts "DataFrame of size : (10 ** #{df_size}, 2) "
         self.benchmark_dataframe_creation()

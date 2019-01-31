@@ -7,13 +7,13 @@ module DaruBenchmark
   # TDOD exception handling
   module DataFrame
     @@df = nil
-    @@df_row_size = nil
+    @@df_number_of_rows = nil
     @@rows = nil
     @@rows_vectors = nil
     @@array_of_hashes = []
     @@hash_list = nil
     @@hash_vector = nil
-    @@df_colmn_size = 2 # fixed 2 column for testing
+    @@df_number_of_colmns = nil # fixed 2 column for testing
     @@column_vector_name = [] # it is :a, :b after creating 
 
     def set_df(set_df)
@@ -25,11 +25,19 @@ module DaruBenchmark
     end
 
     def set_df_row_size(set_size)
-      @@df_row_size = set_size
+      @@df_number_of_rows = set_size
     end
 
     def get_df_row_size
-      @@df_row_size
+      @@df_number_of_rows
+    end
+
+    def set_df_colmn_size(set_size)
+      @@df_number_of_colmns = set_size
+    end
+
+    def get_df_colmn_size
+      @@df_number_of_colmns
     end
 
     def init()
@@ -148,8 +156,8 @@ module DaruBenchmark
 
     # Helping methods
     def create_rows()
-      @@rows = Array.new(@@df_colmn_size) { 
-        Array.new(@@df_row_size) { rand(1..9) } 
+      @@rows = Array.new(@@df_number_of_colmns) { 
+        Array.new(@@df_number_of_rows) { rand(1..9) } 
       }
       # p @@rows
     end
@@ -159,12 +167,12 @@ module DaruBenchmark
     end
 
     def create_column_vector_symbol()
-      @@column_vector_name = generate_symbols_for_colmn_name(@@df_colmn_size-1)
+      @@column_vector_name = generate_symbols_for_colmn_name(@@df_number_of_colmns-1)
     end
 
     def create_array_of_hashes()
-      col_0 = Array.new(@@df_row_size) { rand(1..9) }
-      col_1 = Array.new(@@df_row_size) { rand(1..9) }
+      col_0 = Array.new(@@df_number_of_rows) { rand(1..9) }
+      col_1 = Array.new(@@df_number_of_rows) { rand(1..9) }
 
       col_0.zip(col_1.map {|i| i}).each do |tuple|   
         @@array_of_hashes.append(
@@ -187,14 +195,14 @@ module DaruBenchmark
     def create_hash_with_list()
       @@hash_list = {}
       @@column_vector_name.each do |colmn|  
-        @@hash_list[colmn] = Array.new(@@df_row_size) { rand(1..9) }
+        @@hash_list[colmn] = Array.new(@@df_number_of_rows) { rand(1..9) }
       end
     end
 
     def create_hash_with_vector()
       @@hash_vector = {}
       @@column_vector_name.each do |colmn|  
-        @@hash_vector[colmn] = Daru::Vector.new(Array.new(@@df_row_size) { rand(1..9) })
+        @@hash_vector[colmn] = Daru::Vector.new(Array.new(@@df_number_of_rows) { rand(1..9) })
       end
     end
   end
