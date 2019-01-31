@@ -10,15 +10,17 @@ module DaruBenchmark
     @@df_row_size = nil
     @@rows = nil
     @@rows_vectors = nil
+    @@array_of_hashes = []
     @@hash_list = nil
     @@hash_vector = nil
-    @@df_colmn_size = 2
+    @@df_colmn_size = 2 # fixed 2 column for testing
+    @@column_vector_name = [] # it is :a, :b after creating 
 
-    def set(set_df)
+    def set_df(set_df)
       @@df = set_df
     end
 
-    def get
+    def get_df
       @@df
     end
 
@@ -33,6 +35,12 @@ module DaruBenchmark
     def init()
       create_rows()
       rows_to_vectors()
+
+      # column name
+      create_column_vector_symbol()
+      
+      create_array_of_hashes()
+
       create_hash_with_list()
       create_hash_with_vector()
     end
@@ -50,18 +58,32 @@ module DaruBenchmark
         # Typical mode, runs the block as many times as it can
         x.report("Using list of lists") do 
           create_df_listOfLists()
+          # p "list of lists rows =>  #{@@df.nrows}"
+          # p "list of lists col => #{@@df.ncols}"
         end
 
         x.report("Using list of Vector") do
           create_df_listOfVector()
+          # p "list of Vector rows =>  #{@@df.nrows}"
+          # p "list of Vector col => #{@@df.ncols}"
+        end
+
+        x.report("Using list of Hashes") do
+          create_df_using_list_with_hash()
+          # p "list of Hashes rows =>  #{@@df.nrows}"
+          # p "list of Hashes col => #{@@df.ncols}"
         end
 
         x.report("Using Hash of lists") do
           create_df_using_hash_with_list()
+          # p "Hash of lists rows =>  #{@@df.nrows}"
+          # p "Hash of lists col => #{@@df.ncols}"
         end
 
         x.report("Using Hash of Vector") do
           create_df_using_hash_with_vector()
+          # p "Hash of Vector rows =>  #{@@df.nrows}"
+          # p "Hash of Vector col => #{@@df.ncols}"
         end
 
         # Compare the iterations per second of the various reports!
@@ -95,6 +117,19 @@ module DaruBenchmark
       )
     end
 
+    def create_df_listOfHash()
+      # creaating dataframe of size =  size * 2
+      @@df= Daru::DataFrame.new(
+        @@array_of_hashes
+      )
+    end
+
+    def create_df_using_list_with_hash()
+      @@df = Daru::DataFrame.new(
+        @@array_of_hashes
+      )
+    end
+
     # TODO: exception handling if @@hash_list is nil
     def create_df_using_hash_with_list()
       # creaating dataframe of size =  size * 2
@@ -113,11 +148,32 @@ module DaruBenchmark
 
     # Helping methods
     def create_rows()
-      @@rows = Array.new(@@df_row_size) { Array.new(2) { rand(1..9) } }
+      @@rows = Array.new(@@df_colmn_size) { 
+        Array.new(@@df_row_size) { rand(1..9) } 
+      }
+      # p @@rows
     end
 
     def rows_to_vectors()
       @@rows_vectors = @@rows.map { |r| Daru::Vector.new r }
+    end
+
+    def create_column_vector_symbol()
+      @@column_vector_name = generate_symbols_for_colmn_name(@@df_colmn_size-1)
+    end
+
+    def create_array_of_hashes()
+      col_0 = Array.new(@@df_row_size) { rand(1..9) }
+      col_1 = Array.new(@@df_row_size) { rand(1..9) }
+
+      col_0.zip(col_1.map {|i| i}).each do |tuple|   
+        @@array_of_hashes.append(
+          { @@column_vector_name[0] => tuple[0],
+            @@column_vector_name[1] => tuple[1],
+          }
+        )
+      end
+
     end
 
     def rows_to_vectors_with_index()
@@ -129,15 +185,15 @@ module DaruBenchmark
     end
 
     def create_hash_with_list()
-      @@hash_list = Hash.new []
-      generate_symbols_for_colmn_name(@@df_colmn_size).each do |colmn|  
+      @@hash_list = {}
+      @@column_vector_name.each do |colmn|  
         @@hash_list[colmn] = Array.new(@@df_row_size) { rand(1..9) }
       end
     end
 
     def create_hash_with_vector()
-      @@hash_vector = Hash.new []
-      generate_symbols_for_colmn_name(@@df_colmn_size).each do |colmn|  
+      @@hash_vector = {}
+      @@column_vector_name.each do |colmn|  
         @@hash_vector[colmn] = Daru::Vector.new(Array.new(@@df_row_size) { rand(1..9) })
       end
     end
