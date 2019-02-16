@@ -369,21 +369,15 @@ module Daru
         Daru::DataFrame.rows(rows, order: @context.vectors, index: indexes)
       end
 
+      def select_numeric_non_group_vectors
+        @non_group_vectors.select { |ngvec| @context[ngvec].type == :numeric }
+      end
+
       def apply_method method_type, method
-        order = @non_group_vectors.select do |ngvec|
-          method_type == :numeric && @context[ngvec].type == :numeric
-        end
+        raise 'To implement' if method_type != :numeric
+        aggregation_options = select_numeric_non_group_vectors.map { |k| [k, method] }.to_h
 
-        rows = groups_by_idx.map do |_group, indexes|
-          order.map do |ngvector|
-            slice = @context[ngvector][*indexes]
-            slice.is_a?(Daru::Vector) ? slice.send(method) : slice
-          end
-        end
-
-        index = get_grouped_index
-        order = Daru::Index.new(order)
-        Daru::DataFrame.new(rows.transpose, index: index, order: order)
+        aggregate(aggregation_options)
       end
 
       def get_grouped_index(index_tuples=nil)
