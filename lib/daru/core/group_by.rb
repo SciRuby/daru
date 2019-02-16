@@ -2,6 +2,8 @@ module Daru
   module Core
     class GroupBy
       class << self
+        extend Gem::Deprecate
+
         # @private
         def group_by_index_to_positions(indexes_with_positions, sort: false)
           index_to_positions = {}
@@ -17,6 +19,8 @@ module Daru
 
           index_to_positions
         end
+        alias get_positions_group_map_on group_by_index_to_positions
+        deprecate :get_positions_group_map_on, :group_by_index_to_positions, 2019, 10
 
         # @private
         def get_positions_group_for_aggregation(multi_index, level=-1)
