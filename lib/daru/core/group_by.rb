@@ -3,19 +3,19 @@ module Daru
     class GroupBy
       class << self
         # @private
-        def get_positions_group_map_on(indexes_with_positions, sort: false)
-          group_map = {}
+        def group_by_index_to_positions(indexes_with_positions, sort: false)
+          index_to_positions = {}
 
           indexes_with_positions.each do |idx, position|
-            (group_map[idx] ||= []) << position
+            (index_to_positions[idx] ||= []) << position
           end
 
           if sort # TODO: maybe add a more "stable" sorting option?
-            sorted_keys = group_map.keys.sort(&Daru::Core::GroupBy::TUPLE_SORTER)
-            group_map = sorted_keys.map { |k| [k, group_map[k]] }.to_h
+            sorted_keys = index_to_positions.keys.sort(&Daru::Core::GroupBy::TUPLE_SORTER)
+            index_to_positions = sorted_keys.map { |k| [k, index_to_positions[k]] }.to_h
           end
 
-          group_map
+          index_to_positions
         end
 
         # @private
@@ -25,14 +25,14 @@ module Daru
           new_index = multi_index.dup
           new_index.remove_layer(level) # TODO: recheck code of Daru::MultiIndex#remove_layer
 
-          get_positions_group_map_on(new_index.each_with_index)
+          group_by_index_to_positions(new_index.each_with_index)
         end
 
         # @private
         def get_positions_group_map_for_df(df, group_by_keys, sort: true)
           indexes_with_positions = df[*group_by_keys].to_df.each_row.map(&:to_a).each_with_index
 
-          get_positions_group_map_on(indexes_with_positions, sort: sort)
+          group_by_index_to_positions(indexes_with_positions, sort: sort)
         end
 
         # @private
@@ -56,6 +56,9 @@ module Daru
           new_df
         end
       end
+
+      # The group_by was done over the vectors in group_vectors; the remaining vectors are the non_group_vectors
+      attr_reader :group_vectors, :non_group_vectors
 
       # lazy accessor/attr_reader for the attribute groups
       def groups
@@ -93,7 +96,7 @@ module Daru
         @group_vectors     = names
         @non_group_vectors = context.vectors.to_a - names
 
-        @context = context # TODO: maybe rename in @original_df or @grouped_db
+        @context = context # TODO: maybe rename in @original_df
 
         # FIXME: It feels like we don't want to sort here. Ruby's #group_by
         # never sorts:
