@@ -372,7 +372,7 @@ module Daru
           )
         end
       else
-        raise ArguementError, "Plotting library #{lib} not supported. "\
+        raise ArgumentError, "Plotting library #{lib} not supported. "\
           'Supported libraries are :nyaplot and :gruff'
       end
     end
@@ -2145,7 +2145,7 @@ module Daru
 
     # Write this DataFrame to a CSV file.
     #
-    # == Arguements
+    # == Arguments
     #
     # * filename - Path of CSV file where the DataFrame is to be saved.
     #
@@ -2321,7 +2321,7 @@ module Daru
     #   #   2   3]
     def split_by_category cat_name
       cat_dv = self[cat_name]
-      raise ArguementError, "#{cat_name} is not a category vector" unless
+      raise ArgumentError, "#{cat_name} is not a category vector" unless
         cat_dv.category?
 
       cat_dv.categories.map do |cat|
