@@ -11,6 +11,25 @@ daru (Data Analysis in RUby) is a library for storage, analysis, manipulation an
 
 daru makes it easy and intuitive to process data predominantly through 2 data structures: `Daru::DataFrame` and `Daru::Vector`. Written in pure Ruby works with all ruby implementations. Tested with MRI 2.0, 2.1, 2.2, 2.3, and 2.4.
 
+
+## daru plugin gems
+
+- **[daru-view](https://github.com/SciRuby/daru-view)**
+
+daru-view is for easy and interactive plotting in web application & IRuby 
+notebook. It can work in any Ruby web application frameworks like Rails, Sinatra, Nanoc and hopefully in others too.
+
+Articles/Blogs, that summarize powerful features of daru-view:
+
+* [GSoC 2017 daru-view](http://sciruby.com/blog/2017/09/01/gsoc-2017-data-visualization-using-daru-view/)
+* [GSoC 2018 Progress Report](https://github.com/SciRuby/daru-view/wiki/GSoC-2018---Progress-Report)
+* [HighCharts Official blog post regarding daru-view](https://www.highcharts.com/blog/post/i-am-ruby-developer-how-can-i-use-highcharts/)
+
+- **[daru-io](https://github.com/SciRuby/daru-io)**
+
+This gem extends support for many Import and Export methods of `Daru::DataFrame`. This gem is intended to help Rubyists who are into Data Analysis or Web Development, by serving as a general purpose conversion library that takes input in one format (say, JSON) and converts it another format (say, Avro) while also making it incredibly easy to getting started on analyzing data with daru. One can read more in [SciRuby/blog/daru-io](http://sciruby.com/blog/2017/08/29/gsoc-2017-support-to-import-export-of-more-formats/).
+
+
 ## Features
 
 * Data structures:
