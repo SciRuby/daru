@@ -116,7 +116,7 @@
   - Support formatting empty dataframes. They were returning an error before. (@gnilrets)
   - method_missing in Daru::DataFrame would not detect the correct vector if it was a String. Fixed that. (@lokeshh)
   - Fix docs of contrast_code to specify that the default value is false. (@v0dro)
-  - Fix occurence of SystemStackError due to faulty arguement passing to Array#values_at. (@v0dro)
+  - Fix occurence of SystemStackError due to faulty argument passing to Array#values_at. (@v0dro)
   - Fix `DataFrame#pivot_table` regression that raised an ArgumentError if the `:index` option was not specified. (@zverok)
   - Fix `DateFrame.rows` to accept empty argument. (@zverok)
   - Fix bug with false values on dataframe create. DataFrame from an Array of hashes wasn't being created properly when some of the values were `false`. (@gnilrets)

@@ -181,7 +181,7 @@ module Daru
     # Returns vector for indexes/positions specified
     # @param [Array] indexes for which values has to be retrived
     # @note Since it accepts both indexes and postions. In case of collision,
-    #   arguement will be treated as index
+    #   argument will be treated as index
     # @return vector containing values specified at specified indexes/positions
     # @example
     #   dv = Daru::Vector.new [:a, 1, :a, 1, :c],

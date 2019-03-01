@@ -212,7 +212,7 @@ module Daru
           )
         end
       else
-        raise ArguementError, "Plotting library #{lib} not supported. "\
+        raise ArgumentError, "Plotting library #{lib} not supported. "\
           'Supported libraries are :nyaplot and :gruff'
       end
     end
