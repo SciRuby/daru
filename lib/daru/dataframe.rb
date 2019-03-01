@@ -626,7 +626,7 @@ module Daru
     deprecate :dup_only_valid, :reject_values, 2016, 10
 
     # Returns a dataframe in which rows with any of the mentioned values
-    #   are ignored.
+    # are ignored.
     # @param [Array] values to reject to form the new dataframe
     # @return [Daru::DataFrame] Data Frame with only rows which doesn't
     #   contain the mentioned values
