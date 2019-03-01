@@ -49,7 +49,9 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'dbi'
   spec.add_development_dependency 'activerecord', '~> 4.0'
   spec.add_development_dependency 'mechanize'
-  spec.add_development_dependency 'sqlite3'
+  # issue : https://github.com/SciRuby/daru/issues/493 occured 
+  # with latest version of sqlite3
+  spec.add_development_dependency  'sqlite3', '~> 1.3.13'
   spec.add_development_dependency 'rubocop', '~> 0.49.0'
   spec.add_development_dependency 'ruby-prof'
   spec.add_development_dependency 'simplecov'
