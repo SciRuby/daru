@@ -256,14 +256,12 @@ module Daru
       #   #                    a          b          c          d
       #   #         5        bar        two          6         66
       def get_group group
-        indexes   = groups_by_idx[group]
-        elements  = @context.each_vector.map(&:to_a)
-        transpose = elements.transpose
-        rows      = indexes.each.map { |idx| transpose[idx] }
-
-        Daru::DataFrame.rows(
-          rows, index: indexes, order: @context.vectors
-        )
+        indexes = groups_by_idx[group]
+        if indexes.size == 1
+          @context.row[*indexes].to_df.transpose
+        else
+          @context.row[*indexes]
+        end
       end
 
       # Iteratively applies a function to the values in a group and accumulates the result.
