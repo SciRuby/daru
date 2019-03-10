@@ -3096,7 +3096,7 @@ module Daru
         when Range
           size.times.to_a[positions.first]
         else
-          raise ArgumentError, 'Unkown position type.'
+          raise ArgumentError, 'Unknown position type.'
         end
       else
         positions
