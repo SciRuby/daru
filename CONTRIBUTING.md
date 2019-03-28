@@ -22,11 +22,20 @@ And run the test suite (should be all green with pending tests):
 
 If you have problems installing nmatrix, please consult the [nmatrix installation wiki](https://github.com/SciRuby/nmatrix/wiki/Installation) or the [mailing list](https://groups.google.com/forum/#!forum/sciruby-dev).
 
+**NOTE**: `Daru` is compatible with Ruby versions < 2.5; for later Ruby versions it breaks, returning the following error in versions >= 2.5.
+```
+/gems/packable-1.3.10/lib/packable/extensions/io.rb:86:in `pos': Illegal seek @ rb_io_tell - <STDOUT> (Errno::ESPIPE)
+```
+To reproduce this issue or explore this error further, head over to 
+[issue #500](https://github.com/SciRuby/daru/issues/500),
+[issue #503](https://github.com/SciRuby/daru/issues/503). Also, if you want to fix this issue, then please discuss it here : [#505](https://github.com/SciRuby/daru/issues/500)
+
 While preparing your pull requests, don't forget to check your code with Rubocop:
 
   `bundle exec rubocop`
   
 [Optional] Install all Ruby versions which Daru currently supports with `rake spec setup`.
+
 
 ## Basic Development Flow
 

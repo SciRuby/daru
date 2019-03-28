@@ -6,3 +6,4 @@ doc/
 vendor/
 profile/out/
 coverage/
+.ruby-version
