@@ -3,10 +3,17 @@ module Daru
   module Configuration
 
     INSPECT_OPTIONS_KEYS = [
-      :max_rows
+      :max_rows,
+
+      # Terminal
+      :spacing,
     ]
 
+    # Jupyter
     DEFAULT_MAX_ROWS = 30
+
+    # Terminal
+    DEFAULT_SPACING = 10
 
     attr_accessor(*INSPECT_OPTIONS_KEYS)
 
@@ -19,7 +26,9 @@ module Daru
     end
 
     def reset_options
-      self.max_rows = DEFAULT_MAX_ROWS
+      self.max_rows  = DEFAULT_MAX_ROWS
+
+      self.spacing   = DEFAULT_SPACING
     end
   end
 

@@ -2232,7 +2232,7 @@ module Daru
     end
 
     # Pretty print in a nice table format for the command line (irb/pry/iruby)
-    def inspect spacing=10, threshold=15
+    def inspect spacing=Daru.spacing, threshold=Daru.max_rows
       name_part = @name ? ": #{@name} " : ''
 
       "#<#{self.class}#{name_part}(#{nrows}x#{ncols})>\n" +
