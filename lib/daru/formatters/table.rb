@@ -14,7 +14,7 @@ module Daru
       end
 
       def format threshold=nil, spacing=nil
-        rows = build_rows(threshold || Daru.threshold)
+        rows = build_rows(threshold || Daru.max_rows)
 
         formatter = construct_formatter rows, spacing || Daru.spacing
 
