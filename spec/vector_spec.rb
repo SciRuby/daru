@@ -1334,6 +1334,29 @@ describe Daru::Vector do
         end
       end
 
+      context "#map_to_vector" do
+        it "maps to vector" do
+          a = @common_all_dtypes.map_to_vector { |v| v }
+          expect(a).to eq(Daru::Vector.new([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99]))
+        end
+        it "maps to vector with change" do
+          a = @common_all_dtypes.map_to_vector { |v| v + 1}
+          expect(a).to eq(Daru::Vector.new([6, 6, 6, 6, 6, 7, 7, 8, 9, 10, 11, 2, 3, 4, 5, 12, -98, -98]))
+        end 
+      end
+
+      context "#map_to_vector!" do
+        it "maps to vector destructive" do
+          @common_all_dtypes.map_to_vector! { |v| v }
+          expect(@common_all_dtypes).to eq(Daru::Vector.new([5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99]))
+        end
+        
+        it "maps to vector destructive" do
+          @common_all_dtypes.map_to_vector! { |v| v + 1}
+          expect(@common_all_dtypes).to eq(Daru::Vector.new([6, 6, 6, 6, 6, 7, 7, 8, 9, 10, 11, 2, 3, 4, 5, 12, -98, -98]))
+        end 
+      end
+
       context "#recode" do
         it "maps and returns a vector of dtype of self by default" do
           a = @common_all_dtypes.recode { |v| v == -99 ? 1 : 0 }
