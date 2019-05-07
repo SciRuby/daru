@@ -116,6 +116,18 @@ module Daru
       self
     end
 
+    def map_to_vector(&block)
+      return to_enum(:map) unless block_given?
+      @data.map!(&block)
+      self
+    end
+
+    def map_to_vector!(&block)
+      return to_enum(:map!) unless block_given?
+      @data.map!(&block)
+      self
+    end
+    
     def map!(&block)
       return to_enum(:map!) unless block_given?
       @data.map!(&block)
