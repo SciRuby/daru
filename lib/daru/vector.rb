@@ -127,7 +127,7 @@ module Daru
       @data.map!(&block)
       self
     end
-    
+
     def map!(&block)
       return to_enum(:map!) unless block_given?
       @data.map!(&block)
