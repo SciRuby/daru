@@ -1,3 +1,18 @@
+# 0.2.2 (8 August 2019)
+
+* Minor Enhancements
+  - DataFrame#set_index can take column name array, which results in multi-index  https://github.com/SciRuby/daru/pull/471 (by @Yuki-Inoue)
+  - implements DataFrame#reset_index https://github.com/SciRuby/daru/pull/473  (by @Yuki-Inoue)
+  - Make DataFrame.from_activerecord faster https://github.com/SciRuby/daru/pull/464 (by @paisible-wanderer )
+  - Added access_row_tuples_by_indexs method https://github.com/SciRuby/daru/pull/463 (by @Prakriti-nith )
+
+* Fixes
+  - Fix reindex vector on argument error https://github.com/SciRuby/daru/pull/470 (by @Yuki-Inoue)
+  - Optimize aggregation https://github.com/SciRuby/daru/pull/464 (by @paisible-wanderer)
+  - Index#dup should copy reference to name too https://github.com/SciRuby/daru/pull/477 (by @Yuki-Inoue)
+  - Should support bundler version 2.x.x https://github.com/SciRuby/daru/pull/483/ (by @Shekharrajak )
+  - fix table style  https://github.com/SciRuby/daru/pull/489 (by @kojix2 )
+
 # 0.2.1 (02 July 2018)
 
 * Minor Enhancements
