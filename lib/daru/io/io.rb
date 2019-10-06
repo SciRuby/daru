@@ -44,7 +44,7 @@ module Daru
           row_id: 0
         }.merge opts
 
-        headers = read_from_excel(path, opts)
+        worksheet, headers = read_from_excel(path, opts)
         df = Daru::DataFrame.new({})
         headers.each_with_index do |h,i|
           col = worksheet.column(i).to_a
@@ -64,7 +64,7 @@ module Daru
         worksheet    = book.worksheet worksheet_id
         headers      = ArrayHelper.recode_repeated(worksheet.row(row_id)).map(&:to_sym)
 
-        headers
+        worksheet, headers
       end
 
       def dataframe_write_excel dataframe, path, _opts={}
