@@ -39,7 +39,6 @@ module Daru
       # Functions for loading/writing Excel files.
 
       def from_excel path, opts={}
-        optional_gem 'spreadsheet', '~>1.1.1'
         opts = {
           worksheet_id: 0,
           row_id: 0
