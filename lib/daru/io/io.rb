@@ -45,11 +45,9 @@ module Daru
           row_id: 0
         }.merge opts
 
-        worksheet_id = opts[:worksheet_id]
-        row_id       = opts[:row_id]
         book         = Spreadsheet.open path
-        worksheet    = book.worksheet worksheet_id
-        headers      = ArrayHelper.recode_repeated(worksheet.row(row_id)).map(&:to_sym)
+        worksheet    = book.worksheet opts[:worksheet_id]
+        headers      = ArrayHelper.recode_repeated(worksheet.row(opts[:row_id])).map(&:to_sym)
 
         df = Daru::DataFrame.new({})
         headers.each_with_index do |h,i|
