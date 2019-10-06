@@ -64,7 +64,7 @@ module Daru
         worksheet    = book.worksheet worksheet_id
         headers      = ArrayHelper.recode_repeated(worksheet.row(row_id)).map(&:to_sym)
 
-        worksheet, headers
+        [worksheet, headers]
       end
 
       def dataframe_write_excel dataframe, path, _opts={}
