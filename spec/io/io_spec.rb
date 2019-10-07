@@ -110,7 +110,20 @@ describe Daru::IO do
         @expected = Daru::DataFrame.new({
           :id => id, :name => name, :age => age, :city => city, :a1 => a1
           }, order: [:id, :name, :age, :city, :a1])
+      end
 
+      it "loads DataFrame from an Excel Spreadsheet" do
+        df = Daru::DataFrame.from_excel 'spec/fixtures/test_xls.xls'
+
+        expect(df.nrows).to eq(6)
+        expect(df.vectors.to_a).to eq([:id, :name, :age, :city, :a1])
+        expect(df[:age][5]).to eq(nil)
+        expect(@expected).to eq(df)
+      end
+    end
+
+    context "#from_excel with row_id" do
+      before do
         id   = Daru::Vector.new(['id', 1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
         name = Daru::Vector.new(%w(name Alex Claude Peter Franz George Fernand))
         age  = Daru::Vector.new(['age', 20.0, 23.0, 25.0, nil, 5.5, nil])
@@ -122,16 +135,7 @@ describe Daru::IO do
           }, order: [:id, :name, :age, :city, :a1])
       end
 
-      it "loads DataFrame from an Excel Spreadsheet" do
-        df = Daru::DataFrame.from_excel 'spec/fixtures/test_xls.xls'
-
-        expect(df.nrows).to eq(6)
-        expect(df.vectors.to_a).to eq([:id, :name, :age, :city, :a1])
-        expect(df[:age][5]).to eq(nil)
-        expect(@expected).to eq(df)
-      end
-
-      it "loads DataFrame from second Excel Spreadsheet" do
+      it "loads DataFrame from test_xls_2.xls" do
         df = Daru::DataFrame.from_excel 'spec/fixtures/test_xls_2.xls'
 
         expect(df.nrows).to eq(7)
@@ -140,7 +144,7 @@ describe Daru::IO do
         expect(@expected_1).to eq(df)
       end
 
-      it "loads DataFrame from second Excel Spreadsheet with row_id" do
+      it "loads DataFrame from test_xls_2.xls with row_id" do
         df = Daru::DataFrame.from_excel 'spec/fixtures/test_xls_2.xls', {row_id: 1}
 
         expect(df.nrows).to eq(7)
