@@ -981,8 +981,8 @@ module Daru
 
     # Convert to html for iruby
     def to_html(threshold=30)
-      table_thead = to_html_thead
-      table_tbody = to_html_tbody(threshold)
+      to_html_thead
+      to_html_tbody(threshold)
       path = if index.is_a?(MultiIndex)
                File.expand_path('../iruby/templates/vector_mi.html.erb', __FILE__)
              else
