@@ -738,6 +738,47 @@ describe Daru::DataFrame do
     }
   end
 
+  context "#insert_vector" do
+    subject(:data_frame) {
+      Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
+        c: [11,22,33,44,55]}, order: [:a, :b, :c],
+        index: [:one, :two, :three, :four, :five])
+    }
+
+    it "insert a new vector at the desired slot" do
+      df = Daru::DataFrame.new({
+        a: [1,2,3,4,5],
+        d: [710, 720, 730, 740, 750],
+        b: [11, 12, 13, 14, 15],
+        c: [11,22,33,44,55]}, order: [:a, :d, :b, :c],
+        index: [:one, :two, :three, :four, :five]
+      )
+      data_frame.insert_vector 1, :d, [710, 720, 730, 740, 750]
+      expect(subject).to eq df
+    end
+
+    it "raises error for data array being too big" do
+      expect {
+        source = (1..8).to_a
+        data_frame.insert_vector 1, :d, source
+      }.to raise_error(IndexError)
+    end
+
+    it "raises error for invalid index value" do
+      expect {
+        source = (1..5).to_a
+        data_frame.insert_vector 4, :d, source
+      }.to raise_error(ArgumentError)
+    end
+
+    it "raises error for invalid source type" do
+      expect {
+        source = 14
+        data_frame.insert_vector 3, :d, source
+      }.to raise_error(ArgumentError)
+    end
+  end
+
   context "#row[]=" do
     context Daru::Index do
       before :each do

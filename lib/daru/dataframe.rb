@@ -545,6 +545,17 @@ module Daru
       self[n] = vector
     end
 
+    def insert_vector n, name, source
+      raise ArgumentError unless source.is_a? Array
+      vector = Daru::Vector.new(source, index: @index, name: @name)
+      @data << vector
+      @vectors = @vectors.add name
+      ordr = @vectors.dup.to_a
+      elmnt = ordr.pop
+      ordr = ordr.insert n, elmnt
+      self.order=ordr
+    end
+
     # Access a row or set/create a row. Refer #[] and #[]= docs for details.
     #
     # == Usage
