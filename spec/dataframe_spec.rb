@@ -2720,6 +2720,26 @@ describe Daru::DataFrame do
     end
   end
 
+  context "#rename_vectors!" do
+    before do
+      @df = Daru::DataFrame.new({
+        a: [1,2,3,4,5],
+        b: [11,22,33,44,55],
+        c: %w(a b c d e)
+      })
+    end
+
+    it "returns self as modified dataframe" do
+      expect(@df.rename_vectors!(:a => :alpha)).to eq(@df)
+    end
+
+    it "re-uses rename_vectors method" do
+      name_map = { :a => :alpha, :c => :gamma }
+      expect(@df).to receive(:rename_vectors).with(name_map)
+      @df.rename_vectors! name_map
+    end
+  end
+
   context "#rename_vectors" do
     before do
       @df = Daru::DataFrame.new({
@@ -2727,6 +2747,10 @@ describe Daru::DataFrame do
         b: [11,22,33,44,55],
         c: %w(a b c d e)
       })
+    end
+
+    it "returns Daru::Index" do
+      expect(@df.rename_vectors(:a => :alpha)).to be_kind_of(Daru::Index)
     end
 
     it "renames vectors using a hash map" do
