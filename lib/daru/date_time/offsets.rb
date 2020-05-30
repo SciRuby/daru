@@ -111,6 +111,14 @@ module Daru
       def - date_time
         date_time - @n*multiplier
       end
+
+      def ==(other_obj)
+        other_obj.is_a?(Tick) && period == other_obj.period
+      end
+
+      def period
+        @n * multiplier
+      end
     end
 
     # Create a seconds offset
