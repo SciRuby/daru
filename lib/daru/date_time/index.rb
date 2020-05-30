@@ -93,11 +93,12 @@ module Daru
       def infer_offset data
         diffs = data.each_cons(2).map { |d1, d2| d2 - d1 }
 
-        if diffs.uniq.count == 1
-          TIME_INTERVALS[diffs.first].new
-        else
-          nil
-        end
+        return nil unless diffs.uniq.count == 1
+
+        return TIME_INTERVALS[diffs.first].new if TIME_INTERVALS.include?(diffs.first)
+
+        number_of_seconds = diffs.first / Daru::Offsets::Second.new.multiplier
+        Daru::Offsets::Second.new(number_of_seconds.numerator) if number_of_seconds.denominator == 1
       end
 
       def find_index_of_date data, date_time

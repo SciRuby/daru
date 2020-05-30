@@ -12,6 +12,8 @@ module Daru
     # TODO: Remove this line but its causing erros due to unkown reason
     Daru.has_nyaplot?
 
+    attr_accessor(*Configuration::INSPECT_OPTIONS_KEYS)
+
     extend Gem::Deprecate
 
     class << self
@@ -1707,6 +1709,24 @@ module Daru
       self.vectors = Daru::Index.new new_names
     end
 
+    # Renames the vectors and returns itself
+    #
+    # == Arguments
+    #
+    # * name_map - A hash where the keys are the exising vector names and
+    #              the values are the new names.  If a vector is renamed
+    #              to a vector name that is already in use, the existing
+    #              one is overwritten.
+    #
+    # == Usage
+    #
+    #   df = Daru::DataFrame.new({ a: [1,2,3,4], b: [:a,:b,:c,:d], c: [11,22,33,44] })
+    #   df.rename_vectors! :a => :alpha, :c => :gamma # df
+    def rename_vectors! name_map
+      rename_vectors(name_map)
+      self
+    end
+
     # Return the indexes of all the numeric vectors. Will include vectors with nils
     # alongwith numbers.
     def numeric_vectors
@@ -2102,7 +2122,7 @@ module Daru
     end
 
     # Convert to html for IRuby.
-    def to_html(threshold=30)
+    def to_html(threshold = Daru.max_rows)
       table_thead = to_html_thead
       table_tbody = to_html_tbody(threshold)
       path = if index.is_a?(MultiIndex)
@@ -2123,7 +2143,8 @@ module Daru
       ERB.new(File.read(table_thead_path).strip).result(binding)
     end
 
-    def to_html_tbody(threshold=30)
+    def to_html_tbody(threshold = Daru.max_rows)
+      threshold ||= @size
       table_tbody_path =
         if index.is_a?(MultiIndex)
           File.expand_path('../iruby/templates/dataframe_mi_tbody.html.erb', __FILE__)
@@ -2240,10 +2261,11 @@ module Daru
     end
 
     # Pretty print in a nice table format for the command line (irb/pry/iruby)
-    def inspect spacing=10, threshold=15
+    def inspect spacing=Daru.spacing, threshold=Daru.max_rows
       name_part = @name ? ": #{@name} " : ''
+      spacing = [headers.to_a.map(&:length).max, spacing].max
 
-      "#<#{self.class}#{name_part}(#{nrows}x#{ncols})>\n" +
+      "#<#{self.class}#{name_part}(#{nrows}x#{ncols})>#{$INPUT_RECORD_SEPARATOR}" +
         Formatters::Table.format(
           each_row.lazy,
           row_headers: row_headers,

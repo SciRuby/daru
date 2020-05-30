@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['sameer.deshmukh93@gmail.com']
   spec.summary       = %q{Data Analysis in RUby}
   spec.description   = Daru::DESCRIPTION
-  spec.homepage      = "http://github.com/v0dro/daru"
+  spec.homepage      = "http://github.com/SciRuby/daru"
   spec.license       = 'BSD-2'
 
   spec.files         = `git ls-files -z`.split("\x0")

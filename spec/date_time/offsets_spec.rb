@@ -140,6 +140,20 @@ describe Offsets do
           DateTime.new(2012,2,3,12,4,18))
       end
     end
+
+    context "#==" do
+      it 'equals the same offset' do
+        expect(Offsets::Second.new(5)).to eq(Offsets::Second.new(5))
+      end
+
+      it 'does equal a different offset' do
+        expect(Offsets::Second.new(5)).to_not eq(Offsets::Second.new(4))
+      end
+
+      it 'equals offets with the same period' do
+        expect(Offsets::Second.new(60)).to eq(Offsets::Minute.new())
+      end
+    end
   end
 
   describe Minute do
