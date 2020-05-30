@@ -2,11 +2,8 @@ language:
   ruby
 
 rvm:
-  - '2.0'
-  - '2.1'
-  - '2.2'
-  - '2.3.0'
-  - '2.4.0'
+  - '2.5.1'
+  - '2.7.1'
 
 matrix:
   allow_failures:
@@ -22,10 +19,7 @@ script:
   - bundle exec yard-junk
 
 install:
-  - if [ $TRAVIS_RUBY_VERSION == '2.2' ] || [ $TRAVIS_RUBY_VERSION == '2.1' ] || [ $TRAVIS_RUBY_VERSION == '2.0' ];
-      then gem install bundler -v '~> 1.6';
-      else gem install bundler;
-      fi
+  - gem install bundler
   - gem install rainbow -v '2.2.1'
   - bundle install
 
