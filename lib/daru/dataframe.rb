@@ -1707,6 +1707,24 @@ module Daru
       self.vectors = Daru::Index.new new_names
     end
 
+    # Renames the vectors and returns itself
+    #
+    # == Arguments
+    #
+    # * name_map - A hash where the keys are the exising vector names and
+    #              the values are the new names.  If a vector is renamed
+    #              to a vector name that is already in use, the existing
+    #              one is overwritten.
+    #
+    # == Usage
+    #
+    #   df = Daru::DataFrame.new({ a: [1,2,3,4], b: [:a,:b,:c,:d], c: [11,22,33,44] })
+    #   df.rename_vectors! :a => :alpha, :c => :gamma # df
+    def rename_vectors! name_map
+      rename_vectors(name_map)
+      self
+    end
+
     # Return the indexes of all the numeric vectors. Will include vectors with nils
     # alongwith numbers.
     def numeric_vectors
