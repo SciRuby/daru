@@ -18,12 +18,6 @@ def jruby?
   RUBY_ENGINE == 'jruby'
 end
 
-if jruby?
-  require 'mdarray'
-else
-  require 'nmatrix/nmatrix'
-end
-
 RSpec::Expectations.configuration.warn_about_potential_false_positives = false
 
 require 'simplecov'
@@ -36,6 +30,14 @@ end
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'daru'
+
+if jruby?
+  require 'mdarray'
+else
+  if Daru.has_nmatrix?
+    require 'nmatrix/nmatrix'
+  end
+end
 
 ALL_DTYPES = [:nmatrix, :gsl, :array]
 

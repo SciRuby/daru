@@ -6,15 +6,18 @@ Either nmatrix or rb-gsl are NOT NECESSARY for using daru. They are just require
 
 To install dependencies, execute the following commands:
 
-*  `sudo apt-get update -qq`
-*  `sudo apt-get install -y libgsl0-dev r-base r-base-dev`
-*  `sudo Rscript -e "install.packages(c('Rserve','irr'),,'http://cran.us.r-project.org')"`
-*  `sudo apt-get install libmagickwand-dev imagemagick`
-
-
-Then install remaining dependencies:
-
-  `bundle install`
+``` bash
+sudo apt-get update -qq
+sudo apt-get install -y libgsl0-dev r-base r-base-dev
+sudo Rscript -e "install.packages(c('Rserve','irr'),,'http://cran.us.r-project.org')"
+sudo apt-get install libmagickwand-dev imagemagick
+export DARU_TEST_NMATRIX=1  # for running nmatrix tests.
+export DARU_TEST_GSL=1 # for running rb-GSL tests.
+bundle install
+```
+You don't need `DARU_TEST_NMATRIX` or `DARU_TEST_GSL` if you don't want to make changes
+to those parts of the code. However, they will be set in CI and will raise a test failure
+if something goes wrong.
 
 And run the test suite (should be all green with pending tests):
 
@@ -22,13 +25,6 @@ And run the test suite (should be all green with pending tests):
 
 If you have problems installing nmatrix, please consult the [nmatrix installation wiki](https://github.com/SciRuby/nmatrix/wiki/Installation) or the [mailing list](https://groups.google.com/forum/#!forum/sciruby-dev).
 
-**NOTE**: `Daru` is compatible with Ruby versions < 2.5; for later Ruby versions it breaks, returning the following error in versions >= 2.5.
-```
-/gems/packable-1.3.10/lib/packable/extensions/io.rb:86:in `pos': Illegal seek @ rb_io_tell - <STDOUT> (Errno::ESPIPE)
-```
-To reproduce this issue or explore this error further, head over to 
-[issue #500](https://github.com/SciRuby/daru/issues/500),
-[issue #503](https://github.com/SciRuby/daru/issues/503). Also, if you want to fix this issue, then please discuss it here : [#505](https://github.com/SciRuby/daru/issues/500)
 
 While preparing your pull requests, don't forget to check your code with Rubocop:
 
