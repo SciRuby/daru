@@ -231,7 +231,7 @@ module Daru
       def from_csv_hash(path, opts)
         csv_as_arrays =
           ::CSV
-          .parse(open(path), opts)
+          .parse(open(path), **opts)
           .tap { |c| yield c if block_given? }
           .to_a
         headers       = ArrayHelper.recode_repeated(csv_as_arrays.shift)
