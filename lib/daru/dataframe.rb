@@ -12,6 +12,8 @@ module Daru
     # TODO: Remove this line but its causing erros due to unkown reason
     Daru.has_nyaplot?
 
+    attr_accessor(*Configuration::INSPECT_OPTIONS_KEYS)
+
     extend Gem::Deprecate
 
     class << self
@@ -2120,7 +2122,7 @@ module Daru
     end
 
     # Convert to html for IRuby.
-    def to_html(threshold=30)
+    def to_html(threshold = Daru.max_rows)
       table_thead = to_html_thead
       table_tbody = to_html_tbody(threshold)
       path = if index.is_a?(MultiIndex)
@@ -2141,7 +2143,8 @@ module Daru
       ERB.new(File.read(table_thead_path).strip).result(binding)
     end
 
-    def to_html_tbody(threshold=30)
+    def to_html_tbody(threshold = Daru.max_rows)
+      threshold ||= @size
       table_tbody_path =
         if index.is_a?(MultiIndex)
           File.expand_path('../iruby/templates/dataframe_mi_tbody.html.erb', __FILE__)
@@ -2258,7 +2261,7 @@ module Daru
     end
 
     # Pretty print in a nice table format for the command line (irb/pry/iruby)
-    def inspect spacing=10, threshold=15
+    def inspect spacing=Daru.spacing, threshold=Daru.max_rows
       name_part = @name ? ": #{@name} " : ''
 
       "#<#{self.class}#{name_part}(#{nrows}x#{ncols})>\n" +

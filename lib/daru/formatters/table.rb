@@ -13,13 +13,10 @@ module Daru
         @row_headers = [''] * @data.to_a.size if @row_headers.empty?
       end
 
-      DEFAULT_SPACING = 10
-      DEFAULT_THRESHOLD = 15
-
       def format threshold=nil, spacing=nil
-        rows = build_rows(threshold || DEFAULT_THRESHOLD)
+        rows = build_rows(threshold || Daru.max_rows)
 
-        formatter = construct_formatter rows, spacing || DEFAULT_SPACING
+        formatter = construct_formatter rows, spacing || Daru.spacing
 
         rows.map { |r| formatter % r }.join("\n")
       end

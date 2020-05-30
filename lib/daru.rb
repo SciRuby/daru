@@ -5,6 +5,7 @@ end
 # :nocov:
 
 module Daru
+
   DAYS_OF_WEEK = {
     'SUN' => 0,
     'MON' => 1,
@@ -102,6 +103,7 @@ require 'daru/index/multi_index.rb'
 require 'daru/index/categorical_index.rb'
 
 require 'daru/helpers/array.rb'
+require 'daru/configuration.rb'
 require 'daru/vector.rb'
 require 'daru/dataframe.rb'
 require 'daru/monkeys.rb'
