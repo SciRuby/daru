@@ -1,3 +1,20 @@
+# 0.3 (30 May 2020)
+* Major Enhacements
+  - Remove official support for Ruby < 2.5.1. Now we only test with 2.5.1 and 2.7.1. (@v0dro)
+  - Make nmatrix and gsl optional dependencies for testing. (@v0dro)
+  - Update sqlite, activerecord, nokogiri, packable, rake dependencies. (@v0dro)
+  - Remove runtime dependency on backports. (@v0dro)
+  - Add `Daru::Vector#match and Daru::Vector#apply_where` methods (@athityakumar).
+  - Add support for options to the `Daru` module. Adds a separate module `Daru::Configuration` that
+  can hold data for overall configuration of daru's execution. (@kojix2)
+* Minor Enhancements
+  - Add new `DataFrame#insert_vector` method. (@cyrillefr)
+  - Add `Vector#last`. (@kojix2)
+  - Add `DataFrame#rename_vectors!`. (@neumanrq)
+  - Refactor `GroupBy#apply_method`. (@paisible-wanderer)
+  - Auto-adjust header parameters when printing to terminal. (@ncs1)
+  - Infer offsets of timeseries automatically when they are a natural number multiple of seconds. (@jpaulgs)
+
 # 0.2.2 (8 August 2019)
 
 * Minor Enhancements
