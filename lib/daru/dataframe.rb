@@ -2263,8 +2263,9 @@ module Daru
     # Pretty print in a nice table format for the command line (irb/pry/iruby)
     def inspect spacing=Daru.spacing, threshold=Daru.max_rows
       name_part = @name ? ": #{@name} " : ''
+      spacing = [headers.to_a.map(&:length).max, spacing].max
 
-      "#<#{self.class}#{name_part}(#{nrows}x#{ncols})>\n" +
+      "#<#{self.class}#{name_part}(#{nrows}x#{ncols})>#{$INPUT_RECORD_SEPARATOR}" +
         Formatters::Table.format(
           each_row.lazy,
           row_headers: row_headers,
