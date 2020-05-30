@@ -1,13 +1,11 @@
 module Daru
   # Defines constants and methods related to configuration
   module Configuration
-
     INSPECT_OPTIONS_KEYS = [
       :max_rows,
-
       # Terminal
-      :spacing,
-    ]
+      :spacing
+    ].freeze
 
     # Jupyter
     DEFAULT_MAX_ROWS = 30

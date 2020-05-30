@@ -2122,7 +2122,7 @@ module Daru
     end
 
     # Convert to html for IRuby.
-    def to_html(threshold = Daru.max_rows)
+    def to_html(threshold=Daru.max_rows)
       table_thead = to_html_thead
       table_tbody = to_html_tbody(threshold)
       path = if index.is_a?(MultiIndex)
@@ -2143,7 +2143,7 @@ module Daru
       ERB.new(File.read(table_thead_path).strip).result(binding)
     end
 
-    def to_html_tbody(threshold = Daru.max_rows)
+    def to_html_tbody(threshold=Daru.max_rows)
       threshold ||= @size
       table_tbody_path =
         if index.is_a?(MultiIndex)
@@ -2834,7 +2834,7 @@ module Daru
 
     def initialize_from_hash source, vectors, index, opts
       create_vectors_index_with vectors, source
-      
+
       if ArrayHelper.array_of?(source.values, Vector)
         initialize_from_hash_with_vectors source, index, opts
       else

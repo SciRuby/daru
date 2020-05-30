@@ -5,7 +5,6 @@ end
 # :nocov:
 
 module Daru
-
   DAYS_OF_WEEK = {
     'SUN' => 0,
     'MON' => 1,
