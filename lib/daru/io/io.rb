@@ -39,16 +39,12 @@ module Daru
       # Functions for loading/writing Excel files.
 
       def from_excel path, opts={}
-        optional_gem 'spreadsheet', '~>1.1.1'
         opts = {
-          worksheet_id: 0
+          worksheet_id: 0,
+          row_id: 0
         }.merge opts
 
-        worksheet_id = opts[:worksheet_id]
-        book         = Spreadsheet.open path
-        worksheet    = book.worksheet worksheet_id
-        headers      = ArrayHelper.recode_repeated(worksheet.row(0)).map(&:to_sym)
-
+        worksheet, headers = read_from_excel(path, opts)
         df = Daru::DataFrame.new({})
         headers.each_with_index do |h,i|
           col = worksheet.column(i).to_a
@@ -57,6 +53,18 @@ module Daru
         end
 
         df
+      end
+
+      def read_from_excel path, opts
+        optional_gem 'spreadsheet', '~>1.1.1'
+
+        worksheet_id = opts[:worksheet_id]
+        row_id       = opts[:row_id]
+        book         = Spreadsheet.open path
+        worksheet    = book.worksheet worksheet_id
+        headers      = ArrayHelper.recode_repeated(worksheet.row(row_id)).map(&:to_sym)
+
+        [worksheet, headers]
       end
 
       def dataframe_write_excel dataframe, path, _opts={}

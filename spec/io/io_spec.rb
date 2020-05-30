@@ -122,6 +122,38 @@ describe Daru::IO do
       end
     end
 
+    context "#from_excel with row_id" do
+      before do
+        id   = Daru::Vector.new(['id', 1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+        name = Daru::Vector.new(%w(name Alex Claude Peter Franz George Fernand))
+        age  = Daru::Vector.new(['age', 20.0, 23.0, 25.0, nil, 5.5, nil])
+        city = Daru::Vector.new(['city', 'New York', 'London', 'London', 'Paris', 'Tome', nil])
+        a1   = Daru::Vector.new(['a1', 'a,b', 'b,c', 'a', nil, 'a,b,c', nil])
+        @expected_1 = Daru::DataFrame.new({:id2 => id, :name2 => name, :age2 => age}, order: [:id2, :name2, :age2])
+        @expected_2 = Daru::DataFrame.new({
+          :id => id, :name => name, :age => age, :city => city, :a1 => a1
+          }, order: [:id, :name, :age, :city, :a1])
+      end
+
+      it "loads DataFrame from test_xls_2.xls" do
+        df = Daru::DataFrame.from_excel 'spec/fixtures/test_xls_2.xls'
+
+        expect(df.nrows).to eq(7)
+        expect(df.vectors.to_a).to eq([:id2, :name2, :age2])
+        expect(df[:age2][6]).to eq(nil)
+        expect(@expected_1).to eq(df)
+      end
+
+      it "loads DataFrame from test_xls_2.xls with row_id" do
+        df = Daru::DataFrame.from_excel 'spec/fixtures/test_xls_2.xls', {row_id: 1}
+
+        expect(df.nrows).to eq(7)
+        expect(df.vectors.to_a).to eq([:id, :name, :age, :city, :a1])
+        expect(df[:age][6]).to eq(nil)
+        expect(@expected_2).to eq(df)
+      end
+    end
+
     context "#write_excel" do
       before do
         a   = Daru::Vector.new(100.times.map { rand(100) })
