@@ -850,6 +850,24 @@ describe Daru::Vector do
         end
       end
 
+      context '#last' do
+        subject(:vector) do
+          Daru::Vector.new (1..20).to_a, dtype: dtype
+        end
+
+        it 'takes 1 by default' do
+          expect(vector.last).to eq 20
+        end
+
+        it 'takes num if provided' do
+          expect(vector.last(3)).to eq Daru::Vector.new (18..20).to_a, index: (17..19).to_a
+        end
+
+        it 'does not fail on too large num' do
+          expect(vector.last(3000)).to eq vector
+        end
+      end
+
       context "#concat" do
         before :each do
           @dv = Daru::Vector.new [1,2,3,4,5], name: :yoga,

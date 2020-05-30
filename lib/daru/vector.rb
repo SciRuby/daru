@@ -474,6 +474,11 @@ module Daru
       self[start..(size-1)]
     end
 
+    def last q=1
+      # The Enumerable mixin dose not provide the last method.
+      tail(q)
+    end
+
     def empty?
       @index.empty?
     end
