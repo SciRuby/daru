@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 describe Daru::IO do
   describe Daru::DataFrame do
     context ".from_csv" do

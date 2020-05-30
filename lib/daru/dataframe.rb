@@ -2834,7 +2834,7 @@ module Daru
 
     def initialize_from_hash source, vectors, index, opts
       create_vectors_index_with vectors, source
-
+      
       if ArrayHelper.array_of?(source.values, Vector)
         initialize_from_hash_with_vectors source, index, opts
       else

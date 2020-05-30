@@ -27,8 +27,6 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency 'backports'
-
   # it is required by NMatrix, yet we want to specify clearly which minimal version is OK
   spec.add_runtime_dependency 'packable', '~> 1.3.13'
 

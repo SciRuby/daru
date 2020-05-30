@@ -112,7 +112,7 @@ describe Daru::DataFrame do
       expect(@left.join(@right, how: :outer, on: [:name])).to eq(answer)
     end
 
-    it "performs a left outer join", focus: true do
+    it "performs a left outer join" do
       answer = Daru::DataFrame.new({
         :id_1 => [2,3,1,4],
         :name => ["Monkey", "Ninja", "Pirate", "Spaghetti"],
