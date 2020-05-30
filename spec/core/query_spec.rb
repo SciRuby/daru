@@ -334,4 +334,14 @@ describe "Arel-like syntax" do
       end
     end
   end
+
+  describe "apply_where" do
+    context "matches regexp with block input" do
+      subject { dv.apply_where(dv.match /weeks/) { |x| "#{x.split.first.to_i * 7} days" } }
+
+      let(:dv) { Daru::Vector.new ['3 days', '5 weeks', '2 weeks'] }
+
+      it { is_expected.to eq(Daru::Vector.new ['3 days', '35 days', '14 days']) }
+    end
+  end
 end

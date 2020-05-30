@@ -70,6 +70,22 @@ module Daru
           resultant_dv
         end
 
+        def vector_apply_where dv, bool_array
+          _data, new_index = fetch_new_data_and_index dv, bool_array
+          all_index        = dv.index
+          all_data         = all_index.map { |idx| new_index.include?(idx) ? yield(dv[idx]) : dv[idx] }
+
+          resultant_dv = Daru::Vector.new all_data,
+            index: dv.index.class.new(all_index),
+            dtype: dv.dtype,
+            type: dv.type,
+            name: dv.name
+
+          # Preserve categories order for category vector
+          resultant_dv.categories = dv.categories if dv.category?
+          resultant_dv
+        end
+
         private
 
         def fetch_new_data_and_index dv, bool_array
