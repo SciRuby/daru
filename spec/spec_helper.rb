@@ -58,6 +58,7 @@ end
 RSpec.configure do |c|
   c.filter_run_excluding(:gsl) unless Daru.has_gsl?
   c.filter_run_excluding(:nmatrix) unless Daru.has_nmatrix?
+  c.filter_run_excluding(:rserve) unless ENV['DARU_TEST_RSERVE']
 end
 
 RSpec::Matchers.define :be_all_within do |delta|
