@@ -2,7 +2,7 @@ require 'spec_helper.rb'
 
 describe Daru::Vector do
   ALL_DTYPES.each do |dtype|
-    describe dtype.to_s do
+    describe dtype.to_s, dtype do
       before do
         @common_all_dtypes =  Daru::Vector.new(
           [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99],
@@ -84,7 +84,7 @@ describe Daru::Vector do
           expect(dv.index.to_a).to eq(['a', 'b', :r, 0])
         end
 
-        it "initializes array with nils with dtype NMatrix" do
+        it "initializes array with nils with dtype NMatrix", :nmatrix do
           dv = Daru::Vector.new [2, nil], dtype: :nmatrix
           expect(dv.to_a).to eq([2, nil])
           expect(dv.index.to_a).to eq([0, 1])
@@ -1064,7 +1064,7 @@ describe Daru::Vector do
 
       context "#cast" do
         ALL_DTYPES.each do |new_dtype|
-          it "casts from #{dtype} to #{new_dtype}" do
+          it "casts from #{dtype} to #{new_dtype}", new_dtype do
             v = Daru::Vector.new [1,2,3,4], dtype: dtype
             v.cast(dtype: new_dtype)
             expect(v.dtype).to eq(new_dtype)
@@ -1360,18 +1360,13 @@ describe Daru::Vector do
           expect(a.dtype).to eq(:array)
         end
 
-        it "maps and returns a vector of dtype gsl" do
-          a = @common_all_dtypes.recode(:gsl) { |v| v == -99 ? 1 : 0 }
-          exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], dtype: :gsl
-          expect(a).to eq(exp)
-          expect(a.dtype).to eq(:gsl)
-        end
-
-        it "maps and returns a vector of dtype nmatrix" do
-          a = @common_all_dtypes.recode(:nmatrix) { |v| v == -99 ? 1 : 0 }
-          exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], dtype: :nmatrix
-          expect(a).to eq(exp)
-          expect(a.dtype).to eq(:nmatrix)
+        ALL_DTYPES.each do |dtype|
+          it "maps and returns a vector of dtype #{dtype}", dtype do
+            a = @common_all_dtypes.recode(dtype) { |v| v == -99 ? 1 : 0 }
+            exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], dtype: dtype
+            expect(a).to eq(exp)
+            expect(a.dtype).to eq(exp.dtype)
+          end
         end
       end
 
@@ -1389,18 +1384,13 @@ describe Daru::Vector do
           expect(@vector.dtype).to eq(dtype)
         end
 
-        it "destructively maps and returns a vector of dtype gsl" do
-          @vector.recode!(:gsl) { |v| v == -99 ? 1 : 0 }
-          exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], dtype: :gsl
-          expect(@vector).to eq(exp)
-          expect(@vector.dtype).to eq(exp.dtype)
-        end
-
-        it "destructively maps and returns a vector of dtype nmatrix" do
-          @vector.recode!(:nmatrix) { |v| v == -99 ? 1 : 0 }
-          exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], dtype: :nmatrix
-          expect(@vector).to eq(exp)
-          expect(@vector.dtype).to eq(exp.dtype)
+        ALL_DTYPES.each do |dtype|
+          it "destructively maps and returns a vector of dtype #{dtype}", dtype do
+            @vector.recode!(dtype) { |v| v == -99 ? 1 : 0 }
+            exp = Daru::Vector.new [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], dtype: dtype
+            expect(@vector).to eq(exp)
+            expect(@vector.dtype).to eq(exp.dtype)
+          end
         end
       end
 
@@ -1593,7 +1583,7 @@ describe Daru::Vector do
       its(:'index.to_a') { is_expected.to eq [] }
     end
 
-    context 'works for gsl' do
+    context 'works for gsl', :gsl do 
       let(:dv) { Daru::Vector.new [1, 2, 3, Float::NAN], dtype: :gsl,
         index: 11..14 }
       subject { dv.reject_values Float::NAN }
@@ -1857,7 +1847,7 @@ describe Daru::Vector do
       expect(@multi.type).to eq(:object)
     end
 
-    it "tells NMatrix data type in case of NMatrix wrapper" do
+    it "tells NMatrix data type in case of NMatrix wrapper", :nmatrix do
       nm = Daru::Vector.new([1,2,3,4,5], dtype: :nmatrix)
       expect(nm.type).to eq(:int32)
     end
@@ -1908,7 +1898,7 @@ describe Daru::Vector do
     end
   end
 
-  context '#to_nmatrix' do
+  context '#to_nmatrix', :nmatrix do
     let(:dv) { Daru::Vector.new [1, 2, 3, 4, 5] }
 
     context 'horizontal axis' do
@@ -1945,7 +1935,7 @@ describe Daru::Vector do
     end
   end
 
-  context "#to_gsl" do
+  context "#to_gsl", :gsl do
     it "returns a GSL::Vector of non-nil data" do
       vector = Daru::Vector.new [1,2,3,4,nil,6,nil]
       expect(vector.to_gsl).to eq(GSL::Vector.alloc(1,2,3,4,6))

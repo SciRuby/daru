@@ -1,6 +1,6 @@
 describe Daru::Vector do
   [:array, :gsl].each do |dtype| #nmatrix still unstable
-    describe dtype do
+    describe dtype.to_s, dtype do
       before do
         @dv = Daru::Vector.new [323, 11, 555, 666, 234, 21, 666, 343, 1, 2], dtype: dtype
         @dv_with_nils = Daru::Vector.new [323, 11, 555, nil, 666, 234, 21, 666, 343, nil, 1, 2]
