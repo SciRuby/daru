@@ -453,6 +453,16 @@ describe Daru::MultiIndex do
           ])
       )
     end
+
+    it "returns a Daru::Index if a single level remains" do
+      expect(
+        Daru::MultiIndex.from_tuples([
+          [:c,:one,:bar],
+          [:c,:one,:baz]
+        ]).drop_left_level(2)).to eq(
+          Daru::Index.new([:bar, :baz])
+      )
+    end
   end
 
   context 'other forms of tuple list representation' do
@@ -540,12 +550,20 @@ describe Daru::MultiIndex do
       ])
     end
 
-    context "multiple indexes" do
-      subject { idx.subset :b, :one }
+    context "first level" do
+      subject { idx.subset :b }
 
       it { is_expected.to be_a described_class }
+      its(:size) { is_expected.to eq 4 }
+      its(:to_a) { is_expected.to eq [[:one, :bar], [:two, :bar], [:two, :baz], [:one, :foo]] }
+    end
+
+    context "first and second level" do
+      subject { idx.subset :b, :one }
+
+      it { is_expected.to be_a Daru::Index }
       its(:size) { is_expected.to eq 2 }
-      its(:to_a) { is_expected.to eq [[:bar], [:foo]] }
+      its(:to_a) { is_expected.to eq [:bar, :foo] }
     end
 
     context "multiple positional indexes" do

@@ -507,9 +507,16 @@ describe Daru::DataFrame do
         sub_order = Daru::MultiIndex.from_tuples([
           [:one, :bar],
           [:two, :baz]
-          ])
+        ])
         expect(@df_mi[:a]).to eq(Daru::DataFrame.new([
           @vector_arry1,
+          @vector_arry2
+        ], index: @multi_index, order: sub_order))
+      end
+
+      it "returns DataFrame with simple index when specified first and second layer of MultiIndex" do
+        sub_order = Daru::Index.new([:baz])
+        expect(@df_mi[:a][:two]).to eq(Daru::DataFrame.new([
           @vector_arry2
         ], index: @multi_index, order: sub_order))
       end
@@ -1525,10 +1532,7 @@ describe Daru::DataFrame do
       end
 
       it "returns DataFrame when specifying first and second layer of MultiIndex" do
-        sub_index = Daru::MultiIndex.from_tuples([
-          [:bar],
-          [:baz]
-        ])
+        sub_index = Daru::Index.new([:bar,:baz])
         expect(@df_mi.row[:c,:one]).to eq(Daru::DataFrame.new([
           [11,12],
           [1,2],
