@@ -36,5 +36,18 @@ module Daru
         !array.empty? &&
         array.all? { |el| match === el } # rubocop:disable Style/CaseEquality
     end
+
+    def sort_composite_data(array)
+      array.sort
+    rescue ArgumentError, TypeError => msg
+      case msg.to_s
+      when /comparison of Symbol with String failed/,
+        /comparison of Symbol with \d+ failed/,
+        /comparison of String with :.* failed/,
+        /comparison of Integer with :.* failed/,
+        /no implicit conversion from nil to integer/
+        return array.sort_by(&:to_s)
+      end
+    end
   end
 end
