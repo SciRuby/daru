@@ -92,7 +92,7 @@ module Daru
 
         def v2v_binary operation, other, opts={}
           # FIXME: why the sorting?.. - zverok, 2016-05-18
-          index = (@index.to_a | other.index.to_a).sort
+          index = ArrayHelper.sort_composite_data(@index.to_a | other.index.to_a)
 
           elements = index.map do |idx|
             this = self.index.include?(idx) ? self[idx] : nil

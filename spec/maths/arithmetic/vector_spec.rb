@@ -24,7 +24,7 @@ describe Daru::Vector do
     end
 
     it "appropriately adds vectors with numeric and non-numeric indexes" do
-      pending "Need an alternate index implementation?"
+      # pending "Need an alternate index implementation?"
       v1 = Daru::Vector.new([1,2,3])
       v2 = Daru::Vector.new([1,2,3], index: [:a,:b,:c])
 
