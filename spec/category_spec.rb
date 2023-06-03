@@ -689,15 +689,13 @@ describe Daru::Vector, "categorical" do
       end
 
       it "returns sub vector when passed first and second layer of tuple" do
-        mi = Daru::MultiIndex.from_tuples([
-          [:foo],
-          [:bar]])
+        mi = Daru::Index.new([:foo,:bar])
         expect(@vector[:c,:two]).to eq(Daru::Vector.new([10,11], index: mi,
           name: :sub_sub_vector, type: :category))
       end
 
       it "returns sub vector not a single element when passed the partial tuple" do
-        mi = Daru::MultiIndex.from_tuples([[:foo]])
+        mi = Daru::Index.new([:foo])
         expect(@vector[:d, :one]).to eq(Daru::Vector.new([12], index: mi,
           name: :sub_sub_vector, type: :category))
       end

@@ -239,16 +239,14 @@ describe Daru::Vector do
               dtype: dtype, name: :sub_vector))
           end
 
-          it "returns sub vector when passed first and second layer of tuple" do
-            mi = Daru::MultiIndex.from_tuples([
-              [:foo],
-              [:bar]])
-            expect(@vector[:c,:two]).to eq(Daru::Vector.new([10,11], index: mi,
+          it "returns sub vector with simple index when passed first and second layer of tuple" do
+            i = Daru::Index.new([:foo, :bar])
+            expect(@vector[:c,:two]).to eq(Daru::Vector.new([10,11], index: i,
               dtype: dtype, name: :sub_sub_vector))
           end
 
           it "returns sub vector not a single element when passed the partial tuple" do
-            mi = Daru::MultiIndex.from_tuples([[:foo]])
+            mi = Daru::Index.new([:foo])
             expect(@vector[:d, :one]).to eq(Daru::Vector.new([12], index: mi,
               dtype: dtype, name: :sub_sub_vector))
           end

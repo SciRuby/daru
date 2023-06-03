@@ -290,7 +290,12 @@ module Daru
     end
 
     def drop_left_level by=1
-      MultiIndex.from_arrays to_a.transpose[by..-1]
+      arrays = to_a.transpose[by..-1]
+      if arrays.length == 1
+        Index.new(arrays[0])
+      else
+        MultiIndex.from_arrays to_a.transpose[by..-1]
+      end
     end
 
     def | other
