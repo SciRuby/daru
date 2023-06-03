@@ -12,7 +12,7 @@ matrix:
     true
 
 env:
-  - DARU_TEST_NMATRIX=1 DARU_TEST_GSL=1
+  - DARU_TEST_NMATRIX=1 DARU_TEST_GSL=1 DARU_TEST_RSERVE=1
 
 script:
   - bundle add yard-junk

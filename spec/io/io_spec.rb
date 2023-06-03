@@ -525,7 +525,7 @@ describe Daru::IO do
 
     context "#save" do
       ALL_DTYPES.each do |dtype|
-        it "saves to a file and returns the same Vector of type #{dtype}" do
+        it "saves to a file and returns the same Vector of type #{dtype}", dtype do
           vector = Daru::Vector.new(
               [5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 1, 2, 3, 4, 11, -99, -99],
               dtype: dtype)

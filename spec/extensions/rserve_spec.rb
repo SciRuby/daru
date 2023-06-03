@@ -2,7 +2,7 @@ begin
   require "rserve"
   require 'daru/extensions/rserve'
 
-  describe "Daru rserve extension" do
+  describe "Daru rserve extension", :rserve do
     before do
       @r = Rserve::Connection.new
     end

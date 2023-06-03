@@ -2415,7 +2415,7 @@ describe Daru::DataFrame do
   end
 
   context "#recast" do
-    it "recasts underlying vectors" do
+    it "recasts underlying vectors", :nmatrix do
       @data_frame.recast a: :nmatrix, c: :nmatrix
 
       expect(@data_frame.a.dtype).to eq(:nmatrix)
@@ -2875,7 +2875,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#to_nmatrix" do
+  context "#to_nmatrix", :nmatrix do
     before do
       @df = Daru::DataFrame.new({b: [11,12,13,14,15], a: [1,2,3,4,5],
         c: [11,22,33,44,55], d: [5,4,nil,2,1], e: ['this', 'has', 'string','data','too']},
@@ -3274,7 +3274,7 @@ describe Daru::DataFrame do
     end
   end
 
-  context "#to_gsl" do
+  context "#to_gsl", :gsl do
     it "converts to GSL::Matrix" do
       rows = [[1,2,3,4,5],[11,12,13,14,15],[11,22,33,44,55]].transpose
       mat = GSL::Matrix.alloc *rows
