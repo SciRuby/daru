@@ -103,7 +103,7 @@ module Daru
           converters: :numeric
         }.merge(opts)
 
-        writer = ::CSV.open(path, 'w', options)
+        writer = ::CSV.open(path, 'w', **options)
         writer << dataframe.vectors.to_a unless options[:headers] == false
 
         dataframe.each_row do |row|
@@ -231,7 +231,7 @@ module Daru
       def from_csv_hash_with_headers(path, opts)
         opts[:header_converters] ||= :symbol
         ::CSV
-          .parse(open(path), opts)
+          .parse(open(path), **opts)
           .tap { |c| yield c if block_given? }
           .by_col.map { |col_name, values| [col_name, values] }.to_h
       end
